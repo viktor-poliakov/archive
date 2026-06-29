@@ -1,0 +1,84 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/objects">Объекты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Перебор свойств</span>
+  </nav>
+
+  <h1 class="doc__title">Перебор свойств</h1>
+  <p class="doc__lead">
+    Часто нужно пройтись по всем свойствам объекта: вывести их, посчитать,
+    отфильтровать. В отличие от массива, у объекта нет индексов, поэтому для
+    перебора есть отдельные инструменты.
+  </p>
+
+  <section class="doc__section">
+    <h2>for…in</h2>
+    <p>
+      Цикл <code>for...in</code> проходит по ключам объекта. На каждом шаге в
+      переменную попадает имя свойства, а значение достаём через
+      <code>obj[key]</code>:
+    </p>
+    <app-code-block [code]="forInExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Object.keys / values / entries</h2>
+    <p>
+      Чаще удобнее получить свойства сразу массивом — тогда к ним применимы все
+      методы массивов (<code>map</code>, <code>filter</code>,
+      <code>forEach</code>):
+    </p>
+    <app-code-block [code]="objectStaticExample" lang="javascript" />
+    <p>
+      Это самый универсальный подход: <code>Object.entries</code> вместе с
+      <a routerLink="/javascript/functions/first-class">функциями высшего порядка</a>
+      позволяет преобразовывать объекты так же гибко, как массивы.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Object.fromEntries — собрать объект обратно</h2>
+    <p>
+      <code>Object.fromEntries</code> делает обратное <code>entries</code>:
+      превращает массив пар снова в объект. Связка
+      <code>entries → filter/map → fromEntries</code> — стандартный способ
+      «преобразовать объект»:
+    </p>
+    <app-code-block [code]="fromEntriesExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Свои и унаследованные свойства</h2>
+    <p>
+      У объекта, кроме собственных свойств, есть унаследованные — из
+      <a routerLink="/javascript/objects/prototypes">прототипа</a> (например,
+      <code>toString</code>). Это важно различать при переборе:
+    </p>
+    <ul class="rules">
+      <li>
+        <code>Object.keys</code>, <code>values</code>, <code>entries</code> берут
+        <strong>только собственные</strong> свойства — обычно это то, что нужно;
+      </li>
+      <li>
+        <code>for...in</code> обходит <strong>и собственные, и унаследованные</strong>
+        свойства;
+      </li>
+      <li>
+        <code>Object.hasOwn(obj, key)</code> проверяет, что свойство именно
+        собственное.
+      </li>
+    </ul>
+    <app-code-block [code]="hasOwnExample" lang="javascript" />
+    <app-code-block [code]="forInPrototypeExample" lang="javascript" />
+    <p class="note">
+      <strong>Порядок ключей.</strong> Свойства со строковыми ключами идут в
+      порядке добавления, но целочисленные ключи (<code>'1'</code>,
+      <code>'2'</code>) всегда выводятся первыми и по возрастанию — независимо от
+      того, в каком порядке их добавили. Если порядок критичен, используйте
+      <code>Map</code>.
+    </p>
+  </section>
+</article>

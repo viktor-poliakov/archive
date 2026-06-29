@@ -1,0 +1,30 @@
+@if (section(); as section) {
+  <div class="page" [style.--accent]="section.color">
+    <nav class="breadcrumbs">
+      <span class="breadcrumbs__root">{{ section.label }}</span>
+      @if (child(); as child) {
+        <span class="breadcrumbs__sep">/</span>
+        <span class="breadcrumbs__current">{{ child.label }}</span>
+      }
+    </nav>
+
+    <h1 class="page__title">
+      {{ child() ? child()!.label : section.label }}
+    </h1>
+
+    <p class="page__lead">
+      @if (child(); as child) {
+        Раздел «{{ child.label }}» из «{{ section.label }}». Содержимое появится позже.
+      } @else {
+        Обзор раздела «{{ section.label }}». Выберите подраздел в меню слева.
+      }
+    </p>
+
+    <div class="placeholder">Mock content</div>
+  </div>
+} @else {
+  <div class="empty">
+    <h1 class="empty__title">Archive</h1>
+    <p class="empty__lead">Выберите раздел в меню слева, чтобы начать.</p>
+  </div>
+}

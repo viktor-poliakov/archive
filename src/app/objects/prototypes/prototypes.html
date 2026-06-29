@@ -1,0 +1,93 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/objects">Объекты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Прототипы и наследование</span>
+  </nav>
+
+  <h1 class="doc__title">Прототипы и наследование</h1>
+  <p class="doc__lead">
+    Прототипы — то, на чём в JavaScript держится всё наследование. Тема считается
+    «сложной», но идея простая: у каждого объекта есть скрытая ссылка на другой
+    объект — его <strong>прототип</strong>, — и если у объекта не нашлось нужного
+    свойства, поиск продолжается в прототипе.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия:</strong> не знаешь ответ сам — спрашиваешь у наставника. Не
+    знает он — он спрашивает у своего наставника. Так выстраивается
+    <strong>цепочка прототипов</strong>, по которой движок ищет свойство снизу
+    вверх.
+  </p>
+
+  <section class="doc__section">
+    <h2>Поиск по цепочке</h2>
+    <p>
+      Создадим объект, прототипом которого назначен другой объект. Тогда наследник
+      «видит» свойства прототипа как свои собственные:
+    </p>
+    <app-code-block [code]="chainExample" lang="javascript" />
+    <p>
+      Ключевой момент: объект, переданный в скобки
+      <code>Object.create(animal)</code>, становится <strong>прототипом</strong>
+      нового объекта. Все его свойства (<code>eats</code>, <code>walk</code>) для
+      <code>rabbit</code> оказываются <strong>унаследованными</strong> — они лежат
+      не на самом <code>rabbit</code>, а в его прототипе. Поэтому
+      <code>Object.hasOwn(rabbit, 'eats')</code> вернёт <code>false</code> (это не
+      собственное свойство), а вот <code>'eats' in rabbit</code> —
+      <code>true</code> (потому что <code>in</code> заглядывает и в прототип, см.
+      <a routerLink="/javascript/objects/iteration">«Перебор свойств»</a>).
+    </p>
+    <p>
+      Если бы и у <code>animal</code> не нашлось свойства, поиск ушёл бы в его
+      прототип — и так до конца цепочки, которая заканчивается на
+      <code>Object.prototype</code>, а затем на <code>null</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как посмотреть прототип</h2>
+    <p>
+      Современный способ — <code>Object.getPrototypeOf</code>. Свойство
+      <code>__proto__</code> делает то же самое, но считается устаревшим и
+      оставлено лишь для совместимости:
+    </p>
+    <app-code-block [code]="getProtoExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Запись не трогает прототип</h2>
+    <p>
+      Чтение идёт по цепочке, а вот <strong>запись</strong> всегда создаёт
+      собственное свойство на самом объекте. Оно «перекрывает» унаследованное, но
+      прототип при этом не меняется:
+    </p>
+    <app-code-block [code]="shadowExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Так работают встроенные методы</h2>
+    <p>
+      Прототипы — не экзотика, на них устроен весь язык. Методы массива
+      (<code>map</code>, <code>push</code>) лежат не в каждом массиве, а один раз в
+      <code>Array.prototype</code>, общем для всех массивов:
+    </p>
+    <app-code-block [code]="builtinExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Классы — это сахар над прототипами</h2>
+    <p>
+      Синтаксис <code>class</code> может создать впечатление, что в JavaScript
+      «настоящие» классы, как в Java или C#. На деле это удобная обёртка над тем же
+      прототипным механизмом: методы класса складываются в прототип:
+    </p>
+    <app-code-block [code]="classExample" lang="javascript" />
+    <p class="note">
+      Не добавляйте свойства в <code>Object.prototype</code> — они появятся у
+      <em>всех</em> объектов в программе и сломают перебор и сторонний код.
+      Прототип общего назначения трогать не принято.
+    </p>
+  </section>
+</article>

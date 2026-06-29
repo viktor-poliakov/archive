@@ -1,12 +1,30 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
+
+import { Sidebar } from './sidebar/sidebar';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Sidebar],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
-  protected readonly title = signal('archive');
+  // Контент скроллится внутри <main class="content">, а не в окне,
+  // поэтому стандартное scrollPositionRestoration роутера не помогает —
+  // плавно прокручиваем этот контейнер наверх сами при каждой навигации.
+  private readonly content = viewChild<ElementRef<HTMLElement>>('content');
+
+  constructor() {
+    inject(Router)
+      .events.pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        this.content()?.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+  }
 }

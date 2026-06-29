@@ -1,0 +1,50 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/functions">Функции</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Функции как значения</span>
+  </nav>
+
+  <h1 class="doc__title">Функции как значения</h1>
+  <p class="doc__lead">
+    В JavaScript функция — полноценное значение (как число или строка). Её можно
+    сохранить в переменную, передать в другую функцию и вернуть из функции. На этом
+    держатся колбэки, функции высшего порядка и замыкания.
+  </p>
+
+  <section class="doc__section">
+    <h2>Колбэки</h2>
+    <p>
+      Функцию, переданную в другую функцию аргументом, называют
+      <strong>callback</strong> — вызывающий код решает «что сделать», а функция —
+      «когда и сколько раз»:
+    </p>
+    <app-code-block [code]="callbackExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Функции высшего порядка</h2>
+    <p>
+      Функции, которые принимают или возвращают другие функции, называют
+      <strong>функциями высшего порядка</strong>. На них построены методы массивов
+      <code>map</code>, <code>filter</code>, <code>reduce</code>:
+    </p>
+    <app-code-block [code]="higherOrderExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Замыкания</h2>
+    <p>
+      Функция может вернуть другую функцию, которая «помнит» переменные из места,
+      где была создана. Это называется <strong>замыкание</strong> (closure):
+    </p>
+    <app-code-block [code]="closureExample" lang="javascript" />
+    <p>
+      Здесь возвращённая стрелочная функция сохраняет доступ к переменной
+      <code>count</code> даже после того, как <code>createCounter</code> завершилась.
+      Так функции хранят приватное состояние между вызовами.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,168 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/functions">Функции</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Объявление</span>
+  </nav>
+
+  <h1 class="doc__title">Объявление функций</h1>
+  <p class="doc__lead">
+    Функцию можно создать тремя способами: объявление функции, функциональное
+    выражение и стрелочная функция. Они похожи, но различаются поднятием
+    (hoisting), поведением <code>this</code> и краткостью.
+  </p>
+
+  <section class="doc__section">
+    <h2>Способы объявления</h2>
+    <p>
+      <strong>Объявление функции</strong> (function declaration). Поднимается
+      целиком, поэтому её можно вызвать даже выше по коду (см. раздел
+      <a routerLink="/javascript/hoisting">Hoisting</a>).
+    </p>
+    <app-code-block [code]="declarationExample" lang="javascript" />
+    <p>
+      <strong>Функциональное выражение</strong> — функция, записанная в переменную.
+      Доступна только после строки с присваиванием.
+    </p>
+    <app-code-block [code]="expressionExample" lang="javascript" />
+    <p>
+      <strong>Стрелочная функция</strong> — короткий синтаксис. Если тело — это одно
+      выражение, его значение возвращается автоматически (без <code>return</code>).
+      Важное отличие: у стрелочной нет своего <code>this</code> (см.
+      <a routerLink="/javascript/functions/this">Контекст this</a>).
+    </p>
+    <app-code-block [code]="arrowExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Свойство</th>
+            <th>Объявление</th>
+            <th>Выражение</th>
+            <th>Стрелочная</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Поднимается (hoisting)</td>
+            <td class="yes">да, целиком</td>
+            <td class="no">нет</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>Свой <code>this</code></td>
+            <td class="yes">да</td>
+            <td class="yes">да</td>
+            <td class="no">нет (берёт извне)</td>
+          </tr>
+          <tr>
+            <td>Можно как метод объекта</td>
+            <td class="yes">да</td>
+            <td class="yes">да</td>
+            <td>обычно нет</td>
+          </tr>
+          <tr>
+            <td>Краткость</td>
+            <td>обычная</td>
+            <td>обычная</td>
+            <td class="yes">максимальная</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Function Declaration и Function Expression подробнее</h2>
+    <p>
+      Это два разных способа создать функцию, и различает их не вид самой функции, а
+      <strong>место, где она написана</strong>.
+    </p>
+    <p>
+      <strong>Function Declaration (объявление функции)</strong> — это отдельная
+      инструкция, которая начинается с ключевого слова <code>function</code> и имени.
+      Она ничему не присваивается, а просто «объявляет» функцию в текущей области.
+    </p>
+    <app-code-block [code]="declarationExample" lang="javascript" />
+    <p>
+      <strong>Function Expression (функциональное выражение)</strong> — это функция,
+      использованная как значение: справа от <code>=</code>, как аргумент другой
+      функции, как элемент массива и т.п. Часто она анонимная (без имени).
+    </p>
+    <app-code-block [code]="exprAsValueExample" lang="javascript" />
+    <p>
+      Подсказка для распознавания: если строка <em>начинается</em> со слова
+      <code>function</code> — это declaration. Если <code>function</code> стоит
+      где-то внутри выражения (после <code>=</code>, в скобках вызова) — это
+      expression.
+    </p>
+
+    <h3 class="doc__subtitle">Главное отличие — момент доступности</h3>
+    <p>
+      Declaration поднимается целиком, поэтому функцию можно вызвать ещё до строки,
+      где она написана. Expression же ведёт себя как обычная переменная: до
+      присваивания её значение ещё не готово (см. раздел
+      <a routerLink="/javascript/hoisting">Hoisting</a>).
+    </p>
+    <app-code-block [code]="declVsExprHoistingExample" lang="javascript" />
+    <p>
+      В примере <code>declared()</code> работает, потому что объявление функции
+      поднялось вместе с телом. А <code>expressed</code> на момент вызова ещё
+      <code>undefined</code> (поднялось только имя переменной <code>var</code>),
+      поэтому попытка его вызвать — это <code>TypeError</code>.
+    </p>
+
+    <h3 class="doc__subtitle">Именованное функциональное выражение</h3>
+    <p>
+      Выражению можно дать имя. Оно будет видно <strong>только внутри самой
+      функции</strong> — это удобно для рекурсии и понятных названий в стеке вызовов:
+    </p>
+    <app-code-block [code]="namedExpressionExample" lang="javascript" />
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Свойство</th>
+            <th>Declaration</th>
+            <th>Expression</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Где стоит</td>
+            <td>отдельная инструкция</td>
+            <td>часть выражения (значение)</td>
+          </tr>
+          <tr>
+            <td>Поднимается целиком</td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>Вызов до объявления</td>
+            <td class="yes">можно</td>
+            <td class="no">нельзя (TypeError / ReferenceError)</td>
+          </tr>
+          <tr>
+            <td>Имя</td>
+            <td>обязательно</td>
+            <td>необязательно (часто анонимная)</td>
+          </tr>
+          <tr>
+            <td>Типичное применение</td>
+            <td>самостоятельные функции модуля</td>
+            <td>колбэки, функции «на месте», присваивание</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Что выбрать:</strong> для самостоятельных функций удобнее declaration —
+      их видно по всему файлу. Для функций «по месту» (колбэки, передача аргументом)
+      естественнее expression, в том числе стрелочная.
+    </p>
+  </section>
+</article>

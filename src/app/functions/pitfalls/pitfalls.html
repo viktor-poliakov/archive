@@ -1,0 +1,73 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/functions">Функции</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и паттерны</span>
+  </nav>
+
+  <h1 class="doc__title">Нюансы и паттерны</h1>
+  <p class="doc__lead">
+    Частые подводные камни при работе с функциями и приёмы, которые делают код
+    чище и надёжнее.
+  </p>
+
+  <section class="doc__section">
+    <h2>Нюансы и проблемы</h2>
+    <ul class="rules">
+      <li>
+        <strong>Потеря <code>this</code>:</strong> метод, переданный как обычная
+        функция (в колбэк, в <code>setTimeout</code>), теряет контекст. Спасают
+        стрелочные функции или <code>bind</code> (см.
+        <a routerLink="/javascript/functions/this">Контекст this</a>).
+      </li>
+      <li>
+        <strong>Мутация аргументов:</strong> объекты и массивы передаются по ссылке,
+        поэтому функция может незаметно изменить переданный объект.
+      </li>
+      <li>
+        <strong>Слишком много параметров:</strong> длинный список тяжело читать и
+        легко перепутать порядок. Лучше передать один объект параметров.
+      </li>
+      <li>
+        <strong>Побочные эффекты:</strong> функция, меняющая внешнее состояние,
+        сложнее в отладке и тестировании, чем та, что просто возвращает результат.
+      </li>
+      <li>
+        <strong>Стрелочные не универсальны:</strong> у них нет своего
+        <code>this</code> и <code>arguments</code>, их нельзя использовать как
+        конструкторы.
+      </li>
+    </ul>
+    <app-code-block [code]="mutationExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Частые паттерны</h2>
+    <ul class="rules">
+      <li>
+        <strong>Чистые функции:</strong> держите основную логику чистой, а эффекты
+        выносите наружу (подробнее в разделе
+        <a routerLink="/javascript/functions/pure">Чистые функции</a>).
+      </li>
+      <li>
+        <strong>Колбэки и функции высшего порядка:</strong> передавайте поведение
+        как аргумент — основа работы с массивами и асинхронностью (см.
+        <a routerLink="/javascript/functions/first-class">Функции как значения</a>).
+      </li>
+      <li>
+        <strong>Параметры по умолчанию и rest:</strong> делают функции гибкими без
+        лишних проверок внутри.
+      </li>
+      <li>
+        <strong>Объект параметров с деструктуризацией:</strong> именованные
+        аргументы вместо длинного списка по позициям.
+      </li>
+      <li>
+        <strong>Стрелочные для коротких колбэков:</strong> компактно и без проблем с
+        <code>this</code>.
+      </li>
+    </ul>
+  </section>
+</article>

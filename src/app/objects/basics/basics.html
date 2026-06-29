@@ -1,0 +1,147 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/objects">Объекты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Объекты: основы</h1>
+  <p class="doc__lead">
+    Объект в JavaScript — это набор именованных значений, сложенных вместе. Если
+    переменная хранит один кусочек данных (число, строку), то объект хранит сразу
+    много связанных кусочков под понятными именами.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия:</strong> объект — это анкета или карточка товара. У карточки
+    есть поля: «название», «цена», «в наличии». Каждое поле (его называют
+    <strong>ключ</strong> или <strong>свойство</strong>) хранит своё значение.
+  </p>
+
+  <section class="doc__section">
+    <h2>Литерал объекта</h2>
+    <p>
+      Чаще всего объект создают <strong>литералом</strong> — фигурными скобками
+      <code>&#123;&#125;</code>, внутри которых перечислены пары
+      <code>ключ: значение</code> через запятую:
+    </p>
+    <app-code-block [code]="literalExample" lang="javascript" />
+    <p>
+      Значением свойства может быть что угодно: число, строка, булево, массив,
+      другой объект и даже функция (тогда свойство называют
+      <a routerLink="/javascript/objects/methods">методом</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Доступ к свойствам: точка и скобки</h2>
+    <p>Есть два способа прочитать или записать свойство:</p>
+    <ul class="rules">
+      <li>
+        <strong>через точку</strong> — <code>user.name</code> — короткий и
+        привычный способ, когда имя свойства известно заранее;
+      </li>
+      <li>
+        <strong>через квадратные скобки</strong> — <code>user['name']</code> —
+        нужен, когда имя свойства лежит в переменной или содержит символы, которые
+        нельзя написать после точки (пробел, дефис, начинается с цифры).
+      </li>
+    </ul>
+    <app-code-block [code]="accessExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Вычисляемые ключи</h2>
+    <p>
+      Имя свойства можно вычислить прямо при создании объекта — для этого выражение
+      берут в квадратные скобки <code>[ ]</code> уже внутри литерала:
+    </p>
+    <app-code-block [code]="computedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Ключи — это всегда строки (или Symbol)</h2>
+    <p>
+      Важный нюанс: ключом обычного объекта может быть только строка или
+      <code>Symbol</code>. Если в качестве ключа дать число, оно молча превратится
+      в строку. Поэтому <code>obj[1]</code> и <code>obj['1']</code> — это одно и
+      то же свойство:
+    </p>
+    <app-code-block [code]="keysAreStringsExample" lang="javascript" />
+    <p class="note">
+      Если нужны ключи произвольного типа (объекты, числа без приведения), для
+      этого есть отдельная структура <code>Map</code> — но это уже не обычный
+      объект.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Добавление, изменение и удаление</h2>
+    <p>
+      Объект можно менять после создания: присвоить новому ключу значение, чтобы
+      <strong>добавить</strong> свойство, присвоить существующему, чтобы
+      <strong>изменить</strong>, и убрать оператором <code>delete</code>:
+    </p>
+    <app-code-block [code]="mutateExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Как проверить, что свойство есть</h2>
+    <p>
+      Способов несколько, и у каждого свои нюансы. Разберём их по очереди.
+    </p>
+
+    <h3 class="doc__subtitle">1. Оператор <code>in</code> — самый надёжный</h3>
+    <p>
+      <code>'ключ' in obj</code> проверяет именно наличие ключа и не путается, даже
+      если значение «ложное» (<code>0</code>, <code>''</code>, <code>null</code>,
+      <code>false</code>):
+    </p>
+    <app-code-block [code]="inExample" lang="javascript" />
+
+    <h3 class="doc__subtitle">2. Сравнение с <code>undefined</code> и <code>typeof</code> — ненадёжно</h3>
+    <p>
+      Проверки <code>obj.key === undefined</code> и
+      <code>typeof obj.key === 'undefined'</code> кажутся очевидными, но они
+      возвращают <code>true</code> и когда ключа нет, и когда ключ есть, но в нём
+      лежит само значение <code>undefined</code> — отличить эти случаи нельзя:
+    </p>
+    <app-code-block [code]="undefinedExample" lang="javascript" />
+
+    <h3 class="doc__subtitle">3. <code>Object.hasOwn</code> / <code>hasOwnProperty</code> — только свои</h3>
+    <p>
+      <code>in</code> видит и унаследованные из
+      <a routerLink="/javascript/objects/prototypes">прототипа</a> свойства
+      (например, <code>toString</code>). Если нужны только <strong>собственные</strong>,
+      используйте <code>Object.hasOwn(obj, key)</code> (современный способ) или
+      старый метод <code>obj.hasOwnProperty(key)</code>:
+    </p>
+    <app-code-block [code]="hasOwnExample" lang="javascript" />
+
+    <h3 class="doc__subtitle">4. Через <code>?.</code> и список ключей</h3>
+    <p>
+      Иногда удобнее не проверять наличие, а безопасно прочитать значение через
+      опциональную цепочку <code>?.</code> (подробнее — в
+      <a routerLink="/javascript/objects/pitfalls">«Нюансах»</a>). Ещё можно
+      спросить список ключей через <code>Object.keys</code> — наглядно, хотя и
+      медленнее:
+    </p>
+    <app-code-block [code]="otherWaysExample" lang="javascript" />
+
+    <p class="note">
+      <strong>Короткий вывод.</strong> Просто «есть ли ключ?» —
+      <code>in</code>. «Своё ли это свойство, не из прототипа?» —
+      <code>Object.hasOwn</code>. А <code>=== undefined</code> и
+      <code>typeof</code> для проверки существования лучше не использовать.
+    </p>
+
+    <p>
+      Перебрать все свойства разом помогут <code>Object.keys</code> и
+      <code>for...in</code> — об этом в разделе
+      <a routerLink="/javascript/objects/iteration">«Перебор свойств»</a>. А о том,
+      что объекты копируются и сравниваются по ссылке (а не по содержимому), — в
+      разделе <a routerLink="/javascript/objects/references">«Копирование и ссылки»</a>.
+    </p>
+  </section>
+</article>

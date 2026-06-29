@@ -1,0 +1,143 @@
+<aside class="sidebar" [class.sidebar--collapsed]="collapsed()">
+  <header class="sidebar__top">
+    @if (activeSection() && !collapsed()) {
+      <button
+        type="button"
+        class="icon-btn"
+        (click)="showAllSections()"
+        title="Все разделы"
+        aria-label="Все разделы"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            d="M15 6l-6 6 6 6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    }
+
+    @if (!collapsed()) {
+      <span class="sidebar__brand">Archive</span>
+    }
+
+    <button
+      type="button"
+      class="icon-btn sidebar__toggle"
+      (click)="toggleCollapse()"
+      [title]="collapsed() ? 'Развернуть меню' : 'Свернуть меню'"
+      [attr.aria-label]="collapsed() ? 'Развернуть меню' : 'Свернуть меню'"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        aria-hidden="true"
+        class="chevron"
+        [class.chevron--flipped]="collapsed()"
+      >
+        <path
+          d="M15 6l-6 6 6 6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+  </header>
+
+  <nav class="sidebar__nav">
+    @if (activeSection(); as active) {
+      <a
+        class="nav-item nav-item--selected"
+        [routerLink]="['/', active.id]"
+        [style.--accent]="active.color"
+      >
+        <span class="nav-item__badge">{{ active.short }}</span>
+        <span class="nav-item__label">{{ active.label }}</span>
+      </a>
+
+      @if (!collapsed()) {
+        <ul class="submenu">
+          @for (child of active.children; track child.id) {
+            <li>
+              @if (child.children?.length) {
+                <button
+                  type="button"
+                  class="submenu__item submenu__item--group"
+                  [class.submenu__item--active]="activeChildId() === child.id"
+                  (click)="toggleGroup(child.id)"
+                  [style.--accent]="active.color"
+                  [attr.aria-expanded]="!isGroupCollapsed(child.id)"
+                >
+                  <span class="submenu__label">{{ child.label }}</span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                    class="submenu__chevron"
+                    [class.submenu__chevron--collapsed]="isGroupCollapsed(child.id)"
+                  >
+                    <path
+                      d="M6 9l6 6 6-6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+              } @else {
+                <a
+                  class="submenu__item"
+                  [routerLink]="['/', active.id, child.id]"
+                  routerLinkActive="submenu__item--active"
+                  [style.--accent]="active.color"
+                >
+                  {{ child.label }}
+                </a>
+              }
+
+              @if (child.children?.length && !isGroupCollapsed(child.id)) {
+                <ul class="submenu submenu--nested">
+                  @for (sub of child.children ?? []; track sub.id) {
+                    <li>
+                      <a
+                        class="submenu__item submenu__item--sub"
+                        [routerLink]="['/', active.id, child.id, sub.id]"
+                        routerLinkActive="submenu__item--active"
+                        [style.--accent]="active.color"
+                      >
+                        {{ sub.label }}
+                      </a>
+                    </li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      @for (section of sections; track section.id) {
+        <a
+          class="nav-item"
+          [routerLink]="['/', section.id]"
+          [style.--accent]="section.color"
+          [title]="section.label"
+        >
+          <span class="nav-item__badge">{{ section.short }}</span>
+          <span class="nav-item__label">{{ section.label }}</span>
+        </a>
+      }
+    }
+  </nav>
+</aside>

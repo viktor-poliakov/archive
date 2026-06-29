@@ -1,0 +1,75 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/objects">Объекты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Деструктуризация</span>
+  </nav>
+
+  <h1 class="doc__title">Деструктуризация</h1>
+  <p class="doc__lead">
+    Деструктуризация — это короткий синтаксис, который «распаковывает» свойства
+    объекта в отдельные переменные за одну строку. Код становится заметно чище,
+    особенно когда из объекта нужно несколько полей.
+  </p>
+
+  <section class="doc__section">
+    <h2>Базовая распаковка</h2>
+    <p>
+      Слева ставится тот же <code>&#123;&#125;</code>, но уже не для создания
+      объекта, а для извлечения. Имена в скобках должны совпадать с ключами:
+    </p>
+    <app-code-block [code]="basicExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Переименование</h2>
+    <p>
+      Если имя переменной должно отличаться от ключа, его указывают через
+      двоеточие — <code>ключ: новоеИмя</code>:
+    </p>
+    <app-code-block [code]="renameExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Значения по умолчанию</h2>
+    <p>
+      Если свойства в объекте нет, переменная окажется <code>undefined</code>.
+      Чтобы подстраховаться, задают значение по умолчанию через <code>=</code>:
+    </p>
+    <app-code-block [code]="defaultsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Вложенная деструктуризация</h2>
+    <p>
+      Можно «нырнуть» во вложенный объект и достать поле прямо из него:
+    </p>
+    <app-code-block [code]="nestedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Остаток через rest</h2>
+    <p>
+      Оператор <code>...rest</code> собирает все свойства, которые вы явно не
+      перечислили, в новый объект. Удобно, чтобы «отделить одно поле, а остальное
+      оставить вместе»:
+    </p>
+    <app-code-block [code]="restExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Деструктуризация в параметрах функции</h2>
+    <p>
+      Самое полезное применение — распаковка прямо в списке параметров. Это
+      решает проблему «функции с кучей аргументов»: вместо запоминания их порядка
+      передают один объект-настроек с понятными именами:
+    </p>
+    <app-code-block [code]="paramsExample" lang="javascript" />
+    <p>
+      Подробнее про параметры, значения по умолчанию и rest — в разделе
+      <a routerLink="/javascript/functions/parameters">«Параметры и возврат»</a>.
+    </p>
+  </section>
+</article>

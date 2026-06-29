@@ -1,0 +1,126 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/objects">Объекты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Копирование и ссылки</span>
+  </nav>
+
+  <h1 class="doc__title">Копирование и ссылки</h1>
+  <p class="doc__lead">
+    Это, пожалуй, главная тема про объекты, на которой спотыкаются и новички, и
+    опытные. Объекты ведут себя не так, как числа и строки: переменная хранит не
+    сам объект, а <strong>ссылку</strong> на него — «адрес», по которому объект
+    лежит в памяти.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия:</strong> переменная — это не сам дом, а бумажка с его
+    адресом. Скопировав бумажку, вы получите второй листок с тем же адресом —
+    дом по-прежнему один. Зайдёте по адресу с любой бумажки — окажетесь в одном
+    и том же доме.
+  </p>
+
+  <section class="doc__section">
+    <h2>Присваивание копирует ссылку, а не объект</h2>
+    <p>
+      Когда вы пишете <code>const b = a</code> для объекта, новый объект не
+      создаётся — обе переменные указывают на один и тот же:
+    </p>
+    <app-code-block [code]="referenceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение — тоже по ссылке</h2>
+    <p>
+      Оператор <code>===</code> для объектов проверяет не «одинаковое ли
+      содержимое», а «это буквально один и тот же объект». Поэтому два разных
+      объекта с одинаковыми полями не равны:
+    </p>
+    <app-code-block [code]="compareExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Передача в функцию</h2>
+    <p>
+      В функцию тоже передаётся ссылка. Значит, изменив свойство аргумента внутри
+      функции, вы меняете исходный объект снаружи. Это частый источник неожиданных
+      побочных эффектов:
+    </p>
+    <app-code-block [code]="mutateArgExample" lang="javascript" />
+    <p>
+      Чтобы функция не портила входные данные, её делают
+      <a routerLink="/javascript/functions/pure">чистой</a> — она работает с копией
+      и возвращает новый объект вместо мутации исходного.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>const разрешает мутацию</h2>
+    <p>
+      <code>const</code> запрещает <em>переприсвоить</em> переменную, но не
+      запрещает менять содержимое объекта — ведь сама ссылка остаётся прежней:
+    </p>
+    <app-code-block [code]="constExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Поверхностное копирование</h2>
+    <p>
+      Чтобы получить настоящую копию, объект нужно скопировать явно. Самые частые
+      способы — spread <code>&#123;...obj&#125;</code> и
+      <code>Object.assign</code>:
+    </p>
+    <app-code-block [code]="shallowCopyExample" lang="javascript" />
+    <p>
+      Но оба способа делают <strong>поверхностную</strong> копию: копируется только
+      верхний уровень. Вложенные объекты остаются общими — у копии и оригинала это
+      по-прежнему одна ссылка:
+    </p>
+    <app-code-block [code]="shallowProblemExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Глубокое копирование</h2>
+    <p>
+      Если нужно скопировать объект целиком, со всеми уровнями вложенности,
+      используйте встроенный <code>structuredClone</code>:
+    </p>
+    <app-code-block [code]="deepCopyExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Способ</th>
+            <th>Верхний уровень</th>
+            <th>Вложенные объекты</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>b = a</code></td>
+            <td class="no">не копирует (та же ссылка)</td>
+            <td class="no">общие</td>
+          </tr>
+          <tr>
+            <td><code>&#123;...a&#125;</code> / <code>Object.assign</code></td>
+            <td class="yes">копирует</td>
+            <td class="no">общие</td>
+          </tr>
+          <tr>
+            <td><code>structuredClone(a)</code></td>
+            <td class="yes">копирует</td>
+            <td class="yes">независимы</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Раньше для глубокой копии писали
+      <code>JSON.parse(JSON.stringify(obj))</code>. Это всё ещё работает для
+      простых данных, но теряет функции, <code>undefined</code> и превращает
+      <code>Date</code> в строку. <code>structuredClone</code> лишён этих
+      недостатков и предпочтительнее.
+    </p>
+  </section>
+</article>

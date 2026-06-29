@@ -1,0 +1,174 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Hoisting</span>
+  </nav>
+
+  <h1 class="doc__title">Hoisting (поднятие)</h1>
+  <p class="doc__lead">
+    Hoisting — это поведение JavaScript, при котором объявления переменных и
+    функций как будто «поднимаются» в начало своей области видимости. Из-за этого
+    к некоторым именам можно обратиться в коде раньше той строки, где они
+    написаны. Слово «как будто» здесь ключевое: физически код никуда не двигается —
+    так удобно объяснять то, что происходит на этапе подготовки.
+  </p>
+
+  <section class="doc__section">
+    <h2>Как это работает на самом деле</h2>
+    <p>
+      JavaScript выполняет код не сразу. Сначала движок бегло «просматривает»
+      область видимости и регистрирует все объявленные в ней имена, и только потом
+      выполняет код строка за строкой. Поэтому к моменту выполнения движок уже
+      знает обо всех переменных и функциях, объявленных в этой области.
+    </p>
+    <p>
+      Аналогия: представьте театральную постановку. Перед началом спектакля
+      режиссёр читает сценарий и заранее заносит в программку всех действующих лиц
+      (это объявления). Но реплики актёры произносят уже по ходу пьесы (это
+      присваивание значений). Имя персонажа известно с самого начала, а вот что
+      именно он скажет — выясняется только когда до него дойдёт очередь.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Hoisting переменных <code>var</code></h2>
+    <p>
+      У <code>var</code> «поднимается» только объявление, но не присваивание.
+      Поэтому обращение к переменной до строки с присваиванием не вызывает ошибку —
+      вернётся <code>undefined</code> (значение по умолчанию для объявленной, но
+      ещё не инициализированной переменной).
+    </p>
+    <app-code-block [code]="varExample" lang="javascript" />
+    <p>Движок «видит» этот код примерно так:</p>
+    <app-code-block [code]="varAsEngineSees" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>let</code> и <code>const</code>: временная мёртвая зона</h2>
+    <p>
+      <code>let</code> и <code>const</code> тоже поднимаются, но ведут себя иначе:
+      до строки с объявлением переменная находится в так называемой
+      <strong>временной мёртвой зоне</strong> (Temporal Dead Zone, TDZ).
+      Обращение к ней в этой зоне — это ошибка <code>ReferenceError</code>, а не
+      <code>undefined</code>.
+    </p>
+    <app-code-block [code]="tdzExample" lang="javascript" />
+    <p class="note">
+      <strong>Почему так лучше:</strong> молчаливый <code>undefined</code> у
+      <code>var</code> легко скрывает опечатку или неправильный порядок кода. TDZ
+      превращает такую ошибку в явный сбой сразу — её проще заметить и исправить.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Hoisting функций</h2>
+    <p>
+      Тут есть важное различие между двумя способами создания функции.
+    </p>
+    <p>
+      <strong>Объявление функции</strong> (<code>function greet() {{ '{' }}…{{ '}' }}</code>)
+      поднимается целиком — вместе с телом. Поэтому такую функцию можно вызвать
+      даже выше того места, где она написана.
+    </p>
+    <app-code-block [code]="funcDeclarationExample" lang="javascript" />
+    <p>
+      <strong>Функциональное выражение</strong> (функция, записанная в переменную)
+      ведёт себя как обычная переменная. С <code>var</code> поднимется только имя
+      со значением <code>undefined</code>, а само присваивание функции — нет.
+      Вызов до присваивания — это попытка вызвать <code>undefined</code>, то есть
+      <code>TypeError</code>.
+    </p>
+    <app-code-block [code]="funcExpressionExample" lang="javascript" />
+    <p>
+      Если использовать <code>let</code>/<code>const</code> (в том числе стрелочную
+      функцию), сработает уже знакомая TDZ — будет <code>ReferenceError</code>.
+    </p>
+    <app-code-block [code]="funcExpressionLetExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Что объявлено</th>
+            <th>Поднимается</th>
+            <th>Доступ до объявления</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>var</code></td>
+            <td>имя (значение <code>undefined</code>)</td>
+            <td><code>undefined</code></td>
+          </tr>
+          <tr>
+            <td><code>let</code> / <code>const</code></td>
+            <td>имя, но в TDZ</td>
+            <td class="no">ReferenceError</td>
+          </tr>
+          <tr>
+            <td>Объявление функции</td>
+            <td>целиком, вместе с телом</td>
+            <td class="yes">можно вызывать</td>
+          </tr>
+          <tr>
+            <td>Функция в переменной</td>
+            <td>как переменная (var/let/const)</td>
+            <td class="no">TypeError или ReferenceError</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Нюансы и проблемы</h2>
+    <ul class="rules">
+      <li>
+        <strong>Скрытые баги с <code>var</code>:</strong> вместо ошибки вы получаете
+        <code>undefined</code>, и проблема всплывает позже и в другом месте.
+      </li>
+      <li>
+        <strong>Дублирование объявлений функций:</strong> если объявить две функции
+        с одним именем, «победит» последняя — первая будет молча затёрта.
+      </li>
+      <li>
+        <strong>Поднимается только объявление:</strong> присваивание остаётся на
+        месте. Легко решить, что «значение тоже наверху», и ошибиться.
+      </li>
+      <li>
+        <strong>Функции в переменных не вызвать заранее:</strong> в отличие от
+        объявления функции, их нельзя использовать до строки с присваиванием.
+      </li>
+    </ul>
+    <app-code-block [code]="duplicateExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Частые паттерны</h2>
+    <p>
+      Главный практический плюс поднятия объявлений функций — <strong>порядок
+      чтения кода</strong>. Можно поставить высокоуровневую логику сверху, а
+      вспомогательные функции — ниже. Читатель сразу видит «что делает программа», а
+      детали смотрит при необходимости.
+    </p>
+    <app-code-block [code]="patternExample" lang="javascript" />
+    <ul class="rules">
+      <li>
+        Объявляйте <code>let</code>/<code>const</code> до первого использования —
+        тогда TDZ вам не помешает, а код читается сверху вниз.
+      </li>
+      <li>
+        Не полагайтесь на чтение <code>var</code> до присваивания: это не приём, а
+        источник путаницы.
+      </li>
+      <li>
+        Объявления функций удобно использовать для «оглавления» модуля: точка входа
+        сверху, реализация — ниже.
+      </li>
+    </ul>
+  </section>
+</article>

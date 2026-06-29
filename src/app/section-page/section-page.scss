@@ -1,0 +1,61 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.page,
+.empty {
+  max-width: 760px;
+  padding: 2.5rem 2.75rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.breadcrumbs__root {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.breadcrumbs__current {
+  color: var(--fg);
+}
+
+.page__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.page__lead,
+.empty__lead {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.placeholder {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.empty__title {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--fg);
+}

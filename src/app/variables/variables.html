@@ -1,0 +1,183 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Переменные</span>
+  </nav>
+
+  <h1 class="doc__title">Переменные</h1>
+  <p class="doc__lead">
+    Переменная — это именованная ссылка на значение в памяти. Она позволяет
+    сохранить данные и обращаться к ним по имени, а не по конкретному значению.
+    В JavaScript переменные объявляют тремя способами: <code>let</code>,
+    <code>const</code> и устаревшим <code>var</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Объявление</h2>
+    <p>
+      При объявлении переменной задают её имя, а затем (необязательно)
+      присваивают значение через <code>=</code>.
+    </p>
+    <app-code-block [code]="declareExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>let</code></h2>
+    <p>
+      Объявляет переменную с <strong>блочной</strong> областью видимости (живёт
+      внутри <code>&#123;&#125;</code>). Значение можно переприсваивать.
+    </p>
+    <app-code-block [code]="letExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>const</code></h2>
+    <p>
+      Тоже блочная область видимости, но переменную <strong>нельзя
+      переприсвоить</strong> после инициализации. Значение обязательно задаётся
+      сразу.
+    </p>
+    <app-code-block [code]="constExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно:</strong> <code>const</code> запрещает переприсваивание
+      ссылки, но не «замораживает» объект. Свойства объекта или элементы массива
+      менять можно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>var</code> и почему его избегают</h2>
+    <p>
+      <code>var</code> имеет <strong>функциональную</strong> область видимости и
+      поднимается (hoisting) в начало области со значением
+      <code>undefined</code>. Это часто приводит к неочевидным ошибкам.
+    </p>
+    <app-code-block [code]="varExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Затенение (shadowing)</h2>
+    <p>
+      Затенение — это когда переменная во внутренней области видимости имеет то же
+      имя, что и переменная снаружи. Внутренняя переменная «перекрывает» внешнюю:
+      пока мы внутри, видим именно её, а внешняя остаётся нетронутой.
+    </p>
+    <p>
+      Аналогия: у вас дома есть «настольная лампа», и в гостях у друга тоже есть
+      «настольная лампа». Пока вы у друга, фраза «включи настольную лампу»
+      относится к его лампе. Ваша домашняя лампа при этом никуда не делась — просто
+      сейчас речь не о ней.
+    </p>
+    <app-code-block [code]="shadowExample" lang="javascript" />
+    <p>
+      Затенение не зависит от того, как объявлена внешняя переменная: будь снаружи
+      <code>let</code>, <code>const</code> или <code>var</code> — новая переменная
+      с тем же именем внутри функции всё равно её перекроет, а внешняя останется
+      нетронутой. Важно лишь то, что внутри объявлена <em>новая</em> переменная.
+    </p>
+    <p>
+      С <code>var</code> есть важный нюанс: он не различает блоки
+      (<code>if</code>, <code>for</code> и другие) — только функции. Поэтому
+      объявление <code>var</code> внутри блока не создаёт новую
+      переменную, а <strong>перезаписывает</strong> внешнюю с тем же именем. Это
+      частый источник багов. У <code>let</code> и <code>const</code> такого нет:
+      внутри блока создаётся отдельная переменная.
+    </p>
+    <app-code-block [code]="shadowBlockExample" lang="javascript" />
+    <p class="note">
+      <strong>Вывод:</strong> настоящее затенение (когда внешняя переменная
+      сохраняется) <code>var</code> даёт только на границе функции. Внутри обычного
+      блока <code>var</code> вместо затенения молча портит внешнюю переменную.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Переменные и объект <code>window</code></h2>
+    <p>
+      В браузере есть глобальный объект <code>window</code> — он представляет
+      вкладку и хранит всё «глобальное». Исторически переменные, объявленные через
+      <code>var</code> в глобальной области, автоматически становились свойствами
+      <code>window</code>. С <code>let</code> и <code>const</code> этого
+      <strong>не происходит</strong>: они остаются в отдельной области и в
+      <code>window</code> не попадают.
+    </p>
+    <app-code-block [code]="windowExample" lang="javascript" />
+    <p>
+      Почему это хорошо: <code>window</code> — общий на всю страницу. Если каждая
+      переменная попадает туда, легко случайно перезаписать чужое значение (своё и
+      чужой библиотеки). <code>let</code> и <code>const</code> не «засоряют»
+      глобальное пространство имён, поэтому конфликтов меньше — ещё одна причина
+      предпочитать их вместо <code>var</code>.
+    </p>
+    <p class="note">
+      <strong>Важно:</strong> это касается именно глобальной области. На верхнем
+      уровне ES-модуля (<code>&lt;script type="module"&gt;</code>) даже
+      <code>var</code> не добавляется в <code>window</code> — там своя область
+      видимости модуля.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Свойство</th>
+            <th><code>let</code></th>
+            <th><code>const</code></th>
+            <th><code>var</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Область видимости</td>
+            <td>блочная</td>
+            <td>блочная</td>
+            <td>функциональная</td>
+          </tr>
+          <tr>
+            <td>Переприсваивание</td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td>Повторное объявление</td>
+            <td class="no">нет</td>
+            <td class="no">нет</td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td>Hoisting</td>
+            <td>да, но без доступа до объявления</td>
+            <td>да, но без доступа до объявления</td>
+            <td class="yes">да, со значением undefined</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что использовать</h2>
+    <ul class="rules">
+      <li><strong><code>const</code></strong> — по умолчанию для всех значений, которые не меняются.</li>
+      <li><strong><code>let</code></strong> — когда значение действительно нужно переприсваивать (счётчики, накопители).</li>
+      <li><strong><code>var</code></strong> — не использовать в новом коде.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Правила именования</h2>
+    <ul class="rules">
+      <li>Имя состоит из букв, цифр, <code>$</code> и <code>_</code>; не может начинаться с цифры.</li>
+      <li>Регистр имеет значение: <code>age</code> и <code>Age</code> — разные переменные.</li>
+      <li>Принят стиль <code>camelCase</code>: <code>userName</code>, <code>totalPrice</code>.</li>
+      <li>Имя должно быть осмысленным: <code>count</code> лучше, чем <code>c</code>.</li>
+      <li>Нельзя использовать зарезервированные слова (<code>let</code>, <code>for</code>, <code>return</code>…).</li>
+    </ul>
+    <app-code-block [code]="namingExample" lang="javascript" />
+  </section>
+</article>

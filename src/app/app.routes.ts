@@ -1,3 +1,82 @@
-import { Routes } from '@angular/router';
+import { Route, Routes } from '@angular/router';
 
-export const routes: Routes = [];
+import { NavChild, NAV_SECTIONS, NavSection } from './nav/nav.data';
+import { SectionPage } from './section-page/section-page';
+
+// Submenu items that have a real, dedicated page instead of the mock SectionPage.
+// Keyed by full path ("<section>/<child>" or "<section>/<child>/<sub>"); lazily
+// loaded so content pages stay out of the initial bundle. Add an entry here as
+// each topic gets real content.
+const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
+  'javascript/variables': () =>
+    import('./variables/variables').then((m) => m.Variables),
+  'javascript/hoisting': () =>
+    import('./hoisting/hoisting').then((m) => m.Hoisting),
+  'javascript/functions/basics': () =>
+    import('./functions/basics/basics').then((m) => m.FunctionsBasics),
+  'javascript/functions/declarations': () =>
+    import('./functions/declarations/declarations').then((m) => m.FunctionsDeclarations),
+  'javascript/functions/parameters': () =>
+    import('./functions/parameters/parameters').then((m) => m.FunctionsParameters),
+  'javascript/functions/first-class': () =>
+    import('./functions/first-class/first-class').then((m) => m.FunctionsFirstClass),
+  'javascript/functions/properties': () =>
+    import('./functions/properties/properties').then((m) => m.FunctionsProperties),
+  'javascript/functions/this': () =>
+    import('./functions/this/this').then((m) => m.FunctionsThis),
+  'javascript/functions/pure': () =>
+    import('./functions/pure/pure').then((m) => m.FunctionsPure),
+  'javascript/functions/pitfalls': () =>
+    import('./functions/pitfalls/pitfalls').then((m) => m.FunctionsPitfalls),
+  'javascript/objects/basics': () =>
+    import('./objects/basics/basics').then((m) => m.ObjectsBasics),
+  'javascript/objects/methods': () =>
+    import('./objects/methods/methods').then((m) => m.ObjectsMethods),
+  'javascript/objects/iteration': () =>
+    import('./objects/iteration/iteration').then((m) => m.ObjectsIteration),
+  'javascript/objects/references': () =>
+    import('./objects/references/references').then((m) => m.ObjectsReferences),
+  'javascript/objects/destructuring': () =>
+    import('./objects/destructuring/destructuring').then((m) => m.ObjectsDestructuring),
+  'javascript/objects/prototypes': () =>
+    import('./objects/prototypes/prototypes').then((m) => m.ObjectsPrototypes),
+  'javascript/objects/pitfalls': () =>
+    import('./objects/pitfalls/pitfalls').then((m) => m.ObjectsPitfalls),
+};
+
+// A leaf route: a real content page if registered in PAGE_OVERRIDES, otherwise
+// the mock SectionPage that reads `data` to know what to render.
+function leafRoute(path: string, section: NavSection, child: NavChild): Route {
+  const loadComponent = PAGE_OVERRIDES[path];
+  return loadComponent
+    ? { path, loadComponent }
+    : { path, component: SectionPage, data: { sectionId: section.id, childId: child.id } };
+}
+
+// Each section gets its own route, a route per child, and — when a child has
+// third-level items — a route per grand-child plus a redirect from the child to
+// its first grand-child.
+const sectionRoutes: Routes = NAV_SECTIONS.flatMap((section) => [
+  {
+    path: section.id,
+    component: SectionPage,
+    data: { sectionId: section.id },
+  },
+  ...section.children.flatMap((child): Routes => {
+    const base = `${section.id}/${child.id}`;
+    const subs = child.children;
+    if (subs?.length) {
+      return [
+        { path: base, pathMatch: 'full', redirectTo: `${base}/${subs[0].id}` },
+        ...subs.map((sub) => leafRoute(`${base}/${sub.id}`, section, sub)),
+      ];
+    }
+    return [leafRoute(base, section, child)];
+  }),
+]);
+
+export const routes: Routes = [
+  { path: '', component: SectionPage, pathMatch: 'full' },
+  ...sectionRoutes,
+  { path: '**', redirectTo: '' },
+];

@@ -1,0 +1,68 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/objects">Объекты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Методы</span>
+  </nav>
+
+  <h1 class="doc__title">Методы объекта</h1>
+  <p class="doc__lead">
+    Свойства объекта хранят не только данные. Если значением свойства сделать
+    функцию, получится <strong>метод</strong> — действие, которое объект «умеет
+    выполнять». Так данные и поведение собираются в одном месте.
+  </p>
+
+  <section class="doc__section">
+    <h2>Метод — это функция в свойстве</h2>
+    <p>
+      Метод ничем не отличается от обычной функции — просто он лежит внутри
+      объекта. Вызывают его через точку и скобки: <code>user.greet()</code>.
+    </p>
+    <app-code-block [code]="methodExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Сокращённая запись</h2>
+    <p>
+      Писать <code>greet: function () &#123; … &#125;</code> каждый раз неудобно,
+      поэтому есть короткий синтаксис метода — имя сразу со скобками, без слова
+      <code>function</code> и двоеточия. Это самый частый способ:
+    </p>
+    <app-code-block [code]="shorthandExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>this — ссылка на «свой» объект</h2>
+    <p>
+      Внутри метода часто нужно обратиться к другим свойствам того же объекта. Для
+      этого служит ключевое слово <code>this</code> — оно указывает на объект, у
+      которого вызвали метод:
+    </p>
+    <app-code-block [code]="thisExample" lang="javascript" />
+    <p>
+      <strong>Важный нюанс:</strong> <code>this</code> определяется
+      <em>в момент вызова</em>, а не в момент написания. Если оторвать метод от
+      объекта (например, передать его как
+      <a routerLink="/javascript/functions/first-class">колбэк</a>), связь с
+      объектом теряется и <code>this</code> «ломается»:
+    </p>
+    <app-code-block [code]="lostThisExample" lang="javascript" />
+    <p class="note">
+      Это одна из самых частых причин багов с <code>this</code>. Подробно про все
+      правила (обычные функции, стрелочные, <code>call</code>/<code>apply</code>/<code>bind</code>)
+      — в разделе <a routerLink="/javascript/functions/this">«Контекст this»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Цепочки вызовов</h2>
+    <p>
+      Если метод возвращает сам объект (<code>return this</code>), вызовы можно
+      «сцеплять» друг за другом. На этом приёме построены многие библиотеки
+      (например, методы массивов или query-билдеры):
+    </p>
+    <app-code-block [code]="chainExample" lang="javascript" />
+  </section>
+</article>

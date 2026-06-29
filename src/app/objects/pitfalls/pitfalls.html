@@ -1,0 +1,92 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/objects">Объекты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и паттерны</span>
+  </nav>
+
+  <h1 class="doc__title">Нюансы и паттерны</h1>
+  <p class="doc__lead">
+    Здесь собраны приёмы и подводные камни, которые делают работу с объектами
+    безопаснее и выразительнее: вычисляемые свойства через геттеры, защита от
+    изменений, безопасный доступ к вложенным данным и аккуратное слияние.
+  </p>
+
+  <section class="doc__section">
+    <h2>Геттеры и сеттеры</h2>
+    <p>
+      Свойство можно не хранить, а <strong>вычислять</strong>. Геттер
+      (<code>get</code>) выглядит как обычное свойство при чтении, а сеттер
+      (<code>set</code>) перехватывает присваивание. Снаружи это неотличимо от
+      обычного поля — в этом и удобство:
+    </p>
+    <app-code-block [code]="getSetExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Защита от изменений: Object.freeze</h2>
+    <p>
+      <code>Object.freeze</code> «замораживает» объект: запрещает менять, добавлять
+      и удалять свойства. Полезно для констант и конфигов, которые не должны
+      меняться случайно:
+    </p>
+    <app-code-block [code]="freezeExample" lang="javascript" />
+    <p class="note">
+      Заморозка <strong>поверхностная</strong> — как и копирование, она действует
+      только на верхний уровень. Вложенные объекты остаются изменяемыми. Есть ещё
+      <code>Object.seal</code> (запрещает добавлять/удалять, но разрешает менять
+      значения).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Безопасный доступ: ?. и ??</h2>
+    <p>
+      Обращение к свойству несуществующего объекта роняет программу с ошибкой.
+      Опциональная цепочка <code>?.</code> позволяет безопасно «пройти» по
+      вложенным свойствам, а <code>??</code> — подставить запасное значение, если
+      получился <code>null</code> или <code>undefined</code>:
+    </p>
+    <app-code-block [code]="optionalChainExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Слияние и иммутабельное обновление</h2>
+    <p>
+      Spread <code>&#123;...a, ...b&#125;</code> — главный рабочий инструмент: им
+      сливают объект настроек с умолчаниями и создают обновлённую копию вместо
+      мутации исходного (это особенно важно в React, Redux и подобных):
+    </p>
+    <app-code-block [code]="spreadMergeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Типичные грабли</h2>
+    <ul class="rules">
+      <li>
+        <strong>Ключи — строки.</strong> <code>obj[1]</code> и <code>obj['1']</code>
+        — это одно свойство; число молча приводится к строке (см.
+        <a routerLink="/javascript/objects/basics">«Основы»</a>).
+      </li>
+      <li>
+        <strong>Сравнение по ссылке.</strong> <code>&#123;&#125; === &#123;&#125;</code>
+        всегда <code>false</code> — два разных объекта не равны, даже с одинаковым
+        содержимым (см.
+        <a routerLink="/javascript/objects/references">«Копирование и ссылки»</a>).
+      </li>
+      <li>
+        <strong>Поверхностность.</strong> spread и <code>Object.freeze</code>
+        действуют только на верхний уровень — вложенные объекты остаются общими и
+        изменяемыми.
+      </li>
+      <li>
+        <strong><code>JSON.stringify</code> теряет данные.</strong> Из объекта
+        пропадают функции и свойства со значением <code>undefined</code>, а
+        <code>Date</code> превращается в строку.
+      </li>
+    </ul>
+    <app-code-block [code]="jsonExample" lang="javascript" />
+  </section>
+</article>

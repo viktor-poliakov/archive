@@ -1,0 +1,49 @@
+<div class="code-block">
+  <button
+    type="button"
+    class="code-block__copy"
+    [class.code-block__copy--done]="copied()"
+    (click)="copy()"
+    [title]="copied() ? 'Скопировано' : 'Скопировать'"
+    [attr.aria-label]="copied() ? 'Скопировано' : 'Скопировать'"
+  >
+    @if (copied()) {
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path
+          d="M5 13l4 4L19 7"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    } @else {
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <rect
+          x="9"
+          y="9"
+          width="11"
+          height="11"
+          rx="2"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        />
+        <path
+          d="M5 15V5a2 2 0 0 1 2-2h10"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    }
+  </button>
+
+  @if (html(); as html) {
+    <div class="code-block__shiki" [innerHTML]="html"></div>
+  } @else {
+    <pre class="code-block__fallback"><code>{{ code() }}</code></pre>
+  }
+</div>

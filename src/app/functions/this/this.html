@@ -1,0 +1,41 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/functions">Функции</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Контекст this</span>
+  </nav>
+
+  <h1 class="doc__title">Контекст <code>this</code></h1>
+  <p class="doc__lead">
+    <code>this</code> — это «контекст вызова»: на каком объекте функцию вызвали.
+    Главный подвох в том, что <code>this</code> определяется в момент вызова, а не
+    там, где функция написана.
+  </p>
+
+  <section class="doc__section">
+    <h2>Потеря <code>this</code></h2>
+    <p>
+      Если оторвать метод от объекта (сохранить в переменную, передать в колбэк),
+      <code>this</code> теряется — функция больше не знает, на каком объекте её
+      вызвали:
+    </p>
+    <app-code-block [code]="thisLostExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Стрелочные функции и <code>this</code></h2>
+    <p>
+      У стрелочных функций своего <code>this</code> нет — они берут его из
+      окружающего кода. Поэтому стрелочные удобны для колбэков внутри методов, где
+      нужно сохранить <code>this</code> внешнего объекта:
+    </p>
+    <app-code-block [code]="thisArrowExample" lang="javascript" />
+    <p class="note">
+      <strong>Совет:</strong> если метод нужно передать как колбэк и сохранить
+      контекст — используйте стрелочную функцию-обёртку или привяжите контекст через
+      <code>bind</code>.
+    </p>
+  </section>
+</article>

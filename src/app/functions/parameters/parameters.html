@@ -1,0 +1,81 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/functions">Функции</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Параметры и возврат</span>
+  </nav>
+
+  <h1 class="doc__title">Параметры и возврат</h1>
+  <p class="doc__lead">
+    Параметры — это вход функции, <code>return</code> — её выход. Здесь разберём,
+    как принимать данные (включая значения по умолчанию и произвольное число
+    аргументов), как параметры ведут себя как переменные и как возвращать результат.
+  </p>
+
+  <section class="doc__section">
+    <h2>Параметры и аргументы</h2>
+    <p>
+      <strong>Параметры</strong> — это имена в объявлении функции.
+      <strong>Аргументы</strong> — конкретные значения, которые передают при
+      вызове. Параметрам можно задавать значения по умолчанию:
+    </p>
+    <app-code-block [code]="defaultParamsExample" lang="javascript" />
+    <p>
+      <strong>Rest-параметр</strong> (<code>...</code>) собирает любое число
+      аргументов в массив — удобно, когда количество заранее неизвестно:
+    </p>
+    <app-code-block [code]="restParamsExample" lang="javascript" />
+    <p>
+      Когда параметров много, удобно передавать <strong>объект</strong> и сразу его
+      деструктурировать. Тогда аргументы не зависят от порядка и читаются по именам:
+    </p>
+    <app-code-block [code]="destructureParamsExample" lang="javascript" />
+
+    <h3 class="doc__subtitle">Параметры — это локальные переменные</h3>
+    <p>
+      Параметр — это не что-то особенное: по сути это обычная переменная, которую
+      функция объявляет за вас. При вызове в неё кладётся переданный аргумент, и
+      дальше с ней можно работать как с любой переменной — в том числе
+      переприсваивать:
+    </p>
+    <app-code-block [code]="paramAsVariableExample" lang="javascript" />
+    <p>
+      <strong>Зона видимости параметров — само тело функции.</strong> Они создаются
+      при вызове и существуют только внутри функции (это блочная/функциональная
+      область видимости — см. раздел
+      <a routerLink="/javascript/variables">Переменные</a>). Снаружи к ним
+      обратиться нельзя:
+    </p>
+    <app-code-block [code]="paramScopeExample" lang="javascript" />
+    <p>
+      Поскольку параметр — локальная переменная, его изменение
+      <strong>не затрагивает</strong> внешнюю переменную, которую передали в функцию.
+      Для примитивов (числа, строки, булевы) в параметр попадает копия значения:
+    </p>
+    <app-code-block [code]="paramPrimitiveExample" lang="javascript" />
+    <p class="note">
+      <strong>Важный нюанс с объектами:</strong> для объектов и массивов в параметр
+      попадает копия <em>ссылки</em>. Переприсвоить сам параметр на новый объект —
+      внешнюю переменную не затронет, но если <em>менять свойства</em> объекта через
+      параметр, изменится и исходный объект (он один на двоих). Подробнее — в разделе
+      <a routerLink="/javascript/functions/pitfalls">Нюансы и паттерны</a> про
+      мутацию аргументов.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Возвращаемое значение</h2>
+    <p>
+      <code>return</code> завершает функцию и отдаёт значение наружу. Если
+      <code>return</code> нет (или он без значения), функция вернёт
+      <code>undefined</code>.
+    </p>
+    <app-code-block [code]="returnExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно:</strong> код после сработавшего <code>return</code> не
+      выполняется — выполнение функции на нём прекращается.
+    </p>
+  </section>
+</article>
