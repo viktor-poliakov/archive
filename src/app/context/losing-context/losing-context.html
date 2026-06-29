@@ -1,0 +1,175 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/context">Контекст</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Потеря контекста</span>
+  </nav>
+
+  <h1 class="doc__title">Потеря контекста</h1>
+  <p class="doc__lead">
+    Самая частая беда с <code>this</code> — он «теряется»: метод вроде бы тот же,
+    а <code>this</code> внутри уже не тот объект. Разберём, когда это происходит и
+    как чинить.
+  </p>
+
+  <section class="doc__section">
+    <h2>Почему <code>this</code> теряется</h2>
+    <p>
+      Причина всегда одна. <code>this</code> определяется по объекту перед точкой
+      <em>в момент вызова</em>. Как только вызов превращается в простой
+      <code>fn()</code> без точки — срабатывает
+      <a routerLink="/javascript/context/default-binding">привязка по умолчанию</a>,
+      и <code>this</code> становится <code>undefined</code> (в строгом режиме).
+    </p>
+    <p class="note">
+      <strong>Потерять <code>this</code> нельзя «наполовину».</strong> Либо вы
+      вызываете через точку (<code>obj.method()</code>) — и <code>this</code> равен
+      объекту, либо вызов выродился в <code>fn()</code> — и работает привязка по
+      умолчанию. Промежуточного не бывает.
+    </p>
+    <ul class="rules">
+      <li>сохранение метода в переменную;</li>
+      <li>деструктуризация метода;</li>
+      <li>передача метода в колбэк (<code>setTimeout</code>, <code>forEach</code>,
+        <code>addEventListener</code>, <code>then</code>);</li>
+      <li>обработчики событий (особый случай);</li>
+      <li>вложенная обычная функция внутри метода.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>1. Сохранение метода в переменную</h2>
+    <p>
+      Присваивание копирует саму функцию, без «владельца». При вызове через новую
+      переменную точки уже нет:
+    </p>
+    <app-code-block [code]="variableExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>2. Деструктуризация метода</h2>
+    <p>
+      То же самое, просто другой синтаксис: <code>const &#123; greet &#125; = user</code>
+      достаёт функцию из объекта и тоже отрывает её от него:
+    </p>
+    <app-code-block [code]="destructuringExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>3. Передача метода в колбэк</h2>
+    <p>
+      Это та же «потеря в переменную», только переменная — чужая. Когда вы отдаёте
+      <code>user.greet</code> в <code>setTimeout</code>, <code>forEach</code> или
+      обработчик, внутри его позовут как простую функцию — без вашего объекта перед
+      точкой:
+    </p>
+    <app-code-block [code]="callbackExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>4. Обработчики событий — особый случай</h2>
+    <p>
+      Здесь есть подвох. Если обработчик — <strong>обычная функция</strong>,
+      браузер сам подставляет в <code>this</code> элемент, на котором висит
+      слушатель (а не ваш объект). Если обработчик — <strong>стрелочная</strong>,
+      <code>this</code> берётся из окружения:
+    </p>
+    <app-code-block [code]="listenerExample" lang="javascript" />
+    <p class="note">
+      Коварство в том, что в обычном обработчике <code>this</code> не
+      <code>undefined</code>, а элемент — код «как будто работает», просто
+      <code>this</code> указывает не туда, куда вы ждёте.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>5. Вложенная обычная функция внутри метода</h2>
+    <p>
+      Классическая ловушка: внутри метода объявили обычную функцию и вызвали её.
+      Она получает <strong>свой</strong> <code>this</code> (по умолчанию), а не
+      <code>this</code> внешнего метода:
+    </p>
+    <app-code-block [code]="nestedExample" lang="javascript" />
+    <p>
+      Именно ради этого случая когда-то придумали приём <code>const self = this</code>,
+      а позже — стрелочные функции, которые своего <code>this</code> не заводят.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как сохранить контекст</h2>
+    <p>Есть несколько приёмов — выбор зависит от ситуации:</p>
+
+    <h3 class="doc__subtitle">Стрелка-обёртка</h3>
+    <p>
+      Оборачиваем вызов в стрелочную функцию и зовём метод через точку внутри неё —
+      точка на месте, <code>this</code> корректный.
+    </p>
+
+    <h3 class="doc__subtitle"><code>bind</code></h3>
+    <p>
+      <code>method.bind(obj)</code> возвращает новую функцию с навсегда
+      привязанным <code>this</code> (см.
+      <a routerLink="/javascript/context/call-apply-bind">«call, apply, bind»</a>).
+    </p>
+
+    <h3 class="doc__subtitle"><code>thisArg</code> у forEach / map</h3>
+    <p>
+      Методы массивов принимают вторым аргументом объект для <code>this</code>.
+      Работает только для обычных функций — стрелки его игнорируют.
+    </p>
+
+    <h3 class="doc__subtitle"><code>const self = this</code> (старый приём)</h3>
+    <p>
+      До стрелочных функций <code>this</code> сохраняли в обычную переменную
+      (<code>self</code> / <code>that</code>) и обращались уже к ней. Сейчас почти
+      не нужен, но встречается в старом коде.
+    </p>
+
+    <h3 class="doc__subtitle">Поле-стрелка в классе</h3>
+    <p>
+      В классах метод можно объявить как поле со стрелкой — тогда <code>this</code>
+      привязан к экземпляру и не теряется даже при отрыве (см.
+      <a routerLink="/javascript/context/classes-new">«this в классах и new»</a>).
+    </p>
+
+    <app-code-block [code]="fixesExample" lang="javascript" />
+    <app-code-block [code]="classFieldExample" lang="javascript" />
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Приём</th>
+            <th>Когда уместен</th>
+            <th>Минусы</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Стрелка-обёртка</td>
+            <td class="yes">разовая передача в колбэк</td>
+            <td>создаётся новая функция при каждом вызове</td>
+          </tr>
+          <tr>
+            <td><code>bind</code></td>
+            <td class="yes">нужна готовая привязанная функция</td>
+            <td>тоже новая функция; легко забыть</td>
+          </tr>
+          <tr>
+            <td><code>thisArg</code></td>
+            <td>методы массивов с обычным колбэком</td>
+            <td class="no">не работает со стрелками</td>
+          </tr>
+          <tr>
+            <td>поле-стрелка в классе</td>
+            <td class="yes">обработчики в классах/компонентах</td>
+            <td>своя функция на каждый экземпляр</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</article>

@@ -1,0 +1,69 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/context">Контекст</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Что такое this</span>
+  </nav>
+
+  <h1 class="doc__title">Что такое <code>this</code></h1>
+  <p class="doc__lead">
+    <code>this</code> — одно из самых пугающих слов в JavaScript, но за ним стоит
+    одна простая идея. Если запомнить её, большинство «загадок» с <code>this</code>
+    перестают быть загадками.
+  </p>
+
+  <section class="doc__section">
+    <h2>Главное правило: объект перед точкой</h2>
+    <p>
+      В подавляющем большинстве случаев работает одно правило:
+    </p>
+    <p class="note">
+      <strong><code>this</code> — это объект, стоящий перед точкой при вызове.</strong>
+      Вызвали <code>user.greet()</code> — значит внутри <code>greet</code>
+      <code>this</code> равен <code>user</code>.
+    </p>
+    <app-code-block [code]="dotExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>this</code> определяется в момент вызова</h2>
+    <p>
+      Самый важный нюанс: <code>this</code> не «вшит» в функцию там, где её
+      написали. Он вычисляется заново <strong>в каждый момент вызова</strong> — и
+      зависит от того, как именно функцию позвали. Одна и та же функция при разных
+      вызовах может иметь разный <code>this</code>:
+    </p>
+    <app-code-block [code]="callerExample" lang="javascript" />
+    <p>
+      <strong>Аналогия:</strong> <code>this</code> похож на слово «я» в живой речи.
+      Само слово всегда одно, но кого оно обозначает — зависит от того,
+      <em>кто говорит прямо сейчас</em>. Скажет «я» Аня — речь про Аню, скажет
+      Борис — про Бориса. Так и <code>this</code>: смысл задаёт не текст функции, а
+      тот, кто её вызвал.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Считается только последняя точка</h2>
+    <p>
+      Если перед методом цепочка из нескольких точек, важна лишь
+      <strong>последняя</strong> — непосредственный «владелец», через которого
+      идёт вызов:
+    </p>
+    <app-code-block [code]="lastDotExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Что дальше</h2>
+    <p>
+      «Объект перед точкой» — это самый частый случай, но не единственный. Всего
+      есть четыре способа вызвать функцию, и у каждого свои правила для
+      <code>this</code> — они разобраны в
+      <a routerLink="/javascript/context/binding-rules">«Правилах и приоритете»</a>.
+      А когда «точка теряется» и <code>this</code> сбивается — в
+      <a routerLink="/javascript/context/losing-context">«Потере контекста»</a>.
+    </p>
+  </section>
+</article>

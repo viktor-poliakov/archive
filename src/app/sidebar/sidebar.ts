@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
@@ -39,15 +39,27 @@ export class Sidebar {
   /** The currently selected child id (second URL segment), used to highlight its group. */
   protected readonly activeChildId = computed(() => this.segments()[1] ?? null);
 
-  /** Child groups the user has manually collapsed. Groups are expanded by default. */
-  private readonly collapsedGroups = signal(new Set<string>());
+  /**
+   * Groups that are currently expanded. On navigation an effect resets this to
+   * just the active group (the one holding the current page) — so the group we're
+   * inside is open and the rest are collapsed. Manual toggles tweak the set and
+   * persist until the next navigation.
+   */
+  private readonly expandedGroups = signal(new Set<string>());
+
+  constructor() {
+    effect(() => {
+      const active = this.activeChildId();
+      this.expandedGroups.set(active ? new Set([active]) : new Set<string>());
+    });
+  }
 
   isGroupCollapsed(childId: string): boolean {
-    return this.collapsedGroups().has(childId);
+    return !this.expandedGroups().has(childId);
   }
 
   toggleGroup(childId: string): void {
-    this.collapsedGroups.update((groups) => {
+    this.expandedGroups.update((groups) => {
       const next = new Set(groups);
       if (next.has(childId)) {
         next.delete(childId);

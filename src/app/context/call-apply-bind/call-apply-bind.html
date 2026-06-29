@@ -1,0 +1,116 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/context">Контекст</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">call, apply, bind</span>
+  </nav>
+
+  <h1 class="doc__title">call, apply, bind</h1>
+  <p class="doc__lead">
+    Это три метода, которыми <strong>мы сами</strong> назначаем <code>this</code> —
+    не полагаясь на объект перед точкой. Их называют «явной привязкой», и в
+    <a routerLink="/javascript/context/binding-rules">приоритете правил</a> они
+    сильнее обычного вызова через точку.
+  </p>
+
+  <section class="doc__section">
+    <h2>call и apply — вызвать сразу с нужным this</h2>
+    <p>
+      Оба вызывают функцию немедленно и первым аргументом принимают объект для
+      <code>this</code>. Разница только в том, как передавать остальные аргументы:
+    </p>
+    <ul class="rules">
+      <li><code>call</code> — аргументы <strong>списком</strong> через запятую;</li>
+      <li><code>apply</code> — аргументы одним <strong>массивом</strong> (удобная
+        мнемоника: <code>apply</code> → <code>array</code>).</li>
+    </ul>
+    <app-code-block [code]="callApplyExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>bind — создать функцию с привязанным this</h2>
+    <p>
+      <code>bind</code> ничего не вызывает. Он возвращает <strong>новую
+      функцию</strong>, у которой <code>this</code> навсегда привязан к указанному
+      объекту. Её можно сохранить и вызвать когда угодно — <code>this</code> не
+      потеряется:
+    </p>
+    <app-code-block [code]="bindExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Частичное применение через bind</h2>
+    <p>
+      <code>bind</code> умеет заодно «предзаполнить» аргументы. Это называется
+      частичным применением — удобно делать из общей функции более узкую. Если
+      <code>this</code> функции не нужен, первым аргументом передают
+      <code>null</code>:
+    </p>
+    <app-code-block [code]="partialExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Двойной bind ничего не меняет</h2>
+    <p>
+      Привязка «прилипает» только один раз. Повторный <code>bind</code> к уже
+      привязанной функции не переопределяет <code>this</code>:
+    </p>
+    <app-code-block [code]="doubleBindExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th></th>
+            <th><code>call</code></th>
+            <th><code>apply</code></th>
+            <th><code>bind</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Вызывает сразу?</td>
+            <td class="yes">да</td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>Аргументы</td>
+            <td>списком</td>
+            <td>массивом</td>
+            <td>списком (можно предзаполнить)</td>
+          </tr>
+          <tr>
+            <td>Что возвращает</td>
+            <td>результат вызова</td>
+            <td>результат вызова</td>
+            <td>новую функцию</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Зачем это нужно</h2>
+    <p>
+      Кроме починки «потерянного» <code>this</code> в колбэках (см.
+      <a routerLink="/javascript/context/losing-context">«Потеря контекста»</a>),
+      эти методы позволяют <strong>одолжить чужой метод</strong> и применить его к
+      другому объекту, а <code>apply</code> — «развернуть» массив в список
+      аргументов:
+    </p>
+    <app-code-block [code]="borrowExample" lang="javascript" />
+    <p class="note">
+      У стрелочных функций <code>call</code>/<code>apply</code>/<code>bind</code>
+      <strong>не меняют <code>this</code></strong> — у них его попросту нет (см.
+      <a routerLink="/javascript/context/arrow">«Стрелочные функции»</a>). Аргументы
+      при этом передаются как обычно.
+    </p>
+  </section>
+</article>

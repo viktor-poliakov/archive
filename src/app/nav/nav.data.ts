@@ -56,6 +56,19 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'pitfalls', label: 'Нюансы и паттерны' },
         ],
       },
+      {
+        id: 'context',
+        label: 'Контекст',
+        children: [
+          { id: 'basics', label: 'Что такое this' },
+          { id: 'binding-rules', label: 'Правила и приоритет' },
+          { id: 'default-binding', label: 'Привязка по умолчанию' },
+          { id: 'losing-context', label: 'Потеря контекста' },
+          { id: 'call-apply-bind', label: 'call, apply, bind' },
+          { id: 'arrow', label: 'Стрелочные функции' },
+          { id: 'classes-new', label: 'this в классах и new' },
+        ],
+      },
     ],
   },
   {

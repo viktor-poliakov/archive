@@ -1,0 +1,93 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/context">Контекст</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">this в классах и new</span>
+  </nav>
+
+  <h1 class="doc__title"><code>this</code> в классах и <code>new</code></h1>
+  <p class="doc__lead">
+    Четвёртое правило привязки — вызов через <code>new</code>. Именно на нём
+    держатся классы. Здесь <code>this</code> — это новый создаваемый объект, и
+    почти все «классовые» проблемы с <code>this</code> сводятся к уже знакомой
+    потере контекста.
+  </p>
+
+  <section class="doc__section">
+    <h2>Что делает <code>new</code></h2>
+    <p>Вызов <code>new Fn()</code> выполняет четыре шага:</p>
+    <ul class="rules">
+      <li>создаёт новый пустой объект;</li>
+      <li>назначает его прототип (см.
+        <a routerLink="/javascript/objects/prototypes">«Прототипы и наследование»</a>);</li>
+      <li>делает этот объект значением <code>this</code> внутри конструктора;</li>
+      <li>возвращает его (если конструктор сам не вернул другой объект).</li>
+    </ul>
+    <app-code-block [code]="newExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Забыли <code>new</code></h2>
+    <p>
+      Конструктор <code>class</code> нельзя вызвать без <code>new</code> — это
+      сразу ошибка (в отличие от старых функций-конструкторов, которые молча
+      «портили» глобальный объект). Так язык защищает от случайной потери
+      <code>this</code>:
+    </p>
+    <app-code-block [code]="forgotNewExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Методы класса теряют <code>this</code> так же, как методы объекта</h2>
+    <p>
+      Методы класса живут в прототипе и ничем не защищены от отрыва: стоит
+      сохранить метод в переменную или передать в колбэк — и <code>this</code>
+      теряется. Тело класса всегда строгое, поэтому потерянный <code>this</code>
+      будет <code>undefined</code>:
+    </p>
+    <app-code-block [code]="lostMethodExample" lang="javascript" />
+    <p class="note">
+      Это та же <a routerLink="/javascript/context/losing-context">потеря
+      контекста</a>, просто в обёртке класса. Особенно часто всплывает в
+      обработчиках событий компонентов (например, в React-классах).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как чинить</h2>
+    <p>Два рабочих способа привязать <code>this</code> метода к экземпляру:</p>
+    <ul class="rules">
+      <li><strong>поле-стрелка</strong> — <code>handleClick = () =&gt; &#123;…&#125;</code>:
+        стрелка берёт <code>this</code> лексически, он навсегда указывает на
+        экземпляр;</li>
+      <li><strong><code>bind</code> в конструкторе</strong> —
+        <code>this.handleClick = this.handleClick.bind(this)</code>: старый, но
+        по-прежнему рабочий приём.</li>
+    </ul>
+    <app-code-block [code]="fixExample" lang="javascript" />
+    <p class="note">
+      Поле-стрелка создаёт <strong>свою копию функции на каждый экземпляр</strong>,
+      а обычный метод в прототипе — один на всех. Для обработчиков это обычно
+      приемлемо; но если метод должен быть общим или переопределяться в наследниках
+      — оставляйте его обычным методом.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Геттеры, сеттеры и статические методы</h2>
+    <p>
+      В <strong>геттере/сеттере</strong> <code>this</code> — это объект, у которого
+      читают или пишут свойство. В <strong>статическом</strong> методе
+      <code>this</code> — это сам класс (а не экземпляр):
+    </p>
+    <app-code-block [code]="getterStaticExample" lang="javascript" />
+    <p>
+      Коротко о смежном: приватные поля <code>#field</code> доступны только внутри
+      класса; в наследнике нельзя обращаться к <code>this</code> до вызова
+      <code>super()</code> в конструкторе; <code>new.target</code> позволяет узнать,
+      вызвали ли функцию через <code>new</code>.
+    </p>
+  </section>
+</article>

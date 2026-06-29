@@ -29,6 +29,47 @@ console.log(user.fullName); // 'Ann Lee'  — без скобок, как сво
 user.fullName = 'Bob Kim';  // сработал set
 console.log(user.firstName); // 'Bob'`;
 
+  protected readonly definePropertyExample = `const user = {};
+
+// задаём свойство и сразу описываем его поведение
+Object.defineProperty(user, 'id', {
+  value: 42,
+  writable: false,   // нельзя перезаписать
+  enumerable: false, // не попадёт в for...in и Object.keys
+  configurable: false, // нельзя удалить или переопределить дескриптор
+});
+
+console.log(user.id); // 42
+user.id = 99;         // молча игнорируется (в strict mode — ошибка)
+console.log(user.id); // 42 — значение защищено
+console.log(Object.keys(user)); // [] — id скрыт от перебора`;
+
+  protected readonly defaultFlagsExample = `const a = {};
+a.name = 'Ann'; // обычное присваивание
+
+// у такого свойства все флаги по умолчанию true
+console.log(Object.getOwnPropertyDescriptor(a, 'name'));
+// { value: 'Ann', writable: true, enumerable: true, configurable: true }
+
+const b = {};
+Object.defineProperty(b, 'name', { value: 'Ann' });
+
+// а через defineProperty пропущенные флаги по умолчанию false!
+console.log(Object.getOwnPropertyDescriptor(b, 'name'));
+// { value: 'Ann', writable: false, enumerable: false, configurable: false }`;
+
+  protected readonly defineGetterExample = `const user = { firstName: 'Ann', lastName: 'Lee' };
+
+// defineProperty умеет задавать и геттер/сеттер
+Object.defineProperty(user, 'fullName', {
+  get() {
+    return this.firstName + ' ' + this.lastName;
+  },
+  enumerable: true,
+});
+
+console.log(user.fullName); // 'Ann Lee'`;
+
   protected readonly freezeExample = `const config = Object.freeze({ theme: 'dark' });
 
 config.theme = 'light'; // молча игнорируется (в strict mode — ошибка)

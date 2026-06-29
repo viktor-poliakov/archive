@@ -1,0 +1,191 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+  </nav>
+
+  <h1 class="doc__title">JavaScript</h1>
+  <p class="doc__lead">
+    JavaScript — самый распространённый язык программирования в вебе. Изначально
+    он был придуман, чтобы «оживлять» страницы в браузере, но сегодня на нём пишут
+    серверы, мобильные и десктопные приложения, и даже управляют устройствами.
+  </p>
+
+  <section class="doc__section">
+    <h2>Немного истории</h2>
+    <p>
+      Язык создал <strong>Брендан Айк</strong> (Brendan Eich) в компании Netscape
+      в <strong>1995 году</strong> — по легенде, первый прототип он собрал
+      примерно за 10 дней. Сначала язык назывался Mocha, затем LiveScript, а
+      финальное имя <strong>JavaScript</strong> выбрали из маркетинговых
+      соображений — на волне популярности языка Java. Несмотря на схожие названия,
+      <strong>Java и JavaScript — это совершенно разные языки</strong>.
+    </p>
+    <p>
+      Чтобы язык работал одинаково в разных браузерах, его стандартизировали.
+      Стандарт называется <strong>ECMAScript</strong> (спецификация ECMA-262), а
+      «JavaScript» — это его самая известная реализация. Поэтому версии языка
+      обозначают как ES: например, ES5, ES6.
+    </p>
+    <p>
+      Ключевые вехи развития:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>1997</strong> — первый стандарт ECMAScript;
+      </li>
+      <li>
+        <strong>2009 — ES5</strong>: язык стал зрелее (строгий режим
+        <code>'use strict'</code>, методы массивов). В том же году появился
+        <strong>Node.js</strong> — и JavaScript вышел за пределы браузера, на
+        сервер;
+      </li>
+      <li>
+        <strong>2015 — ES6 (ES2015)</strong>: огромное обновление, во многом
+        современный вид языка — <code>let</code>/<code>const</code>, стрелочные
+        функции, классы, модули, промисы;
+      </li>
+      <li>
+        <strong>с 2015 — ежегодные релизы</strong> (ES2016, ES2017 с
+        <code>async/await</code> и так далее) — язык развивается небольшими
+        порциями каждый год.
+      </li>
+    </ul>
+    <p class="note">
+      Рядом часто упоминают <strong>TypeScript</strong> — это надстройка над
+      JavaScript со статической типизацией. В браузере он не выполняется напрямую:
+      его сначала превращают в обычный JavaScript.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Для чего он нужен</h2>
+    <p>
+      Главная сила JavaScript — он работает почти везде. Один язык — множество сред:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Фронтенд</strong> — единственный язык, который понимают браузеры
+        «из коробки»: реакция на действия пользователя, изменение страницы (DOM),
+        запросы к серверу. На нём построены React, Angular, Vue;
+      </li>
+      <li>
+        <strong>Бэкенд</strong> — серверы на <strong>Node.js</strong>,
+        <strong>Deno</strong>, <strong>Bun</strong>;
+      </li>
+      <li>
+        <strong>Мобильные приложения</strong> — React Native;
+      </li>
+      <li>
+        <strong>Десктоп</strong> — Electron (на нём сделаны VS Code, Slack);
+      </li>
+      <li>
+        <strong>Прочее</strong> — скрипты, автоматизация, даже микроконтроллеры.
+      </li>
+    </ul>
+    <app-code-block [code]="everywhereExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Как движок обрабатывает код</h2>
+    <p>
+      JavaScript не компилируется заранее в отдельный файл, как C++ — код
+      выполняет <strong>движок</strong>, встроенный в браузер или в Node.js.
+      Современные движки не «тупо интерпретируют» код построчно, а используют
+      <strong>JIT-компиляцию</strong> (Just-In-Time — «точно в срок»). Упрощённо
+      путь кода такой:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Парсинг.</strong> Текст программы разбирается на токены, из
+        которых строится дерево — <abbr title="Abstract Syntax Tree">AST</abbr>
+        (абстрактное синтаксическое дерево);
+      </li>
+      <li>
+        <strong>Байт-код.</strong> По дереву генерируется промежуточный байт-код,
+        который сразу же выполняет интерпретатор;
+      </li>
+      <li>
+        <strong>Оптимизация.</strong> Движок следит, какие участки кода
+        выполняются часто («горячий» код), и компилирует их в быстрый
+        <strong>машинный код</strong>. Если предположения нарушились (например,
+        в функцию вдруг передали не число, а строку) — оптимизация
+        откатывается.
+      </li>
+    </ul>
+    <app-code-block [code]="jitExample" lang="javascript" />
+    <p class="note">
+      <strong>Аналогия.</strong> Интерпретатор — как синхронный переводчик,
+      переводящий фразу за фразой на ходу. JIT — переводчик, который заметил, что
+      вы повторяете один и тот же абзац сотни раз, и один раз сделал его
+      качественный письменный перевод, чтобы дальше выдавать мгновенно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Движки и компиляторы</h2>
+    <p>
+      <strong>Движки</strong> — это и есть программы, которые выполняют
+      JavaScript. У каждого крупного браузера свой:
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Движок</th>
+            <th>Где используется</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>V8</strong></td>
+            <td>Chrome, новый Edge, Node.js, Deno</td>
+          </tr>
+          <tr>
+            <td><strong>SpiderMonkey</strong></td>
+            <td>Firefox (первый движок JS, тоже от Брендана Айка)</td>
+          </tr>
+          <tr>
+            <td><strong>JavaScriptCore</strong></td>
+            <td>Safari, Bun</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Отдельно стоят <strong>компиляторы и транспиляторы</strong> — инструменты,
+      которые работают <em>до</em> запуска и превращают один исходный код в
+      другой (это называют source-to-source компиляцией). Их не стоит путать с
+      движком:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Babel</strong> — превращает современный JavaScript в более старый,
+        чтобы код работал в устаревших браузерах;
+      </li>
+      <li>
+        <strong>TypeScript (tsc)</strong> — компилирует TypeScript в обычный
+        JavaScript;
+      </li>
+      <li>
+        <strong>esbuild, SWC</strong> — очень быстрые сборщики/компиляторы
+        (написаны на Go и Rust), делают то же самое в разы быстрее.
+      </li>
+    </ul>
+    <p class="note">
+      Коротко о разнице: <strong>транспилятор</strong> (Babel, tsc) переводит код
+      из одного вида в другой <em>заранее</em>; <strong>движок</strong> (V8) уже во
+      время выполнения интерпретирует и JIT-компилирует то, что получилось, в
+      машинный код.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>С чего начать</h2>
+    <p>
+      Загляните в подразделы слева. Хорошая отправная точка —
+      <a routerLink="/javascript/variables">«Переменные»</a>, затем
+      <a routerLink="/javascript/functions/basics">«Функции»</a> и
+      <a routerLink="/javascript/objects/basics">«Объекты»</a>.
+    </p>
+  </section>
+</article>

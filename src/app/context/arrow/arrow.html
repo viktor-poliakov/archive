@@ -1,0 +1,110 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/context">Контекст</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Стрелочные функции</span>
+  </nav>
+
+  <h1 class="doc__title">Стрелочные функции и <code>this</code></h1>
+  <p class="doc__lead">
+    Стрелочные функции ведут себя с <code>this</code> принципиально иначе, чем
+    обычные. Понимание этого отличия снимает половину вопросов про
+    <code>this</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2>У стрелки нет своего <code>this</code></h2>
+    <p>
+      Обычная функция при вызове получает свой <code>this</code> по
+      <a routerLink="/javascript/context/binding-rules">правилам привязки</a>. У
+      стрелочной функции своего <code>this</code> <strong>нет вообще</strong> —
+      она берёт его из окружающего кода, там где была написана (это называют
+      «лексическим» <code>this</code>). Поэтому стрелки идеальны для колбэков
+      внутри методов:
+    </p>
+    <app-code-block [code]="lexicalExample" lang="javascript" />
+    <p>Сравните с обычной функцией на том же месте — она ломается:</p>
+    <app-code-block [code]="brokenRegularExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Стрелку нельзя перепривязать</h2>
+    <p>
+      Раз своего <code>this</code> нет, его нечем переопределить:
+      <code>call</code>, <code>apply</code> и <code>bind</code> на стрелке
+      <strong>не меняют <code>this</code></strong> (аргументы при этом передаются
+      нормально):
+    </p>
+    <app-code-block [code]="cannotRebindExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Ловушка: стрелка как метод объекта</h2>
+    <p>
+      Из той же причины вытекает классическая ошибка. Если сделать метод объекта
+      стрелочным, <code>this</code> будет указывать не на объект, а на внешнюю
+      область (в модуле — <code>undefined</code>, в обычном скрипте —
+      <code>window</code>):
+    </p>
+    <app-code-block [code]="methodTrapExample" lang="javascript" />
+    <p class="note">
+      <strong>Правило:</strong> методы объекта пишите обычными (сокращёнными)
+      функциями, а стрелки используйте для колбэков <em>внутри</em> этих методов.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Обычная против стрелочной</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Свойство</th>
+            <th>Обычная функция</th>
+            <th>Стрелочная</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Свой <code>this</code></td>
+            <td class="yes">есть (по правилам вызова)</td>
+            <td class="no">нет (берёт из окружения)</td>
+          </tr>
+          <tr>
+            <td>Можно сменить через <code>bind</code>/<code>call</code></td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>Годится как метод объекта</td>
+            <td class="yes">да</td>
+            <td class="no">нет (ловушка)</td>
+          </tr>
+          <tr>
+            <td>Годится как колбэк внутри метода</td>
+            <td class="no">теряет <code>this</code></td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td>Можно вызвать с <code>new</code></td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>Свой <code>arguments</code></td>
+            <td class="yes">есть</td>
+            <td class="no">нет</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Кроме <code>this</code>, у стрелок нет своего <code>arguments</code>, нет
+      <code>prototype</code> и их нельзя вызвать через <code>new</code> — поэтому
+      как методы класса или конструкторы они не подходят (см.
+      <a routerLink="/javascript/context/classes-new">«this в классах и new»</a>).
+    </p>
+  </section>
+</article>

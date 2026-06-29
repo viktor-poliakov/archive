@@ -1,0 +1,100 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/context">Контекст</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Привязка по умолчанию</span>
+  </nav>
+
+  <h1 class="doc__title">Привязка по умолчанию</h1>
+  <p class="doc__lead">
+    Это правило срабатывает, когда функцию вызвали «просто так» — <code>fn()</code>,
+    без объекта перед точкой, без <code>call</code>/<code>bind</code> и без
+    <code>new</code>. Чему тогда равен <code>this</code> — зависит от режима, и тут
+    кроется частый источник ошибок.
+  </p>
+
+  <section class="doc__section">
+    <h2>Строгий и нестрогий режим</h2>
+    <p>
+      Поведение зависит от того, выполняется ли код в строгом режиме:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>строгий режим</strong> (<code>'use strict'</code>, а также весь код
+        внутри модулей и классов) → <code>this</code> равен <code>undefined</code>;
+      </li>
+      <li>
+        <strong>нестрогий («sloppy»)</strong> — старый скрипт без
+        <code>'use strict'</code> → <code>this</code> равен глобальному объекту
+        (<code>window</code> в браузере).
+      </li>
+    </ul>
+    <app-code-block [code]="strictVsSloppyExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Почему это важно знать</h2>
+    <p>
+      Современный код почти всегда строгий: модули ES и тела классов строгие
+      автоматически, а сборщики (Babel, TypeScript) тоже включают строгий режим.
+      Поэтому «потерянный» <code>this</code> — это, как правило,
+      <code>undefined</code>, и обращение к его свойству роняет программу:
+    </p>
+    <app-code-block [code]="throwExample" lang="javascript" />
+    <p class="note">
+      Знаменитая ошибка <strong>«Cannot read properties of undefined»</strong> при
+      работе с <code>this</code> почти всегда означает именно это: метод вызвали без
+      объекта перед точкой, сработала привязка по умолчанию, а в строгом режиме это
+      <code>undefined</code>. Как это происходит и как чинить — в
+      <a routerLink="/javascript/context/losing-context">«Потере контекста»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Верхний уровень: модуль против скрипта</h2>
+    <p>
+      На самом верхнем уровне файла (вне любых функций) <code>this</code> тоже
+      зависит от среды:
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Среда</th>
+            <th>Верхнеуровневый <code>this</code></th>
+            <th>Строгий?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Классический <code>&lt;script&gt;</code></td>
+            <td><code>globalThis</code> (window)</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>ES-модуль (<code>type="module"</code>, import/export)</td>
+            <td><code>undefined</code></td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td>Внутри обычной функции <code>fn()</code></td>
+            <td><code>undefined</code> / globalThis</td>
+            <td>зависит от режима</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>globalThis — переносимое имя</h2>
+    <p>
+      У глобального объекта в разных средах разные имена: <code>window</code> в
+      браузере, <code>global</code> в Node.js, <code>self</code> в воркерах. Чтобы
+      не подстраиваться под среду, есть единое имя <code>globalThis</code>:
+    </p>
+    <app-code-block [code]="globalThisExample" lang="javascript" />
+  </section>
+</article>

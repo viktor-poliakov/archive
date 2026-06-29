@@ -1,0 +1,117 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/context">Контекст</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Правила и приоритет</span>
+  </nav>
+
+  <h1 class="doc__title">Правила и приоритет</h1>
+  <p class="doc__lead">
+    «Объект перед точкой» — самый частый случай, но всего функцию можно вызвать
+    четырьмя способами, и у каждого своё правило для <code>this</code>. Зная все
+    четыре и их порядок, можно определить <code>this</code> в любой ситуации.
+  </p>
+
+  <section class="doc__section">
+    <h2>Четыре правила привязки</h2>
+    <ul class="rules">
+      <li>
+        <strong>По умолчанию</strong> — <code>fn()</code>, вызов без точки.
+        <code>this</code> равен <code>undefined</code> (в строгом режиме) или
+        глобальному объекту (см.
+        <a routerLink="/javascript/context/default-binding">«Привязка по умолчанию»</a>);
+      </li>
+      <li>
+        <strong>Неявная</strong> — <code>obj.method()</code>, есть объект перед
+        точкой. <code>this</code> равен этому объекту;
+      </li>
+      <li>
+        <strong>Явная</strong> — <code>fn.call(obj)</code> /
+        <code>fn.apply(obj)</code> / <code>fn.bind(obj)</code>. Мы сами назначаем
+        <code>this</code> (см.
+        <a routerLink="/javascript/context/call-apply-bind">«call, apply, bind»</a>);
+      </li>
+      <li>
+        <strong>Через <code>new</code></strong> — <code>new Fn()</code>. Создаётся
+        новый объект, и <code>this</code> указывает на него (см.
+        <a routerLink="/javascript/context/classes-new">«this в классах и new»</a>).
+      </li>
+    </ul>
+    <app-code-block [code]="fourWaysExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Приоритет правил</h2>
+    <p>
+      Если к одному вызову подходит несколько правил, побеждает более «сильное».
+      Порядок от сильного к слабому:
+    </p>
+    <p class="note">
+      <strong><code>new</code> &gt; явная (<code>bind</code>/<code>call</code>/<code>apply</code>)
+      &gt; неявная (<code>obj.method()</code>) &gt; по умолчанию (<code>fn()</code>).</strong>
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Как вызвана функция</th>
+            <th>Чему равен <code>this</code></th>
+            <th><code>this</code> определён явно?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>new Fn()</code></td>
+            <td>новый объект</td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td><code>fn.call(obj)</code> / <code>bind</code></td>
+            <td><code>obj</code></td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td><code>obj.method()</code></td>
+            <td><code>obj</code> (последняя точка)</td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td><code>fn()</code></td>
+            <td><code>undefined</code> / globalThis</td>
+            <td class="no">нет</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <app-code-block [code]="precedenceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Краевой случай: <code>bind</code> + <code>new</code></h2>
+    <p>
+      Когда привязанную через <code>bind</code> функцию вызывают с
+      <code>new</code>, <code>new</code> побеждает: <code>this</code> станет новым
+      объектом, а не тем, что был привязан. При этом
+      <strong>предзаполненные аргументы</strong> из <code>bind</code> всё равно
+      применяются:
+    </p>
+    <app-code-block [code]="bindNewArgsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Как быстро определить <code>this</code></h2>
+    <p>Идите сверху вниз — первое подходящее правило и есть ответ:</p>
+    <ul class="rules">
+      <li>функция <strong>стрелочная</strong>? → <code>this</code> из внешнего
+        окружения (своего нет, см.
+        <a routerLink="/javascript/context/arrow">«Стрелочные функции»</a>);</li>
+      <li>вызвана с <strong><code>new</code></strong>? → новый объект;</li>
+      <li>есть <strong><code>call</code>/<code>apply</code>/<code>bind</code></strong>?
+        → указанный там объект;</li>
+      <li>есть <strong>объект перед точкой</strong>? → этот объект;</li>
+      <li>ничего из этого? → <code>undefined</code> (strict) или globalThis.</li>
+    </ul>
+  </section>
+</article>

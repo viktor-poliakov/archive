@@ -26,6 +26,55 @@
   </section>
 
   <section class="doc__section">
+    <h2>Тонкая настройка: Object.defineProperty</h2>
+    <p>
+      Когда свойство создают обычным присваиванием
+      (<code>obj.name = 'Ann'</code>), оно получает «настройки по умолчанию»: его
+      можно менять, удалять и видно при переборе.
+      <code>Object.defineProperty</code> позволяет задать свойство и при этом явно
+      описать его поведение через <strong>дескриптор</strong> — объект с флагами:
+    </p>
+    <ul class="rules">
+      <li>
+        <code>value</code> — значение свойства;
+      </li>
+      <li>
+        <code>writable</code> — можно ли перезаписать значение
+        (<code>false</code> делает свойство «только для чтения»);
+      </li>
+      <li>
+        <code>enumerable</code> — попадает ли свойство в <code>for...in</code> и
+        <code>Object.keys</code> (<code>false</code> — «скрытое» свойство);
+      </li>
+      <li>
+        <code>configurable</code> — можно ли потом удалить свойство или изменить
+        сам дескриптор.
+      </li>
+    </ul>
+    <app-code-block [code]="definePropertyExample" lang="javascript" />
+    <p class="note">
+      <strong>Главный подвох.</strong> При обычном присваивании все три флага —
+      <code>true</code>. А вот в <code>defineProperty</code> любой
+      <em>не указанный</em> флаг по умолчанию <code>false</code>. Поэтому
+      свежесозданное через <code>defineProperty</code> свойство по умолчанию
+      нельзя ни менять, ни перебирать, ни удалять — это часто удивляет. Посмотреть
+      текущие флаги можно через <code>Object.getOwnPropertyDescriptor</code>:
+    </p>
+    <app-code-block [code]="defaultFlagsExample" lang="javascript" />
+    <p>
+      Через дескриптор задают и геттер/сеттер — это второй способ объявить
+      вычисляемое свойство, удобный, когда объект уже создан:
+    </p>
+    <app-code-block [code]="defineGetterExample" lang="javascript" />
+    <p>
+      На практике <code>defineProperty</code> нужен нечасто, но на нём построены
+      многие библиотеки: скрытые служебные поля, защищённые от записи константы,
+      реактивность (так работало отслеживание изменений во Vue 2). Знать механизм
+      полезно, чтобы понимать, что происходит «под капотом».
+    </p>
+  </section>
+
+  <section class="doc__section">
     <h2>Защита от изменений: Object.freeze</h2>
     <p>
       <code>Object.freeze</code> «замораживает» объект: запрещает менять, добавлять

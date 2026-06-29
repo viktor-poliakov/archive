@@ -8,6 +8,7 @@ import { SectionPage } from './section-page/section-page';
 // loaded so content pages stay out of the initial bundle. Add an entry here as
 // each topic gets real content.
 const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
+  javascript: () => import('./javascript/javascript').then((m) => m.JavascriptOverview),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/hoisting': () =>
@@ -42,6 +43,20 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./objects/prototypes/prototypes').then((m) => m.ObjectsPrototypes),
   'javascript/objects/pitfalls': () =>
     import('./objects/pitfalls/pitfalls').then((m) => m.ObjectsPitfalls),
+  'javascript/context/basics': () =>
+    import('./context/basics/basics').then((m) => m.ContextBasics),
+  'javascript/context/binding-rules': () =>
+    import('./context/binding-rules/binding-rules').then((m) => m.ContextBindingRules),
+  'javascript/context/default-binding': () =>
+    import('./context/default-binding/default-binding').then((m) => m.ContextDefaultBinding),
+  'javascript/context/losing-context': () =>
+    import('./context/losing-context/losing-context').then((m) => m.ContextLosingContext),
+  'javascript/context/call-apply-bind': () =>
+    import('./context/call-apply-bind/call-apply-bind').then((m) => m.ContextCallApplyBind),
+  'javascript/context/arrow': () =>
+    import('./context/arrow/arrow').then((m) => m.ContextArrow),
+  'javascript/context/classes-new': () =>
+    import('./context/classes-new/classes-new').then((m) => m.ContextClassesNew),
 };
 
 // A leaf route: a real content page if registered in PAGE_OVERRIDES, otherwise
@@ -57,11 +72,15 @@ function leafRoute(path: string, section: NavSection, child: NavChild): Route {
 // third-level items — a route per grand-child plus a redirect from the child to
 // its first grand-child.
 const sectionRoutes: Routes = NAV_SECTIONS.flatMap((section) => [
-  {
-    path: section.id,
-    component: SectionPage,
-    data: { sectionId: section.id },
-  },
+  // The section landing page is the mock SectionPage unless a real overview
+  // page is registered in PAGE_OVERRIDES under the bare section id.
+  PAGE_OVERRIDES[section.id]
+    ? { path: section.id, loadComponent: PAGE_OVERRIDES[section.id] }
+    : {
+        path: section.id,
+        component: SectionPage,
+        data: { sectionId: section.id },
+      },
   ...section.children.flatMap((child): Routes => {
     const base = `${section.id}/${child.id}`;
     const subs = child.children;
