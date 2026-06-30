@@ -44,6 +44,16 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'closures',
+        label: 'Замыкания',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'lexical-environment', label: 'Лексическое окружение' },
+          { id: 'practical', label: 'Практическое применение' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'objects',
         label: 'Объекты',
         children: [
@@ -67,6 +77,18 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'call-apply-bind', label: 'call, apply, bind' },
           { id: 'arrow', label: 'Стрелочные функции' },
           { id: 'classes-new', label: 'this в классах и new' },
+        ],
+      },
+      {
+        id: 'arrays',
+        label: 'Массивы',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'add-remove', label: 'Добавление и удаление' },
+          { id: 'iteration', label: 'Перебор' },
+          { id: 'search', label: 'Поиск' },
+          { id: 'transform', label: 'Преобразование' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
         ],
       },
     ],

@@ -1,0 +1,204 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/arrays">Массивы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Добавление и удаление</span>
+  </nav>
+
+<h1 class="doc__title">Добавление и удаление элементов</h1>
+<p class="doc__lead">
+  Здесь собраны методы, которые меняют сам <em>состав</em> массива — добавляют или
+  убирают элементы. У всех них есть одна общая и очень важная черта:
+  они <strong>мутируют</strong> исходный массив, то есть меняют тот самый массив,
+  на котором вызваны, а не возвращают новую копию.
+</p>
+<p class="doc__lead">
+  Запомните это сразу: после <code>arr.push(...)</code> или <code>arr.splice(...)</code>
+  переменная <code>arr</code> указывает на тот же массив, но его содержимое уже другое.
+  Если вам нужно <em>не трогать</em> оригинал, а получить новый массив — это другие
+  методы, о них в конце страницы.
+</p>
+
+<p class="note">
+  <strong>Важно:</strong> все методы на этой странице изменяют исходный массив.
+  Их можно вызывать даже на массиве, объявленном через <code>const</code> — ведь
+  меняется содержимое, а не сама ссылка. Подробнее об этом —
+  в разделе <a routerLink="/javascript/objects/references">Копирование и ссылки</a>.
+</p>
+
+<section class="doc__section">
+  <h2>push — добавить в конец</h2>
+  <p>
+    <code>push(...items)</code> добавляет один или несколько элементов в <strong>конец</strong>
+    массива. <strong>Возвращает</strong> новую длину массива (число), а сам массив —
+    <strong>мутирует</strong>.
+  </p>
+  <app-code-block [code]="pushExample" lang="javascript" />
+  <p>
+    Возврат именно длины, а не массива — частая ловушка: не пытайтесь писать
+    <code>arr = arr.push(x)</code>, иначе в <code>arr</code> окажется число.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>pop — удалить последний</h2>
+  <p>
+    <code>pop()</code> не принимает аргументов, удаляет <strong>последний</strong>
+    элемент и <strong>возвращает</strong> его. Если массив пуст, вернёт
+    <code>undefined</code> (ошибки не будет). Массив при этом <strong>мутируется</strong>.
+  </p>
+  <app-code-block [code]="popExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>unshift — добавить в начало</h2>
+  <p>
+    <code>unshift(...items)</code> — это «push, но в <strong>начало</strong>».
+    Добавляет элементы перед первым, <strong>возвращает</strong> новую длину массива
+    и <strong>мутирует</strong> исходный массив.
+  </p>
+  <app-code-block [code]="unshiftExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>shift — удалить первый</h2>
+  <p>
+    <code>shift()</code> — это «pop, но с <strong>начала</strong>». Удаляет
+    <strong>первый</strong> элемент и <strong>возвращает</strong> его (или
+    <code>undefined</code> для пустого массива). Исходный массив <strong>мутируется</strong>.
+  </p>
+  <app-code-block [code]="shiftExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Стек и очередь: пары методов</h2>
+  <p>
+    Эти четыре метода удобно держать в голове парами — по тому, с каким концом
+    массива они работают:
+  </p>
+  <ul class="rules">
+    <li><strong>push / pop</strong> — работа с <em>концом</em> массива. Это классический <strong>стек</strong> (LIFO, «последним пришёл — первым ушёл»).</li>
+    <li><strong>unshift / shift</strong> — работа с <em>началом</em> массива.</li>
+  </ul>
+  <p>
+    Связка <code>push</code> + <code>shift</code> даёт <strong>очередь</strong>
+    (FIFO, «первым пришёл — первым ушёл»): кладём в конец, забираем с начала.
+  </p>
+  <app-code-block [code]="stackQueueExample" lang="javascript" />
+  <p class="note">
+    <strong>Важно:</strong> <code>shift</code> и <code>unshift</code> работают
+    <em>медленнее</em>, чем <code>push</code> и <code>pop</code>. При изменении
+    начала массива все остальные элементы приходится физически сдвигать (у каждого
+    меняется индекс), а push/pop трогают только конец. На больших массивах разница
+    заметна — если порядок не важен, предпочитайте работу с концом.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>splice — универсальный «хирург»</h2>
+  <p>
+    <code>splice(start, deleteCount, ...items)</code> — самый мощный из мутирующих
+    методов. Он умеет за один вызов и удалять, и вставлять элементы в любом месте
+    массива. <strong>Возвращает</strong> массив <em>удалённых</em> элементов
+    (если ничего не удалили — пустой массив <code>[]</code>) и, конечно,
+    <strong>мутирует</strong> исходный массив.
+  </p>
+  <ul class="rules">
+    <li><strong>start</strong> — индекс, с которого начинаем. Может быть отрицательным: тогда отсчёт идёт с конца (<code>-1</code> — последний элемент).</li>
+    <li><strong>deleteCount</strong> — сколько элементов удалить, начиная с <code>start</code>.</li>
+    <li><strong>...items</strong> — что вставить на освободившееся место (по желанию).</li>
+  </ul>
+
+  <h3 class="doc__subtitle">1. Удаление</h3>
+  <p>Указываем, откуда и сколько удалить:</p>
+  <app-code-block [code]="spliceDeleteExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">2. Вставка без удаления</h3>
+  <p>
+    Если <code>deleteCount = 0</code>, splice ничего не удаляет, а просто
+    <em>вставляет</em> новые элементы перед позицией <code>start</code>:
+  </p>
+  <app-code-block [code]="spliceInsertExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">3. Замена</h3>
+  <p>
+    Удаляем сколько-то элементов и тут же вставляем другие — причём вставить можно
+    больше или меньше, чем удалили:
+  </p>
+  <app-code-block [code]="spliceReplaceExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">Отрицательный start</h3>
+  <p>Удобно для работы с хвостом массива, не вычисляя длину вручную:</p>
+  <app-code-block [code]="spliceNegativeExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Сводка: что возвращает и что мутирует</h2>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Метод</th>
+          <th>Что делает</th>
+          <th>Возвращает</th>
+          <th>Мутирует?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>push(...items)</code></td>
+          <td>добавляет в конец</td>
+          <td>новую длину</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td><code>pop()</code></td>
+          <td>удаляет последний</td>
+          <td>удалённый элемент (или <code>undefined</code>)</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td><code>unshift(...items)</code></td>
+          <td>добавляет в начало</td>
+          <td>новую длину</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td><code>shift()</code></td>
+          <td>удаляет первый</td>
+          <td>удалённый элемент (или <code>undefined</code>)</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td><code>splice(start, count, ...items)</code></td>
+          <td>удаляет и/или вставляет в любом месте</td>
+          <td>массив удалённых элементов</td>
+          <td class="yes">да</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>А если нужно не менять оригинал?</h2>
+  <p>
+    Все методы выше меняют исходный массив прямо на месте. Это удобно, но иногда
+    опасно: легко случайно испортить данные, которые используются где-то ещё.
+    Если вам нужно <strong>получить новый массив</strong>, не трогая исходный, —
+    используйте <em>немутирующие</em> методы.
+  </p>
+  <ul class="rules">
+    <li><strong>slice</strong> — возвращает новый массив-кусок, оригинал не меняется (мягкая альтернатива удалению через splice).</li>
+    <li><strong>concat</strong> и spread <code>[...a, x]</code> — возвращают новый массив с добавленными элементами (альтернатива push/unshift).</li>
+  </ul>
+  <p>
+    Подробно эти методы разобраны в разделе
+    <a routerLink="/javascript/arrays/transform">Преобразование</a>. А почему
+    «незаметная» мутация — частый источник багов, читайте в разделе
+    <a routerLink="/javascript/arrays/pitfalls">Нюансы и подводные камни</a>.
+  </p>
+</section>
+</article>

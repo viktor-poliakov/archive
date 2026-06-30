@@ -1,0 +1,193 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/arrays">Массивы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">
+  Массивы — частый источник тонких багов: одни методы меняют исходный массив, другие возвращают новый; копирование бывает «не настоящим»; а привычная сортировка чисел без подготовки даёт неверный порядок. Здесь собраны самые коварные места, на которых спотыкаются и новички, и опытные.
+</p>
+<p class="doc__lead">
+  Главное, что нужно держать в голове: <strong>массив — это объект</strong>, а переменная хранит не сам массив, а <strong>ссылку</strong> на него. Отсюда растут почти все сюрпризы из этого списка.
+</p>
+
+<section class="doc__section">
+  <h2>Присваивание не копирует массив</h2>
+  <p>
+    Запись <code>const b = a</code> не создаёт новый массив. Обе переменные становятся двумя именами для <em>одного и того же</em> массива, поэтому изменение через одно имя видно через другое:
+  </p>
+  <app-code-block [code]="referenceExample" lang="javascript" />
+  <p class="note">
+    <strong>Аналогия:</strong> переменная — это не сам массив, а бумажка с его адресом. Скопировав бумажку (<code>b = a</code>), вы получаете второй листок с тем же адресом — массив по-прежнему один. Подробнее эта механика разобрана в разделе <a routerLink="/javascript/objects/references">Копирование и ссылки</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Сравнение === сравнивает ссылки, а не содержимое</h2>
+  <p>
+    Для массивов оператор <code>===</code> проверяет не «одинаковое ли содержимое», а «это буквально один и тот же массив». Поэтому два разных массива с одинаковыми элементами не равны:
+  </p>
+  <app-code-block [code]="compareExample" lang="javascript" />
+  <p>
+    Чтобы сравнить массивы <em>по содержимому</em>, придётся делать это вручную (например, сравнить длины и пройтись по элементам) — встроенного оператора для этого нет.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Как правильно копировать массив</h2>
+  <p>
+    Раз присваивание не копирует, копию делают явно. Для <strong>поверхностного</strong> копирования есть три равноценных способа: spread <code>[...arr]</code>, <code>arr.slice()</code> и <code>Array.from(arr)</code>. Все три возвращают <strong>новый</strong> массив:
+  </p>
+  <app-code-block [code]="shallowCopyExample" lang="javascript" />
+  <p>
+    Но «поверхностная» означает, что копируется только верхний уровень. Если внутри массива лежат объекты или другие массивы, они <strong>не клонируются</strong> — в копии остаются те же ссылки:
+  </p>
+  <app-code-block [code]="shallowProblemExample" lang="javascript" />
+  <p>
+    Когда нужно скопировать массив целиком, со всеми уровнями вложенности, используйте <strong>глубокое</strong> копирование через встроенный <code>structuredClone</code>:
+  </p>
+  <app-code-block [code]="deepCopyExample" lang="javascript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Способ</th>
+          <th>Сам массив</th>
+          <th>Вложенные объекты</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>b = a</code></td>
+          <td class="no">не копирует (та же ссылка)</td>
+          <td class="no">общие</td>
+        </tr>
+        <tr>
+          <td><code>[...a]</code> / <code>a.slice()</code> / <code>Array.from(a)</code></td>
+          <td class="yes">копирует</td>
+          <td class="no">общие</td>
+        </tr>
+        <tr>
+          <td><code>structuredClone(a)</code></td>
+          <td class="yes">копирует</td>
+          <td class="yes">независимы</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Мутирующие и немутирующие методы</h2>
+  <p>
+    Это, пожалуй, главная причина багов с массивами. Часть методов <strong>меняет исходный</strong> массив (мутирует), часть — оставляет его нетронутым и <strong>возвращает новый</strong> массив или значение.
+  </p>
+  <ul class="rules">
+    <li>
+      <strong>Мутируют исходный массив:</strong> <code>push</code>, <code>pop</code>, <code>shift</code>, <code>unshift</code>, <code>splice</code>, <code>sort</code>, <code>reverse</code>, <code>fill</code>, <code>copyWithin</code>.
+    </li>
+    <li>
+      <strong>Возвращают новый массив или значение (исходный не трогают):</strong> <code>slice</code>, <code>concat</code>, <code>map</code>, <code>filter</code>, <code>reduce</code>, <code>flat</code>, <code>flatMap</code>, <code>join</code>, <code>indexOf</code>, <code>includes</code>, <code>find</code>, <code>at</code>.
+    </li>
+  </ul>
+  <p class="note">
+    <strong>Важно:</strong> легко перепутать похожие пары. <code>slice</code> возвращает новый массив, а <code>splice</code> мутирует исходный (и возвращает массив <em>удалённых</em> элементов). <code>concat</code> создаёт новый массив, а <code>push</code> добавляет в существующий и возвращает новую длину. Полная раскладка методов — в разделе <a routerLink="/javascript/arrays/transform">Преобразование</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>sort сортирует как строки</h2>
+  <p>
+    По умолчанию <code>sort</code> приводит элементы к строкам и сравнивает их посимвольно. Для строк это обычно подходит, а вот для чисел даёт неожиданный порядок (<code>'10'</code> идёт раньше <code>'2'</code>, потому что символ <code>'1'</code> меньше <code>'2'</code>). Для чисел обязательно передавайте компаратор <code>(a, b) =&gt; a - b</code>:
+  </p>
+  <app-code-block [code]="sortNumbersExample" lang="javascript" />
+  <p>
+    Второй подвох: <code>sort</code> и <code>reverse</code> <strong>мутируют</strong> массив, а не возвращают новый. Если исходный массив ещё понадобится в прежнем порядке, копируйте его перед сортировкой:
+  </p>
+  <app-code-block [code]="sortMutatesExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Разреженные массивы и «дыры»</h2>
+  <p>
+    В массиве могут появиться <strong>дыры</strong> — пропущенные индексы, у которых нет значения. Так бывает, если присвоить элемент по индексу за пределами текущей длины:
+  </p>
+  <app-code-block [code]="sparseIndexExample" lang="javascript" />
+  <p>
+    Ещё дыра остаётся после <code>delete arr[i]</code>: оператор <code>delete</code> убирает значение, но <strong>не меняет</strong> <code>length</code> и не сдвигает соседние элементы. Чтобы по-настоящему удалить элемент со сдвигом остальных, используйте <code>splice</code>:
+  </p>
+  <app-code-block [code]="deleteHoleExample" lang="javascript" />
+  <p class="note">
+    <strong>Важно:</strong> методы перебора ведут себя с дырами по-разному — <code>forEach</code>, <code>map</code> и <code>filter</code> <em>пропускают</em> дыры, а <code>for...of</code> и spread видят их как <code>undefined</code>. Чтобы не разбираться в этих тонкостях, просто <strong>не создавайте дыры</strong>: добавляйте элементы через <code>push</code>, а удаляйте через <code>splice</code>. Подробнее о переборе — в разделе <a routerLink="/javascript/arrays/iteration">Перебор</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>length можно присвоить</h2>
+  <p>
+    Свойство <code>length</code> не только читается, но и записывается. Если присвоить ему меньшее число, массив <strong>усекается</strong>; присваивание <code>0</code> очищает массив целиком:
+  </p>
+  <app-code-block [code]="lengthExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Ловушка new Array(n)</h2>
+  <p>
+    Конструктор <code>new Array</code> с одним числовым аргументом создаёт пустой массив <strong>заданной длины</strong> (из дыр), а не массив с этим числом внутри. Это частая причина путаницы:
+  </p>
+  <app-code-block [code]="newArrayExample" lang="javascript" />
+  <p>
+    Поэтому для создания массивов почти всегда предпочитают литерал <code>[]</code>, а <code>new Array(n).fill(...)</code> применяют только когда осознанно нужен массив заранее известной длины, заполненный значением.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>forEach нельзя прервать</h2>
+  <p>
+    Из <code>forEach</code> невозможно «выйти раньше»: <code>break</code> там вызовет синтаксическую ошибку, а <code>return</code> завершает только текущий вызов колбэка, но не останавливает перебор. Если нужно прервать цикл по условию, берите <code>for...of</code> с <code>break</code> либо методы <code>some</code>/<code>every</code>, которые останавливаются сами:
+  </p>
+  <app-code-block [code]="breakExample" lang="javascript" />
+  <p>
+    Какой способ перебора выбрать под задачу — разобрано в разделе <a routerLink="/javascript/arrays/iteration">Перебор</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Проверки: пустой ли и массив ли</h2>
+  <p>
+    Чтобы проверить, что массив пуст, сравнивают его длину с нулём: <code>arr.length === 0</code>. А чтобы узнать, массив ли перед вами, <strong>не используйте</strong> <code>typeof</code> — для массива он возвращает <code>'object'</code> и не отличает массив от обычного объекта. Правильный инструмент — <code>Array.isArray(x)</code>:
+  </p>
+  <app-code-block [code]="checksExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Практические рекомендации</h2>
+  <ul class="rules">
+    <li>
+      <strong>Предпочитайте немутирующие методы.</strong> <code>map</code>, <code>filter</code>, <code>slice</code>, <code>concat</code> и spread делают код предсказуемым: исходные данные не меняются исподтишка. Это особенно важно в React, Redux и подобных подходах с иммутабельным состоянием.
+    </li>
+    <li>
+      <strong>Копируйте перед мутацией, если оригинал ещё нужен.</strong> Перед <code>sort</code>, <code>reverse</code> или <code>splice</code> делайте <code>[...arr]</code>, чтобы не испортить исходный массив.
+    </li>
+    <li>
+      <strong>Не путайте копию со ссылкой.</strong> <code>b = a</code> — это не копия. Для реальной копии используйте spread/<code>slice</code>/<code>Array.from</code>, а при вложенных данных — <code>structuredClone</code>.
+    </li>
+    <li>
+      <strong>Числа сортируйте с компаратором</strong> <code>(a, b) =&gt; a - b</code> — без него порядок будет строковым.
+    </li>
+    <li>
+      <strong>Удаляйте через splice, а не delete</strong>, чтобы не оставлять дыр и не ломать длину.
+    </li>
+    <li>
+      <strong>Проверяйте тип через <code>Array.isArray</code></strong>, а не <code>typeof</code>.
+    </li>
+  </ul>
+  <p>
+    Если эти темы хочется закрепить с азов, вернитесь к разделу <a routerLink="/javascript/arrays/basics">Основы</a>. А механика ссылок, общая для массивов и объектов, подробно разобрана в разделе <a routerLink="/javascript/objects/references">Копирование и ссылки</a>.
+  </p>
+</section>
+</article>

@@ -1,0 +1,205 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/arrays">Массивы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Поиск</span>
+  </nav>
+
+<h1 class="doc__title">Поиск в массиве</h1>
+  <p class="doc__lead">
+    Часто нужно ответить на вопросы «есть ли в массиве такое значение?», «под
+    каким оно индексом?», «найди первый элемент, который подходит под условие».
+    Для этого есть готовые методы — и все они <strong>не изменяют</strong>
+    исходный массив, а лишь возвращают результат (индекс, элемент или
+    <code>boolean</code>).
+  </p>
+  <p class="doc__lead">
+    Методы делятся на две группы: одни ищут по <strong>точному значению</strong>
+    (<code>indexOf</code>, <code>includes</code>), другие — по
+    <strong>условию</strong>, которое вы задаёте функцией-колбэком
+    (<code>find</code>, <code>some</code> и другие). О колбэках подробнее в
+    разделах <a routerLink="/javascript/arrays/iteration">Перебор</a> и
+    <a routerLink="/javascript/functions/first-class">Функции как значения</a>.
+  </p>
+
+  <section class="doc__section">
+    <h2>indexOf и lastIndexOf — индекс по значению</h2>
+    <p>
+      <code>indexOf(item, fromIndex?)</code> возвращает индекс первого
+      найденного элемента, равного <code>item</code>, или <code>-1</code>, если
+      такого нет. Необязательный второй аргумент задаёт индекс, с которого
+      начинать поиск. <code>lastIndexOf</code> работает так же, но ищет с конца.
+    </p>
+    <app-code-block [code]="indexOfExample" lang="javascript" />
+    <p>
+      Важная деталь: сравнение <strong>строгое</strong> (как оператор
+      <code>===</code>), без приведения типов. Число <code>2</code> и строка
+      <code>'2'</code> — разные значения. А объекты сравниваются
+      <strong>по ссылке</strong>, а не по содержимому (об этом — в разделе
+      <a routerLink="/javascript/objects/references">Копирование и ссылки</a>):
+    </p>
+    <app-code-block [code]="strictExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>includes — проверка «есть ли значение»</h2>
+    <p>
+      <code>includes(item)</code> возвращает <code>boolean</code>: содержится ли
+      в массиве такое значение. Это самый читаемый способ просто проверить
+      наличие — не нужно сравнивать результат с <code>-1</code>.
+    </p>
+    <app-code-block [code]="includesExample" lang="javascript" />
+    <h3 class="doc__subtitle">includes против indexOf и случай NaN</h3>
+    <p>
+      У этих методов есть тонкое, но важное различие. <code>indexOf</code>
+      сравнивает через <code>===</code>, а особенность <code>NaN</code> в том,
+      что <code>NaN === NaN</code> — всегда <code>false</code>. Поэтому
+      <code>indexOf</code> <strong>не найдёт</strong> <code>NaN</code>, а
+      <code>includes</code> — найдёт (он использует чуть другой алгоритм
+      сравнения).
+    </p>
+    <app-code-block [code]="nanExample" lang="javascript" />
+    <p class="note">
+      <strong>Правило:</strong> если вам нужно просто узнать, есть ли значение в
+      массиве, выбирайте <code>includes</code> — он короче, понятнее и корректно
+      обрабатывает <code>NaN</code>. <code>indexOf</code> берите, когда нужен
+      именно <em>индекс</em> найденного элемента.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>find и findIndex — поиск по условию</h2>
+    <p>
+      Когда искать нужно не точное значение, а первый элемент, подходящий под
+      условие, используют методы с колбэком. <code>find(cb)</code> возвращает
+      первый <strong>элемент</strong>, для которого колбэк вернул истинное
+      значение, или <code>undefined</code>, если такого нет.
+      <code>findIndex(cb)</code> возвращает <strong>индекс</strong> такого
+      элемента или <code>-1</code>.
+    </p>
+    <app-code-block [code]="findExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно:</strong> различайте «ничего не найдено». У
+      <code>find</code> это <code>undefined</code>, у <code>findIndex</code> —
+      <code>-1</code>. Их легко перепутать, если выбрать не тот метод.
+    </p>
+    <h3 class="doc__subtitle">findLast и findLastIndex — с конца</h3>
+    <p>
+      <code>findLast(cb)</code> и <code>findLastIndex(cb)</code> делают то же
+      самое, но идут по массиву <strong>с конца</strong> и возвращают первый
+      подходящий элемент (или его индекс) справа.
+    </p>
+    <app-code-block [code]="findLastExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>some и every — проверки «есть ли» и «все ли»</h2>
+    <p>
+      Иногда нужен не сам элемент, а ответ «да/нет» по всему массиву. Оба метода
+      возвращают <code>boolean</code> и принимают колбэк-условие.
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>some(cb)</strong> — <code>true</code>, если условию
+        удовлетворяет <em>хотя бы один</em> элемент. Останавливается на первом
+        же подходящем.
+      </li>
+      <li>
+        <strong>every(cb)</strong> — <code>true</code>, если условию
+        удовлетворяют <em>все</em> элементы. Останавливается на первом
+        неподходящем.
+      </li>
+    </ul>
+    <app-code-block [code]="someEveryExample" lang="javascript" />
+    <p class="note">
+      <strong>Запомните граничный случай:</strong> на пустом массиве
+      <code>some</code> всегда возвращает <code>false</code> (подходящих нет), а
+      <code>every</code> — <code>true</code> (нет ни одного нарушителя). Это
+      математически логично, но первый раз удивляет.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что возвращает каждый метод</h2>
+    <p>
+      Сводка по возвращаемым значениям. Ещё раз: ни один из этих методов
+      <strong>не мутирует</strong> массив.
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Метод</th>
+            <th>Что ищет</th>
+            <th>Возвращает</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>indexOf</code> / <code>lastIndexOf</code></td>
+            <td>точное значение (===)</td>
+            <td>индекс или <code>-1</code></td>
+          </tr>
+          <tr>
+            <td><code>includes</code></td>
+            <td>точное значение (находит <code>NaN</code>)</td>
+            <td><code>boolean</code></td>
+          </tr>
+          <tr>
+            <td><code>find</code> / <code>findLast</code></td>
+            <td>по условию (колбэк)</td>
+            <td>элемент или <code>undefined</code></td>
+          </tr>
+          <tr>
+            <td><code>findIndex</code> / <code>findLastIndex</code></td>
+            <td>по условию (колбэк)</td>
+            <td>индекс или <code>-1</code></td>
+          </tr>
+          <tr>
+            <td><code>some</code></td>
+            <td>есть ли хотя бы один по условию</td>
+            <td><code>boolean</code></td>
+          </tr>
+          <tr>
+            <td><code>every</code></td>
+            <td>подходят ли все по условию</td>
+            <td><code>boolean</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Памятка: когда что выбирать</h2>
+    <ul class="rules">
+      <li>
+        <strong>Нужен индекс по точному значению</strong> — <code>indexOf</code>
+        (или <code>lastIndexOf</code> для поиска с конца).
+      </li>
+      <li>
+        <strong>Просто проверить наличие значения</strong> —
+        <code>includes</code> (короче, понятнее, корректно ловит
+        <code>NaN</code>).
+      </li>
+      <li>
+        <strong>Найти элемент по условию</strong> — <code>find</code> (нужен сам
+        элемент) или <code>findIndex</code> (нужен его индекс).
+      </li>
+      <li>
+        <strong>Проверить «есть ли хоть один» / «все ли»</strong> —
+        <code>some</code> и <code>every</code> соответственно.
+      </li>
+    </ul>
+    <p>
+      Все методы из этой группы получают колбэк или значение и ничего не ломают в
+      исходном массиве. О методах, которые наоборот изменяют массив (например
+      <code>push</code>, <code>splice</code>, <code>sort</code>), читайте в
+      разделах <a routerLink="/javascript/arrays/add-remove">Добавление и
+      удаление</a> и
+      <a routerLink="/javascript/arrays/pitfalls">Нюансы и подводные камни</a>.
+    </p>
+  </section>
+</article>

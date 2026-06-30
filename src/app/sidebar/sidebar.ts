@@ -3,7 +3,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 
-import { NAV_SECTIONS } from '../nav/nav.data';
+import { NAV_SECTIONS, NavChild } from '../nav/nav.data';
 
 @Component({
   selector: 'app-sidebar',
@@ -58,16 +58,28 @@ export class Sidebar {
     return !this.expandedGroups().has(childId);
   }
 
-  toggleGroup(childId: string): void {
+  toggleGroup(child: NavChild): void {
+    const wasCollapsed = this.isGroupCollapsed(child.id);
     this.expandedGroups.update((groups) => {
       const next = new Set(groups);
-      if (next.has(childId)) {
-        next.delete(childId);
+      if (next.has(child.id)) {
+        next.delete(child.id);
       } else {
-        next.add(childId);
+        next.add(child.id);
       }
       return next;
     });
+
+    // Переходим на первый подраздел только когда группу разворачивают и в ней
+    // ещё ничего не выбрано. При сворачивании или при развороте уже активной
+    // группы (подраздел в ней уже выбран) — никуда не переходим.
+    if (wasCollapsed && this.activeChildId() !== child.id) {
+      const section = this.activeSection();
+      const firstSub = child.children?.[0];
+      if (section && firstSub) {
+        this.router.navigate(['/', section.id, child.id, firstSub.id]);
+      }
+    }
   }
 
   toggleCollapse(): void {

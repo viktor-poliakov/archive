@@ -1,0 +1,118 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/arrays">Массивы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Перебор</span>
+  </nav>
+
+<h1 class="doc__title">Перебор массива</h1>
+<p class="doc__lead">Перебор — это проход по всем элементам массива, чтобы что-то с ними сделать: вывести, посчитать, преобразовать или отобрать нужные. В JavaScript для этого есть и обычные циклы, и удобные методы массива.</p>
+<p class="doc__lead">Многие из этих методов (<code>forEach</code>, <code>map</code>, <code>filter</code>, <code>reduce</code>) принимают в качестве аргумента функцию — её называют <em>колбэком</em>. Метод сам проходит по элементам и на каждом вызывает вашу функцию. Это и есть <a routerLink="/javascript/functions/first-class">функции как значения</a> (функции высшего порядка) на практике.</p>
+
+<section class="doc__section">
+  <h2>Циклы</h2>
+  <p>Самый базовый способ обойти массив — обычный цикл. Он не использует колбэков и полностью под вашим контролем.</p>
+
+  <h3 class="doc__subtitle">Классический for</h3>
+  <p>Вы заводите счётчик-индекс <code>i</code>, идёте от <code>0</code> до <code>arr.length</code> и обращаетесь к элементам по индексу. Подходит, когда нужен именно индекс или нестандартный шаг (например, через один элемент).</p>
+  <app-code-block [code]="forClassicExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">for...of — перебор значений</h3>
+  <p>Цикл <code>for...of</code> перебирает сами <strong>значения</strong> элементов, без возни с индексом. Это самый удобный способ для простого обхода. Его легко прервать через <code>break</code> или пропустить шаг через <code>continue</code>.</p>
+  <app-code-block [code]="forOfExample" lang="javascript" />
+
+  <p class="note"><strong>Важно:</strong> для массивов <strong>не используйте</strong> <code>for...in</code>. Он предназначен для перебора ключей объекта: по массиву он пройдёт строковые индексы (<code>'0'</code>, <code>'1'</code>, …), а заодно прихватит любые лишние свойства, если их кто-то добавил массиву.</p>
+  <app-code-block [code]="forInWarningExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>forEach — вызвать функцию для каждого элемента</h2>
+  <p>Метод <code>forEach(cb)</code> просто вызывает ваш колбэк для каждого элемента по порядку. Это аккуратная замена циклу, когда нужно «сделать что-то с каждым» (вывести, отправить, записать).</p>
+  <p>Колбэк получает три аргумента: <code>(element, index, array)</code> — текущий элемент, его индекс и сам массив. Чаще всего пользуются первыми двумя.</p>
+  <ul class="rules">
+    <li><strong>Что возвращает:</strong> <code>undefined</code> — <code>forEach</code> не собирает результат, его вызывают ради побочного действия.</li>
+    <li><strong>Мутация:</strong> сам массив не меняет.</li>
+  </ul>
+  <app-code-block [code]="forEachExample" lang="javascript" />
+
+  <p class="note"><strong>Важно:</strong> <code>forEach</code> <strong>нельзя прервать</strong>. Ни <code>break</code> (это синтаксическая ошибка внутри колбэка), ни <code>return</code> не останавливают перебор — <code>return</code> лишь завершает текущий вызов колбэка, и перебор идёт дальше. Если нужно прервать обход досрочно — берите <code>for...of</code> с <code>break</code> либо методы <code>some</code>/<code>every</code> (см. <a routerLink="/javascript/arrays/search">Поиск</a>).</p>
+  <app-code-block [code]="forEachNoBreakExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>map — преобразовать каждый элемент</h2>
+  <p>Метод <code>map(cb)</code> создаёт <strong>новый массив той же длины</strong>, где каждый элемент — это то, что вернул колбэк для соответствующего элемента исходного массива. Колбэк получает всё ту же тройку <code>(element, index, array)</code>.</p>
+  <ul class="rules">
+    <li><strong>Что возвращает:</strong> новый массив той же длины.</li>
+    <li><strong>Мутация:</strong> исходный массив не меняет.</li>
+  </ul>
+  <app-code-block [code]="mapExample" lang="javascript" />
+  <p>Сравните: <code>forEach</code> ничего не возвращает и нужен ради действия, а <code>map</code> возвращает новый массив и нужен ради преобразования. Если вы используете <code>forEach</code>, чтобы вручную складывать результаты в новый массив, — почти всегда лучше взять <code>map</code>. Подробнее о превращении массива в другие данные — в разделе <a routerLink="/javascript/arrays/transform">Преобразование</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>filter — отобрать подходящие элементы</h2>
+  <p>Метод <code>filter(cb)</code> создаёт <strong>новый массив</strong> только из тех элементов, для которых колбэк вернул истинное значение. Колбэк-предикат получает <code>(element, index, array)</code> и должен вернуть <code>true</code> или <code>false</code> (по сути — «оставить элемент?»).</p>
+  <ul class="rules">
+    <li><strong>Что возвращает:</strong> новый массив с отобранными элементами (может быть короче исходного или пустым).</li>
+    <li><strong>Мутация:</strong> исходный массив не меняет.</li>
+  </ul>
+  <app-code-block [code]="filterExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>reduce — свернуть массив в одно значение</h2>
+  <p>Метод <code>reduce(cb, initialValue)</code> «сворачивает» весь массив в <strong>одно значение</strong>: сумму, объект, строку — что угодно. Он накапливает результат, передавая его от шага к шагу.</p>
+  <p>Колбэк получает <code>(accumulator, element, index, array)</code>, где <strong>accumulator</strong> (аккумулятор) — это накопленный результат с предыдущего шага. То, что колбэк вернёт, станет аккумулятором для следующего элемента.</p>
+  <ul class="rules">
+    <li><strong>Что возвращает:</strong> итоговое накопленное значение.</li>
+    <li><strong>Мутация:</strong> исходный массив не меняет.</li>
+    <li><strong>initialValue:</strong> стартовое значение аккумулятора (второй аргумент).</li>
+  </ul>
+  <app-code-block [code]="reduceSumExample" lang="javascript" />
+  <p>Аккумулятором может быть не только число. Например, объект — удобно для подсчёта, сколько раз встретился каждый элемент:</p>
+  <app-code-block [code]="reduceCountExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">Зачем нужен initialValue</h3>
+  <p><code>initialValue</code> задаёт, с чего начать накопление, и заодно тип результата (<code>0</code> для суммы, <code>&#123;&#125;</code> для объекта, <code>[]</code> для массива). Если его не передать, аккумулятором станет <em>первый</em> элемент массива, а перебор пойдёт со <em>второго</em>.</p>
+  <p class="note"><strong>Важно:</strong> вызов <code>reduce</code> без <code>initialValue</code> на <strong>пустом</strong> массиве бросает <code>TypeError</code> — брать первый элемент не из чего. Поэтому почти всегда указывайте <code>initialValue</code>: с ним пустой массив безопасно вернёт само начальное значение.</p>
+  <app-code-block [code]="reduceNoInitExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">reduceRight</h3>
+  <p>Метод <code>reduceRight(cb, initialValue)</code> работает точно так же, но идёт <strong>справа налево</strong> — от последнего элемента к первому. Это важно, когда порядок свёртки влияет на результат.</p>
+  <app-code-block [code]="reduceRightExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>keys, values, entries</h2>
+  <p>Эти три метода возвращают <em>перебираемые</em> объекты (итераторы), по которым удобно ходить через <code>for...of</code> или разворачивать в массив через <code>...</code>:</p>
+  <ul class="rules">
+    <li><strong>keys()</strong> — даёт индексы массива (<code>0</code>, <code>1</code>, <code>2</code>, …).</li>
+    <li><strong>values()</strong> — даёт значения элементов.</li>
+    <li><strong>entries()</strong> — даёт пары <code>[индекс, значение]</code>.</li>
+  </ul>
+  <p>Особенно полезен <code>entries()</code>: в связке с <code>for...of</code> и деструктуризацией он даёт сразу и индекс, и значение — без ручного счётчика.</p>
+  <app-code-block [code]="entriesExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Что выбрать</h2>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr><th>Способ</th><th>Возвращает</th><th>Мутирует?</th><th>Когда использовать</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>for / for...of</code></td><td>—</td><td class="no">нет</td><td>простой обход; нужен <code>break</code>/<code>continue</code></td></tr>
+        <tr><td><code>forEach</code></td><td><code>undefined</code></td><td class="no">нет</td><td>действие над каждым элементом</td></tr>
+        <tr><td><code>map</code></td><td>новый массив</td><td class="no">нет</td><td>преобразовать каждый элемент</td></tr>
+        <tr><td><code>filter</code></td><td>новый массив</td><td class="no">нет</td><td>отобрать подходящие элементы</td></tr>
+        <tr><td><code>reduce</code></td><td>одно значение</td><td class="no">нет</td><td>свернуть в сумму/объект/строку</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Все эти методы принимают колбэк с единой сигнатурой <code>(element, index, array)</code> (у <code>reduce</code> впереди добавляется <code>accumulator</code>). Колбэк тут — обычное значение, которое мы передаём в функцию высшего порядка; подробнее в разделе <a routerLink="/javascript/functions/first-class">Функции как значения</a>. Методы, которые тоже принимают колбэк, но ищут элемент, разобраны в разделе <a routerLink="/javascript/arrays/search">Поиск</a>.</p>
+</section>
+</article>

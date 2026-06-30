@@ -1,0 +1,103 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/arrays">Массивы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Преобразование</span>
+  </nav>
+
+<h1 class="doc__title">Преобразование массивов</h1>
+<p class="doc__lead">Преобразование — это получение из массива чего-то нового: другого массива, строки или одного значения. Здесь собраны методы, которые меняют форму или порядок данных: вырезают часть, объединяют, склеивают в строку, разглаживают вложенность и сортируют.</p>
+<p class="doc__lead">Самое важное при работе с массивами — понимать, <strong>мутирует</strong> ли метод исходный массив (меняет его «на месте») или <strong>возвращает новый</strong>, оставляя оригинал нетронутым. Поэтому мы прямо разделим методы на две группы.</p>
+
+<section class="doc__section">
+  <h2>Группа 1. Не мутируют — возвращают новое</h2>
+  <p>Эти методы <strong>не трогают</strong> исходный массив. Они возвращают новый массив (или строку, или значение), а оригинал остаётся прежним. Это безопасно: можно вызывать их сколько угодно, не боясь испортить данные.</p>
+
+  <h3 class="doc__subtitle">slice — вырезать копию части</h3>
+  <p><code>slice(start, end)</code> возвращает <strong>поверхностную копию</strong> части массива — от индекса <code>start</code> до <code>end</code>, причём <code>end</code> <em>не включается</em> (как и во многих других местах JavaScript). Исходный массив не меняется.</p>
+  <p>Если вызвать <code>slice()</code> <strong>без аргументов</strong> — получится копия всего массива целиком. Это частый приём, чтобы получить независимую копию перед мутирующими операциями.</p>
+  <app-code-block [code]="sliceExample" lang="javascript" />
+  <p class="note"><strong>Важно:</strong> копия <em>поверхностная</em> — копируется сам массив, но вложенные объекты остаются общими ссылками. Подробнее о том, почему так и чем это грозит, — в разделах <a routerLink="/javascript/objects/references">Копирование и ссылки</a> и <a routerLink="/javascript/arrays/pitfalls">Нюансы и подводные камни</a>.</p>
+  <p>Не путайте <code>slice</code> с похожим по имени <code>splice</code> — последний <strong>мутирует</strong> массив. О нём читайте в разделе <a routerLink="/javascript/arrays/add-remove">Добавление и удаление</a>.</p>
+
+  <h3 class="doc__subtitle">concat — объединить массивы</h3>
+  <p><code>concat(...)</code> возвращает <strong>новый</strong> массив — результат объединения исходного с переданными массивами или значениями. Оригиналы не меняются.</p>
+  <app-code-block [code]="concatExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">join — склеить в строку</h3>
+  <p><code>join(separator)</code> возвращает <strong>строку</strong>: все элементы массива, соединённые через разделитель. По умолчанию разделитель — запятая. Массив при этом не меняется.</p>
+  <p>Обратная операция живёт у строк — это <code>split</code>, который разрезает строку обратно в массив.</p>
+  <app-code-block [code]="joinExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">flat и flatMap — разгладить вложенность</h3>
+  <p><code>flat(depth)</code> возвращает <strong>новый</strong> массив, «разглаженный» на глубину <code>depth</code> (по умолчанию 1). То есть элементы-массивы раскрываются и их содержимое попадает на верхний уровень.</p>
+  <p><code>flatMap(callback)</code> — это <code>map</code> и <code>flat(1)</code> за один проход: сначала к каждому элементу применяется функция, затем результат разглаживается на один уровень. Удобно, когда из одного элемента нужно получить несколько. О том, что такое callback, — в разделе <a routerLink="/javascript/functions/first-class">Функции как значения</a>, а про сам <a routerLink="/javascript/arrays/iteration">перебор</a> и <code>map</code> — в соседних разделах.</p>
+  <app-code-block [code]="flatExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">at — элемент по индексу, в том числе с конца</h3>
+  <p><code>at(index)</code> возвращает элемент по индексу. Главное удобство — поддержка <strong>отрицательных</strong> индексов: <code>arr.at(-1)</code> — последний элемент, <code>arr.at(-2)</code> — предпоследний. Это короче и читаемее, чем <code>arr[arr.length - 1]</code>. Ничего не мутирует.</p>
+  <app-code-block [code]="atExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Группа 2. Мутируют — меняют массив на месте</h2>
+  <p>Эти методы <strong>изменяют сам исходный массив</strong> и обычно возвращают его же (тот же массив, а не копию). После их вызова старого порядка/значений уже не будет. Если оригинал нужно сохранить — сделайте копию через <code>slice()</code> заранее (или используйте иммутабельные аналоги ниже).</p>
+
+  <h3 class="doc__subtitle">sort — сортировка на месте</h3>
+  <p><code>sort(compareFn)</code> сортирует массив <strong>на месте</strong> и возвращает <em>тот же</em> массив. И здесь притаилась самая частая ловушка JavaScript.</p>
+  <p class="note"><strong>Важно:</strong> без функции сравнения <code>sort</code> приводит элементы к <strong>строкам</strong> и сравнивает их как строки. Поэтому <code>[1, 2, 10].sort()</code> даёт <code>[1, 10, 2]</code> — ведь строка <code>'10'</code> «меньше» строки <code>'2'</code> по первому символу.</p>
+  <app-code-block [code]="sortStringExample" lang="javascript" />
+  <p>Чтобы сортировать <strong>числа</strong>, передайте компаратор <code>(a, b) =&gt; a - b</code>. Логика проста: если результат отрицательный — <code>a</code> идёт раньше <code>b</code>; если положительный — позже; если ноль — порядок не важен. Для убывания меняем знак: <code>(a, b) =&gt; b - a</code>.</p>
+  <app-code-block [code]="sortNumberExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">reverse — развернуть порядок</h3>
+  <p><code>reverse()</code> разворачивает порядок элементов <strong>на месте</strong> и возвращает тот же (уже изменённый) массив.</p>
+  <app-code-block [code]="reverseExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">fill — заполнить значением</h3>
+  <p><code>fill(value, start, end)</code> заполняет массив значением <code>value</code> <strong>на месте</strong> — от <code>start</code> до <code>end</code> (<code>end</code> не включается). Без границ заполняется весь массив. Часто используется с <code>new Array(n).fill(0)</code> для создания массива из одинаковых значений.</p>
+  <app-code-block [code]="fillExample" lang="javascript" />
+
+  <h3 class="doc__subtitle">copyWithin — скопировать часть внутри массива</h3>
+  <p>Редкий метод: <code>copyWithin(target, start, end)</code> копирует кусок массива в другое место <strong>того же</strong> массива, <strong>на месте</strong>. Длина массива не меняется. На практике встречается редко, но знать о нём полезно.</p>
+  <app-code-block [code]="copyWithinExample" lang="javascript" />
+</section>
+
+<section class="doc__section">
+  <h2>Современные иммутабельные аналоги (ES2023)</h2>
+  <p>У мутирующих методов появились «безопасные» двойники, которые делают то же самое, но <strong>не трогают оригинал</strong> и возвращают <strong>новый</strong> массив:</p>
+  <ul class="rules">
+    <li><strong>toSorted(compareFn?)</strong> — как <code>sort</code>, но возвращает новый отсортированный массив.</li>
+    <li><strong>toReversed()</strong> — как <code>reverse</code>, но возвращает новый развёрнутый массив.</li>
+    <li><strong>with(index, value)</strong> — копия массива, в которой один элемент по индексу заменён на новый.</li>
+    <li><strong>toSpliced(start, deleteCount, ...items)</strong> — как <code>splice</code>, но без мутации: возвращает новый массив с внесёнными изменениями.</li>
+  </ul>
+  <app-code-block [code]="immutableExample" lang="javascript" />
+  <p>Эти методы особенно удобны, когда важно не менять исходные данные — например, в реактивных интерфейсах. Подробнее про опасность мутаций, сортировку и копирование — в разделе <a routerLink="/javascript/arrays/pitfalls">Нюансы и подводные камни</a>, а про <code>toSpliced</code> в контексте вставки и удаления — в разделе <a routerLink="/javascript/arrays/add-remove">Добавление и удаление</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Шпаргалка: что мутирует, а что нет</h2>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr><th>Метод</th><th>Мутирует?</th><th>Что возвращает</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>slice</code></td><td class="no">Нет</td><td>Новый массив (копия части)</td></tr>
+        <tr><td><code>concat</code></td><td class="no">Нет</td><td>Новый массив</td></tr>
+        <tr><td><code>join</code></td><td class="no">Нет</td><td>Строку</td></tr>
+        <tr><td><code>flat</code> / <code>flatMap</code></td><td class="no">Нет</td><td>Новый массив</td></tr>
+        <tr><td><code>at</code></td><td class="no">Нет</td><td>Элемент (или undefined)</td></tr>
+        <tr><td><code>sort</code></td><td class="yes">Да</td><td>Тот же массив</td></tr>
+        <tr><td><code>reverse</code></td><td class="yes">Да</td><td>Тот же массив</td></tr>
+        <tr><td><code>fill</code></td><td class="yes">Да</td><td>Тот же массив</td></tr>
+        <tr><td><code>copyWithin</code></td><td class="yes">Да</td><td>Тот же массив</td></tr>
+        <tr><td><code>toSorted</code> / <code>toReversed</code> / <code>with</code> / <code>toSpliced</code></td><td class="no">Нет</td><td>Новый массив</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+</article>

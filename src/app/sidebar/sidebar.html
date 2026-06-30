@@ -72,7 +72,7 @@
                   type="button"
                   class="submenu__item submenu__item--group"
                   [class.submenu__item--active]="activeChildId() === child.id"
-                  (click)="toggleGroup(child.id)"
+                  (click)="toggleGroup(child)"
                   [style.--accent]="active.color"
                   [attr.aria-expanded]="!isGroupCollapsed(child.id)"
                 >
