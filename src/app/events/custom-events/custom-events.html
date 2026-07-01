@@ -1,0 +1,60 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/events">События</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Свои события</span>
+  </nav>
+
+  <h1 class="doc__title">Свои события</h1>
+  <p class="doc__lead">
+    До сих пор мы ловили события, которые генерирует браузер: клики, ввод, отправку
+    формы. Но событие можно создать и запустить <strong>самому</strong>. Это удобный
+    способ «сообщить» о чём-то остальному коду: одна часть приложения запускает событие,
+    а другие — независимо на него реагируют, не зная друг о друге напрямую.
+  </p>
+
+  <section class="doc__section">
+    <h2>Создать и запустить</h2>
+    <p>
+      Своё событие создаётся конструктором <code>CustomEvent</code>, а запускается
+      методом <code>dispatchEvent</code>. Полезные данные кладут в поле
+      <code>detail</code>:
+    </p>
+    <app-code-block [code]="createExample" lang="javascript" />
+    <p>
+      Слушают такое событие как любое другое — через
+      <code>addEventListener</code>. Имя события произвольное; удобно использовать
+      «пространства имён» вроде <code>'cart:add'</code>, чтобы не путать со встроенными.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Всплытие и делегирование</h2>
+    <p>
+      Важное отличие от встроенных событий: <strong>свои события по умолчанию не
+      всплывают</strong>. Если хотите ловить их выше по дереву (например,
+      <a routerLink="/javascript/events/delegation">делегированием</a> на общем
+      контейнере), задайте <code>bubbles: true</code>:
+    </p>
+    <app-code-block [code]="bubblesExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Отменяемые события</h2>
+    <p>
+      Как и у встроенных событий, своему можно разрешить отмену через
+      <code>cancelable: true</code>. Тогда обработчик может вызвать
+      <code>preventDefault()</code>, а <code>dispatchEvent</code> вернёт
+      <code>false</code> — по нему инициатор поймёт, что действие «запретили»:
+    </p>
+    <app-code-block [code]="cancelExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> события, которые не всплывают, опции
+      <code>addEventListener</code>, различие <code>preventDefault</code> и
+      <code>stopPropagation</code> и другие тонкости — в
+      <a routerLink="/javascript/events/pitfalls">«Нюансах и подводных камнях»</a>.
+    </p>
+  </section>
+</article>

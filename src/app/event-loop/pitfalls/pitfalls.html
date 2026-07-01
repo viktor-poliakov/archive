@@ -1,0 +1,115 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/event-loop">Event Loop</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Подводные камни</h1>
+  <p class="doc__lead">
+    Когда понятно, как устроен событийный цикл, большинство «странностей»
+    превращаются в предсказуемые правила. Соберём здесь самые частые ошибки — и, как
+    в разделе про <a routerLink="/javascript/context/losing-context">потерю
+    контекста</a>, к каждой покажем, как делать правильно.
+  </p>
+
+  <section class="doc__section">
+    <h2>Блокировка потока</h2>
+    <p>
+      Поток один. Пока он занят вашей задачей, браузер не обрабатывает клики и не
+      рисует кадры. Долгий синхронный расчёт буквально <strong>замораживает</strong>
+      страницу — вплоть до сообщения «страница не отвечает».
+    </p>
+    <app-code-block [code]="blockingBad" lang="javascript" />
+    <p>
+      Решение — разбить работу на порции и между ними отдавать управление через
+      <code>setTimeout</code>. Тогда событийный цикл успеет вставить между кусками
+      отрисовку и обработку событий:
+    </p>
+    <app-code-block [code]="blockingFixed" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>setTimeout(…, 0)</code> — не «мгновенно»</h2>
+    <p>
+      Ноль в <code>setTimeout(fn, 0)</code> означает не «выполнить сейчас», а «выполнить
+      как можно скорее, но как макрозадачу». А значит, колбэк дождётся: завершения
+      текущего кода, опустошения <em>всей</em> очереди микрозадач и всех макрозадач,
+      стоящих перед ним.
+    </p>
+    <app-code-block [code]="timeoutExample" lang="javascript" />
+    <p>
+      Поэтому промис (микрозадача) всегда обгонит <code>setTimeout(…, 0)</code>. Есть и
+      второй нюанс: у <strong>вложенных</strong> таймеров браузер поднимает минимальную
+      задержку примерно до <strong>4 мс</strong> — так что цепочка из
+      <code>setTimeout(…, 0)</code> идёт вовсе не мгновенно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Бесконечные микрозадачи морят страницу</h2>
+    <p>
+      Мы помним: очередь микрозадач вычищается <strong>до конца</strong>, включая те,
+      что добавились по ходу. Если микрозадача бесконечно порождает новую, очередь
+      никогда не опустеет — и движок <em>не дойдёт</em> ни до макрозадач, ни до
+      отрисовки. Страница зависнет, хотя код формально «асинхронный»:
+    </p>
+    <app-code-block [code]="microtaskBad" lang="javascript" />
+    <p>
+      Если такой «вечный цикл» действительно нужен (например, фоновое дожёвывание
+      задач), берите макрозадачу — <code>setTimeout</code>. Между её витками браузер
+      успевает и нарисовать кадр, и обработать ввод:
+    </p>
+    <app-code-block [code]="microtaskFixed" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Анимация через таймеры дёргается</h2>
+    <p>
+      <code>setInterval</code> и <code>setTimeout</code> не синхронизированы с частотой
+      экрана: их колбэки — макрозадачи и срабатывают в «неудобные» моменты, из-за чего
+      кадры пропускаются, а движение выглядит рвано. В фоновой вкладке таймеры к тому
+      же продолжают крутиться впустую.
+    </p>
+    <app-code-block [code]="animBad" lang="javascript" />
+    <p>
+      Для любой визуальной анимации используйте
+      <a routerLink="/javascript/event-loop/rendering"><code>requestAnimationFrame</code></a>:
+      он вызывается ровно перед отрисовкой и ровно раз в кадр.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li>
+        <strong>Не держите поток</strong> — длинные расчёты дробите на порции через
+        <code>setTimeout</code>, иначе интерфейс замрёт.
+      </li>
+      <li>
+        <strong><code>setTimeout(…, 0)</code> — это макрозадача</strong>, а не «сейчас»:
+        она ждёт синхронный код, все микрозадачи и очередь перед собой.
+      </li>
+      <li>
+        <strong>Микрозадачи (промисы, <code>await</code>) сильнее макрозадач</strong> —
+        всегда выполняются раньше, но бесконечная цепочка микрозадач вешает страницу.
+      </li>
+      <li>
+        <strong>Анимация — только через <code>requestAnimationFrame</code></strong>,
+        синхронно с кадрами экрана.
+      </li>
+      <li>
+        <strong>Отрисовка — между задачами</strong>, а не внутри них: пользователь видит
+        лишь итоговое состояние DOM после завершения задачи.
+      </li>
+    </ul>
+    <p class="note">
+      Вернуться к началу темы можно в разделе
+      <a routerLink="/javascript/event-loop/basics">«Основы»</a>, а разбор приоритета
+      задач — в
+      <a routerLink="/javascript/event-loop/macro-micro">«Макро- и микрозадачах»</a>.
+    </p>
+  </section>
+</article>

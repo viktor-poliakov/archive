@@ -187,6 +187,13 @@
   }
 }
 
+// Leaf items of the second level (e.g. «Переменные», «Hoisting») stand next to the
+// expandable group rows, which inherit the base 16px font. Match their size so all
+// second-level items look the same (nested `--sub` items keep their smaller size).
+.submenu__item:not(.submenu__item--group):not(.submenu__item--sub) {
+  font-size: 1rem;
+}
+
 // Group row (declared after .submenu__item so flex layout wins over `display: block`).
 .submenu__item--group {
   display: flex;

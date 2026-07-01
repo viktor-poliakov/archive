@@ -1,0 +1,140 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/events">События</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Погружение, цель, всплытие</span>
+  </nav>
+
+  <h1 class="doc__title">Погружение, цель и всплытие</h1>
+  <p class="doc__lead">
+    Элементы на странице вложены друг в друга: кнопка внутри <code>div</code>, тот
+    внутри <code>body</code>, и так до <code>html</code>. Событие не срабатывает
+    только на том элементе, куда вы кликнули, — оно <strong>проходит весь этот
+    путь</strong>. Разберёмся, по какому именно, — и почти вся «магия» событий станет
+    понятной.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — вложенные коробки.</strong> Представьте коробки одна в другой.
+    Событие сначала <em>ныряет</em> сверху вниз через все коробки до самой глубокой,
+    где реально произошло, а потом, как пузырёк воздуха, <em>всплывает</em> обратно
+    наверх. На каждом уровне оно проверяет: нет ли здесь обработчика?
+  </p>
+
+  <section class="doc__section">
+    <h2>Три фазы события</h2>
+    <p>Стандарт описывает три фазы, через которые проходит любое событие:</p>
+    <ul class="rules">
+      <li><strong>1. Погружение</strong> (capturing, «перехват») — событие идёт сверху вниз, от <code>document</code> к цели.</li>
+      <li><strong>2. Цель</strong> (target) — событие достигло самого глубокого элемента, где всё началось.</li>
+      <li><strong>3. Всплытие</strong> (bubbling) — событие идёт обратно вверх, от цели к <code>document</code>.</li>
+    </ul>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 380" width="100%" role="img"
+        aria-label="Три фазы события: погружение сверху вниз, цель, всплытие снизу вверх">
+        <defs>
+          <marker id="ev-p-cap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--green)" />
+          </marker>
+          <marker id="ev-p-bub" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="12" y="20" fill="var(--green)" font-size="13" font-weight="600">1. Погружение ↓</text>
+        <text x="588" y="20" text-anchor="end" fill="var(--accent)" font-size="13" font-weight="600">↑ 3. Всплытие</text>
+
+        <rect x="80" y="40" width="440" height="312" rx="10" fill="var(--bg)" stroke="var(--border)" />
+        <text x="94" y="60" fill="var(--muted)" font-family="monospace" font-size="12.5">html</text>
+
+        <rect x="118" y="78" width="364" height="236" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="132" y="98" fill="var(--muted)" font-family="monospace" font-size="12.5">body</text>
+
+        <rect x="156" y="116" width="288" height="160" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="170" y="136" fill="var(--muted)" font-family="monospace" font-size="12.5">div</text>
+
+        <rect x="226" y="168" width="148" height="66" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="300" y="194" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">button</text>
+        <text x="300" y="214" text-anchor="middle" fill="var(--muted)" font-size="11.5">2. Цель (target)</text>
+
+        <line x1="56" y1="48" x2="56" y2="300" stroke="var(--green)" stroke-width="2" marker-end="url(#ev-p-cap)" />
+        <line x1="544" y1="300" x2="544" y2="48" stroke="var(--accent)" stroke-width="2" marker-end="url(#ev-p-bub)" />
+      </svg>
+      <figcaption>
+        Путь клика по кнопке: вниз до цели (погружение), затем обратно вверх
+        (всплытие). На каждом уровне срабатывают обработчики этого элемента.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Всплытие: снизу вверх</h2>
+    <p>
+      Всплытие — фаза, с которой вы будете работать чаще всего. По умолчанию
+      <strong>все обработчики <code>addEventListener</code> ловят событие именно на
+      всплытии</strong>. Повесим обработчик на три вложенных элемента и кликнем по
+      самому внутреннему:
+    </p>
+    <app-code-block [code]="bubblingExample" lang="javascript" />
+    <p>
+      Событие начинается на <code>inner</code> (это цель) и всплывает вверх, по пути
+      запуская обработчики <code>middle</code> и <code>outer</code>. Отсюда и порядок
+      <code>inner → middle → outer</code>. Именно на всплытии построено
+      <a routerLink="/javascript/events/delegation">делегирование событий</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Погружение: сверху вниз</h2>
+    <p>
+      Фаза погружения — зеркальная. Чтобы поймать событие на ней, передайте третьим
+      аргументом <code>true</code> (или <code>&#123; capture: true &#125;</code>):
+    </p>
+    <app-code-block [code]="capturingExample" lang="javascript" />
+    <p>
+      Теперь порядок обратный — <code>outer → middle → inner</code>: событие сначала
+      «ныряет» к цели. На практике фаза погружения нужна редко, но знать про неё важно,
+      чтобы понимать полную картину.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Остановить распространение</h2>
+    <p>
+      Иногда всплытие мешает: например, клик по кнопке внутри модального окна не должен
+      «дотечь» до обработчика на фоне, который окно закрывает. Тогда движение события
+      можно прервать — <code>event.stopPropagation()</code>:
+    </p>
+    <app-code-block [code]="stopExample" lang="javascript" />
+    <p>
+      <code>stopPropagation()</code> останавливает переход к <em>следующим</em>
+      элементам, но <strong>другие обработчики на том же элементе</strong> всё равно
+      отработают. Если нужно остановить и их — есть более жёсткий
+      <code>stopImmediatePropagation()</code>:
+    </p>
+    <app-code-block [code]="stopImmediateExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно не путать:</strong> <code>stopPropagation()</code> останавливает
+      <em>движение события</em> по странице, а <code>preventDefault()</code> отменяет
+      <em>действие браузера по умолчанию</em>. Это разные вещи, и одно не заменяет
+      другое. А ещё: без крайней необходимости не глушите всплытие — это может сломать
+      делегирование выше по дереву.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>На какой фазе мы сейчас</h2>
+    <p>
+      Узнать текущую фазу можно через <code>event.eventPhase</code>:
+      <code>1</code> — погружение, <code>2</code> — цель, <code>3</code> — всплытие. На
+      практике его используют редко: обычно и так понятно, где висит обработчик.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> раз событие проходит через много элементов, возникает
+      вопрос — как отличить «где кликнули» от «кто обрабатывает». Это и есть
+      <a routerLink="/javascript/events/target">«target и currentTarget»</a>.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,130 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/events">События</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Делегирование</span>
+  </nav>
+
+  <h1 class="doc__title">Делегирование событий</h1>
+  <p class="doc__lead">
+    Представьте список из сотни пунктов, и на каждый нужен обработчик клика. Вешать сто
+    обработчиков — расточительно, а при добавлении новых пунктов их придётся навешивать
+    снова. <strong>Делегирование</strong> решает это одним приёмом: вешаем
+    <em>один</em> обработчик на общего родителя и внутри разбираемся, по какому ребёнку
+    кликнули.
+  </p>
+  <p class="doc__lead">
+    Работает это благодаря всплытию: клик по любому пункту всплывёт до родителя, где
+    обработчик уже ждёт. А <code>event.target</code> подскажет, что именно нажали.
+  </p>
+
+  <section class="doc__section">
+    <h2>Идея: один обработчик на родителе</h2>
+    <app-code-block [code]="delegationExample" lang="javascript" />
+    <p>
+      Ключевой момент — <code>event.target.closest('li')</code>. Клик мог попасть не
+      прямо в <code>li</code>, а во вложенный тег внутри него (иконку, <code>span</code>).
+      <code>closest</code> поднимается от места клика вверх и находит ближайший
+      подходящий <code>li</code>. Проверка <code>menu.contains(item)</code> отсекает
+      клики вне списка.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 250" width="100%" role="img"
+        aria-label="Один обработчик на списке ul ловит всплывающие клики по всем li">
+        <defs>
+          <marker id="ev-d-up" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="40" y="28" width="480" height="52" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="280" y="50" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">ul — 1 обработчик</text>
+        <text x="280" y="68" text-anchor="middle" fill="var(--muted)" font-size="11.5">event.target.closest('li')</text>
+
+        <rect x="46" y="170" width="104" height="52" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="98" y="200" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">li</text>
+
+        <rect x="166" y="170" width="104" height="52" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="218" y="200" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">li</text>
+
+        <rect x="286" y="170" width="104" height="52" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="338" y="200" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">li</text>
+
+        <rect x="406" y="170" width="108" height="52" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" stroke-dasharray="5 4" />
+        <text x="460" y="194" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12.5">li</text>
+        <text x="460" y="211" text-anchor="middle" fill="var(--green)" font-size="10.5">новый</text>
+
+        <line x1="98" y1="168" x2="220" y2="84" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ev-d-up)" />
+        <line x1="218" y1="168" x2="262" y2="84" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ev-d-up)" />
+        <line x1="338" y1="168" x2="300" y2="84" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ev-d-up)" />
+        <line x1="460" y1="168" x2="340" y2="84" stroke="var(--green)" stroke-width="1.5" marker-end="url(#ev-d-up)" />
+      </svg>
+      <figcaption>
+        Клики по любым <code>li</code> (даже добавленным позже) всплывают в единственный
+        обработчик на <code>ul</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Работает и для новых элементов</h2>
+    <p>
+      Главный бонус: обработчику всё равно, когда появился пункт. Добавьте элемент хоть
+      через минуту после загрузки — клик по нему всё равно всплывёт до родителя:
+    </p>
+    <app-code-block [code]="dynamicExample" lang="javascript" />
+    <p>
+      При обычном подходе (обработчик на каждом элементе) для нового пункта пришлось бы
+      вешать обработчик вручную. С делегированием это не нужно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Паттерн «поведение»</h2>
+    <p>
+      Делегирование можно поднять до уровня всего документа и включать поведение просто
+      разметкой — через <code>data-*</code> атрибуты. Один обработчик на
+      <code>document</code> обслуживает все элементы с нужным атрибутом:
+    </p>
+    <app-code-block [code]="behaviorExample" lang="javascript" />
+    <p>
+      Чтобы добавить кнопке-счётчику поведение, JavaScript писать больше не нужно —
+      достаточно поставить атрибут <code>data-counter</code> в HTML.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Плюсы и минусы</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Плюсы</th>
+            <th>О чём помнить</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="yes">Один обработчик вместо многих — меньше кода и памяти</td>
+            <td class="no">Событие должно всплывать (см. <a routerLink="/javascript/events/pitfalls">focus/blur</a>)</td>
+          </tr>
+          <tr>
+            <td class="yes">Динамические элементы работают без доп. настройки</td>
+            <td class="no">Нужно фильтровать <code>target</code> через <code>closest</code></td>
+          </tr>
+          <tr>
+            <td class="yes">Проще добавлять и удалять элементы</td>
+            <td class="no">Не глушите всплытие детей через <code>stopPropagation()</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Дальше:</strong> как создавать и запускать собственные события — в разделе
+      <a routerLink="/javascript/events/custom-events">«Свои события»</a>.
+    </p>
+  </section>
+</article>

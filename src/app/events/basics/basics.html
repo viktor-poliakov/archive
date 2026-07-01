@@ -1,0 +1,120 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/events">События</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Объект события: основы</h1>
+  <p class="doc__lead">
+    Пользователь кликает мышкой, нажимает клавишу, отправляет форму — всё это
+    <strong>события</strong>. Когда событие происходит, браузер не просто зовёт вашу
+    функцию, а передаёт ей <strong>объект события</strong> <code>event</code>: в нём
+    записано, что именно случилось, где и с какими подробностями.
+  </p>
+  <p class="doc__lead">
+    На этой странице разберём, что лежит в объекте <code>event</code>, как правильно
+    вешать обработчики и как отменить стандартное поведение браузера. А дальше —
+    самое интересное: как событие путешествует по странице.
+  </p>
+
+  <section class="doc__section">
+    <h2>Что такое объект <code>event</code></h2>
+    <p>
+      Обработчик события — это обычная функция. Браузер вызывает её в нужный момент и
+      первым аргументом передаёт объект <code>event</code> с описанием произошедшего.
+      Самые ходовые его свойства:
+    </p>
+    <app-code-block [code]="basicEventExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>event.type</code> — имя события: <code>'click'</code>, <code>'keydown'</code>, <code>'submit'</code>…</li>
+      <li><code>event.target</code> — элемент, на котором событие <strong>реально произошло</strong>.</li>
+      <li><code>event.currentTarget</code> — элемент, на котором <strong>сейчас висит</strong> текущий обработчик.</li>
+    </ul>
+    <p>
+      В простом примере выше <code>target</code> и <code>currentTarget</code>
+      совпадают. Но как только элементы вложены друг в друга, они начинают различаться —
+      это отдельная важная тема, ей посвящена страница
+      <a routerLink="/javascript/events/target">«target и currentTarget»</a>.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 210" width="100%" role="img"
+        aria-label="Событие: браузер создаёт объект event и передаёт его в обработчик">
+        <defs>
+          <marker id="ev-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="14" y="66" width="140" height="64" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="84" y="94" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="600">Произошло</text>
+        <text x="84" y="112" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="600">событие</text>
+
+        <line x1="156" y1="98" x2="196" y2="98" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ev-b-arrow)" />
+
+        <rect x="200" y="40" width="228" height="120" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="314" y="34" text-anchor="middle" fill="var(--muted)" font-size="12">объект event</text>
+        <text x="220" y="70" fill="var(--accent)" font-family="monospace" font-size="12.5">type: 'click'</text>
+        <text x="220" y="92" fill="var(--accent)" font-family="monospace" font-size="12.5">target: …</text>
+        <text x="220" y="114" fill="var(--accent)" font-family="monospace" font-size="12.5">currentTarget: …</text>
+        <text x="220" y="136" fill="var(--muted)" font-family="monospace" font-size="12.5">clientX, key, …</text>
+
+        <line x1="430" y1="98" x2="470" y2="98" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ev-b-arrow)" />
+
+        <rect x="474" y="66" width="150" height="64" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="549" y="94" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">handler</text>
+        <text x="549" y="114" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">(event)</text>
+      </svg>
+      <figcaption>
+        Браузер создаёт объект <code>event</code> с подробностями произошедшего и
+        передаёт его первым аргументом в ваш обработчик.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как навесить обработчик</h2>
+    <p>Назначить функцию-обработчик можно тремя способами:</p>
+    <app-code-block [code]="assignExample" lang="javascript" />
+    <p>
+      На практике используйте <strong><code>addEventListener</code></strong>: он не
+      конфликтует с другими обработчиками (можно повесить сразу несколько), поддерживает
+      удаление и опции (об опциях — в
+      <a routerLink="/javascript/events/pitfalls">«Нюансах»</a>). Свойство
+      <code>elem.onclick</code> допускает лишь один обработчик — новое присваивание
+      затрёт старое.
+    </p>
+    <p>
+      Снять обработчик можно через <code>removeEventListener</code>, но есть тонкость:
+      нужно передать <strong>ту же самую</strong> функцию, что и при добавлении.
+      Анонимную стрелочную функцию снять уже не получится — сохраните её в переменную:
+    </p>
+    <app-code-block [code]="removeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Действие по умолчанию и <code>preventDefault()</code></h2>
+    <p>
+      У многих событий есть <strong>действие по умолчанию</strong>: клик по ссылке ведёт
+      на другую страницу, отправка формы перезагружает страницу, правый клик открывает
+      меню. Чтобы отменить это поведение, вызовите <code>event.preventDefault()</code>:
+    </p>
+    <app-code-block [code]="preventDefaultExample" lang="javascript" />
+    <p class="note">
+      <strong>Не путайте:</strong> <code>preventDefault()</code> отменяет только
+      <em>действие браузера по умолчанию</em>. Оно <strong>не</strong> останавливает
+      движение события по странице — за это отвечает <code>stopPropagation()</code>,
+      о котором на следующей странице.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> обработчики срабатывают не мгновенно — их колбэки
+      выполняются как макрозадачи событийного цикла (см.
+      <a routerLink="/javascript/event-loop/macro-micro">«Макро- и микрозадачи»</a>). А
+      теперь разберём, как событие проходит сквозь вложенные элементы:
+      <a routerLink="/javascript/events/propagation">«Погружение, цель и всплытие»</a>.
+    </p>
+  </section>
+</article>

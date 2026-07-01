@@ -1,0 +1,93 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/events">События</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">target и currentTarget</span>
+  </nav>
+
+  <h1 class="doc__title"><code>target</code> и <code>currentTarget</code></h1>
+  <p class="doc__lead">
+    Раз событие проходит через много вложенных элементов, полезно различать два вопроса:
+    <strong>где событие произошло</strong> и <strong>кто его сейчас обрабатывает</strong>.
+    На эти вопросы отвечают два разных свойства объекта <code>event</code> — и путаница
+    между ними одна из самых частых.
+  </p>
+
+  <section class="doc__section">
+    <h2>Два разных элемента</h2>
+    <ul class="rules">
+      <li>
+        <code>event.target</code> — элемент, на котором событие <strong>реально
+        произошло</strong> (самый глубокий, куда вы кликнули). По пути события он
+        <strong>не меняется</strong>.
+      </li>
+      <li>
+        <code>event.currentTarget</code> — элемент, чей обработчик <strong>выполняется
+        прямо сейчас</strong>. По мере всплытия он <strong>меняется</strong> от элемента
+        к элементу.
+      </li>
+    </ul>
+    <app-code-block [code]="targetExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 250" width="100%" role="img"
+        aria-label="Обработчик на ul это currentTarget, клик по вложенному span это target">
+        <rect x="30" y="34" width="500" height="182" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="46" y="56" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">ul</text>
+        <text x="76" y="56" fill="var(--muted)" font-size="12">— currentTarget (здесь висит обработчик)</text>
+
+        <rect x="70" y="72" width="420" height="120" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="86" y="94" fill="var(--muted)" font-family="monospace" font-size="12.5">li</text>
+
+        <rect x="150" y="112" width="260" height="60" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+        <text x="280" y="138" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13" font-weight="700">span</text>
+        <text x="280" y="158" text-anchor="middle" fill="var(--muted)" font-size="11.5">target (сюда кликнули)</text>
+      </svg>
+      <figcaption>
+        Обработчик один — на <code>ul</code> (это <code>currentTarget</code>). Но кликнуть
+        могли по вложенному <code>span</code> — он и будет <code>target</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>currentTarget</code> меняется, <code>target</code> — нет</h2>
+    <p>
+      Разница особенно видна, если повесить обработчик на несколько уровней сразу. Пока
+      событие всплывает, <code>target</code> остаётся одним и тем же, а
+      <code>currentTarget</code> на каждом шаге — это текущий элемент:
+    </p>
+    <app-code-block [code]="bubbleExample" lang="javascript" />
+    <p>
+      Отсюда практическое правило: <code>target</code> отвечает на вопрос
+      <em>«что нажали»</em>, а <code>currentTarget</code> — <em>«кто обрабатывает»</em>.
+      На различии <code>target</code> и <code>currentTarget</code> держится
+      <a routerLink="/javascript/events/delegation">делегирование</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>this</code> в обработчике</h2>
+    <p>
+      В обычной функции-обработчике <code>this</code> равен
+      <code>event.currentTarget</code> — тому элементу, на котором висит обработчик:
+    </p>
+    <app-code-block [code]="thisExample" lang="javascript" />
+    <p>
+      А вот у <strong>стрелочной функции</strong> нет своего <code>this</code> — она
+      берёт его из окружающего кода, поэтому на элемент он указывать не будет. Это общее
+      правило стрелочных функций (подробнее — в разделе
+      <a routerLink="/javascript/context/arrow">«Стрелочные функции»</a>). Вывод простой:
+      внутри обработчиков надёжнее опираться на <code>event.currentTarget</code>, а не на
+      <code>this</code>.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> зная, что <code>target</code> указывает на реальный
+      элемент клика, можно повесить <em>один</em> обработчик на контейнер и разбирать
+      клики по всем детям — это
+      <a routerLink="/javascript/events/delegation">делегирование событий</a>.
+    </p>
+  </section>
+</article>

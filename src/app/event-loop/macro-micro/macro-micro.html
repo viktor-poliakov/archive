@@ -1,0 +1,193 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/event-loop">Event Loop</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Макро- и микрозадачи</span>
+  </nav>
+
+  <h1 class="doc__title">Макро- и микрозадачи</h1>
+  <p class="doc__lead">
+    В <a routerLink="/javascript/event-loop/basics">основах</a> мы увидели странность:
+    промис выполнился раньше <code>setTimeout</code>, хотя в коде стоял ниже. Причина
+    в том, что отложенных задач бывает <strong>два сорта</strong> — и у них разный
+    приоритет. Это <strong>макрозадачи</strong> и <strong>микрозадачи</strong>.
+  </p>
+  <p class="doc__lead">
+    Разберёмся, что относится к каждому сорту, по какому правилу движок выбирает
+    следующую задачу, — и после этого вы сможете предсказать порядок вывода почти
+    любого асинхронного кода.
+  </p>
+
+  <section class="doc__section">
+    <h2>Две очереди, а не одна</h2>
+    <p>
+      На самом деле очередей у событийного цикла две, и они разного «класса
+      обслуживания»:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Макрозадачи</strong> (macrotasks) — «крупные» задачи: колбэки
+        <code>setTimeout</code> и <code>setInterval</code>, обработчики событий
+        (клик, ввод), загрузка скриптов. Сам запуск вашего <code>&lt;script&gt;</code>
+        — тоже макрозадача.
+      </li>
+      <li>
+        <strong>Микрозадачи</strong> (microtasks) — «срочные» мелкие задачи:
+        колбэки промисов (<code>.then</code>, <code>.catch</code>,
+        <code>.finally</code>), <code>queueMicrotask(…)</code>, продолжение кода
+        после <code>await</code>, а также колбэки <code>MutationObserver</code>
+        (реакция на изменения DOM).
+      </li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Главное правило приоритета</h2>
+    <p>
+      Всё поведение держится на одном правиле. Запомните его — и загадки с порядком
+      исчезнут:
+    </p>
+    <p class="note">
+      <strong>После каждой макрозадачи движок выполняет
+      <em>все</em> микрозадачи</strong> — опустошает их очередь целиком — и только
+      потом берёт следующую макрозадачу (а между ними, возможно, перерисовывает
+      страницу).
+    </p>
+    <p>
+      То есть микрозадачи всегда «пролезают» вперёд следующей макрозадачи. Их очередь
+      разбирается до дна сразу же, как освободился стек. Посмотрим на примере:
+    </p>
+    <app-code-block [code]="drainExample" lang="javascript" />
+    <ul class="rules">
+      <li>
+        Сначала синхронно печатаются <code>start</code> и <code>end</code> (запуск
+        скрипта — это текущая макрозадача).
+      </li>
+      <li>
+        Стек опустел → движок разбирает <strong>всю</strong> очередь микрозадач:
+        <code>promise 1</code>, затем <code>promise 2</code>.
+      </li>
+      <li>
+        И лишь теперь доходит очередь до макрозадач — по одной за виток:
+        <code>timeout 1</code>, потом <code>timeout 2</code>.
+      </li>
+    </ul>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 250" width="100%" role="img"
+        aria-label="Один виток событийного цикла: одна макрозадача, затем все микрозадачи, затем отрисовка">
+        <defs>
+          <marker id="el-mm-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="320" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Один виток событийного цикла</text>
+
+        <rect x="24" y="70" width="150" height="66" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="99" y="100" text-anchor="middle" fill="var(--fg)" font-size="13.5" font-weight="600">1 макрозадача</text>
+        <text x="99" y="120" text-anchor="middle" fill="var(--muted)" font-size="11.5">по одной за виток</text>
+
+        <line x1="176" y1="103" x2="222" y2="103" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#el-mm-arrow)" />
+
+        <rect x="226" y="70" width="176" height="66" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="314" y="100" text-anchor="middle" fill="var(--accent)" font-size="13.5" font-weight="600">ВСЕ микрозадачи</text>
+        <text x="314" y="120" text-anchor="middle" fill="var(--muted)" font-size="11.5">до пустой очереди</text>
+
+        <line x1="404" y1="103" x2="450" y2="103" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#el-mm-arrow)" />
+
+        <rect x="454" y="70" width="162" height="66" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-dasharray="5 4" />
+        <text x="535" y="100" text-anchor="middle" fill="var(--fg)" font-size="13.5" font-weight="600">отрисовка</text>
+        <text x="535" y="120" text-anchor="middle" fill="var(--muted)" font-size="11.5">если пришло время</text>
+
+        <!-- loop back arrow -->
+        <path d="M535 138 L535 200 L99 200 L99 140" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#el-mm-arrow)" />
+        <text x="320" y="218" text-anchor="middle" fill="var(--muted)" font-size="12">следующий виток → снова одна макрозадача</text>
+      </svg>
+      <figcaption>
+        За один виток берётся ровно одна макрозадача, зато микрозадачи вычищаются
+        полностью. Поэтому промисы обгоняют таймеры.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Очередь микрозадач вычищается до дна</h2>
+    <p>
+      «Все микрозадачи» — это буквально все, включая те, что появились
+      <em>во время</em> разбора очереди. Если микрозадача добавит ещё одну
+      микрозадачу, та тоже выполнится в этом же заходе, ещё до следующей
+      макрозадачи:
+    </p>
+    <app-code-block [code]="nestedMicroExample" lang="javascript" />
+    <p>
+      <code>micro 2</code> родился уже в процессе, но всё равно опередил
+      <code>macrotask</code>. Движок не выйдет из «режима микрозадач», пока их очередь
+      не станет по-настоящему пустой. У этого есть и обратная сторона: бесконечный
+      поток микрозадач может вовсе не дать дойти до макрозадач и отрисовки — об этом в
+      <a routerLink="/javascript/event-loop/pitfalls">«Подводных камнях»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Коротко: чем отличаются</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th>Макрозадачи</th>
+            <th>Микрозадачи</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Примеры</td>
+            <td><code>setTimeout</code>, <code>setInterval</code>, события, запуск скрипта</td>
+            <td><code>.then/.catch/.finally</code>, <code>queueMicrotask</code>, <code>await</code>, <code>MutationObserver</code></td>
+          </tr>
+          <tr>
+            <td>Сколько за один виток</td>
+            <td class="no">Ровно одна</td>
+            <td class="yes">Вся очередь, до конца</td>
+          </tr>
+          <tr>
+            <td>Когда выполняются</td>
+            <td>После микрозадач и возможной отрисовки</td>
+            <td>Сразу как стек опустел, раньше макрозадач</td>
+          </tr>
+          <tr>
+            <td>Приоритет</td>
+            <td>Ниже</td>
+            <td class="yes">Выше</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>await</code> — это тоже микрозадача</h2>
+    <p>
+      <code>async/await</code> — удобная запись поверх промисов, поэтому и правила те
+      же. Всё до <code>await</code> выполняется синхронно, а вот <strong>код после
+      <code>await</code></strong> движок откладывает как микрозадачу — как будто он
+      завёрнут в <code>.then(…)</code>:
+    </p>
+    <app-code-block [code]="awaitExample" lang="javascript" />
+    <p>
+      Функция <code>load</code> печатает <code>before await</code> сразу, но на
+      <code>await</code> «замирает» и отдаёт управление наружу — поэтому успевает
+      напечататься <code>end</code>. И только когда стек опустеет, продолжение
+      (<code>after await</code>) выполнится как микрозадача.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> мы несколько раз упомянули «возможную отрисовку» между
+      задачами. Где именно она происходит и при чём тут
+      <code>requestAnimationFrame</code> — в разделе
+      <a routerLink="/javascript/event-loop/rendering">«Отрисовка и rAF»</a>.
+    </p>
+  </section>
+</article>

@@ -91,6 +91,28 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'pitfalls', label: 'Нюансы и подводные камни' },
         ],
       },
+      {
+        id: 'event-loop',
+        label: 'Event Loop',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'macro-micro', label: 'Макро- и микрозадачи' },
+          { id: 'rendering', label: 'Отрисовка и rAF' },
+          { id: 'pitfalls', label: 'Подводные камни' },
+        ],
+      },
+      {
+        id: 'events',
+        label: 'События',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'propagation', label: 'Погружение, цель, всплытие' },
+          { id: 'target', label: 'target и currentTarget' },
+          { id: 'delegation', label: 'Делегирование' },
+          { id: 'custom-events', label: 'Свои события' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
     ],
   },
   {

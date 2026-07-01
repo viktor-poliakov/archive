@@ -77,6 +77,26 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./context/arrow/arrow').then((m) => m.ContextArrow),
   'javascript/context/classes-new': () =>
     import('./context/classes-new/classes-new').then((m) => m.ContextClassesNew),
+  'javascript/event-loop/basics': () =>
+    import('./event-loop/basics/basics').then((m) => m.EventLoopBasics),
+  'javascript/event-loop/macro-micro': () =>
+    import('./event-loop/macro-micro/macro-micro').then((m) => m.EventLoopMacroMicro),
+  'javascript/event-loop/rendering': () =>
+    import('./event-loop/rendering/rendering').then((m) => m.EventLoopRendering),
+  'javascript/event-loop/pitfalls': () =>
+    import('./event-loop/pitfalls/pitfalls').then((m) => m.EventLoopPitfalls),
+  'javascript/events/basics': () =>
+    import('./events/basics/basics').then((m) => m.EventsBasics),
+  'javascript/events/propagation': () =>
+    import('./events/propagation/propagation').then((m) => m.EventsPropagation),
+  'javascript/events/target': () =>
+    import('./events/target/target').then((m) => m.EventsTarget),
+  'javascript/events/delegation': () =>
+    import('./events/delegation/delegation').then((m) => m.EventsDelegation),
+  'javascript/events/custom-events': () =>
+    import('./events/custom-events/custom-events').then((m) => m.EventsCustomEvents),
+  'javascript/events/pitfalls': () =>
+    import('./events/pitfalls/pitfalls').then((m) => m.EventsPitfalls),
 };
 
 // A leaf route: a real content page if registered in PAGE_OVERRIDES, otherwise

@@ -1,0 +1,107 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/events">События</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Основы событий позади — соберём здесь тонкости, на которых чаще всего спотыкаются:
+    события, которые не всплывают, опции обработчиков, путаницу
+    <code>preventDefault</code> и <code>stopPropagation</code>, а также свойства
+    конкретных типов событий.
+  </p>
+
+  <section class="doc__section">
+    <h2>Не все события всплывают</h2>
+    <p>
+      Большинство событий всплывают, но есть исключения: <code>focus</code>,
+      <code>blur</code>, <code>mouseenter</code>, <code>mouseleave</code>. Для них
+      делегирование «в лоб» не сработает — событие просто не дойдёт до родителя. Что
+      делать:
+    </p>
+    <app-code-block [code]="noBubbleExample" lang="javascript" />
+    <ul class="rules">
+      <li>Вместо <code>focus</code>/<code>blur</code> берите всплывающие <code>focusin</code>/<code>focusout</code>.</li>
+      <li>Вместо <code>mouseenter</code>/<code>mouseleave</code> — всплывающие <code>mouseover</code>/<code>mouseout</code>.</li>
+      <li>Либо ловите событие на фазе погружения — с опцией <code>capture: true</code>.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Опции <code>addEventListener</code></h2>
+    <p>
+      Третьим аргументом можно передать объект опций — они экономят код и нервы:
+    </p>
+    <app-code-block [code]="optionsExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>once</code> — обработчик сработает ровно один раз и сам удалится.</li>
+      <li><code>passive</code> — вы обещаете не вызывать <code>preventDefault()</code>; браузеру не нужно ждать обработчик, и прокрутка/тач идут плавнее.</li>
+      <li><code>capture</code> — ловить на фазе погружения (то же, что третий аргумент <code>true</code>).</li>
+    </ul>
+    <p class="note">
+      <strong>Про <code>removeEventListener</code>:</strong> чтобы снять обработчик,
+      нужно передать <strong>ту же ссылку на функцию</strong> и <strong>тот же флаг
+      <code>capture</code></strong>, что и при добавлении. Поэтому обработчик, который
+      придётся снимать, нельзя объявлять анонимной стрелкой прямо в вызове — сохраните
+      его в переменную.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>this</code> и стрелочные функции</h2>
+    <p>
+      Частая ловушка: в обычной функции-обработчике <code>this</code> — это элемент
+      (<code>currentTarget</code>), а у стрелочной — нет:
+    </p>
+    <app-code-block [code]="arrowThisExample" lang="javascript" />
+    <p>
+      Если внутри обработчика нужен сам элемент — используйте
+      <code>event.currentTarget</code>, он не зависит от вида функции (подробнее про
+      стрелочные — в разделе
+      <a routerLink="/javascript/context/arrow">«Стрелочные функции»</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>preventDefault</code> ≠ <code>stopPropagation</code></h2>
+    <p>Их постоянно путают, хотя они про разное:</p>
+    <ul class="rules">
+      <li><code>preventDefault()</code> — отменяет <strong>действие браузера по умолчанию</strong> (переход по ссылке, отправку формы). Движение события при этом продолжается.</li>
+      <li><code>stopPropagation()</code> — останавливает <strong>движение события</strong> по дереву. Действие по умолчанию при этом сохраняется.</li>
+    </ul>
+    <p>
+      И ещё: обработчик с опцией <code>passive: true</code> не может отменить действие по
+      умолчанию — вызов <code>preventDefault()</code> в нём просто игнорируется.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Свойства конкретных событий</h2>
+    <p>
+      Кроме общих <code>type</code>, <code>target</code>, <code>currentTarget</code>, у
+      каждого типа события есть свои полезные поля:
+    </p>
+    <app-code-block [code]="eventPropsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Не всё всплывает</strong> — для <code>focus</code>/<code>blur</code> берите <code>focusin</code>/<code>focusout</code> или <code>capture</code>.</li>
+      <li><strong>Опции</strong> <code>once</code>/<code>passive</code>/<code>capture</code> упрощают код; <code>removeEventListener</code> требует ту же ссылку на функцию.</li>
+      <li><strong><code>preventDefault</code> и <code>stopPropagation</code> — про разное:</strong> отмена действия vs остановка движения события.</li>
+      <li><strong>Внутри обработчика</strong> для элемента используйте <code>event.currentTarget</code>, а не <code>this</code>.</li>
+    </ul>
+    <p class="note">
+      Вернуться к теме можно с
+      <a routerLink="/javascript/events/basics">«Основ»</a>, разбор пути события — в
+      <a routerLink="/javascript/events/propagation">«Погружении, цели и всплытии»</a>, а
+      главный практический приём — в
+      <a routerLink="/javascript/events/delegation">«Делегировании»</a>.
+    </p>
+  </section>
+</article>

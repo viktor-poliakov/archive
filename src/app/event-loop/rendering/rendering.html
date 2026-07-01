@@ -1,0 +1,181 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/event-loop">Event Loop</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Отрисовка и rAF</span>
+  </nav>
+
+  <h1 class="doc__title">Отрисовка и <code>requestAnimationFrame</code></h1>
+  <p class="doc__lead">
+    До сих пор мы говорили о том, как выполняется код. Но браузер должен ещё и
+    <strong>показывать</strong> результат на экране — перерисовывать страницу. У этой
+    отрисовки есть строго отведённое место в событийном цикле, и именно там живёт
+    <code>requestAnimationFrame</code> — правильный инструмент для анимаций.
+  </p>
+  <p class="doc__lead">
+    Разберём, когда браузер успевает нарисовать кадр, почему это происходит не после
+    каждой задачи, и где в этой картине оказывается <code>requestAnimationFrame</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Отрисовка не прерывает задачу</h2>
+    <p>
+      Первое и главное: <strong>браузер не рисует посреди выполнения кода</strong>.
+      Пока задача работает (стек не пуст), а затем пока разбирается очередь
+      микрозадач, экран не обновляется. Все изменения, которые вы внесли в DOM,
+      попадут на экран только <em>после</em> того, как задача завершится и
+      микрозадачи опустеют.
+    </p>
+    <p>
+      Поэтому нельзя в цикле менять DOM и ждать, что пользователь увидит промежуточные
+      шаги: он увидит только финальное состояние — то, что осталось к моменту, когда
+      движок наконец освободился и отдал управление на отрисовку.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Отрисовка — примерно 60 раз в секунду</h2>
+    <p>
+      Кадр рисуется не после каждой задачи, а по расписанию экрана. Большинство
+      мониторов обновляются <strong>60 раз в секунду</strong>, то есть примерно раз в
+      <strong>16.7 мс</strong> (бывают экраны 120 и 144 Гц — тогда чаще). Между этими
+      моментами движок продолжает крутить свой цикл: берёт макрозадачи, разбирает
+      микрозадачи, — а рисует, только когда подошло время очередного кадра.
+    </p>
+    <p class="note">
+      <strong>Отсюда «зависания»:</strong> если одна задача считает дольше 16.7 мс,
+      браузер просто не успевает нарисовать кадр вовремя — анимации дёргаются, кнопки
+      не реагируют. Экран замирает ровно до тех пор, пока поток занят.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Где именно <code>requestAnimationFrame</code></h2>
+    <p>
+      <code>requestAnimationFrame(callback)</code> просит браузер вызвать
+      <code>callback</code> <strong>прямо перед следующей перерисовкой</strong>. И вот
+      ключевой момент, который часто понимают неправильно:
+    </p>
+    <p class="note">
+      <code>requestAnimationFrame</code> — это <strong>ни макрозадача, ни
+      микрозадача</strong>. Это отдельная фаза внутри шага «обновить отрисовку»: она
+      выполняется <strong>после всех микрозадач</strong> и <strong>перед тем, как
+      браузер посчитает стили, разложит элементы (layout) и нарисует кадр (paint)</strong>.
+    </p>
+    <p>Порядок одного «кадрового» витка цикла выглядит так:</p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 680 232" width="100%" role="img"
+        aria-label="Порядок фаз в кадре: макрозадача, микрозадачи, затем rAF, стили и лейаут, paint">
+        <defs>
+          <marker id="el-r-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+          <marker id="el-r-arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)" />
+          </marker>
+        </defs>
+
+        <rect x="14" y="86" width="104" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="66" y="110" text-anchor="middle" fill="var(--fg)" font-size="12.5" font-weight="600">Макро-</text>
+        <text x="66" y="126" text-anchor="middle" fill="var(--fg)" font-size="12.5" font-weight="600">задача</text>
+
+        <line x1="120" y1="112" x2="142" y2="112" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#el-r-arrow)" />
+
+        <rect x="146" y="86" width="104" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="198" y="110" text-anchor="middle" fill="var(--fg)" font-size="12.5" font-weight="600">Микро-</text>
+        <text x="198" y="126" text-anchor="middle" fill="var(--fg)" font-size="12.5" font-weight="600">задачи</text>
+
+        <line x1="252" y1="112" x2="274" y2="112" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#el-r-arrow)" />
+
+        <!-- render-update group -->
+        <rect x="278" y="66" width="388" height="92" rx="11" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="5 4" />
+        <text x="472" y="60" text-anchor="middle" fill="var(--muted)" font-size="12">Обновление отрисовки (≈ раз в кадр, 16.7&nbsp;мс)</text>
+
+        <rect x="288" y="86" width="112" height="52" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="344" y="106" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="700">rAF</text>
+        <text x="344" y="124" text-anchor="middle" fill="var(--muted)" font-size="10.5">ваш колбэк</text>
+
+        <line x1="402" y1="112" x2="416" y2="112" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#el-r-arrow-m)" />
+
+        <rect x="420" y="86" width="112" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="476" y="106" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="600">Стили и</text>
+        <text x="476" y="123" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="600">лейаут</text>
+
+        <line x1="534" y1="112" x2="548" y2="112" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#el-r-arrow-m)" />
+
+        <rect x="552" y="86" width="104" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="604" y="106" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="600">Paint</text>
+        <text x="604" y="123" text-anchor="middle" fill="var(--muted)" font-size="10.5">кадр на экране</text>
+
+        <path d="M604 160 L604 206 L66 206 L66 140" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#el-r-arrow-m)" />
+        <text x="335" y="224" text-anchor="middle" fill="var(--muted)" font-size="11.5">следующий виток цикла</text>
+      </svg>
+      <figcaption>
+        <code>requestAnimationFrame</code> — отдельная фаза: после микрозадач и прямо
+        перед тем, как браузер посчитает стили и покажет кадр.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Порядок с учётом rAF</h2>
+    <p>Добавим <code>requestAnimationFrame</code> к нашему примеру про порядок:</p>
+    <app-code-block [code]="rafOrderExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>script start</code>, <code>script end</code> — синхронный код, сразу.</li>
+      <li><code>microtask</code> — микрозадача, разбирается первой после синхронного кода.</li>
+      <li><code>raf</code> — фаза отрисовки: после микрозадач, перед показом кадра.</li>
+      <li><code>setTimeout</code> — макрозадача, достаётся уже на следующем витке.</li>
+    </ul>
+    <p class="note">
+      <strong>Честная оговорка:</strong> надёжно гарантирован порядок «синхронный код →
+      микрозадачи → rAF → отрисовка». А вот точная «гонка» между <code>setTimeout(…, 0)</code>
+      и <code>requestAnimationFrame</code> зависит от момента запуска и браузера — не
+      стоит на неё закладываться. Твёрдое правило только одно: микрозадачи всегда
+      раньше rAF, а rAF всегда перед перерисовкой.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Почему для анимации нужен именно rAF</h2>
+    <p>
+      Раз <code>requestAnimationFrame</code> вызывается ровно перед отрисовкой и ровно
+      раз в кадр, это идеальное место, чтобы менять то, что видит пользователь. Отсюда
+      его преимущества перед <code>setTimeout</code>/<code>setInterval</code>:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Синхронизирован с экраном.</strong> Колбэк срабатывает под частоту
+        монитора (обычно 60 раз в секунду), поэтому движение получается плавным, без
+        рывков и лишних кадров.
+      </li>
+      <li>
+        <strong>Ровно перед paint.</strong> Изменения DOM попадают на экран в том же
+        кадре — нет «пустой» работы между перерисовками.
+      </li>
+      <li>
+        <strong>Пауза в фоне.</strong> В неактивной вкладке rAF приостанавливается —
+        это экономит процессор и батарею. <code>setInterval</code> продолжал бы
+        крутиться впустую.
+      </li>
+      <li>
+        <strong>Точное время в аргументе.</strong> Колбэк получает
+        <code>timestamp</code> — время начала кадра. По нему считают прогресс анимации,
+        чтобы она шла одинаково на экранах с разной частотой.
+      </li>
+    </ul>
+    <p>
+      <code>requestAnimationFrame</code> одноразовый: он планирует <em>один</em> кадр.
+      Чтобы анимация продолжалась, из колбэка нужно снова запросить следующий кадр:
+    </p>
+    <app-code-block [code]="animExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> частые ошибки — блокировка потока, ложное «мгновенное»
+      <code>setTimeout(…, 0)</code> и анимация не через rAF — собраны в
+      <a routerLink="/javascript/event-loop/pitfalls">«Подводных камнях»</a>.
+    </p>
+  </section>
+</article>

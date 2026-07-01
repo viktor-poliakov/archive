@@ -1,0 +1,218 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/event-loop">Event Loop</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Event Loop: основы</h1>
+  <p class="doc__lead">
+    JavaScript умеет ждать таймеры, ответы с сервера и клики пользователя — и при
+    этом не «замирает». Как он успевает делать всё сразу, если поток всего один?
+    Ответ — <strong>событийный цикл</strong> (event loop). Это не какая-то скрытая
+    магия, а понятный распорядок: очередь задач и строгие правила, кого брать
+    следующим.
+  </p>
+  <p class="doc__lead">
+    Начнём с фундамента: почему JavaScript делает лишь одно дело за раз, откуда
+    вообще берётся «асинхронность» и почему вот такой код печатает
+    <code>1, 4, 3, 2</code>, а не <code>1, 2, 3, 4</code>. К концу страницы этот
+    порядок перестанет казаться загадкой.
+  </p>
+
+  <section class="doc__section">
+    <h2>Один поток — одна задача за раз</h2>
+    <p>
+      Главное, с чего стоит начать: JavaScript <strong>однопоточный</strong>. Это
+      значит, что в каждый момент времени выполняется ровно одна операция. Нет
+      такого, чтобы две функции считали что-то «параллельно» в одном и том же
+      коде — всё выстраивается в одну линию.
+    </p>
+    <p>
+      Чтобы отслеживать, что выполняется прямо сейчас, движок использует
+      <strong>стек вызовов</strong> (call stack). Когда вы вызываете функцию, этот
+      вызов кладётся на верх стека; когда функция возвращает результат — вызов
+      снимается со стека. В любой момент выполняется тот вызов, что лежит на самом
+      верху:
+    </p>
+    <app-code-block [code]="stackExample" lang="javascript" />
+    <p>
+      Здесь <code>printSquare(5)</code> ложится на стек, внутри вызывает
+      <code>square(5)</code> — она ложится сверху, та вызывает
+      <code>multiply(5, 5)</code> — и она оказывается на самом верху. Дальше стек
+      разбирается в обратном порядке: сначала завершается <code>multiply</code>,
+      потом <code>square</code>, потом <code>printSquare</code>.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 460 250" width="100%" role="img"
+        aria-label="Стек вызовов: вызовы функций складываются друг на друга и снимаются с верха">
+        <defs>
+          <marker id="el-b-up" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 9 L5 0 L10 9 z" fill="var(--green)" />
+          </marker>
+          <marker id="el-b-down" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 1 L5 10 L10 1 z" fill="var(--muted)" />
+          </marker>
+        </defs>
+
+        <text x="150" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Стек вызовов</text>
+        <rect x="50" y="40" width="200" height="186" rx="10" fill="var(--surface)" stroke="var(--border)" />
+
+        <rect x="64" y="156" width="172" height="42" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="150" y="182" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">printSquare(5)</text>
+
+        <rect x="64" y="108" width="172" height="42" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="150" y="134" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">square(5)</text>
+
+        <rect x="64" y="60" width="172" height="42" rx="7" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
+        <text x="150" y="86" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">multiply(5, 5)</text>
+
+        <line x1="300" y1="150" x2="300" y2="74" stroke="var(--green)" stroke-width="1.5" marker-end="url(#el-b-up)" />
+        <text x="316" y="92" fill="var(--fg)" font-size="12.5">вызов —</text>
+        <text x="316" y="108" fill="var(--muted)" font-size="12">кладём вызов</text>
+
+        <line x1="392" y1="74" x2="392" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#el-b-down)" />
+        <text x="352" y="176" fill="var(--fg)" font-size="12.5">возврат —</text>
+        <text x="352" y="192" fill="var(--muted)" font-size="12">снимаем вызов</text>
+      </svg>
+      <figcaption>
+        Стек работает по правилу «последним пришёл — первым ушёл»:
+        <code>multiply</code> вызвана последней, а завершится первой.
+      </figcaption>
+    </figure>
+
+    <p class="note">
+      <strong>Важное следствие:</strong> пока стек не опустеет, движок занят и
+      ничего другого не делает — не обрабатывает клики, не запускает таймеры и даже
+      не перерисовывает страницу. Отсюда и «зависания»: если одна функция считает
+      слишком долго, весь интерфейс замирает (об этом — в разделе
+      <a routerLink="/javascript/event-loop/pitfalls">«Подводные камни»</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Откуда берётся асинхронность</h2>
+    <p>
+      Если поток один и он всё время занят стеком, как тогда работает
+      <code>setTimeout</code> или загрузка данных? Секрет в том, что таймеры,
+      события и запросы к серверу выполняет <strong>не сам движок JavaScript</strong>,
+      а окружение вокруг него — браузер (в Node.js это его собственные механизмы).
+    </p>
+    <app-code-block [code]="asyncExample" lang="javascript" />
+    <p>
+      Строка <code>setTimeout</code> не «останавливает» программу на секунду. Она
+      лишь просит браузер: «отсчитай секунду и потом напомни». Движок тут же идёт
+      дальше и печатает <code>end</code>. А когда браузер отсчитает время, он не
+      врывается в середину кода — он аккуратно кладёт колбэк в
+      <strong>очередь задач</strong> и ждёт, пока стек освободится.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что такое событийный цикл</h2>
+    <p>
+      Вот теперь всё складывается. <strong>Событийный цикл</strong> — это простой
+      бесконечный распорядок: «как только стек вызовов опустеет, возьми следующую
+      задачу из очереди и выполни её». Пусто на стеке — берём задачу; выполнили —
+      снова проверяем очередь. И так по кругу.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 620 250" width="100%" role="img"
+        aria-label="Общая схема: движок, Web API браузера, очередь задач и событийный цикл">
+        <defs>
+          <marker id="el-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="30" y="60" width="150" height="120" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5" />
+        <text x="105" y="52" text-anchor="middle" fill="var(--fg)" font-size="13.5" font-weight="600">Движок JS</text>
+        <text x="105" y="112" text-anchor="middle" fill="var(--muted)" font-size="12">стек</text>
+        <text x="105" y="130" text-anchor="middle" fill="var(--muted)" font-size="12">вызовов</text>
+
+        <rect x="440" y="30" width="150" height="80" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="515" y="22" text-anchor="middle" fill="var(--fg)" font-size="13.5" font-weight="600">Web API браузера</text>
+        <text x="515" y="62" text-anchor="middle" fill="var(--muted)" font-size="11.5">setTimeout, клики,</text>
+        <text x="515" y="80" text-anchor="middle" fill="var(--muted)" font-size="11.5">fetch, таймеры…</text>
+
+        <rect x="440" y="150" width="150" height="70" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="515" y="142" text-anchor="middle" fill="var(--fg)" font-size="13.5" font-weight="600">Очередь задач</text>
+        <rect x="454" y="170" width="30" height="34" rx="5" fill="var(--bg)" stroke="var(--border)" />
+        <rect x="490" y="170" width="30" height="34" rx="5" fill="var(--bg)" stroke="var(--border)" />
+        <rect x="526" y="170" width="30" height="34" rx="5" fill="var(--bg)" stroke="var(--border)" />
+
+        <!-- engine hands async work to the browser -->
+        <line x1="182" y1="90" x2="438" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#el-b-arrow)" />
+        <text x="300" y="72" text-anchor="middle" fill="var(--muted)" font-size="11.5">просит браузер</text>
+
+        <!-- browser puts ready callbacks into the queue -->
+        <line x1="515" y1="112" x2="515" y2="148" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#el-b-arrow)" />
+        <text x="523" y="134" fill="var(--muted)" font-size="11.5">готово → в очередь</text>
+
+        <!-- event loop returns tasks to the stack -->
+        <line x1="438" y1="188" x2="182" y2="150" stroke="var(--accent)" stroke-width="2" marker-end="url(#el-b-arrow)" />
+        <text x="300" y="185" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">event loop: стек пуст → берём задачу</text>
+      </svg>
+      <figcaption>
+        Движок отдаёт долгие дела браузеру, тот возвращает готовые колбэки в
+        очередь, а событийный цикл переносит их в стек, когда тот свободен.
+      </figcaption>
+    </figure>
+
+    <p>
+      <strong>Аналогия — одно окно приёма.</strong> Представьте кабинет, где сидит
+      <em>один</em> сотрудник (это наш единственный поток). Посетитель, севший к
+      нему, обслуживается <em>целиком</em>, прежде чем зайдёт следующий — сотрудник
+      не бросает бумаги на полуслове. Перед дверью стоит
+      <strong>очередь</strong>: как только текущий посетитель уходит (стек пуст),
+      сотрудник зовёт следующего из очереди. А долгие дела — «подождите справку из
+      архива» — он не делает сам: их выполняет архив (браузер) и присылает готовый
+      результат в ту же очередь. Здесь нет «чёрного ящика»: видно и сотрудника, и
+      очередь, и правило «по одному, до конца».
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Первый сюрприз: порядок выполнения</h2>
+    <p>
+      Соберём всё вместе на маленьком примере. Попробуйте предсказать, что он
+      напечатает:
+    </p>
+    <app-code-block [code]="orderExample" lang="javascript" />
+    <p>Разберём по шагам, почему получается <code>1, 4, 3, 2</code>:</p>
+    <ul class="rules">
+      <li>
+        <code>console.log('1')</code> и <code>console.log('4')</code> —
+        <strong>обычный синхронный код</strong>. Он выполняется прямо сейчас, сверху
+        вниз, поэтому <code>1</code> и <code>4</code> печатаются первыми.
+      </li>
+      <li>
+        <code>setTimeout(…, 0)</code> и <code>Promise.resolve().then(…)</code> — это
+        <strong>отложенные задачи</strong>. Их колбэки не выполняются сразу, а ждут,
+        пока стек опустеет, — поэтому <code>2</code> и <code>3</code> печатаются
+        после <code>4</code>.
+      </li>
+      <li>
+        Но почему <code>3</code> (промис) раньше <code>2</code>
+        (<code>setTimeout</code>), хотя таймер стоит в коде выше? Потому что у
+        отложенных задач есть <strong>два разных приоритета</strong>: промисы
+        относятся к «срочным» задачам, а таймеры — к «обычным», и срочные всегда
+        идут первыми.
+      </li>
+    </ul>
+    <p class="note">
+      <strong>Дальше:</strong> эти «два приоритета» называются
+      <strong>микрозадачами</strong> и <strong>макрозадачами</strong>. Именно они
+      объясняют почти все загадки с порядком выполнения — разберём их подробно в
+      разделе
+      <a routerLink="/javascript/event-loop/macro-micro">«Макро- и микрозадачи»</a>.
+      Кстати, колбэки <code>setTimeout</code> и промисов помнят переменные из места,
+      где были созданы, — это работают
+      <a routerLink="/javascript/closures/basics">замыкания</a>.
+    </p>
+  </section>
+</article>
