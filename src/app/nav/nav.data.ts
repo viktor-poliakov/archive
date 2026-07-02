@@ -28,6 +28,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     color: '#f1fa8c',
     children: [
       { id: 'variables', label: 'Переменные' },
+      { id: 'types', label: 'Типы' },
       { id: 'hoisting', label: 'Hoisting' },
       {
         id: 'functions',
@@ -77,6 +78,25 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'call-apply-bind', label: 'call, apply, bind' },
           { id: 'arrow', label: 'Стрелочные функции' },
           { id: 'classes-new', label: 'this в классах и new' },
+        ],
+      },
+      {
+        id: 'classes',
+        label: 'Классы',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'static-private', label: 'Статика и приватность' },
+          { id: 'inheritance', label: 'Наследование' },
+          { id: 'under-the-hood', label: 'Под капотом и нюансы' },
+        ],
+      },
+      {
+        id: 'prototypes',
+        label: 'proto и prototype',
+        children: [
+          { id: 'basics', label: 'Что такое прототип' },
+          { id: 'proto-vs-prototype', label: '__proto__ vs prototype' },
+          { id: 'chain', label: 'Цепочка и практика' },
         ],
       },
       {

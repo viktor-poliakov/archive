@@ -1,0 +1,225 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Типы</span>
+  </nav>
+
+  <h1 class="doc__title">Типы данных</h1>
+  <p class="doc__lead">
+    У каждого значения в JavaScript есть <strong>тип</strong> — «сорт» данных: число,
+    строка, «да/нет» и так далее. Тип подсказывает, что со значением можно делать:
+    числа складывать, строки склеивать. Разберём, какие типы бывают и почему про
+    JavaScript говорят, что у него <strong>динамическая типизация</strong>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Динамическая типизация</h2>
+    <p>
+      Главная особенность: в JavaScript <strong>тип привязан к значению, а не к
+      переменной</strong>. Одна и та же переменная может сегодня хранить строку, а
+      через строчку — число, и это не ошибка:
+    </p>
+    <app-code-block [code]="dynamicExample" lang="javascript" />
+    <p>
+      Это и есть <strong>динамическая типизация</strong>: тип определяется прямо во
+      время выполнения, по текущему значению. Для сравнения, в языках со
+      <em>статической</em> типизацией (TypeScript, Java) тип переменной фиксируется
+      заранее, и положить в неё значение другого типа нельзя.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 220" width="100%" role="img"
+        aria-label="Одна переменная может ссылаться на значения разных типов">
+        <defs>
+          <marker id="ty-dyn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="24" y="82" width="150" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="99" y="108" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">let value</text>
+        <text x="99" y="126" text-anchor="middle" fill="var(--muted)" font-size="11">одна переменная</text>
+
+        <rect x="330" y="18" width="210" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="348" y="40" fill="var(--fg)" font-family="monospace" font-size="13">'hello'</text>
+        <text x="524" y="40" text-anchor="end" fill="var(--muted)" font-size="11">string</text>
+
+        <rect x="330" y="87" width="210" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="348" y="109" fill="var(--fg)" font-family="monospace" font-size="13">42</text>
+        <text x="524" y="109" text-anchor="end" fill="var(--muted)" font-size="11">number</text>
+
+        <rect x="330" y="156" width="210" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="348" y="178" fill="var(--fg)" font-family="monospace" font-size="13">true</text>
+        <text x="524" y="178" text-anchor="end" fill="var(--muted)" font-size="11">boolean</text>
+
+        <line x1="176" y1="104" x2="326" y2="44" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ty-dyn)" />
+        <line x1="176" y1="110" x2="326" y2="110" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ty-dyn)" />
+        <line x1="176" y1="116" x2="326" y2="176" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ty-dyn)" />
+      </svg>
+      <figcaption>
+        В разные моменты одна переменная указывает на значения разных типов — тип
+        определяет само значение.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Какие типы бывают</h2>
+    <p>
+      Всего типов <strong>восемь</strong>: семь <strong>примитивных</strong> и один
+      сложный — <strong>объект</strong>. Примитив хранит одно простое значение,
+      объект — целую коллекцию данных.
+    </p>
+    <app-code-block [code]="typesOverviewExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 296" width="100%" role="img"
+        aria-label="Карта типов: семь примитивов и объекты">
+        <text x="300" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Типы в JavaScript</text>
+
+        <rect x="20" y="44" width="336" height="234" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="36" y="68" fill="var(--accent)" font-size="13" font-weight="700">Примитивы (7)</text>
+
+        <rect x="36" y="82" width="146" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="109" y="104" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">number</text>
+        <rect x="36" y="124" width="146" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="109" y="146" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">string</text>
+        <rect x="36" y="166" width="146" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="109" y="188" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">boolean</text>
+        <rect x="36" y="208" width="146" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="109" y="230" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">symbol</text>
+
+        <rect x="194" y="82" width="146" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="267" y="104" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">bigint</text>
+        <rect x="194" y="124" width="146" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="267" y="146" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">null</text>
+        <rect x="194" y="166" width="146" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="267" y="188" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">undefined</text>
+
+        <rect x="372" y="44" width="208" height="234" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="388" y="68" fill="var(--fg)" font-size="13" font-weight="700">Объекты</text>
+
+        <rect x="388" y="90" width="176" height="40" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="476" y="115" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">&#123; &#125; объект</text>
+        <rect x="388" y="142" width="176" height="40" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="476" y="167" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">[ ] массив</text>
+        <rect x="388" y="194" width="176" height="40" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="476" y="219" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">() =&gt; функция</text>
+      </svg>
+      <figcaption>
+        Семь примитивов хранят по одному простому значению; массивы и функции — это
+        разновидности объектов.
+      </figcaption>
+    </figure>
+
+    <p class="note">
+      <strong>Про <code>null</code> и <code>undefined</code>:</strong>
+      <code>undefined</code> означает «значение ещё не присвоено» (так выглядит
+      объявленная, но не заполненная переменная), а <code>null</code> — «намеренно
+      пусто», когда мы сами хотим сказать «здесь ничего нет».
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как узнать тип: <code>typeof</code></h2>
+    <p>Оператор <code>typeof</code> возвращает имя типа строкой:</p>
+    <app-code-block [code]="typeofExample" lang="javascript" />
+    <p>Две особенности стоит просто запомнить:</p>
+    <ul class="rules">
+      <li>
+        <code>typeof null</code> возвращает <code>'object'</code> — это давняя ошибка
+        языка, которую оставили ради совместимости. Для проверки на <code>null</code>
+        используйте сравнение <code>value === null</code>.
+      </li>
+      <li>
+        <code>typeof</code> у функции возвращает <code>'function'</code>, хотя функция —
+        это разновидность объекта. Так удобнее отличать вызываемые значения.
+      </li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Примитивы и объекты: копирование</h2>
+    <p>
+      Из деления на примитивы и объекты следует важное практическое различие.
+      <strong>Примитивы копируются по значению</strong> — вы получаете независимую
+      копию. <strong>Объекты копируются по ссылке</strong> — обе переменные указывают
+      на один и тот же объект:
+    </p>
+    <app-code-block [code]="copyExample" lang="javascript" />
+    <p>
+      Это частая причина «неожиданных» изменений. Подробно про ссылки, поверхностное и
+      глубокое копирование — в разделе
+      <a routerLink="/javascript/objects/references">«Копирование и ссылки»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Обёртки примитивов</h2>
+    <p>
+      Возникает вопрос: если <code>'hello'</code> — примитив, откуда у него
+      <code>.length</code> и методы вроде <code>.toUpperCase()</code>?
+    </p>
+    <app-code-block [code]="wrapperExample" lang="javascript" />
+    <p>
+      Секрет в <strong>обёртках</strong>: при обращении через точку движок на миг
+      оборачивает примитив в специальный объект (<code>String</code>,
+      <code>Number</code>, <code>Boolean</code>), берёт нужный метод и тут же выбрасывает
+      обёртку. Поэтому методы «есть», а лишних объектов не остаётся. Создавать обёртки
+      вручную через <code>new String(...)</code> не нужно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Числа: <code>NaN</code>, <code>Infinity</code>, точность</h2>
+    <p>У числового типа есть несколько особых значений и подводных камней:</p>
+    <app-code-block [code]="numbersExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>NaN</code> («не число») — результат некорректной операции; он не равен даже сам себе, проверяют через <code>Number.isNaN()</code>.</li>
+      <li><code>Infinity</code> — «бесконечность», например при делении на ноль.</li>
+      <li>Дробные числа хранятся приближённо, поэтому <code>0.1 + 0.2</code> не равно ровно <code>0.3</code>.</li>
+      <li><code>bigint</code> нужен для целых чисел, которые больше безопасного предела обычного <code>number</code>.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Преобразование типов</h2>
+    <p>
+      Раз тип определяется значением, JavaScript часто <strong>сам приводит</strong>
+      один тип к другому. Приведение бывает явным (мы просим) и неявным (происходит
+      автоматически).
+    </p>
+
+    <h3 class="doc__subtitle">Явное преобразование</h3>
+    <p>Мы сами вызываем функцию-преобразователь:</p>
+    <app-code-block [code]="coercionExample" lang="javascript" />
+
+    <h3 class="doc__subtitle"><code>==</code> против <code>===</code></h3>
+    <p>
+      Нестрогое сравнение <code>==</code> перед сравнением приводит типы, из-за чего
+      даёт неочевидные результаты. Строгое <code>===</code> сравнивает без приведения —
+      <strong>используйте его по умолчанию</strong>:
+    </p>
+    <app-code-block [code]="equalityExample" lang="javascript" />
+    <p class="note">
+      <strong>truthy и falsy:</strong> в условиях (<code>if</code>) любое значение
+      приводится к <code>boolean</code>. «Ложных» значений всего восемь:
+      <code>false</code>, <code>0</code>, <code>-0</code>, <code>0n</code>,
+      <code>''</code> (пустая строка), <code>null</code>, <code>undefined</code>,
+      <code>NaN</code>. Всё остальное — «истинно» (в том числе строка
+      <code>'0'</code> и пустой объект).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Восемь типов:</strong> 7 примитивов (<code>number</code>, <code>bigint</code>, <code>string</code>, <code>boolean</code>, <code>null</code>, <code>undefined</code>, <code>symbol</code>) + <code>object</code>.</li>
+      <li><strong>Динамическая типизация:</strong> тип принадлежит значению, переменная может хранить любой тип.</li>
+      <li><strong><code>typeof</code></strong> узнаёт тип; помните про <code>typeof null === 'object'</code>.</li>
+      <li><strong>Примитивы — по значению, объекты — по ссылке.</strong></li>
+      <li><strong>Сравнивайте через <code>===</code></strong>, а не <code>==</code>, чтобы избежать неявных приведений.</li>
+    </ul>
+  </section>
+</article>

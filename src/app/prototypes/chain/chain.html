@@ -1,0 +1,120 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/prototypes">proto и prototype</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Цепочка и практика</span>
+  </nav>
+
+  <h1 class="doc__title">Цепочка и практика</h1>
+  <p class="doc__lead">
+    Из отдельных ссылок <code>__proto__</code> складывается <strong>цепочка
+    прототипов</strong>, по которой движок ищет свойства. Разберём полную цепочку,
+    как на ней устроены встроенные объекты, что делает <code>instanceof</code> и какими
+    методами со всем этим работать.
+  </p>
+
+  <section class="doc__section">
+    <h2>Полная цепочка</h2>
+    <p>
+      Цепочка любого объекта заканчивается на <code>Object.prototype</code>, а тот — на
+      <code>null</code>:
+    </p>
+    <app-code-block [code]="fullChainExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Так устроены встроенные объекты</h2>
+    <p>
+      Прототипы — не экзотика, на них держится весь язык. Методы массива лежат не в
+      каждом массиве, а один раз в <code>Array.prototype</code>, общем для всех:
+    </p>
+    <app-code-block [code]="builtinChainExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 480 320" width="100%" role="img"
+        aria-label="Цепочка массива: arr, Array.prototype, Object.prototype, null">
+        <defs>
+          <marker id="pr-c-up" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="170" y="36" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">null</text>
+
+        <rect x="60" y="52" width="220" height="56" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="76" y="76" fill="var(--fg)" font-family="monospace" font-size="12.5">Object.prototype</text>
+        <text x="76" y="96" fill="var(--muted)" font-family="monospace" font-size="11">toString, hasOwnProperty…</text>
+
+        <rect x="60" y="150" width="220" height="56" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="76" y="174" fill="var(--fg)" font-family="monospace" font-size="12.5">Array.prototype</text>
+        <text x="76" y="194" fill="var(--muted)" font-family="monospace" font-size="11">map, push, filter…</text>
+
+        <rect x="60" y="248" width="220" height="56" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="76" y="272" fill="var(--accent)" font-family="monospace" font-size="12.5">arr = [1, 2, 3]</text>
+        <text x="76" y="292" fill="var(--muted)" font-family="monospace" font-size="11">свои: 0, 1, 2, length</text>
+
+        <line x1="170" y1="248" x2="170" y2="210" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-c-up)" />
+        <line x1="170" y1="150" x2="170" y2="112" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-c-up)" />
+        <line x1="170" y1="52" x2="170" y2="44" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-c-up)" />
+
+        <text x="300" y="230" fill="var(--muted)" font-size="11.5">__proto__ ↑</text>
+        <text x="300" y="132" fill="var(--muted)" font-size="11.5">__proto__ ↑</text>
+      </svg>
+      <figcaption>
+        Вызов <code>arr.map()</code> находит метод в <code>Array.prototype</code>, а
+        <code>arr.toString()</code> — ещё выше, в <code>Object.prototype</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>instanceof</code></h2>
+    <p>
+      Оператор <code>instanceof</code> проверяет, встречается ли
+      <code>Constructor.prototype</code> в цепочке объекта. Поэтому массив — это
+      одновременно и <code>Array</code>, и <code>Object</code>:
+    </p>
+    <app-code-block [code]="instanceofExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Методы для работы с прототипами</h2>
+    <p>Современный набор инструментов вместо устаревшего <code>__proto__</code>:</p>
+    <app-code-block [code]="apiExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>Object.create(proto)</code> — создать объект с заданным прототипом.</li>
+      <li><code>Object.getPrototypeOf</code> / <code>Object.setPrototypeOf</code> — прочитать / поменять прототип.</li>
+      <li><code>Object.hasOwn(obj, key)</code> — свойство собственное, а не унаследованное.</li>
+      <li><code>proto.isPrototypeOf(obj)</code> — есть ли <code>proto</code> в цепочке объекта.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Подводные камни</h2>
+    <ul class="rules">
+      <li><strong>Не меняйте нативные прототипы</strong> (<code>Object.prototype</code>, <code>Array.prototype</code>): свойство появится у всех объектов и сломает перебор и чужой код.</li>
+      <li><strong><code>__proto__</code> устарел</strong> — используйте <code>Object.getPrototypeOf/setPrototypeOf</code>.</li>
+      <li><strong><code>Object.setPrototypeOf</code> — медленный</strong>; задавайте прототип при создании (<code>Object.create</code>, <code>class</code>), а не меняйте потом.</li>
+      <li>При переборе чужих объектов проверяйте <code>Object.hasOwn</code>, чтобы не задеть унаследованное.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>__proto__</code> / <code>[[Prototype]]</code></strong> — ссылка объекта вверх по цепочке; есть у любого объекта.</li>
+      <li><strong><code>prototype</code></strong> — свойство функции/класса, «справочник» для будущих экземпляров.</li>
+      <li><strong>Связь:</strong> <code>new F()</code> ⇒ <code>obj.__proto__ === F.prototype</code>.</li>
+      <li><strong>Цепочка</strong> заканчивается на <code>Object.prototype</code>, затем <code>null</code>; методы ищутся снизу вверх.</li>
+      <li><strong>Работать</strong> через <code>Object.create/getPrototypeOf</code>; нативные прототипы не трогать.</li>
+    </ul>
+    <p class="note">
+      Начало темы — <a routerLink="/javascript/prototypes/basics">«Что такое прототип»</a>;
+      разбор путаницы — <a routerLink="/javascript/prototypes/proto-vs-prototype"><code>__proto__</code> vs <code>prototype</code></a>.
+      Смежные разделы: <a routerLink="/javascript/objects/prototypes">«Прототипы и наследование»</a> и
+      <a routerLink="/javascript/classes/under-the-hood">«Классы: под капотом»</a>.
+    </p>
+  </section>
+</article>

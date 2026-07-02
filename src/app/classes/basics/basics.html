@@ -1,0 +1,113 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/classes">Классы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Классы: основы</h1>
+  <p class="doc__lead">
+    Часто нужно много однотипных объектов: пользователи, товары, кнопки. У всех
+    одинаковый набор данных и поведение, отличаются только значения. Описывать каждый
+    вручную — утомительно и легко ошибиться. <strong>Класс</strong> решает это: он
+    задаёт «форму» объекта один раз, а дальше по ней создаются экземпляры.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — чертёж.</strong> Класс — это чертёж, который вы сами
+    нарисовали: на нём отмечено, какие у объекта данные (поля) и что он умеет
+    (методы). По одному чертежу можно построить сколько угодно объектов; у каждого
+    свои значения, но устройство общее. Никакой магии — вы полностью описываете
+    чертёж сами.
+  </p>
+
+  <section class="doc__section">
+    <h2>Объявление класса</h2>
+    <p>
+      Класс объявляют словом <code>class</code>. Внутри — специальный метод
+      <code>constructor</code> (готовит новый объект), обычные методы и поля:
+    </p>
+    <app-code-block [code]="classExample" lang="javascript" />
+    <ul class="rules">
+      <li><strong><code>constructor</code></strong> вызывается автоматически при <code>new User(...)</code> и заполняет объект начальными данными.</li>
+      <li><strong>Поля</strong> (<code>role = 'guest'</code>) — данные, свои у каждого экземпляра.</li>
+      <li><strong>Методы</strong> (<code>greet</code>) — поведение, общее для всех экземпляров.</li>
+      <li><strong><code>this</code></strong> внутри — это создаваемый объект.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Экземпляры: один чертёж — много объектов</h2>
+    <p>
+      Каждый вызов <code>new</code> создаёт отдельный объект-<strong>экземпляр</strong>
+      со своими данными. Поведение (методы) при этом общее:
+    </p>
+    <app-code-block [code]="instancesExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 250" width="100%" role="img"
+        aria-label="Класс как чертёж: по нему через new создаются экземпляры со своими данными">
+        <defs>
+          <marker id="cl-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="66" width="176" height="118" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="108" y="60" text-anchor="middle" fill="var(--muted)" font-size="11.5">чертёж</text>
+        <text x="36" y="92" fill="var(--accent)" font-family="monospace" font-size="13.5" font-weight="700">class User</text>
+        <text x="36" y="116" fill="var(--muted)" font-family="monospace" font-size="12">constructor()</text>
+        <text x="36" y="138" fill="var(--muted)" font-family="monospace" font-size="12">greet()</text>
+        <text x="36" y="160" fill="var(--muted)" font-family="monospace" font-size="12">role = 'guest'</text>
+
+        <text x="228" y="40" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="700">new</text>
+
+        <rect x="286" y="20" width="296" height="58" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="302" y="42" fill="var(--fg)" font-family="monospace" font-size="12.5">anna</text>
+        <text x="302" y="62" fill="var(--muted)" font-family="monospace" font-size="11.5">name: 'Anna', age: 30</text>
+
+        <rect x="286" y="96" width="296" height="58" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="302" y="118" fill="var(--fg)" font-family="monospace" font-size="12.5">bob</text>
+        <text x="302" y="138" fill="var(--muted)" font-family="monospace" font-size="11.5">name: 'Bob', age: 25</text>
+
+        <rect x="286" y="172" width="296" height="58" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="302" y="194" fill="var(--fg)" font-family="monospace" font-size="12.5">kate</text>
+        <text x="302" y="214" fill="var(--muted)" font-family="monospace" font-size="11.5">name: 'Kate', age: 40</text>
+
+        <line x1="198" y1="110" x2="282" y2="49" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#cl-b-arrow)" />
+        <line x1="198" y1="125" x2="282" y2="125" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#cl-b-arrow)" />
+        <line x1="198" y1="140" x2="282" y2="201" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#cl-b-arrow)" />
+      </svg>
+      <figcaption>
+        Один класс-чертёж, много экземпляров: у каждого свои значения полей, а методы
+        общие.
+      </figcaption>
+    </figure>
+
+    <p class="note">
+      <strong>Про <code>new</code> и <code>this</code>:</strong> что именно делает
+      <code>new</code> (пошагово) и почему методы класса легко «теряют»
+      <code>this</code> — подробно разобрано в разделе
+      <a routerLink="/javascript/context/classes-new"><code>this</code> в классах и <code>new</code></a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Геттеры и сеттеры</h2>
+    <p>
+      Иногда свойство удобно не хранить, а <strong>вычислять</strong> при чтении или
+      проверять при записи. Для этого есть геттеры (<code>get</code>) и сеттеры
+      (<code>set</code>) — снаружи они выглядят как обычные свойства, но за ними стоит
+      функция:
+    </p>
+    <app-code-block [code]="accessorExample" lang="javascript" />
+    <p>
+      Здесь <code>t.fahrenheit</code> читается без скобок, хотя это вычисление, а
+      <code>t.celsius = 25</code> проходит через сеттер с проверкой. Подчёркивание в
+      <code>_celsius</code> — лишь <em>соглашение</em> «снаружи не трогать». Настоящую
+      приватность даёт синтаксис <code>#</code> — о нём на странице
+      <a routerLink="/javascript/classes/static-private">«Статика и приватность»</a>.
+    </p>
+  </section>
+</article>

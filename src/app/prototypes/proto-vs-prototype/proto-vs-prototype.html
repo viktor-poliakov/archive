@@ -1,0 +1,154 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/prototypes">proto и prototype</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">__proto__ vs prototype</span>
+  </nav>
+
+  <h1 class="doc__title"><code>__proto__</code> vs <code>prototype</code></h1>
+  <p class="doc__lead">
+    Вот та самая путаница, из-за которой прототипы кажутся сложными. Слова похожи, но
+    это <strong>два разных понятия</strong>. Разведём их раз и навсегда — и остальное
+    встанет на места.
+  </p>
+
+  <section class="doc__section">
+    <h2>Два разных понятия</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>__proto__</code> / <code>[[Prototype]]</code></th>
+            <th><code>prototype</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>У кого есть</td>
+            <td class="yes">у любого объекта</td>
+            <td class="no">только у функций и классов</td>
+          </tr>
+          <tr>
+            <td>Что это</td>
+            <td>ссылка объекта вверх по цепочке</td>
+            <td>обычное свойство-объект «для будущих экземпляров»</td>
+          </tr>
+          <tr>
+            <td>Роль</td>
+            <td>наследование (вертикаль)</td>
+            <td>свойство функции (горизонталь)</td>
+          </tr>
+          <tr>
+            <td>Как получить</td>
+            <td><code>Object.getPrototypeOf(obj)</code></td>
+            <td><code>Fn.prototype</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Проще всего запомнить так: <strong><code>prototype</code></strong> — это
+      «справочник», который держит у себя <em>функция-конструктор</em>. А
+      <strong><code>__proto__</code></strong> — это <em>ссылка на такой справочник</em>,
+      которая появляется у <em>объекта</em>. Сам конструктор своим <code>prototype</code>
+      для поиска своих свойств не пользуется — это заготовка для будущих экземпляров.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как <code>new</code> их связывает</h2>
+    <p>
+      Ключевой момент: при <code>new F()</code> движок берёт <code>F.prototype</code> и
+      кладёт его в <code>[[Prototype]]</code> нового объекта. Отсюда главное равенство
+      всей темы:
+    </p>
+    <p class="note">
+      <strong><code>new F()</code> ⇒ <code>экземпляр.__proto__ === F.prototype</code></strong>
+    </p>
+    <app-code-block [code]="coreExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 300" width="100%" role="img"
+        aria-label="prototype это горизонтальное свойство функции, __proto__ это вертикальная ссылка экземпляров на него">
+        <defs>
+          <marker id="pr-p-h" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+          <marker id="pr-p-v" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--green)" />
+          </marker>
+        </defs>
+
+        <rect x="24" y="50" width="140" height="60" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="94" y="76" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14" font-weight="700">F</text>
+        <text x="94" y="96" text-anchor="middle" fill="var(--muted)" font-size="11">функция-конструктор</text>
+
+        <line x1="164" y1="80" x2="336" y2="80" stroke="var(--accent)" stroke-width="2" marker-end="url(#pr-p-h)" />
+        <text x="250" y="66" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12.5" font-weight="700">prototype</text>
+        <text x="250" y="98" text-anchor="middle" fill="var(--muted)" font-size="10.5">свойство функции</text>
+
+        <rect x="340" y="46" width="236" height="72" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="356" y="70" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">F.prototype</text>
+        <text x="356" y="92" fill="var(--muted)" font-family="monospace" font-size="11.5">constructor: F</text>
+        <text x="356" y="108" fill="var(--muted)" font-family="monospace" font-size="11.5">greet()</text>
+
+        <rect x="356" y="220" width="102" height="62" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="407" y="245" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">a</text>
+        <text x="407" y="264" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="10.5">name: 'Anna'</text>
+
+        <rect x="474" y="220" width="102" height="62" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="525" y="245" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">b</text>
+        <text x="525" y="264" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="10.5">name: 'Bob'</text>
+
+        <line x1="407" y1="220" x2="407" y2="122" stroke="var(--green)" stroke-width="2" marker-end="url(#pr-p-v)" />
+        <line x1="525" y1="220" x2="525" y2="122" stroke="var(--green)" stroke-width="2" marker-end="url(#pr-p-v)" />
+        <text x="466" y="180" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12" font-weight="700">__proto__</text>
+
+        <text x="140" y="250" fill="var(--muted)" font-size="11.5">new F() создаёт a, b</text>
+        <text x="140" y="268" fill="var(--muted)" font-size="11.5">и ставит их __proto__</text>
+        <text x="140" y="286" fill="var(--muted)" font-size="11.5">= F.prototype</text>
+      </svg>
+      <figcaption>
+        <code>prototype</code> — горизонтальное свойство функции; <code>__proto__</code> —
+        вертикальная ссылка экземпляров на тот же объект. <code>new</code> их связывает.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Свойство <code>constructor</code></h2>
+    <p>
+      Каждый <code>prototype</code> по умолчанию содержит ссылку <code>constructor</code>
+      обратно на свою функцию. Экземпляр видит её через цепочку — так по объекту можно
+      узнать, каким конструктором он создан:
+    </p>
+    <app-code-block [code]="constructorExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>У классов — то же самое</h2>
+    <p>
+      <code>class</code> — лишь удобная запись; методы точно так же складываются в
+      <code>prototype</code> (подробнее — в
+      <a routerLink="/javascript/classes/under-the-hood">«Классы: под капотом»</a>):
+    </p>
+    <app-code-block [code]="classSameExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Нюанс: у стрелочных функций нет <code>prototype</code></h2>
+    <p>
+      <code>prototype</code> есть у обычных функций и классов, но <strong>не</strong> у
+      стрелочных — они не предназначены для <code>new</code>:
+    </p>
+    <app-code-block [code]="arrowExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> как из этих ссылок складывается полная
+      <a routerLink="/javascript/prototypes/chain">цепочка прототипов</a>, как работает
+      <code>instanceof</code> и какие есть методы для работы с прототипами.
+    </p>
+  </section>
+</article>

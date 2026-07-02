@@ -1,0 +1,85 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/classes">Классы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Статика и приватность</span>
+  </nav>
+
+  <h1 class="doc__title">Статика и приватность</h1>
+  <p class="doc__lead">
+    Пока данные и методы принадлежали <em>экземплярам</em>. Но иногда что-то должно
+    принадлежать <strong>самому классу</strong> (например, счётчик всех созданных
+    объектов), а часть внутренностей — быть <strong>спрятана</strong> от внешнего
+    кода. Для этого есть статические члены и приватные поля.
+  </p>
+
+  <section class="doc__section">
+    <h2>Статические члены</h2>
+    <p>
+      Поле или метод со словом <code>static</code> принадлежит <strong>классу</strong>,
+      а не его экземплярам. К ним обращаются через имя класса. Типичные применения —
+      общий счётчик и методы-фабрики:
+    </p>
+    <app-code-block [code]="staticExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>User.count</code> — один на весь класс, у экземпляров его нет.</li>
+      <li>В статическом методе <code>this</code> — это сам класс (см. <a routerLink="/javascript/context/classes-new"><code>this</code> в классах</a>).</li>
+      <li>Фабрики (<code>static fromJSON</code>) удобны, когда объект собирают не напрямую, а из других данных.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Приватные поля <code>#</code></h2>
+    <p>
+      Поле, имя которого начинается с <code>#</code>, — <strong>приватное</strong>: к
+      нему нельзя обратиться снаружи класса, только изнутри. Это настоящая
+      инкапсуляция на уровне языка (в отличие от соглашения <code>_name</code>, которое
+      ничего не запрещает):
+    </p>
+    <app-code-block [code]="privateExample" lang="javascript" />
+    <p>
+      Снаружи доступен только безопасный интерфейс: <code>deposit()</code> с проверкой
+      и геттер <code>balance</code> для чтения. Само хранилище <code>#balance</code>
+      защищено — его нельзя случайно перезаписать в минус. Приватными бывают и методы:
+    </p>
+    <app-code-block [code]="privateMethodExample" lang="javascript" />
+    <p>
+      <strong>Аналогия:</strong> публичные методы — это стойка администратора, а
+      <code>#</code>-поля — служебные помещения за ней. Клиент оформляет всё через
+      стойку; во внутренние комнаты ему хода нет, и это не даёт ничего сломать.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 300" width="100%" role="img"
+        aria-label="Где что живёт: static на классе, методы в прототипе, поля на экземпляре, # приватно">
+        <rect x="30" y="26" width="500" height="66" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="46" y="48" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">class User</text>
+        <text x="46" y="70" fill="var(--muted)" font-family="monospace" font-size="12">static count · static fromJSON()</text>
+        <text x="514" y="48" text-anchor="end" fill="var(--muted)" font-size="11">static — на самом классе</text>
+
+        <rect x="30" y="112" width="500" height="62" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="46" y="134" fill="var(--fg)" font-family="monospace" font-size="13" font-weight="700">User.prototype</text>
+        <text x="46" y="156" fill="var(--muted)" font-family="monospace" font-size="12">greet(), deposit()</text>
+        <text x="514" y="134" text-anchor="end" fill="var(--muted)" font-size="11">методы — один на всех</text>
+
+        <rect x="30" y="194" width="500" height="82" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="46" y="216" fill="var(--fg)" font-family="monospace" font-size="13" font-weight="700">экземпляр (acc)</text>
+        <text x="46" y="238" fill="var(--muted)" font-family="monospace" font-size="12">name, age</text>
+        <text x="46" y="260" fill="var(--green)" font-family="monospace" font-size="12">#balance — только внутри класса</text>
+        <text x="514" y="216" text-anchor="end" fill="var(--muted)" font-size="11">поля — свои у каждого</text>
+      </svg>
+      <figcaption>
+        <code>static</code> живёт на самом классе, обычные методы — в прототипе (общие),
+        поля — на каждом экземпляре; <code>#</code>-поля закрыты внутри класса.
+      </figcaption>
+    </figure>
+
+    <p class="note">
+      <strong>Дальше:</strong> как один класс наследует другой — <code>extends</code>,
+      <code>super</code> и переопределение методов — на странице
+      <a routerLink="/javascript/classes/inheritance">«Наследование»</a>.
+    </p>
+  </section>
+</article>

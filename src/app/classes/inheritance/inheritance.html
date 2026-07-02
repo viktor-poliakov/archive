@@ -1,0 +1,112 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/classes">Классы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Наследование</span>
+  </nav>
+
+  <h1 class="doc__title">Наследование</h1>
+  <p class="doc__lead">
+    Часто новый класс — это «частный случай» уже существующего: кролик — это животное,
+    админ — это пользователь. Чтобы не переписывать общее заново, класс можно
+    <strong>унаследовать</strong> от другого: наследник получает всё поведение
+    родителя и добавляет своё.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — наставник.</strong> Не умеешь сам — спрашиваешь у наставника.
+    Так и здесь: если метода нет в самом классе, движок ищет его у родителя, потом у
+    родителя родителя — по <strong>цепочке прототипов</strong> (её механика — в разделе
+    <a routerLink="/javascript/objects/prototypes">«Прототипы и наследование»</a>).
+  </p>
+
+  <section class="doc__section">
+    <h2><code>extends</code>: расширяем класс</h2>
+    <p>
+      Ключевое слово <code>extends</code> связывает наследника с родителем. Экземпляр
+      наследника пользуется методами родителя как своими:
+    </p>
+    <app-code-block [code]="extendsExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 620 190" width="100%" role="img"
+        aria-label="Цепочка наследования: экземпляр, Rabbit, Animal; метод ищется вверх по цепочке">
+        <defs>
+          <marker id="cl-i-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="310" y="26" text-anchor="middle" fill="var(--muted)" font-size="12">поиск метода идёт снизу вверх по цепочке →</text>
+
+        <rect x="18" y="66" width="172" height="66" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="104" y="92" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">bunny</text>
+        <text x="104" y="112" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">name: 'Bunny'</text>
+
+        <rect x="230" y="66" width="150" height="66" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="305" y="92" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13" font-weight="700">Rabbit</text>
+        <text x="305" y="112" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">hide()</text>
+
+        <rect x="440" y="66" width="162" height="66" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="521" y="92" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13" font-weight="700">Animal</text>
+        <text x="521" y="112" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">eat()</text>
+
+        <line x1="192" y1="99" x2="226" y2="99" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#cl-i-arrow)" />
+        <line x1="382" y1="99" x2="436" y2="99" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#cl-i-arrow)" />
+        <text x="409" y="60" text-anchor="middle" fill="var(--muted)" font-size="11">extends / super</text>
+      </svg>
+      <figcaption>
+        Нет метода на <code>bunny</code> — ищем в <code>Rabbit</code>, потом в
+        <code>Animal</code>. Так <code>bunny.eat()</code> находит метод родителя.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>super</code>: обращаемся к родителю</h2>
+    <p>
+      <code>super</code> — это способ дотянуться до родителя. В двух ситуациях:
+    </p>
+    <ul class="rules">
+      <li><code>super(...)</code> — вызвать <strong>конструктор</strong> родителя;</li>
+      <li><code>super.method(...)</code> — вызвать <strong>метод</strong> родителя (например, чтобы расширить его, а не переписывать целиком).</li>
+    </ul>
+    <app-code-block [code]="superExample" lang="javascript" />
+    <p class="note">
+      <strong>Правило:</strong> в конструкторе наследника <code>super()</code> нужно
+      вызвать <strong>до первого обращения к <code>this</code></strong>. Причина: сам
+      объект <code>this</code> создаёт конструктор родителя — пока он не отработал,
+      <code>this</code> ещё не существует.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Переопределение и <code>instanceof</code></h2>
+    <p>
+      Наследник может <strong>переопределить</strong> метод — объявить свой с тем же
+      именем (как <code>eat</code> выше). А проверить, экземпляр какого класса перед
+      нами, помогает <code>instanceof</code> — он идёт по всей цепочке:
+    </p>
+    <app-code-block [code]="instanceofExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Нюанс: поля наследника ставятся после <code>super()</code></h2>
+    <p>
+      Тонкий момент, о который спотыкаются: поля наследника инициализируются
+      <strong>после</strong> вызова <code>super()</code>. Поэтому конструктор родителя
+      видит <em>своё</em> значение поля, а не переопределённое в наследнике:
+    </p>
+    <app-code-block [code]="fieldOrderExample" lang="javascript" />
+    <p class="note">
+      С <strong>методами</strong> так не бывает: переопределённый метод вызывается
+      всегда, даже из конструктора родителя. Разница именно в полях —
+      их значение к моменту работы родительского конструктора ещё не перезаписано.
+      <br />
+      <strong>Дальше:</strong> почему класс — это «сахар над прототипами» и другие
+      тонкости — на странице
+      <a routerLink="/javascript/classes/under-the-hood">«Под капотом и нюансы»</a>.
+    </p>
+  </section>
+</article>

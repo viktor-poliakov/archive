@@ -1,0 +1,99 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/prototypes">proto и prototype</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Что такое прототип</span>
+  </nav>
+
+  <h1 class="doc__title">Что такое прототип</h1>
+  <p class="doc__lead">
+    Прототипы — одна из самых «пугающих» тем в JavaScript, хотя идея простая. У
+    каждого объекта есть скрытая ссылка на другой объект — его <strong>прототип</strong>.
+    Если у объекта не нашлось нужного свойства, движок идёт искать его в прототипе, потом
+    в прототипе прототипа — и так вверх по <strong>цепочке</strong>.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — стол справок.</strong> Не знаешь ответ сам — идёшь к своему
+    наставнику. Не знает он — спрашивает у своего. Цепочка наставников и есть цепочка
+    прототипов, по которой движок ищет свойство снизу вверх.
+  </p>
+  <p class="doc__lead">
+    Здесь разберём саму механику ссылок и поиска, а на следующей странице — главную
+    путаницу этой темы:
+    <a routerLink="/javascript/prototypes/proto-vs-prototype"><code>__proto__</code> против <code>prototype</code></a>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Поиск по цепочке</h2>
+    <p>
+      Создадим объект, прототипом которого назначен другой объект. Наследник «видит»
+      свойства прототипа как свои:
+    </p>
+    <app-code-block [code]="chainExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 460 320" width="100%" role="img"
+        aria-label="Цепочка прототипов: rabbit ссылается на animal, тот на Object.prototype, затем null">
+        <defs>
+          <marker id="pr-b-up" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="160" y="36" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">null</text>
+
+        <rect x="60" y="52" width="200" height="56" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="76" y="76" fill="var(--fg)" font-family="monospace" font-size="12.5">Object.prototype</text>
+        <text x="76" y="96" fill="var(--muted)" font-family="monospace" font-size="11.5">toString, hasOwnProperty…</text>
+
+        <rect x="60" y="150" width="200" height="56" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="76" y="174" fill="var(--fg)" font-family="monospace" font-size="12.5">animal</text>
+        <text x="76" y="194" fill="var(--muted)" font-family="monospace" font-size="11.5">eats: true</text>
+
+        <rect x="60" y="248" width="200" height="56" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="76" y="272" fill="var(--accent)" font-family="monospace" font-size="12.5">rabbit</text>
+        <text x="76" y="292" fill="var(--muted)" font-family="monospace" font-size="11.5">jumps: true</text>
+
+        <line x1="160" y1="248" x2="160" y2="210" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-b-up)" />
+        <line x1="160" y1="150" x2="160" y2="112" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-b-up)" />
+        <line x1="160" y1="52" x2="160" y2="44" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-b-up)" />
+
+        <text x="300" y="200" fill="var(--muted)" font-size="12">[[Prototype]]</text>
+        <text x="300" y="218" fill="var(--muted)" font-size="12">— поиск</text>
+        <text x="300" y="236" fill="var(--muted)" font-size="12">идёт вверх ↑</text>
+      </svg>
+      <figcaption>
+        Нет свойства у <code>rabbit</code> — ищем в <code>animal</code>, потом в
+        <code>Object.prototype</code>. Цепочка заканчивается на <code>null</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как посмотреть и поменять прототип</h2>
+    <p>
+      Современный способ работать с прототипом — методы <code>Object</code>. Свойство
+      <code>__proto__</code> делает то же самое, но устарело (это геттер/сеттер, лежащий
+      в <code>Object.prototype</code>) — в новом коде его лучше не использовать:
+    </p>
+    <app-code-block [code]="viewExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Чтение идёт по цепочке, запись — нет</h2>
+    <p>
+      Важный нюанс: по цепочке идёт только <strong>чтение</strong>. А
+      <strong>запись</strong> всегда создаёт собственное свойство на самом объекте — оно
+      перекрывает унаследованное, но прототип при этом не меняется:
+    </p>
+    <app-code-block [code]="writeExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> теперь к самому важному — чем <code>__proto__</code>
+      (ссылка объекта) отличается от <code>prototype</code> (свойства функции) и как их
+      связывает <code>new</code>:
+      <a routerLink="/javascript/prototypes/proto-vs-prototype"><code>__proto__</code> vs <code>prototype</code></a>.
+    </p>
+  </section>
+</article>
