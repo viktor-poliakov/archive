@@ -1,0 +1,101 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dates">Даты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Форматирование и парсинг</span>
+  </nav>
+
+  <h1 class="doc__title">Форматирование и парсинг</h1>
+  <p class="doc__lead">
+    Дату нужно то показать человеку («26 января 2024»), то сохранить для машины
+    («2024-01-26»), то наоборот — прочитать из строки. Разберём оба направления:
+    как <strong>выводить</strong> дату и как <strong>разбирать</strong> её из текста.
+  </p>
+
+  <section class="doc__section">
+    <h2>Для человека: <code>toLocale…</code></h2>
+    <p>
+      Методы <code>toLocale…</code> выводят дату по правилам локали (языка и региона),
+      а объект опций настраивает, что именно показать:
+    </p>
+    <app-code-block [code]="localeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Intl.DateTimeFormat</code></h2>
+    <p>
+      Если формат нужен часто (список, таблица), создайте
+      <strong>переиспользуемый форматтер</strong> — это заметно быстрее, чем звать
+      <code>toLocaleString</code> на каждую дату. Здесь же удобно задавать часовой пояс:
+    </p>
+    <app-code-block [code]="intlExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Для машин: ISO</h2>
+    <p>
+      Чтобы хранить дату в базе или отправить на сервер, используйте
+      <code>toISOString()</code> — это однозначный формат в UTC, понятный где угодно:
+    </p>
+    <app-code-block [code]="isoExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Разбор строк</h2>
+    <p>
+      Обратная задача — получить <code>Date</code> из строки. Здесь важное правило:
+      <strong>надёжен только ISO-формат</strong>. Остальные форматы разные браузеры
+      разбирают по-своему, поэтому на них полагаться нельзя:
+    </p>
+    <app-code-block [code]="parseExample" lang="javascript" />
+    <p class="note">
+      <strong>Invalid Date:</strong> если строку не удалось разобрать, получится не
+      ошибка, а «невалидная дата». Проверяйте через
+      <code>Number.isNaN(date.getTime())</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что когда использовать</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Способ</th>
+            <th>Для чего</th>
+            <th>Пример результата</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>toLocaleString(...)</code></td>
+            <td>показать человеку</td>
+            <td>26 января 2024 г.</td>
+          </tr>
+          <tr>
+            <td><code>Intl.DateTimeFormat</code></td>
+            <td>показывать часто (быстрее)</td>
+            <td>26 января 2024 г. в 14:30</td>
+          </tr>
+          <tr>
+            <td><code>toISOString()</code></td>
+            <td>хранить / API (UTC)</td>
+            <td>2024-01-26T14:30:00.000Z</td>
+          </tr>
+          <tr>
+            <td><code>new Date('...ISO')</code></td>
+            <td>разобрать из строки</td>
+            <td>Date из '2024-01-26'</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Дальше:</strong> арифметика дат и подводные камни (месяцы с нуля,
+      мутабельность, таймзоны) — в разделе
+      <a routerLink="/javascript/dates/pitfalls">«Вычисления и подводные камни»</a>.
+    </p>
+  </section>
+</article>

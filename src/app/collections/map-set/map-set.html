@@ -1,0 +1,172 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/collections">Коллекции</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Map и Set</span>
+  </nav>
+
+  <h1 class="doc__title">Map и Set</h1>
+  <p class="doc__lead">
+    Объекта и массива хватает не всегда. Когда нужен <strong>словарь</strong> с ключами
+    любого типа — берут <code>Map</code>. Когда нужен <strong>набор уникальных
+    значений</strong> — <code>Set</code>. Обе коллекции удобнее и предсказуемее, чем
+    «самодельные» решения на объектах и массивах.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>Map</code> — ключи любого типа</h2>
+    <p>
+      <code>Map</code> хранит пары «ключ → значение», как объект. Но, в отличие от
+      объекта, ключом может быть <strong>что угодно</strong> — строка, число и даже
+      объект:
+    </p>
+    <app-code-block [code]="mapExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 520 200" width="100%" role="img"
+        aria-label="Map хранит пары ключ-значение, ключом может быть объект">
+        <defs>
+          <marker id="ms-m-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+        <text x="20" y="26" fill="var(--fg)" font-size="13" font-weight="600">Map: ключ → значение</text>
+
+        <rect x="20" y="42" width="160" height="34" rx="7" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="100" y="64" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">user (obj)</text>
+        <line x1="182" y1="59" x2="316" y2="59" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ms-m-arrow)" />
+        <rect x="320" y="42" width="120" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="380" y="64" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">5</text>
+
+        <rect x="20" y="90" width="160" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" />
+        <text x="100" y="112" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'total'</text>
+        <line x1="182" y1="107" x2="316" y2="107" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ms-m-arrow)" />
+        <rect x="320" y="90" width="120" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="380" y="112" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">100</text>
+
+        <rect x="20" y="138" width="160" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" />
+        <text x="100" y="160" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">2024</text>
+        <line x1="182" y1="155" x2="316" y2="155" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ms-m-arrow)" />
+        <rect x="320" y="138" width="120" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" />
+        <text x="380" y="160" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'year'</text>
+      </svg>
+      <figcaption>
+        В <code>Map</code> ключом может быть даже объект — коллекция хранит его «как
+        есть», а не превращает в строку.
+      </figcaption>
+    </figure>
+
+    <p>Почему это важно? У обычного объекта ключи молча приводятся к строке:</p>
+    <app-code-block [code]="objKeyExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Перебор и связь с объектом</h2>
+    <p>
+      <code>Map</code> перебираемый и <strong>сохраняет порядок вставки</strong>. Его
+      легко превратить в объект и обратно:
+    </p>
+    <app-code-block [code]="mapIterExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Map</code> или обычный объект?</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>Object</code></th>
+            <th><code>Map</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Типы ключей</td>
+            <td class="no">строки и символы</td>
+            <td class="yes">любые (в т.ч. объекты)</td>
+          </tr>
+          <tr>
+            <td>Порядок</td>
+            <td>особый для целочисленных ключей</td>
+            <td class="yes">строго порядок вставки</td>
+          </tr>
+          <tr>
+            <td>Размер</td>
+            <td class="no"><code>Object.keys(o).length</code></td>
+            <td class="yes"><code>map.size</code></td>
+          </tr>
+          <tr>
+            <td>Частые вставки/удаления</td>
+            <td>ок</td>
+            <td class="yes">оптимизирован под это</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Правило простое: нужны нестроковые ключи или частое добавление/удаление —
+      <code>Map</code>; простой конфиг со строковыми ключами — хватит объекта.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Set</code> — уникальные значения</h2>
+    <p>
+      <code>Set</code> — «мешок» значений, где каждое встречается <strong>только один
+      раз</strong>. Повторное добавление того же значения ничего не меняет:
+    </p>
+    <app-code-block [code]="setExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 520 170" width="100%" role="img"
+        aria-label="Set хранит только уникальные значения, повтор игнорируется">
+        <text x="20" y="26" fill="var(--fg)" font-size="13" font-weight="600">Set: только уникальные</text>
+
+        <rect x="24" y="44" width="110" height="38" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="79" y="68" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12.5">'js'</text>
+
+        <rect x="150" y="44" width="110" height="38" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="205" y="68" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12.5">'ts'</text>
+
+        <text x="300" y="68" fill="var(--muted)" font-size="12">size: 2</text>
+
+        <rect x="24" y="104" width="236" height="38" rx="8" fill="var(--surface)" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="142" y="128" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">'js' добавили ещё раз → игнор</text>
+      </svg>
+      <figcaption>
+        Второе <code>add('js')</code> не создаёт дубликата — в <code>Set</code> значение
+        хранится в единственном экземпляре.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Дедупликация массива</h2>
+    <p>Самый частый приём с <code>Set</code> — быстро убрать повторы из массива:</p>
+    <app-code-block [code]="dedupExample" lang="javascript" />
+    <p>
+      Работает так: массив превращается в <code>Set</code> (дубликаты отпадают сами), а
+      затем спред <code>[...set]</code> собирает его обратно в массив (см.
+      <a routerLink="/javascript/arrays/basics">Массивы</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как сравниваются ключи и значения</h2>
+    <p class="note">
+      <code>Map</code> и <code>Set</code> сравнивают по алгоритму
+      <strong>SameValueZero</strong> — это почти строгое <code>===</code>, но с одним
+      отличием: <code>NaN</code> считается равным <code>NaN</code> (поэтому им можно
+      пользоваться как ключом/значением). Объекты же сравниваются <strong>по
+      ссылке</strong>: два разных объекта с одинаковым содержимым — это разные ключи.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> у <code>Map</code> и <code>Set</code> есть «слабые»
+      версии — <a routerLink="/javascript/collections/weak"><code>WeakMap</code> и
+      <code>WeakSet</code></a>: они держат объекты, не мешая сборщику мусора их удалить.
+    </p>
+  </section>
+</article>

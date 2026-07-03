@@ -1,0 +1,133 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dates">Даты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Вычисления и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Вычисления и подводные камни</h1>
+  <p class="doc__lead">
+    Даты удобно вычитать и сравнивать, но именно здесь <code>Date</code> расставил
+    больше всего ловушек. Соберём и полезные приёмы, и грабли, на которые наступают
+    чаще всего.
+  </p>
+
+  <section class="doc__section">
+    <h2>Разница дат и <code>Date.now()</code></h2>
+    <p>
+      При вычитании даты превращаются в числа (миллисекунды), поэтому разницу считают
+      простым <code>-</code>. Для меток времени и замеров удобен <code>Date.now()</code>
+      — он отдаёт timestamp без создания объекта:
+    </p>
+    <app-code-block [code]="diffExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Месяцы с нуля, <code>getDate</code> ≠ <code>getDay</code></h2>
+    <p>
+      Самая известная ловушка: <strong>месяцы нумеруются с 0</strong>. И отдельно —
+      <code>getDate()</code> (число месяца) легко перепутать с <code>getDay()</code>
+      (день недели):
+    </p>
+    <app-code-block [code]="monthExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 160" width="100%" role="img"
+        aria-label="Соответствие месяцев и индексов: январь 0, декабрь 11">
+        <text x="300" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">Месяц → индекс (в конструкторе и getMonth)</text>
+
+        <g font-family="monospace">
+          <rect x="10" y="38" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+          <text x="55" y="56" text-anchor="middle" fill="var(--fg)" font-size="12">Янв</text>
+          <text x="55" y="72" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">0</text>
+
+          <rect x="108" y="38" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="153" y="56" text-anchor="middle" fill="var(--fg)" font-size="12">Фев</text>
+          <text x="153" y="72" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">1</text>
+
+          <rect x="206" y="38" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="251" y="56" text-anchor="middle" fill="var(--fg)" font-size="12">Мар</text>
+          <text x="251" y="72" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">2</text>
+
+          <rect x="304" y="38" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="349" y="56" text-anchor="middle" fill="var(--fg)" font-size="12">Апр</text>
+          <text x="349" y="72" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">3</text>
+
+          <rect x="402" y="38" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="447" y="56" text-anchor="middle" fill="var(--fg)" font-size="12">Май</text>
+          <text x="447" y="72" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">4</text>
+
+          <rect x="500" y="38" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="545" y="56" text-anchor="middle" fill="var(--fg)" font-size="12">Июн</text>
+          <text x="545" y="72" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">5</text>
+
+          <rect x="10" y="90" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="55" y="108" text-anchor="middle" fill="var(--fg)" font-size="12">Июл</text>
+          <text x="55" y="124" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">6</text>
+
+          <rect x="108" y="90" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="153" y="108" text-anchor="middle" fill="var(--fg)" font-size="12">Авг</text>
+          <text x="153" y="124" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">7</text>
+
+          <rect x="206" y="90" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="251" y="108" text-anchor="middle" fill="var(--fg)" font-size="12">Сен</text>
+          <text x="251" y="124" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">8</text>
+
+          <rect x="304" y="90" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="349" y="108" text-anchor="middle" fill="var(--fg)" font-size="12">Окт</text>
+          <text x="349" y="124" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">9</text>
+
+          <rect x="402" y="90" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+          <text x="447" y="108" text-anchor="middle" fill="var(--fg)" font-size="12">Ноя</text>
+          <text x="447" y="124" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">10</text>
+
+          <rect x="500" y="90" width="90" height="42" rx="7" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+          <text x="545" y="108" text-anchor="middle" fill="var(--fg)" font-size="12">Дек</text>
+          <text x="545" y="124" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">11</text>
+        </g>
+      </svg>
+      <figcaption>
+        Январь — это <code>0</code>, декабрь — <code>11</code>. Держите эту табличку в
+        голове при работе с <code>Date</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Даты изменяемы</h2>
+    <p>
+      <code>Date</code> — <strong>изменяемый</strong> объект: методы <code>set…</code>
+      меняют его на месте. Присваивание переменной не создаёт копию — обе указывают на
+      один объект. Чтобы не испортить оригинал, копируйте через <code>new Date(d)</code>:
+    </p>
+    <app-code-block [code]="mutabilityExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Таймзоны: сдвиг на день</h2>
+    <p>
+      Коварная деталь: короткая строка <code>'2024-01-26'</code> трактуется как полночь
+      по <strong>UTC</strong>, а не по местному времени. В западных поясах локальная
+      дата из-за этого может «съехать» на предыдущий день:
+    </p>
+    <app-code-block [code]="tzExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Внутри — timestamp</strong> (мс от 1970); разница дат = вычитание.</li>
+      <li><strong>Месяцы 0–11</strong>; <code>getDate()</code> (число) ≠ <code>getDay()</code> (день недели, 0 = вс).</li>
+      <li><strong>Date изменяем</strong> — копируйте через <code>new Date(d)</code>.</li>
+      <li><strong>Парсите только ISO</strong>; помните про UTC-сдвиг у <code>'YYYY-MM-DD'</code>.</li>
+      <li><strong>Локализованный вывод</strong> — через <code>Intl.DateTimeFormat</code>.</li>
+    </ul>
+    <p class="note">
+      <strong>Многое из этого — «врождённые» проблемы <code>Date</code>.</strong> Их
+      решает новый стандарт: неизменяемые объекты, месяцы с 1, нормальные таймзоны — см.
+      <a routerLink="/javascript/temporal">Temporal API</a>.
+    </p>
+  </section>
+</article>

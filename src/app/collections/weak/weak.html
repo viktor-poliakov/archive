@@ -1,0 +1,147 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/collections">Коллекции</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">WeakMap и WeakSet</span>
+  </nav>
+
+  <h1 class="doc__title">WeakMap и WeakSet</h1>
+  <p class="doc__lead">
+    У <code>Map</code> и <code>Set</code> есть «слабые» родственники —
+    <code>WeakMap</code> и <code>WeakSet</code>. Главное отличие: они держат объекты
+    <strong>слабо</strong>, то есть не мешают сборщику мусора их удалить. За это платят
+    урезанным набором возможностей.
+  </p>
+  <p class="doc__lead">
+    Чтобы понять, зачем это нужно, полезно помнить про
+    <a routerLink="/javascript/garbage-collection/how-it-works">достижимость</a>: обычный
+    <code>Map</code> держит свои ключи-объекты, поэтому они не удаляются, пока жив сам
+    <code>Map</code>. Слабая коллекция так не делает.
+  </p>
+
+  <section class="doc__section">
+    <h2>Сильная ссылка против слабой</h2>
+    <figure class="diagram">
+      <svg viewBox="0 0 560 180" width="100%" role="img"
+        aria-label="Map держит объект сильной ссылкой, WeakMap — слабой, не мешая сборке">
+        <defs>
+          <marker id="cw-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+          <marker id="cw-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="28" width="150" height="46" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="95" y="56" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12.5">Map</text>
+        <line x1="172" y1="51" x2="286" y2="51" stroke="var(--accent)" stroke-width="2" marker-end="url(#cw-a)" />
+        <rect x="290" y="28" width="160" height="46" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="370" y="56" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">объект</text>
+        <text x="462" y="55" fill="var(--fg)" font-size="11">живёт</text>
+
+        <rect x="20" y="108" width="150" height="46" rx="9" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.6" />
+        <text x="95" y="136" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12.5">WeakMap</text>
+        <line x1="172" y1="131" x2="286" y2="131" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#cw-m)" />
+        <rect x="290" y="108" width="160" height="46" rx="9" fill="var(--surface)" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="370" y="136" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">объект</text>
+        <text x="462" y="135" fill="var(--muted)" font-size="11">может быть удалён</text>
+      </svg>
+      <figcaption>
+        Сильная ссылка (<code>Map</code>) удерживает объект в памяти; слабая
+        (<code>WeakMap</code>) — нет: как только на объект не осталось других ссылок, он
+        удаляется, а запись исчезает сама.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>WeakMap</code></h2>
+    <p>
+      <code>WeakMap</code> — как <code>Map</code>, но с двумя ограничениями:
+      <strong>ключами могут быть только объекты</strong>, и ссылки на них слабые.
+      Поэтому и API урезан: только <code>get</code>, <code>set</code>, <code>has</code>,
+      <code>delete</code> — <strong>без</strong> перебора, <code>size</code> и
+      <code>clear</code>:
+    </p>
+    <app-code-block [code]="weakMapExample" lang="javascript" />
+    <app-code-block [code]="keysObjectsExample" lang="javascript" />
+    <p>
+      Где применяют: <strong>кэш и метаданные «по объекту»</strong> — данные живут ровно
+      столько, сколько жив сам объект, и чистить вручную не нужно (подробнее про память
+      — в разделе
+      <a routerLink="/javascript/garbage-collection/leaks">«Утечки памяти»</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>WeakSet</code></h2>
+    <p>
+      <code>WeakSet</code> — как <code>Set</code>, но хранит <strong>только
+      объекты</strong> и тоже слабо; доступны лишь <code>add</code>, <code>has</code>,
+      <code>delete</code>. Удобен как «пометка да/нет» на объектах — посещён, обработан,
+      прочитан:
+    </p>
+    <app-code-block [code]="weakSetExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Почему их нельзя перебрать</h2>
+    <p>
+      У слабых коллекций нет <code>keys()</code>, <code>size</code> и цикла
+      <code>for..of</code>. Причина в сборщике мусора: <strong>момент удаления
+      недетерминирован</strong>, объект может исчезнуть в любой миг. Поэтому «текущее
+      содержимое» невозможно надёжно показать — язык и не даёт такой возможности.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Когда что брать</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>Map</code> / <code>Set</code></th>
+            <th><code>WeakMap</code> / <code>WeakSet</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ключи / значения</td>
+            <td class="yes">любые</td>
+            <td class="no">только объекты</td>
+          </tr>
+          <tr>
+            <td>Удержание объекта</td>
+            <td class="no">держит (мешает сборке)</td>
+            <td class="yes">слабо (не мешает)</td>
+          </tr>
+          <tr>
+            <td>Перебор, <code>size</code></td>
+            <td class="yes">есть</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>Для чего</td>
+            <td>хранение и обход данных</td>
+            <td>данные «по объекту» на время его жизни</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>WeakMap</code>/<code>WeakSet</code></strong> держат только объекты и только слабо.</li>
+      <li><strong>Не мешают сборке:</strong> исчез объект — исчезла и запись, чистить вручную не нужно.</li>
+      <li><strong>Нет перебора, <code>size</code>, <code>clear</code></strong> — из-за недетерминированной сборки.</li>
+      <li><strong>Применение:</strong> кэш/метаданные и пометки «по объекту».</li>
+      <li>Нужен обход или примитивные ключи — берите обычные <a routerLink="/javascript/collections/map-set"><code>Map</code>/<code>Set</code></a>.</li>
+    </ul>
+  </section>
+</article>

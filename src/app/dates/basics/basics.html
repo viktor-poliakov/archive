@@ -1,0 +1,98 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dates">Даты</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Даты: основы</h1>
+  <p class="doc__lead">
+    Объект <code>Date</code> хранит момент времени. Звучит просто, но у него есть пара
+    неожиданных особенностей, из-за которых даты в JavaScript считаются «неудобными».
+    Разберём, как создавать даты, читать и менять их части — и почему внутри
+    <code>Date</code> прячется обычное число.
+  </p>
+  <p class="doc__lead">
+    <strong>Главная идея:</strong> внутри <code>Date</code> лежит одно число —
+    <strong>timestamp</strong>, сколько миллисекунд прошло с «начала времён»
+    (1 января 1970 года, UTC). Это единая линейка времени: сама дата — отметка на ней,
+    а «год / месяц / день» — лишь способ прочитать эту отметку в местном времени.
+  </p>
+
+  <section class="doc__section">
+    <h2>Создание даты</h2>
+    <p>Дату создают четырьмя способами:</p>
+    <app-code-block [code]="createExample" lang="javascript" />
+    <p class="note">
+      <strong>Ловушка №1:</strong> при создании из чисел <strong>месяц считается с
+      нуля</strong>: <code>0</code> — январь, <code>11</code> — декабрь. Это самая
+      частая ошибка с датами (подробнее — в
+      <a routerLink="/javascript/dates/pitfalls">«Подводных камнях»</a>).
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 210" width="100%" role="img"
+        aria-label="Линейка времени: Date это отметка на линейке от 1970 года, компоненты считываются с неё">
+        <defs>
+          <marker id="dt-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)" />
+          </marker>
+          <marker id="dt-b-up" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <line x1="40" y1="70" x2="566" y2="70" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#dt-b-arrow)" />
+
+        <line x1="60" y1="62" x2="60" y2="78" stroke="var(--muted)" stroke-width="1.6" />
+        <text x="60" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">1 Jan 1970</text>
+        <text x="60" y="112" text-anchor="middle" fill="var(--muted)" font-size="11">0 мс</text>
+
+        <circle cx="340" cy="70" r="6" fill="var(--accent)" />
+        <text x="340" y="46" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="700">Date</text>
+        <text x="340" y="102" text-anchor="middle" fill="var(--muted)" font-size="11">timestamp (мс)</text>
+
+        <line x1="540" y1="62" x2="540" y2="78" stroke="var(--muted)" stroke-width="1.6" />
+        <text x="540" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">сейчас</text>
+
+        <rect x="216" y="140" width="248" height="48" rx="8" fill="var(--surface)" stroke="var(--border)" />
+        <text x="340" y="169" text-anchor="middle" fill="var(--fg)" font-size="11.5">год · месяц · день · часы · минуты</text>
+        <line x1="340" y1="140" x2="340" y2="80" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#dt-b-up)" />
+        <text x="356" y="126" fill="var(--muted)" font-size="10.5">getFullYear(), getMonth()…</text>
+      </svg>
+      <figcaption>
+        <code>Date</code> — это отметка на линейке времени (число миллисекунд). Методы
+        <code>get…</code> лишь «считывают» с неё год, месяц, день.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Чтение компонентов</h2>
+    <p>Отдельные части даты достают методами <code>get…</code>:</p>
+    <app-code-block [code]="readExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>getMonth()</code> — <strong>0–11</strong> (не 1–12!).</li>
+      <li><code>getDay()</code> — день недели, <strong>0 = воскресенье</strong>, 6 = суббота.</li>
+      <li><code>getDate()</code> — это день месяца (1–31), не перепутайте с <code>getDay()</code>.</li>
+      <li><code>getTime()</code> — тот самый timestamp; есть и UTC-версии (<code>getUTCHours()</code> и т.д.).</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Изменение и автоисправление</h2>
+    <p>
+      Методы <code>set…</code> меняют части даты. Приятная особенность:
+      <strong>автоисправление</strong> — если выйти за границу (например, «30 февраля»),
+      дата сама перескочит на корректную. Это даёт простую арифметику:
+    </p>
+    <app-code-block [code]="setExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> как красиво выводить дату для пользователя и разбирать
+      строки — в разделе
+      <a routerLink="/javascript/dates/format">«Форматирование и парсинг»</a>.
+    </p>
+  </section>
+</article>

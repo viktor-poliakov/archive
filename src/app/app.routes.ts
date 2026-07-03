@@ -113,6 +113,22 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./events/custom-events/custom-events').then((m) => m.EventsCustomEvents),
   'javascript/events/pitfalls': () =>
     import('./events/pitfalls/pitfalls').then((m) => m.EventsPitfalls),
+  'javascript/dates/basics': () =>
+    import('./dates/basics/basics').then((m) => m.DatesBasics),
+  'javascript/dates/format': () =>
+    import('./dates/format/format').then((m) => m.DatesFormat),
+  'javascript/dates/pitfalls': () =>
+    import('./dates/pitfalls/pitfalls').then((m) => m.DatesPitfalls),
+  'javascript/temporal': () =>
+    import('./temporal/temporal').then((m) => m.Temporal),
+  'javascript/garbage-collection/how-it-works': () =>
+    import('./garbage-collection/how-it-works/how-it-works').then((m) => m.GarbageCollectionHowItWorks),
+  'javascript/garbage-collection/leaks': () =>
+    import('./garbage-collection/leaks/leaks').then((m) => m.GarbageCollectionLeaks),
+  'javascript/collections/map-set': () =>
+    import('./collections/map-set/map-set').then((m) => m.CollectionsMapSet),
+  'javascript/collections/weak': () =>
+    import('./collections/weak/weak').then((m) => m.CollectionsWeak),
 };
 
 // A leaf route: a real content page if registered in PAGE_OVERRIDES, otherwise

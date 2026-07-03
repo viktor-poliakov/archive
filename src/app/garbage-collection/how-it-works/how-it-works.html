@@ -1,0 +1,182 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/garbage-collection">Сборщик мусора</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Как это работает</span>
+  </nav>
+
+  <h1 class="doc__title">Сборщик мусора: как это работает</h1>
+  <p class="doc__lead">
+    В JavaScript не нужно вручную выделять и освобождать память: движок делает это сам.
+    Когда объект становится не нужен, память под ним автоматически освобождает
+    <strong>сборщик мусора</strong> (garbage collector). Весь вопрос — как движок
+    понимает, что объект «больше не нужен»? Ответ держится на одном понятии —
+    <strong>достижимость</strong>.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — шары на нитях.</strong> Представьте гроздь воздушных шаров,
+    привязанных нитями к вашей руке. Рука — это «корень». Пока от руки к шару ведёт
+    хоть какая-то цепочка нитей, шар держится. Перерезали все нити, ведущие к шару
+    (или к целой связке) — они улетают, их выбрасывают. Даже если шары связаны нитями
+    между собой, но с рукой уже не соединены — это мусор.
+  </p>
+
+  <section class="doc__section">
+    <h2>Достижимость</h2>
+    <p>
+      Главное правило: <strong>объект хранится в памяти, пока он достижим</strong> —
+      то есть пока к нему можно «дотянуться» по ссылкам. Как только последняя ссылка
+      пропадает, объект становится недостижимым и попадает под удаление:
+    </p>
+    <app-code-block [code]="reachExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Корни</h2>
+    <p>
+      Достижимость считается не «откуда угодно», а от <strong>корней</strong> —
+      значений, которые заведомо доступны всегда:
+    </p>
+    <ul class="rules">
+      <li><strong>Глобальные переменные.</strong></li>
+      <li><strong>Локальные переменные и параметры</strong> функции, которая выполняется прямо сейчас.</li>
+      <li>Переменные и параметры <strong>других функций из текущей цепочки вызовов.</strong></li>
+    </ul>
+    <p>
+      Объект жив, если от какого-то корня к нему ведёт цепочка ссылок. Нет такой
+      цепочки — объект мусор.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ссылка — это не то же, что достижимость</h2>
+    <p>
+      Тонкий момент: важно не «есть ли на объект ссылки вообще», а «ведёт ли к нему
+      путь <em>от корня</em>». Пока есть хотя бы одна такая ссылка — объект жив:
+    </p>
+    <app-code-block [code]="sharedExample" lang="javascript" />
+    <p>
+      И наоборот: группа объектов может ссылаться друг на друга, но если от корней к ним
+      не добраться — удалится вся группа. Это «недостижимый остров»:
+    </p>
+    <app-code-block [code]="islandExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 280" width="100%" role="img"
+        aria-label="Достижимые объекты связаны с корнями; недостижимый остров удаляется">
+        <defs>
+          <marker id="gc-h-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+          <marker id="gc-h-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="98" width="146" height="66" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="93" y="126" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">Корни</text>
+        <text x="93" y="146" text-anchor="middle" fill="var(--muted)" font-size="10.5">globalThis, стек</text>
+
+        <rect x="232" y="46" width="104" height="50" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="284" y="76" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">obj</text>
+
+        <rect x="418" y="46" width="104" height="50" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="470" y="76" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">obj</text>
+
+        <line x1="166" y1="120" x2="230" y2="76" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#gc-h-a)" />
+        <line x1="336" y1="71" x2="416" y2="71" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#gc-h-a)" />
+        <text x="300" y="30" text-anchor="middle" fill="var(--accent)" font-size="11.5" font-weight="600">достижимы — живут</text>
+
+        <rect x="256" y="196" width="104" height="50" rx="9" fill="var(--surface)" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="308" y="226" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">mother</text>
+
+        <rect x="418" y="196" width="104" height="50" rx="9" fill="var(--surface)" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="470" y="226" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">father</text>
+
+        <line x1="360" y1="214" x2="416" y2="214" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#gc-h-m)" />
+        <line x1="418" y1="230" x2="362" y2="230" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#gc-h-m)" />
+        <text x="308" y="268" text-anchor="middle" fill="var(--muted)" font-size="11.5">остров: ссылаются друг на друга, но не на корни → удаляется</text>
+      </svg>
+      <figcaption>
+        Объект жив, пока есть путь <em>от корня</em>. Взаимные ссылки внутри группы не
+        спасают: недостижимый остров удаляется целиком.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Алгоритм: «пометка и уборка»</h2>
+    <p>
+      Как именно движок находит мусор? Базовый алгоритм называется
+      <strong>mark-and-sweep</strong> («пометка и уборка») и работает наглядно:
+    </p>
+    <ul class="rules">
+      <li><strong>Пометка.</strong> Сборщик берёт корни и «помечает» их. Затем идёт по ссылкам и помечает всё, до чего дотянулся, — и так, пока не обойдёт все достижимые объекты.</li>
+      <li><strong>Уборка.</strong> Всё, что осталось <em>непомеченным</em>, недостижимо — эта память освобождается.</li>
+    </ul>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 220" width="100%" role="img"
+        aria-label="Пометка и уборка: помечаем достижимое от корней, непомеченное удаляется">
+        <defs>
+          <marker id="gc-h-a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+          <marker id="gc-h-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--red)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="80" width="128" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="84" y="113" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">Корни</text>
+
+        <rect x="196" y="28" width="120" height="48" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="256" y="52" text-anchor="middle" fill="var(--fg)" font-size="11.5">объект</text>
+        <text x="256" y="66" text-anchor="middle" fill="var(--accent)" font-size="10">помечен</text>
+
+        <rect x="360" y="28" width="120" height="48" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="420" y="52" text-anchor="middle" fill="var(--fg)" font-size="11.5">объект</text>
+        <text x="420" y="66" text-anchor="middle" fill="var(--accent)" font-size="10">помечен</text>
+
+        <line x1="148" y1="100" x2="194" y2="60" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#gc-h-a2)" />
+        <line x1="316" y1="52" x2="358" y2="52" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#gc-h-a2)" />
+
+        <rect x="196" y="150" width="120" height="48" rx="9" fill="var(--surface)" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="256" y="174" text-anchor="middle" fill="var(--muted)" font-size="11.5">объект</text>
+        <text x="256" y="188" text-anchor="middle" fill="var(--muted)" font-size="10">не помечен</text>
+
+        <rect x="360" y="150" width="160" height="48" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+        <text x="440" y="179" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="600">удаляется</text>
+
+        <line x1="316" y1="174" x2="358" y2="174" stroke="var(--red)" stroke-width="1.6" marker-end="url(#gc-h-r)" />
+      </svg>
+      <figcaption>
+        «Краска» растекается от корней по ссылкам. Что осталось незакрашенным —
+        недостижимо и освобождается.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Оптимизации и что важно помнить</h2>
+    <p>
+      Настоящие движки не перебирают всю память каждый раз — они экономят силы:
+    </p>
+    <ul class="rules">
+      <li><strong>Поколенческая сборка:</strong> объекты делят на «новые» и «старые». Большинство объектов живут недолго, поэтому «молодых» проверяют часто, «старых» — редко.</li>
+      <li><strong>Инкрементальная сборка:</strong> работу дробят на части, чтобы не «подвешивать» страницу надолго.</li>
+      <li><strong>Сборка в простое:</strong> движок старается убирать мусор, когда процессор свободен.</li>
+    </ul>
+    <p class="note">
+      <strong>Важно:</strong> момент сборки недетерминирован, и вызвать или запретить её
+      из кода нельзя — это забота движка. Ваша задача — не держать ссылки на то, что
+      уже не нужно. Как это нарушается на практике — в разделе
+      <a routerLink="/javascript/garbage-collection/leaks">«Утечки памяти»</a>. Кстати,
+      именно так освобождаются и переменные
+      <a routerLink="/javascript/closures/basics">замыканий</a>: пока жива функция,
+      которой они нужны, они достижимы.
+    </p>
+  </section>
+</article>

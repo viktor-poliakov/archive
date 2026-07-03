@@ -1,0 +1,187 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Temporal API</span>
+  </nav>
+
+  <h1 class="doc__title">Temporal API</h1>
+  <p class="doc__lead">
+    <strong>Temporal</strong> — новый встроенный инструмент для работы с датами и
+    временем, задуманный как замена старому <code>Date</code>. Он чинит почти всё, за
+    что <code>Date</code> ругают: неизменяемые объекты, месяцы с единицы, нормальные
+    часовые пояса и календари, надёжный разбор строк.
+  </p>
+
+  <section class="doc__section">
+    <p class="note">
+      <strong>⚠️ Поддержка браузерами.</strong> Temporal — молодой стандарт. На середину
+      2026 года он поддержан <strong>ещё не во всех браузерах</strong>: раньше всех его
+      включил Firefox, в Safari и Chrome он появляется постепенно (или доступен за
+      флагом). На MDN он помечен как <em>Limited availability</em> (не Baseline). Для
+      реальных проектов подключайте полифилл (<code>@js-temporal/polyfill</code>), а
+      актуальный статус смотрите на MDN/caniuse. Примеры ниже показывают сам API —
+      в браузере он может быть доступен ещё не везде.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Зачем он нужен</h2>
+    <p>Temporal с самого начала спроектирован без «врождённых» болей <code>Date</code>:</p>
+    <ul class="rules">
+      <li><strong>Неизменяемость</strong> — методы возвращают новый объект, оригинал цел (никаких случайных правок).</li>
+      <li><strong>Месяцы с 1</strong> — январь это <code>1</code>, а не <code>0</code>.</li>
+      <li><strong>Настоящие таймзоны и календари</strong> — встроенно, а не «UTC либо местное».</li>
+      <li><strong>Разделение понятий</strong> — «просто дата», «просто время», «момент с зоной» — это разные типы.</li>
+      <li><strong>Надёжный разбор</strong> строк ISO без сюрпризов.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Главные типы</h2>
+    <p>
+      Вместо одного «всё-в-одном» <code>Date</code> у Temporal несколько чётких типов —
+      берёте ровно тот, что нужен задаче:
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 320" width="100%" role="img"
+        aria-label="Карта типов Temporal: без таймзоны, с таймзоной, точка времени, разница">
+        <rect x="14" y="40" width="300" height="264" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="30" y="64" fill="var(--fg)" font-size="13" font-weight="700">Без таймзоны (Plain*)</text>
+
+        <g font-family="monospace" font-size="12">
+          <rect x="30" y="76" width="268" height="34" rx="6" fill="var(--bg)" stroke="var(--border)" />
+          <text x="42" y="98" fill="var(--accent)">PlainDate</text>
+          <text x="286" y="98" text-anchor="end" fill="var(--muted)" font-size="10.5">год-месяц-день</text>
+
+          <rect x="30" y="118" width="268" height="34" rx="6" fill="var(--bg)" stroke="var(--border)" />
+          <text x="42" y="140" fill="var(--accent)">PlainTime</text>
+          <text x="286" y="140" text-anchor="end" fill="var(--muted)" font-size="10.5">часы-минуты</text>
+
+          <rect x="30" y="160" width="268" height="34" rx="6" fill="var(--bg)" stroke="var(--border)" />
+          <text x="42" y="182" fill="var(--accent)">PlainDateTime</text>
+          <text x="286" y="182" text-anchor="end" fill="var(--muted)" font-size="10.5">дата + время</text>
+
+          <rect x="30" y="202" width="268" height="34" rx="6" fill="var(--bg)" stroke="var(--border)" />
+          <text x="42" y="224" fill="var(--accent)">PlainYearMonth</text>
+          <text x="286" y="224" text-anchor="end" fill="var(--muted)" font-size="10.5">янв 2024</text>
+
+          <rect x="30" y="244" width="268" height="34" rx="6" fill="var(--bg)" stroke="var(--border)" />
+          <text x="42" y="266" fill="var(--accent)">PlainMonthDay</text>
+          <text x="286" y="266" text-anchor="end" fill="var(--muted)" font-size="10.5">26 января</text>
+        </g>
+
+        <rect x="330" y="40" width="256" height="78" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="346" y="64" fill="var(--fg)" font-size="13" font-weight="700">С таймзоной</text>
+        <text x="346" y="88" fill="var(--accent)" font-family="monospace" font-size="12">ZonedDateTime</text>
+        <text x="346" y="106" fill="var(--muted)" font-size="10.5">дата + время + зона</text>
+
+        <rect x="330" y="128" width="256" height="78" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="346" y="152" fill="var(--fg)" font-size="13" font-weight="700">Точка на линии времени</text>
+        <text x="346" y="176" fill="var(--accent)" font-family="monospace" font-size="12">Instant</text>
+        <text x="346" y="194" fill="var(--muted)" font-size="10.5">наносекунды от 1970</text>
+
+        <rect x="330" y="216" width="256" height="78" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="346" y="240" fill="var(--fg)" font-size="13" font-weight="700">Разница</text>
+        <text x="346" y="264" fill="var(--accent)" font-family="monospace" font-size="12">Duration</text>
+        <text x="346" y="282" fill="var(--muted)" font-size="10.5">10 дней, 2 часа…</text>
+      </svg>
+      <figcaption>
+        Плюс <code>Temporal.Now</code> — утилита, чтобы получить текущий момент в любом
+        из этих видов.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Текущий момент</h2>
+    <p><code>Temporal.Now</code> отдаёт «сейчас» в нужном представлении:</p>
+    <app-code-block [code]="nowExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Создание и чтение</h2>
+    <p>
+      Тип создаётся методом <code>from(...)</code>, а части читаются как свойства.
+      Обратите внимание: <strong>месяцы с 1</strong>:
+    </p>
+    <app-code-block [code]="createReadExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Арифметика и неизменяемость</h2>
+    <p>
+      Главное отличие от <code>Date</code>: объекты Temporal <strong>неизменяемы</strong>.
+      Методы <code>add</code>, <code>subtract</code>, <code>with</code> возвращают новый
+      объект, а разницу дают как <code>Duration</code>:
+    </p>
+    <app-code-block [code]="arithmeticExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Часовые пояса</h2>
+    <p>
+      <code>ZonedDateTime</code> хранит момент вместе с таймзоной, поэтому пересчёт между
+      поясами становится тривиальным — это тот же момент времени, показанный по-другому:
+    </p>
+    <app-code-block [code]="zonedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Форматирование</h2>
+    <p>
+      Для вывода есть <code>toString()</code> (канонично) и <code>toLocaleString()</code>
+      (для человека, как и у <code>Date</code>):
+    </p>
+    <app-code-block [code]="formatExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Date</code> и <code>Temporal</code> — в чём разница</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>Date</code></th>
+            <th><code>Temporal</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Изменяемость</td>
+            <td class="no">меняется на месте</td>
+            <td class="yes">неизменяемый</td>
+          </tr>
+          <tr>
+            <td>Месяцы</td>
+            <td class="no">0–11</td>
+            <td class="yes">1–12</td>
+          </tr>
+          <tr>
+            <td>Таймзоны</td>
+            <td class="no">только UTC/местная</td>
+            <td class="yes">любые, встроенно</td>
+          </tr>
+          <tr>
+            <td>Типы</td>
+            <td class="no">один на всё</td>
+            <td class="yes">отдельные (дата/время/зона…)</td>
+          </tr>
+          <tr>
+            <td>Поддержка</td>
+            <td class="yes">везде</td>
+            <td class="no">пока не везде (нужен полифилл)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Итог:</strong> Temporal — то, каким должен был быть <code>Date</code>.
+      Пока он «докатывается» до браузеров, для нового кода берите полифилл; а базу — про
+      старый <code>Date</code> — смотрите в разделе
+      <a routerLink="/javascript/dates">«Даты»</a>.
+    </p>
+  </section>
+</article>

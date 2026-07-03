@@ -1,0 +1,160 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/garbage-collection">Сборщик мусора</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Утечки памяти</span>
+  </nav>
+
+  <h1 class="doc__title">Утечки памяти</h1>
+  <p class="doc__lead">
+    Сборщик мусора удаляет только <strong>недостижимое</strong>. Значит, испортить
+    ничего нельзя? Можно — если случайно оставить ссылку на объект, который вам уже не
+    нужен. Тогда движок считает его достижимым и честно хранит. Это и есть
+    <strong>утечка памяти</strong>: объект не нужен, но занимает память, и со временем
+    её становится всё меньше.
+  </p>
+
+  <section class="doc__section">
+    <h2>Что такое утечка</h2>
+    <p>
+      Утечка — это не «поломка» сборщика, а логическая ошибка: где-то от корня всё ещё
+      тянется ссылка к ненужному объекту. Разберём самые частые источники таких
+      «забытых» ссылок.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 600 180" width="100%" role="img"
+        aria-label="Забытый таймер держит данные достижимыми, поэтому они не удаляются">
+        <defs>
+          <marker id="gc-l-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="16" y="66" width="120" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="76" y="99" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">Корни</text>
+
+        <rect x="196" y="62" width="170" height="64" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="281" y="90" text-anchor="middle" fill="var(--fg)" font-size="12">забытый setInterval</text>
+        <text x="281" y="108" text-anchor="middle" fill="var(--muted)" font-size="10.5">держит колбэк и данные</text>
+
+        <rect x="418" y="66" width="168" height="56" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" />
+        <text x="502" y="90" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="600">данные</text>
+        <text x="502" y="108" text-anchor="middle" fill="var(--muted)" font-size="10.5">уже не нужны, но живут</text>
+
+        <line x1="136" y1="94" x2="194" y2="94" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#gc-l-a)" />
+        <line x1="366" y1="94" x2="416" y2="94" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#gc-l-a)" />
+      </svg>
+      <figcaption>
+        Данные приложению уже не нужны, но забытый таймер всё ещё на них ссылается —
+        значит, они достижимы и остаются в памяти.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Забытые таймеры</h2>
+    <p>
+      <code>setInterval</code> и <code>setTimeout</code> держат свой колбэк, а тот через
+      замыкание — все захваченные данные. Пока таймер не остановлен, ничего из этого не
+      освободится:
+    </p>
+    <app-code-block [code]="timerExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Неснятые обработчики событий</h2>
+    <p>
+      Каждый <code>addEventListener</code> держит функцию-обработчик (и её замыкание, а
+      значит — и связанные DOM-узлы). Если не снять его через
+      <code>removeEventListener</code>, узлы не удалятся, даже когда исчезнут с экрана:
+    </p>
+    <app-code-block [code]="listenerExample" lang="javascript" />
+    <p>
+      Подробнее про снятие обработчиков (и почему нужна та же ссылка на функцию) — в
+      разделе <a routerLink="/javascript/events/pitfalls">«События: нюансы»</a>. А про
+      то, как колбэк «уносит с собой» переменные, — в
+      <a routerLink="/javascript/closures/basics">замыканиях</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Глобальные переменные и растущие кэши</h2>
+    <p>
+      Всё глобальное живёт, пока жива страница. Особенно коварны <strong>кэши</strong>,
+      которые только пополняются и никогда не чистятся:
+    </p>
+    <app-code-block [code]="cacheExample" lang="javascript" />
+    <p>
+      Лечится лимитом размера, удалением старых записей — или слабыми ссылками (ниже).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Слабые ссылки: <code>WeakMap</code> и <code>WeakSet</code></h2>
+    <p>
+      Иногда нужно связать данные с объектом, но <em>не</em> мешать его удалению. Для
+      этого есть <code>WeakMap</code> и <code>WeakSet</code>: они держат объекты
+      <strong>слабо</strong> — такая ссылка не считается для достижимости:
+    </p>
+    <app-code-block [code]="weakExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>Map</code></th>
+            <th><code>WeakMap</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Держит объект-ключ</td>
+            <td class="no">да (мешает сборке)</td>
+            <td class="yes">нет (ссылка слабая)</td>
+          </tr>
+          <tr>
+            <td>Ключи</td>
+            <td>любые значения</td>
+            <td>только объекты</td>
+          </tr>
+          <tr>
+            <td>Перебор / размер</td>
+            <td class="yes">есть</td>
+            <td class="no">нет</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Поэтому <code>WeakMap</code> идеален для кэшей и метаданных «по объекту»: исчез
+      объект — исчезла и запись, вручную чистить не нужно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как искать утечки</h2>
+    <p>
+      В DevTools есть вкладка <strong>Memory</strong>: снимите «heap snapshot», поработайте
+      со страницей, снимите ещё один и сравните — что за объекты копятся и кто их держит.
+      Растущее из снимка в снимок число объектов — верный признак утечки.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Утечка</strong> — ненужный объект остался достижимым из-за забытой ссылки.</li>
+      <li><strong>Таймеры</strong> — останавливайте <code>clearInterval/clearTimeout</code>.</li>
+      <li><strong>Обработчики</strong> — снимайте <code>removeEventListener</code>.</li>
+      <li><strong>Кэши/глобальные</strong> — ограничивайте рост и чистите.</li>
+      <li><strong>Слабые ссылки</strong> (<code>WeakMap/WeakSet</code>) — привязывают данные к объекту, не мешая его сборке.</li>
+    </ul>
+    <p class="note">
+      Вернуться к тому, как всё устроено, можно в разделе
+      <a routerLink="/javascript/garbage-collection/how-it-works">«Как это работает»</a>.
+    </p>
+  </section>
+</article>

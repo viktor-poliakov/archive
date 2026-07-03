@@ -112,6 +112,14 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'collections',
+        label: 'Коллекции',
+        children: [
+          { id: 'map-set', label: 'Map и Set' },
+          { id: 'weak', label: 'WeakMap и WeakSet' },
+        ],
+      },
+      {
         id: 'event-loop',
         label: 'Event Loop',
         children: [
@@ -131,6 +139,24 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'delegation', label: 'Делегирование' },
           { id: 'custom-events', label: 'Свои события' },
           { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
+        id: 'dates',
+        label: 'Даты',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'format', label: 'Форматирование и парсинг' },
+          { id: 'pitfalls', label: 'Вычисления и подводные камни' },
+        ],
+      },
+      { id: 'temporal', label: 'Temporal API' },
+      {
+        id: 'garbage-collection',
+        label: 'Сборщик мусора',
+        children: [
+          { id: 'how-it-works', label: 'Как это работает' },
+          { id: 'leaks', label: 'Утечки памяти' },
         ],
       },
     ],
