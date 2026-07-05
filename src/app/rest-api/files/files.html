@@ -1,0 +1,178 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Файлы и бинарные данные</span>
+  </nav>
+
+  <h1 class="doc__title">Файлы и бинарные данные</h1>
+  <p class="doc__lead">
+    До сих пор мы гоняли по сети текст — в основном JSON. Но приложению часто нужно
+    отправить или получить <strong>файл</strong>: загрузить аватар, скачать отчёт в
+    PDF, выгрузить архив. Это байты, а не текст, и для них есть свои инструменты:
+    <code>FormData</code> — чтобы <em>отправлять</em>, и <code>Blob</code> — чтобы
+    <em>получать</em> и хранить бинарные данные.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — почтовая посылка.</strong> Обычный запрос это открытка: текст
+    на виду. Файл — это коробка: её нужно упаковать (<code>FormData</code>), а на
+    приёмке — распаковать содержимое (<code>Blob</code>). Разберём обе стороны.
+  </p>
+
+  <section class="doc__section">
+    <h2>Форматы тела: не только JSON</h2>
+    <p>
+      В теле запроса и ответа может лежать что угодно — сервер понимает, что именно, по
+      заголовку <a routerLink="/javascript/rest-api/headers"><code>Content-Type</code></a>.
+      На практике вам встретятся три варианта:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>JSON-строка</strong> — структурные данные (<code>Content-Type:
+        application/json</code>). Основной формат REST.
+      </li>
+      <li>
+        <strong><code>FormData</code></strong> — форма с файлами и полями
+        (<code>multipart/form-data</code>). Так браузер отправляет загрузку файла.
+      </li>
+      <li>
+        <strong><code>Blob</code> / <code>ArrayBuffer</code></strong> — «сырые» байты
+        (картинка, PDF, архив). Так удобно <em>получать</em> файлы.
+      </li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>FormData: отправка файлов и форм</h2>
+    <p>
+      <code>FormData</code> — это набор пар «ключ — значение», где значением может быть
+      и текст, и файл. Вы наполняете его через <code>append</code> и передаёте прямо в
+      <code>body</code>. Файл обычно берут из элемента
+      <code>&lt;input type="file"&gt;</code>:
+    </p>
+    <app-code-block [code]="formDataExample" lang="javascript" />
+    <p class="note">
+      <strong>Не ставьте <code>Content-Type</code> вручную!</strong> Это самая частая
+      ошибка с <code>FormData</code>. Браузер сам выставит
+      <code>multipart/form-data</code> и добавит <code>boundary</code> — уникальный
+      разделитель между частями. Если задать заголовок руками, <code>boundary</code>
+      потеряется, и сервер не сможет разобрать, где кончается одно поле и начинается
+      следующее.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Blob: бинарные данные как объект</h2>
+    <p>
+      <strong>Blob</strong> (Binary Large Object) — это неизменяемый «контейнер» байтов
+      с указанием типа. Когда сервер отдаёт файл, ответ читают методом
+      <code>res.blob()</code> — так же, как JSON читают через <code>res.json()</code>.
+      Blob можно и создать самому — например, чтобы собрать файл прямо в браузере:
+    </p>
+    <app-code-block [code]="blobExample" lang="javascript" />
+    <p>
+      У Blob есть размер (<code>size</code>) и тип (<code>type</code>), но нет
+      «содержимого» в виде строки — это именно байты. Дальше их либо сохраняют в файл,
+      либо показывают (например, как <code>&lt;img&gt;</code> через object URL).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Скачивание файла</h2>
+    <p>
+      В браузере нет функции «сохрани этот Blob на диск». Приём такой: создаём для
+      Blob временный адрес через <code>URL.createObjectURL</code>, вешаем его на
+      невидимую ссылку <code>&lt;a&gt;</code> с атрибутом <code>download</code> и
+      «нажимаем» её кодом. Так работает и файл с сервера, и сгенерированный на клиенте:
+    </p>
+    <app-code-block [code]="downloadExample" lang="javascript" />
+    <p class="note">
+      <strong>Не забудьте <code>revokeObjectURL</code>.</strong> Object URL держит Blob
+      в памяти, пока вы его явно не отпустите. Без <code>revoke</code> при частых
+      скачиваниях память будет только расти — до перезагрузки страницы.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Прогресс скачивания</h2>
+    <p>
+      Обычный <code>await res.blob()</code> отдаёт файл целиком и молчит, пока он не
+      скачается. Для полоски прогресса тело нужно читать <strong>потоком</strong>:
+      <code>res.body</code> — это поток байтов, а <code>getReader()</code> позволяет
+      забирать его кусками (chunks). На каждый кусок мы обновляем прогресс:
+    </p>
+    <app-code-block [code]="downloadProgressExample" lang="javascript" />
+    <p class="note">
+      <strong>Про <code>Content-Length</code>.</strong> Процент можно посчитать, только
+      если сервер прислал общий размер в заголовке <code>Content-Length</code>. При
+      chunked-ответе или сжатии его может не быть — тогда честно показывают лишь число
+      принятых байтов, без процента.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Прогресс отправки (upload)</h2>
+    <p>
+      А вот прогресс <em>отправки</em> файла на сервер <code>fetch</code>
+      <strong>не умеет</strong>: стандартного события «отправлено N байт» у него нет.
+      Когда нужна полоска загрузки при аплоаде, берут «дедушку» <code>fetch</code> —
+      <code>XMLHttpRequest</code>: у него есть <code>upload.onprogress</code>:
+    </p>
+    <app-code-block [code]="uploadProgressExample" lang="javascript" />
+    <p>
+      Есть и экспериментальный путь — передавать в <code>body</code> поток
+      (<code>ReadableStream</code>) с опцией <code>duplex</code>, но он поддержан не
+      везде. Пока для прогресса отправки <code>XMLHttpRequest</code> остаётся самым
+      надёжным вариантом.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что выбрать</h2>
+    <p>Короткая шпаргалка по инструментам:</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Задача</th>
+            <th>Инструмент</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Отправить структурные данные</td>
+            <td><code>JSON.stringify</code> + <code>Content-Type: application/json</code></td>
+          </tr>
+          <tr>
+            <td>Отправить форму с файлом</td>
+            <td><code>FormData</code> (без ручного <code>Content-Type</code>)</td>
+          </tr>
+          <tr>
+            <td>Получить файл</td>
+            <td><code>await res.blob()</code></td>
+          </tr>
+          <tr>
+            <td>Сохранить файл на диск</td>
+            <td><code>createObjectURL</code> + <code>&lt;a download&gt;</code></td>
+          </tr>
+          <tr>
+            <td>Прогресс скачивания</td>
+            <td><code>res.body.getReader()</code> + <code>Content-Length</code></td>
+          </tr>
+          <tr>
+            <td>Прогресс отправки</td>
+            <td><code>XMLHttpRequest</code> + <code>upload.onprogress</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Базовые запросы и разбор ответа — на странице
+      <a routerLink="/javascript/rest-api/fetch">Fetch API на практике</a>, а как
+      оборвать долгую загрузку — в разделе
+      <a routerLink="/javascript/rest-api/cancellation">Отмена запроса</a>.
+    </p>
+  </section>
+</article>

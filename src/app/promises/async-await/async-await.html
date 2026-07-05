@@ -1,0 +1,118 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/promises">Промисы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">async/await</span>
+  </nav>
+
+  <h1 class="doc__title">async / await</h1>
+  <p class="doc__lead">
+    <code>async/await</code> — это удобная надстройка над промисами. Она не заменяет их и
+    не даёт новых возможностей: под капотом всё те же промисы. Зато асинхронный код с
+    <code>await</code> читается сверху вниз, как обычный синхронный, — без цепочек
+    <code>.then</code> и вложенных колбэков.
+  </p>
+  <p class="doc__lead">
+    Аналогия: промис с <code>.then</code> — это записка «когда придёт результат, сделай
+    вот это». А <code>await</code> — пометка «здесь подожди, пока приедет заказ, и
+    продолжай уже с ним». Ожидание не блокирует программу: пока функция «замерла» на
+    <code>await</code>, движок занят другими делами.
+  </p>
+
+  <section class="doc__section">
+    <h2>Тот же код, но читается проще</h2>
+    <p>
+      Сравним одну и ту же операцию, записанную через <code>.then</code> и через
+      <code>async/await</code>. Логика одинаковая — отличается только форма записи:
+    </p>
+    <app-code-block [code]="sugarExample" lang="javascript" />
+    <p>
+      Слово <code>async</code> перед функцией разрешает использовать внутри неё
+      <code>await</code>. В <code>loadUserAsync</code> мы «дожидаемся» каждого промиса и
+      работаем с готовым значением, будто оно уже есть.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>async</code>-функция всегда возвращает промис</h2>
+    <p>
+      Что бы вы ни вернули из <code>async</code>-функции, наружу выйдет
+      <strong>промис</strong>. Обычное значение станет результатом выполненного промиса,
+      а <code>throw</code> превратится в отклонённый промис:
+    </p>
+    <app-code-block [code]="returnsPromiseExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно:</strong> получить из <code>async</code>-функции «просто значение»
+      нельзя — вернётся промис. Достать результат можно снова через <code>await</code>
+      или <code>.then</code> (о них — в разделе
+      <a routerLink="/javascript/promises/then-catch-finally">«then, catch, finally»</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что делает <code>await</code></h2>
+    <p>
+      <code>await</code> приостанавливает <code>async</code>-функцию, пока промис не
+      завершится, и возвращает его значение (а если промис отклонён — бросает ошибку).
+      «Пауза» касается только самой функции: всё, что <em>до</em> <code>await</code>,
+      выполняется сразу, а продолжение <em>после</em> него движок откладывает как
+      микрозадачу и возвращает управление наружу:
+    </p>
+    <app-code-block [code]="beforeAfterExample" lang="javascript" />
+    <p>
+      Поэтому <code>after await</code> печатается последним — уже после всего синхронного
+      кода. Почему именно микрозадача и как это влияет на порядок выполнения — в разделе
+      <a routerLink="/javascript/event-loop/macro-micro">«Макро- и микрозадачи»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ошибки — обычный <code>try/catch</code></h2>
+    <p>
+      Главное удобство <code>async/await</code>: ошибки ловятся привычным
+      <code>try/catch</code>, как в синхронном коде. Один <code>catch</code> поймает и
+      отклонение промиса (например, нет сети), и обычный <code>throw</code>:
+    </p>
+    <app-code-block [code]="tryCatchExample" lang="javascript" />
+    <p>
+      Блок <code>finally</code> выполнится в любом случае — удобно, чтобы убрать
+      индикатор загрузки. Другие подходы к ошибкам — в разделе
+      <a routerLink="/javascript/promises/error-handling">«Обработка ошибок»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Последовательно или параллельно</h2>
+    <p>
+      Здесь кроется самая частая потеря производительности. Два <code>await</code> подряд
+      выполняются <strong>последовательно</strong>: второй запрос стартует только после
+      того, как завершится первый. Если операции не зависят друг от друга, это лишнее
+      ожидание — запускайте их <strong>параллельно</strong> через
+      <a routerLink="/javascript/promises/static-methods"><code>Promise.all</code></a>:
+    </p>
+    <app-code-block [code]="sequentialExample" lang="javascript" />
+    <p class="note">
+      <strong>Правило:</strong> <code>await</code> по очереди — только когда следующий шаг
+      <em>зависит</em> от результата предыдущего. Независимые операции запускайте разом и
+      ждите вместе.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ловушка: <code>await</code> в <code>forEach</code></h2>
+    <p>
+      <code>await</code> работает не в любом цикле. Внутри <code>forEach</code> он
+      <strong>не работает</strong>: <code>forEach</code> не смотрит на промис, который
+      возвращает async-колбэк, поэтому ничего не ждёт, а ошибки теряются. Нужен
+      <code>for...of</code> (по очереди) или <code>map</code> + <code>Promise.all</code>
+      (параллельно):
+    </p>
+    <app-code-block [code]="loopExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> частые ошибки с промисами и <code>await</code> собраны в
+      разделе <a routerLink="/javascript/promises/pitfalls">«Подводные камни»</a>.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,239 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Fetch API на практике</span>
+  </nav>
+
+  <h1 class="doc__title">Fetch API на практике</h1>
+  <p class="doc__lead">
+    До сих пор мы разбирали, как устроен HTTP и что такое REST. Пора отправить
+    настоящий запрос прямо из браузера. Встроенная функция <code>fetch</code> — это
+    рабочий инструмент для этого: одной строкой она обращается к серверу и приносит
+    ответ.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — заказ по телефону.</strong> Вы не стоите с трубкой у уха, пока
+    на кухне готовят: вы кладёте трубку и занимаетесь делами, а когда заказ готов — вам
+    перезванивают. <code>fetch</code> работает так же: он не «замораживает» страницу на
+    время запроса, а обещает вернуть ответ позже. Никакой магии — дальше мы разберём,
+    из чего этот «звонок» состоит и как забрать данные, когда они пришли.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>fetch</code> — встроенный способ делать запросы</h2>
+    <p>
+      <code>fetch(url)</code> не возвращает данные сразу. Он возвращает
+      <strong>промис</strong> (<code>Promise&lt;Response&gt;</code>) — обещание, что
+      ответ придёт, когда сеть отработает. Сеть медленная и непредсказуемая, поэтому
+      запрос делается <strong>асинхронно</strong>: браузер не ждёт впустую, а
+      продолжает работать (почему так — в разделе
+      <a routerLink="/javascript/event-loop/basics">«Событийный цикл: основы»</a>).
+    </p>
+    <app-code-block [code]="signatureExample" lang="javascript" />
+    <p>
+      Работать с промисами удобнее всего через <code>async/await</code>:
+      <code>await</code> «дожидается» ответа и достаёт из промиса объект
+      <code>Response</code>. Дальше во всех примерах мы будем внутри
+      <code>async</code>-функции, поэтому сможем свободно писать <code>await</code>.
+    </p>
+    <p class="note">
+      <strong>Важно:</strong> промис от <code>fetch</code>
+      <strong>не отклоняется</strong> на ответах со статусами
+      <code>4xx</code> и <code>5xx</code>. Для <code>fetch</code> ошибка
+      «страница не найдена» — это <em>успешно доставленный ответ</em>, просто с плохим
+      статусом. Отклонение происходит лишь при обрыве сети. Почему так и как правильно
+      проверять результат — разбираем в разделе
+      <a routerLink="/javascript/rest-api/errors">«Обработка ошибок»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>GET и разбор JSON</h2>
+    <p>
+      Самый частый запрос — забрать данные. <code>GET</code> — метод по умолчанию,
+      поэтому опции можно вообще не передавать. Тело ответа приходит как поток байтов,
+      и его нужно <em>разобрать</em>: метод <code>res.json()</code> читает поток и
+      превращает JSON-текст в обычный объект JavaScript.
+    </p>
+    <app-code-block [code]="getExample" lang="javascript" />
+    <p>
+      Обратите внимание на <strong>два</strong> <code>await</code> подряд. Первый ждёт
+      сам ответ (пришли заголовки и статус). Второй — <code>res.json()</code> — ждёт,
+      пока полностью дочитается тело и распарсится JSON. Это тоже промис, потому что
+      тело может приходить кусками. Форматы тела и заголовок
+      <code>Content-Type</code> подробно разобраны в разделе
+      <a routerLink="/javascript/rest-api/headers">«Заголовки и форматы»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>POST и PUT с телом</h2>
+    <p>
+      Чтобы <em>отправить</em> данные, во втором аргументе <code>fetch</code> передают
+      объект опций. Три ключевые опции для запроса с телом:
+    </p>
+    <ul class="rules">
+      <li><strong><code>method</code></strong> — какой HTTP-метод использовать
+        (<code>'POST'</code>, <code>'PUT'</code>, …). Обзор всех методов — в разделе
+        <a routerLink="/javascript/rest-api/methods">«HTTP-методы»</a>.</li>
+      <li><strong><code>headers</code></strong> — заголовки. Для JSON обязательно
+        <code>{{ '{' }} 'Content-Type': 'application/json' {{ '}' }}</code>, иначе
+        сервер не поймёт, что в теле.</li>
+      <li><strong><code>body</code></strong> — само тело. Это <em>строка</em>, поэтому
+        объект превращают в JSON через <code>JSON.stringify(payload)</code>.</li>
+    </ul>
+    <app-code-block [code]="postExample" lang="javascript" />
+    <p>
+      <code>PUT</code> устроен почти так же — меняется только метод и URL: в адресе мы
+      указываем <em>какой именно</em> ресурс заменяем целиком. В отличие от
+      <code>POST</code> (создаёт новый ресурс), <code>PUT</code>
+      <strong>идемпотентен</strong>: повторить один и тот же <code>PUT</code> можно
+      сколько угодно раз — результат на сервере будет одинаковый.
+    </p>
+    <app-code-block [code]="putExample" lang="javascript" />
+    <p class="note">
+      <strong>Частая ошибка:</strong> передать в <code>body</code> сам объект вместо
+      <code>JSON.stringify(...)</code>. Тогда он молча превратится в строку
+      <code>"[object Object]"</code>, и сервер получит мусор. Тело всегда сериализуем
+      явно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>DELETE</h2>
+    <p>
+      Удаление — самый короткий случай. Тело обычно не нужно: <em>что</em> удалять,
+      сервер понимает из URL. В ответ часто приходит статус <code>204 No Content</code>
+      — успех без тела, поэтому вызывать <code>res.json()</code> здесь не нужно.
+    </p>
+    <app-code-block [code]="deleteExample" lang="javascript" />
+    <p>
+      Свойство <code>res.ok</code> — это удобное сокращение: оно <code>true</code>, если
+      статус попал в диапазон <code>2xx</code>. Подробно про диапазоны статусов — в
+      разделе
+      <a routerLink="/javascript/rest-api/status-codes">«Коды состояния»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Эквивалент <code>curl</code></h2>
+    <p>
+      <code>fetch</code> в браузере и <code>curl</code> в терминале делают одно и то же
+      — отправляют HTTP-запрос. Полезно видеть их рядом: метод, заголовки и тело
+      совпадают, отличается лишь синтаксис. Вот один и тот же <code>POST</code> двумя
+      способами:
+    </p>
+    <app-code-block [code]="curlFetchExample" lang="javascript" />
+    <app-code-block [code]="curlExample" lang="bash" />
+    <p>Соответствие опций один к одному:</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Что задаём</th>
+            <th><code>fetch</code></th>
+            <th><code>curl</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HTTP-метод</td>
+            <td><code>method: 'POST'</code></td>
+            <td><code>-X POST</code></td>
+          </tr>
+          <tr>
+            <td>Заголовок</td>
+            <td><code>headers: {{ '{' }} … {{ '}' }}</code></td>
+            <td><code>-H "…"</code></td>
+          </tr>
+          <tr>
+            <td>Тело запроса</td>
+            <td><code>body: JSON.stringify(…)</code></td>
+            <td><code>-d '…'</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 220" width="100%" role="img"
+        aria-label="fetch возвращает промис, который проходит стадии pending и fulfilled, отдавая объект Response с телом">
+        <defs>
+          <marker id="rf-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="82" width="150" height="56" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="95" y="106" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">fetch(url)</text>
+        <text x="95" y="126" text-anchor="middle" fill="var(--muted)" font-size="11">ваш код</text>
+
+        <rect x="238" y="82" width="150" height="56" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="313" y="106" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">Promise</text>
+        <text x="313" y="126" text-anchor="middle" fill="var(--muted)" font-size="11">pending → fulfilled</text>
+
+        <rect x="456" y="60" width="164" height="100" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="538" y="82" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">Response</text>
+        <text x="472" y="106" fill="var(--muted)" font-family="monospace" font-size="11">status: 200</text>
+        <text x="472" y="126" fill="var(--muted)" font-family="monospace" font-size="11">ok: true</text>
+        <text x="472" y="146" fill="var(--muted)" font-family="monospace" font-size="11">.json() → data</text>
+
+        <line x1="170" y1="110" x2="234" y2="110" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#rf-arrow)" />
+        <line x1="388" y1="110" x2="452" y2="110" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#rf-arrow)" />
+
+        <text x="202" y="100" text-anchor="middle" fill="var(--muted)" font-size="10.5">возвращает</text>
+        <text x="420" y="100" text-anchor="middle" fill="var(--muted)" font-size="10.5">await</text>
+      </svg>
+      <figcaption>
+        <code>fetch</code> сразу отдаёт промис в состоянии <code>pending</code>; после
+        ответа сети он становится <code>fulfilled</code> и содержит
+        <code>Response</code>, из которого <code>await res.json()</code> достаёт данные.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что дальше</h2>
+    <p>
+      Теперь вы умеете отправлять все основные запросы. Но реальный код на этом не
+      заканчивается — важно правильно обрабатывать неудачи и защищать доступ:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Query-параметры.</strong> Как добавить к запросу страницу, фильтры и
+        поиск и безопасно закодировать их через <code>URLSearchParams</code> — в разделе
+        <a routerLink="/javascript/rest-api/query-params">«Query-параметры»</a>.
+      </li>
+      <li>
+        <strong>Файлы.</strong> Отправка через <code>FormData</code>, получение
+        <code>Blob</code> и прогресс скачивания — в разделе
+        <a routerLink="/javascript/rest-api/files">«Файлы и бинарные данные»</a>.
+      </li>
+      <li>
+        <strong>Отмена.</strong> Как оборвать ненужный запрос и поставить таймаут через
+        <code>AbortController</code> — в разделе
+        <a routerLink="/javascript/rest-api/cancellation">«Отмена запроса»</a>.
+      </li>
+      <li>
+        <strong>Ошибки.</strong> Помните врезку выше: <code>fetch</code> не считает
+        <code>404</code> и <code>500</code> ошибкой. Как проверять <code>res.ok</code> и
+        читать текст ошибки — в разделе
+        <a routerLink="/javascript/rest-api/errors">«Обработка ошибок»</a>.
+      </li>
+      <li>
+        <strong>Доступ.</strong> Большинство API требуют токен или ключ. Как
+        передавать его в заголовке <code>Authorization</code> — в разделе
+        <a routerLink="/javascript/rest-api/auth">«Аутентификация»</a>.
+      </li>
+      <li>
+        <strong>Колбэки и промисы.</strong> Раньше запросы писали на колбэках
+        (см.
+        <a routerLink="/javascript/functions/first-class">«Функции как значения»</a>);
+        <code>fetch</code> с <code>async/await</code> заменил эту громоздкую технику.
+      </li>
+    </ul>
+  </section>
+</article>

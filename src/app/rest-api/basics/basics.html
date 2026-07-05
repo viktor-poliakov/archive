@@ -1,0 +1,225 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Что такое REST</span>
+  </nav>
+
+  <h1 class="doc__title">REST API: основы</h1>
+  <p class="doc__lead">
+    Почти любое приложение сегодня разговаривает с сервером: лента новостей,
+    корзина в магазине, список задач. Чтобы этот разговор был предсказуемым, нужен
+    общий язык — <strong>API</strong>. А <strong>REST</strong> — это самый
+    распространённый стиль такого языка для веба: набор простых договорённостей о
+    том, как клиент и сервер обмениваются данными поверх HTTP.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — ресторан.</strong> Вы (клиент) не идёте на кухню и не
+    трогаете плиту. Вы читаете <em>меню</em> и делаете <em>стандартный заказ</em>
+    официанту, а тот приносит готовое блюдо. Меню и правила заказа — это и есть
+    API: договор, по которому две стороны понимают друг друга. Здесь нет «чёрного
+    ящика» — ниже мы разберём, из каких именно правил этот договор состоит.
+  </p>
+
+  <section class="doc__section">
+    <h2>Что такое API и зачем он</h2>
+    <p>
+      <strong>API</strong> (Application Programming Interface) — это описанный
+      заранее <em>интерфейс</em>, через который одна программа обращается к другой.
+      Он говорит: «вот такие запросы я принимаю, вот в таком виде отвечаю». Вызывающей
+      стороне не нужно знать, как всё устроено внутри — какая база данных, на каком
+      языке написан сервер. Достаточно соблюдать договор.
+    </p>
+    <p>
+      Когда такой интерфейс доступен по сети и работает поверх HTTP, его называют
+      <strong>Web API</strong>. Браузер, мобильное приложение и другой сервер —
+      все они могут быть клиентами одного и того же Web API. Это как единое меню,
+      по которому обслуживают любого посетителя.
+    </p>
+    <p class="note">
+      <strong>Коротко:</strong> API — это договор между программами. REST — один из
+      популярных способов оформить такой договор для веба.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что значит REST</h2>
+    <p>
+      <strong>REST</strong> расшифровывается как <em>REpresentational State
+      Transfer</em> — «передача представления состояния». Ключевое: это
+      <strong>архитектурный стиль</strong>, а не протокол и не стандарт. REST ничего
+      не заставляет — он лишь предлагает набор принципов, которым API может следовать.
+    </p>
+    <p>Главная идея умещается в трёх пунктах:</p>
+    <ul class="rules">
+      <li>всё, чем управляет система, — это <strong>ресурсы</strong> (пользователь,
+        заказ, статья);</li>
+      <li>у каждого ресурса есть свой адрес — <strong>URL</strong>
+        (<code>/users/42</code>);</li>
+      <li>действия над ресурсами выражают <strong>стандартными HTTP-методами</strong>
+        (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>) —
+        см. <a routerLink="/javascript/rest-api/methods">HTTP-методы</a>.</li>
+    </ul>
+    <p>
+      API, который придерживается этих принципов, называют <strong>RESTful</strong>.
+      Термин нестрогий: почти никто не следует всем правилам REST в оригинальном
+      смысле, поэтому «RESTful» обычно значит просто «сделан в духе REST».
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ресурсы и представления</h2>
+    <p>
+      <strong>Ресурс</strong> — это любая сущность, о которой можно говорить:
+      конкретный пользователь, список заказов, одна статья. Ресурс адресуется
+      URL-ом. Принято, что <em>коллекция</em> — это множественное число
+      (<code>/users</code>), а <em>отдельный элемент</em> — с идентификатором
+      (<code>/users/42</code>).
+    </p>
+    <p>
+      Сам объект на сервере (строка в базе данных) наружу не отдаётся. Клиент
+      получает <strong>представление</strong> (representation) этого ресурса — его
+      снимок в удобном формате. Чаще всего это <strong>JSON</strong>. Вот как может
+      выглядеть представление пользователя <code>/users/42</code>:
+    </p>
+    <app-code-block [code]="resourceJsonExample" lang="json" />
+    <p>
+      А запрос к коллекции <code>/users</code> обычно возвращает список
+      представлений — часто вместе со служебными полями вроде счётчика:
+    </p>
+    <app-code-block [code]="collectionJsonExample" lang="json" />
+    <p>
+      «Representational State Transfer» из названия — это как раз про то, что между
+      клиентом и сервером ходят <em>представления</em> состояния ресурсов, а не сами
+      внутренние объекты. Про форматы и то, как сервер сообщает, что отдаёт именно
+      JSON, — на странице
+      <a routerLink="/javascript/rest-api/headers">Заголовки и форматы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как это выглядит: клиент и сервер</h2>
+    <p>
+      Схема любого обращения одинакова: клиент шлёт <strong>HTTP-запрос</strong> на
+      URL ресурса, сервер выполняет работу (например, читает базу данных) и
+      возвращает <strong>HTTP-ответ</strong> с представлением ресурса и кодом
+      состояния.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 620 260" width="100%" role="img"
+        aria-label="Клиент отправляет HTTP-запрос серверу, сервер обращается к базе данных и возвращает HTTP-ответ с JSON">
+        <defs>
+          <marker id="ra-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="92" width="150" height="76" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="95" y="124" text-anchor="middle" fill="var(--fg)" font-size="14" font-weight="700">Клиент</text>
+        <text x="95" y="146" text-anchor="middle" fill="var(--muted)" font-size="11.5">браузер, приложение</text>
+
+        <rect x="330" y="92" width="150" height="76" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="405" y="124" text-anchor="middle" fill="var(--fg)" font-size="14" font-weight="700">Сервер</text>
+        <text x="405" y="146" text-anchor="middle" fill="var(--muted)" font-size="11.5">обрабатывает запрос</text>
+
+        <rect x="520" y="98" width="80" height="64" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="560" y="126" text-anchor="middle" fill="var(--muted)" font-size="12">БД</text>
+        <text x="560" y="146" text-anchor="middle" fill="var(--muted)" font-size="10.5">данные</text>
+
+        <text x="250" y="76" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12.5" font-weight="700">HTTP-запрос</text>
+        <text x="250" y="92" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">GET /users/42</text>
+        <line x1="170" y1="112" x2="326" y2="112" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ra-b-arrow)" />
+
+        <text x="250" y="170" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">200 OK · JSON</text>
+        <text x="250" y="186" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12.5" font-weight="700">HTTP-ответ</text>
+        <line x1="330" y1="148" x2="174" y2="148" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ra-b-arrow)" />
+
+        <line x1="480" y1="122" x2="516" y2="122" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ra-b-arrow)" />
+        <line x1="516" y1="138" x2="480" y2="138" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ra-b-arrow)" />
+
+        <text x="95" y="212" text-anchor="middle" fill="var(--muted)" font-size="11">делает заказ</text>
+        <text x="405" y="212" text-anchor="middle" fill="var(--muted)" font-size="11">готовит и отдаёт</text>
+      </svg>
+      <figcaption>
+        Клиент делает стандартный запрос, сервер обращается к данным и возвращает
+        представление ресурса (обычно JSON) вместе с кодом состояния.
+      </figcaption>
+    </figure>
+
+    <p class="note">
+      <strong>REST &ne; HTTP:</strong> REST — это идея, а HTTP — конкретный протокол.
+      Теоретически REST можно реализовать и поверх другого протокола, но на практике
+      REST API почти всегда работает именно поверх HTTP. Как устроены сами запрос и
+      ответ — на странице
+      <a routerLink="/javascript/rest-api/http">HTTP: запрос и ответ</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Принципы REST</h2>
+    <p>
+      REST держится на нескольких ограничениях. Разберём главные — те, что реально
+      влияют на то, как вы пишете и потребляете API:
+    </p>
+    <h3 class="doc__subtitle">Клиент-сервер</h3>
+    <p>
+      Ответственность разделена: клиент отвечает за интерфейс и удобство
+      пользователя, сервер — за данные и бизнес-логику. Они общаются только через
+      API, поэтому их можно менять и развивать независимо друг от друга.
+    </p>
+    <h3 class="doc__subtitle">Stateless — без состояния</h3>
+    <p>
+      Каждый запрос <strong>самодостаточен</strong>: он несёт всё, что нужно серверу,
+      чтобы его обработать (адрес ресурса, метод, токен авторизации, тело). Сервер
+      <em>не хранит</em> состояние клиента между запросами — он не «помнит», что вы
+      делали в прошлый раз.
+    </p>
+    <p>
+      Аналогия: каждый раз вы заново представляетесь и объясняете, чего хотите — как
+      будто пришли к новому официанту. Это кажется избыточным, зато любой сервер из
+      кластера может обработать любой запрос. Именно поэтому stateless-подход так
+      важен для <strong>масштабирования</strong>. Почему при этом всё работает
+      асинхронно и не блокирует интерфейс — см.
+      <a routerLink="/javascript/event-loop/basics">Event Loop: основы</a>.
+    </p>
+    <h3 class="doc__subtitle">Единообразный интерфейс</h3>
+    <p>
+      Все ресурсы адресуются по одинаковым правилам (URL), а действия выражаются
+      одним и тем же набором HTTP-методов. Узнав, как устроен один эндпоинт, вы
+      интуитивно понимаете и остальные — не нужно учить новый способ на каждый случай.
+    </p>
+    <h3 class="doc__subtitle">Кешируемость</h3>
+    <p>
+      Ответы могут помечаться как кешируемые. Тогда клиент или промежуточный узел
+      сохранит результат и не будет дёргать сервер повторно за теми же данными — это
+      ускоряет работу и снижает нагрузку. Управляют этим специальные заголовки.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Первый запрос</h2>
+    <p>
+      В браузере запросы к REST API делают через <strong>Fetch API</strong>. Вот
+      минимальный пример: получаем представление пользователя по его URL и разбираем
+      JSON-ответ в обычный объект JavaScript.
+    </p>
+    <app-code-block [code]="firstFetchExample" lang="javascript" />
+    <p>
+      <code>fetch</code> возвращает промис, поэтому используем
+      <code>await</code> — сама функция <code>fetch</code> здесь принимает URL
+      как значение, а разбор ответа мы вызываем отдельным шагом (о функциях как
+      значениях — на странице
+      <a routerLink="/javascript/functions/first-class">Функции как значения</a>).
+    </p>
+    <p class="note">
+      <strong>Осторожно:</strong> <code>fetch</code> считает запрос успешным даже
+      при кодах <code>404</code> или <code>500</code> — промис отклоняется только при
+      сетевом сбое. Поэтому статус проверяют вручную через <code>response.ok</code>.
+      Все детали <code>fetch</code>, заголовков и обработки ошибок — на странице
+      <a routerLink="/javascript/rest-api/fetch">Fetch API на практике</a>.
+    </p>
+  </section>
+</article>

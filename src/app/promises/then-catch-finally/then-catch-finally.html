@@ -1,0 +1,204 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/promises">Промисы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">then, catch, finally</span>
+  </nav>
+
+  <h1 class="doc__title">Методы then, catch и finally</h1>
+  <p class="doc__lead">
+    Промис — это обещание будущего результата, но сам по себе он молчит. Чтобы
+    <em>узнать</em>, чем всё закончилось, к промису нужно «подписаться». Для этого у
+    каждого промиса есть три метода:
+    <code>then</code>, <code>catch</code> и <code>finally</code>. Вы передаёте им
+    функции-колбэки, а движок вызовет нужную, когда промис перейдёт в состояние
+    «выполнен» или «отклонён» (что такое эти состояния — в разделе
+    <a routerLink="/javascript/promises/basics">Что такое промис</a>).
+  </p>
+  <p class="doc__lead">
+    Аналогия: заказ в кафе с самовывозом. Вы оставляете номер телефона и говорите: «на
+    успех — пришлите SMS с готовым заказом» (<code>then</code>), «на неудачу — сообщите,
+    что блюда нет» (<code>catch</code>), «и в любом случае снимите бронь стола, когда всё
+    решится» (<code>finally</code>). Вы не стоите у окна и не блокируете очередь — просто
+    заранее описали, что делать при каждом исходе.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>.then</code> — получить результат</h2>
+    <p>
+      Метод <code>then</code> принимает функцию, которая сработает, когда промис
+      <strong>успешно выполнится</strong>. В неё движок передаст одним аргументом
+      результат — то самое значение, которым промис был выполнен:
+    </p>
+    <app-code-block [code]="thenExample" lang="javascript" />
+    <p>
+      Колбэк <em>не</em> выполняется сразу — он ждёт, пока промис не будет готов. И
+      даже для уже выполненного промиса вызов произойдёт не мгновенно, а чуть позже,
+      отдельной микрозадачей (подробнее — в разделе
+      <a routerLink="/javascript/event-loop/macro-micro">Макро- и микрозадачи</a>). Так
+      что код после <code>.then(…)</code> в файле выполнится <em>раньше</em>, чем сам
+      колбэк.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ошибки: второй аргумент then и <code>.catch</code></h2>
+    <p>
+      У <code>then</code> есть и второй, необязательный аргумент — колбэк на случай
+      <strong>ошибки</strong>. Полная форма выглядит так:
+      <code>then(onFulfilled, onRejected)</code>. Если промис будет отклонён, движок
+      вызовет <em>второй</em> колбэк и передаст в него причину — обычно объект
+      <code>Error</code>:
+    </p>
+    <app-code-block [code]="thenSecondArgExample" lang="javascript" />
+    <p>
+      На практике так почти не пишут. Гораздо чаще для ошибок используют отдельный метод
+      <code>catch</code>. Технически <code>.catch(fn)</code> — это всего лишь короткая
+      запись для <code>.then(null, fn)</code>: тот же самый обработчик ошибок, только
+      читается яснее и отделён от «успешного» колбэка:
+    </p>
+    <app-code-block [code]="catchExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно:</strong> у <code>catch</code> есть преимущество перед вторым
+      аргументом <code>then</code>. Он ловит ошибки не только из самого промиса, но и те,
+      что <em>выброшены внутри</em> <code>onFulfilled</code>-колбэка выше по цепочке. А вот
+      <code>onRejected</code>, переданный в тот же <code>then</code>, ошибку своего же
+      «успешного» колбэка не поймает — поэтому <code>catch</code> в конце цепочки надёжнее.
+      Подробно об этом — в разделе
+      <a routerLink="/javascript/promises/error-handling">Обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>.finally</code> — в любом случае</h2>
+    <p>
+      Метод <code>finally</code> вызывает свой колбэк <strong>при любом исходе</strong>
+      — и когда промис выполнился, и когда отклонился. Его колбэк, в отличие от
+      <code>then</code> и <code>catch</code>, <strong>не получает аргументов</strong>:
+      ему не важно, что именно произошло, важно лишь, что <em>что-то</em> произошло.
+      Типичный сценарий — снять индикатор загрузки, который вы показали перед запросом:
+    </p>
+    <app-code-block [code]="finallyExample" lang="javascript" />
+    <p>
+      Ещё одна важная черта: <code>finally</code> <strong>прозрачен</strong> для
+      цепочки. Он не меняет ни результат, ни ошибку — просто пропускает их дальше без
+      изменений. Даже если из <code>finally</code> что-то вернуть, это значение будет
+      проигнорировано:
+    </p>
+    <app-code-block [code]="finallyPassThroughExample" lang="javascript" />
+    <p>
+      То есть <code>finally</code> — это «побочное действие на выход»: выполнить уборку и
+      не вмешаться в то, что передаётся по цепочке. Единственное исключение — если внутри
+      <code>finally</code> <em>выбросить</em> ошибку или вернуть отклонённый промис: тогда
+      он всё-таки изменит результат на эту новую ошибку.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Каждый метод возвращает НОВЫЙ промис</h2>
+    <p>
+      Ключевая идея, на которой держится всё остальное: <code>then</code>,
+      <code>catch</code> и <code>finally</code> <strong>не изменяют</strong> исходный
+      промис, а <strong>возвращают новый</strong>. Это и позволяет соединять вызовы в
+      цепочку — результат одного шага становится входом для следующего:
+    </p>
+    <app-code-block [code]="chainExample" lang="javascript" />
+    <p>
+      То, что колбэк <em>вернёт</em>, становится результатом нового промиса. Вернули
+      обычное значение — следующий <code>then</code> получит его. Вернули промис — цепочка
+      дождётся и <em>его</em>. Так из простых звеньев собираются длинные асинхронные
+      сценарии — этому посвящён отдельный раздел
+      <a routerLink="/javascript/promises/chaining">Цепочки промисов</a>.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 210" width="100%" role="img"
+        aria-label="Каждый вызов then, catch и finally возвращает новый промис, к которому можно снова применить метод">
+        <defs>
+          <marker id="pr-tcf-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="320" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Каждый метод возвращает новый промис</text>
+
+        <rect x="20" y="70" width="120" height="60" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="80" y="98" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="600">промис</text>
+        <text x="80" y="117" text-anchor="middle" fill="var(--muted)" font-size="11">исходный</text>
+
+        <line x1="142" y1="100" x2="186" y2="100" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#pr-tcf-arrow)" />
+        <text x="164" y="90" text-anchor="middle" fill="var(--muted)" font-size="11">.then</text>
+
+        <rect x="190" y="70" width="120" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="250" y="98" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">новый</text>
+        <text x="250" y="117" text-anchor="middle" fill="var(--muted)" font-size="11">промис №2</text>
+
+        <line x1="312" y1="100" x2="356" y2="100" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#pr-tcf-arrow)" />
+        <text x="334" y="90" text-anchor="middle" fill="var(--muted)" font-size="11">.catch</text>
+
+        <rect x="360" y="70" width="120" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="420" y="98" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">новый</text>
+        <text x="420" y="117" text-anchor="middle" fill="var(--muted)" font-size="11">промис №3</text>
+
+        <line x1="482" y1="100" x2="526" y2="100" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#pr-tcf-arrow)" />
+        <text x="504" y="90" text-anchor="middle" fill="var(--muted)" font-size="11">.finally</text>
+
+        <rect x="530" y="70" width="100" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="580" y="98" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">новый</text>
+        <text x="580" y="117" text-anchor="middle" fill="var(--muted)" font-size="11">промис №4</text>
+
+        <text x="320" y="178" text-anchor="middle" fill="var(--muted)" font-size="12">результат каждого шага становится входом следующего → это и есть цепочка</text>
+      </svg>
+      <figcaption>
+        Методы не меняют исходный промис, а создают новый на каждом звене. Поэтому вызовы
+        можно ставить друг за другом бесконечно.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Коротко: три метода рядом</h2>
+    <p>Сравним, когда срабатывает колбэк каждого метода и что он получает:</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Метод</th>
+            <th>Когда вызывается колбэк</th>
+            <th>Что получает</th>
+            <th>Типичное применение</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>then</code></td>
+            <td class="yes">При успехе (а во 2-м аргументе — и при ошибке)</td>
+            <td>Результат выполнения промиса</td>
+            <td>Обработать полученные данные</td>
+          </tr>
+          <tr>
+            <td><code>catch</code></td>
+            <td class="no">Только при ошибке (отклонении)</td>
+            <td>Причину ошибки (объект <code>Error</code>)</td>
+            <td>Поймать и обработать сбой</td>
+          </tr>
+          <tr>
+            <td><code>finally</code></td>
+            <td>Всегда — и при успехе, и при ошибке</td>
+            <td>Ничего (без аргументов)</td>
+            <td>Уборка: скрыть спиннер, закрыть соединение</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Дальше:</strong> мы увидели, что каждый метод возвращает новый промис. На
+      этом свойстве строятся длинные последовательности асинхронных шагов — читайте
+      раздел <a routerLink="/javascript/promises/chaining">Цепочки промисов</a>, а о том,
+      как надёжно ловить ошибки во всей цепочке, — в разделе
+      <a routerLink="/javascript/promises/error-handling">Обработка ошибок</a>.
+    </p>
+  </section>
+</article>

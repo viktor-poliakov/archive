@@ -1,0 +1,141 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/promises">Промисы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Подводные камни промисов</h1>
+  <p class="doc__lead">
+    Промисы устроены логично, но на практике одни и те же ошибки повторяются из проекта в
+    проект: потерянные результаты, незамеченные ошибки и лишнее ожидание. Разберём самые
+    частые — почти все они про две вещи: «забыл дождаться» и «забыл, что промис
+    запускается сразу».
+  </p>
+
+  <section class="doc__section">
+    <h2>Забытый <code>return</code> в <code>.then</code></h2>
+    <p>
+      Если внутри <code>.then</code> вы вызвали асинхронную операцию, но не вернули её
+      результат через <code>return</code>, цепочка не станет её дожидаться — следующий
+      <code>.then</code> получит <code>undefined</code>:
+    </p>
+    <app-code-block [code]="missingReturnExample" lang="javascript" />
+    <p>Достаточно вернуть промис — и цепочка снова работает верно:</p>
+    <app-code-block [code]="missingReturnFixedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>«Плавающий» промис: забытый <code>await</code></h2>
+    <p>
+      Если вызвать асинхронную функцию и не дождаться её (через <code>await</code> или
+      <code>.then</code>), код побежит дальше, не дождавшись результата. Хуже того — если
+      промис отклонится, ошибку никто не поймает, и получится
+      <code>unhandledrejection</code>:
+    </p>
+    <app-code-block [code]="floatingExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Последовательные <code>await</code> вместо <code>Promise.all</code></h2>
+    <p>
+      Несколько <code>await</code> подряд выполняются по очереди. Если запросы не зависят
+      друг от друга, это напрасная трата времени — их нужно запускать параллельно через
+      <a routerLink="/javascript/promises/static-methods"><code>Promise.all</code></a>
+      (подробнее — в разделе
+      <a routerLink="/javascript/promises/async-await">«async/await»</a>):
+    </p>
+    <app-code-block [code]="sequentialExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Промис «горячий»: работа стартует сразу</h2>
+    <p>
+      Промис не ленивый. Функция-исполнитель выполняется
+      <strong>в момент создания</strong> промиса, а не когда вы повесите
+      <code>.then</code>. То есть создать промис — значит уже запустить работу:
+    </p>
+    <app-code-block [code]="eagerExample" lang="javascript" />
+    <p>
+      Этим промис отличается, например, от обычной функции, которую можно объявить и
+      вызвать позже. Промис же начинает делать своё дело сразу.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>await</code> внутри <code>forEach</code></h2>
+    <p>
+      <code>forEach</code> игнорирует промис из async-колбэка, поэтому <code>await</code>
+      внутри него не задерживает цикл. Нужен <code>for...of</code> (по очереди) или
+      <code>Promise.all</code> (параллельно):
+    </p>
+    <app-code-block [code]="forEachExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Проглоченные ошибки</h2>
+    <p>
+      Пустой <code>.catch</code> или его отсутствие прячут проблему: приложение «молча»
+      ломается, и понять причину невозможно. Ошибку нужно как минимум залогировать, а
+      лучше — показать пользователю:
+    </p>
+    <app-code-block [code]="swallowedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Порядок: промисы обгоняют таймеры</h2>
+    <p>
+      Колбэки промисов и код после <code>await</code> — это
+      <strong>микрозадачи</strong>, а <code>setTimeout</code> —
+      <strong>макрозадача</strong>. Микрозадачи всегда выполняются раньше, поэтому
+      порядок вывода бывает неожиданным:
+    </p>
+    <app-code-block [code]="orderExample" lang="javascript" />
+    <p>
+      Почему так и как это устроено — в разделе
+      <a routerLink="/javascript/event-loop/macro-micro">«Макро- и микрозадачи»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Коротко: ошибка &rarr; как правильно</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Частая ошибка</th>
+            <th>Как правильно</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="no">Забыть <code>return</code> в <code>.then</code></td>
+            <td class="yes">Возвращать промис из <code>.then</code></td>
+          </tr>
+          <tr>
+            <td class="no">Вызвать async-функцию без <code>await</code></td>
+            <td class="yes">Дождаться через <code>await</code> / <code>.then</code></td>
+          </tr>
+          <tr>
+            <td class="no">Независимые запросы — <code>await</code> подряд</td>
+            <td class="yes">Запускать разом через <code>Promise.all</code></td>
+          </tr>
+          <tr>
+            <td class="no"><code>await</code> внутри <code>forEach</code></td>
+            <td class="yes"><code>for...of</code> или <code>Promise.all</code></td>
+          </tr>
+          <tr>
+            <td class="no">Пустой <code>.catch</code>, глушащий ошибку</td>
+            <td class="yes">Логировать и показывать ошибку</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      А начать с самого начала — с устройства промиса и его состояний — можно в
+      <a routerLink="/javascript/promises/basics">«Основах»</a>.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,148 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Отмена запроса</span>
+  </nav>
+
+  <h1 class="doc__title">Отмена запроса</h1>
+  <p class="doc__lead">
+    Запрос не всегда нужно доводить до конца. Пользователь ушёл со страницы, начал
+    новый поиск, а старый ответ уже неактуален, или сервер завис и пора сдаться по
+    таймауту. Во всех этих случаях запрос стоит <strong>отменить</strong>: это
+    освобождает сеть и снимает <em>гонки</em> — ситуации, когда запоздалый ответ
+    затирает свежий.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — заказ по телефону.</strong> Пока курьер не выехал, заказ можно
+    отменить одним звонком. Важная тонкость: если еду уже готовят, отмена на клиенте
+    остановит <em>ожидание</em>, но не «отменит» работу, которую сервер, возможно, уже
+    сделал. Об этом — в конце.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>AbortController</code> и <code>AbortSignal</code></h2>
+    <p>
+      Механизм отмены — это пара из двух объектов. <code>AbortController</code> — это
+      «пульт», а его свойство <code>signal</code> — «провод», который тянется к
+      запросу. Сигнал передают в <code>fetch</code> через опцию <code>signal</code>, а
+      чтобы оборвать запрос — нажимают на пульте <code>abort()</code>:
+    </p>
+    <app-code-block [code]="abortBasicExample" lang="javascript" />
+    <p>
+      Контроллер <strong>одноразовый</strong>: после <code>abort()</code> его сигнал
+      навсегда в состоянии «отменён». Для следующего запроса создавайте новый
+      <code>AbortController</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ловим отмену: <code>AbortError</code></h2>
+    <p>
+      Когда запрос обрывают, промис <code>fetch</code> не «тихо завершается», а
+      <strong>отклоняется</strong> — с ошибкой, у которой <code>name</code> равен
+      <code>'AbortError'</code>. Её ловят в <code>try/catch</code> и обычно
+      обрабатывают отдельно от настоящих сбоев: отмену пользователю показывать не нужно.
+    </p>
+    <app-code-block [code]="abortCatchExample" lang="javascript" />
+    <p>
+      Отличать отмену важно: если валить её в общий обработчик ошибок, пользователь
+      увидит пугающее «Ошибка сети» там, где он сам всё отменил. Про остальные виды
+      ошибок — на странице
+      <a routerLink="/javascript/rest-api/errors">Обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Таймаут — это отмена по времени</h2>
+    <p>
+      Таймаут — частный случай отмены: сигнал срабатывает сам через заданное время.
+      Проще всего взять готовый <code>AbortSignal.timeout(ms)</code>; если же нужен
+      контроль и по времени, и по действию пользователя — комбинируют ручной таймер с
+      <code>AbortController</code>:
+    </p>
+    <app-code-block [code]="timeoutSignalExample" lang="javascript" />
+    <p>
+      Разница в имени ошибки: у <code>AbortSignal.timeout</code> это
+      <code>'TimeoutError'</code>, у ручного <code>abort()</code> —
+      <code>'AbortError'</code>. По имени легко понять, что случилось: сервер молчал
+      слишком долго или запрос отменили. Куда встроить таймаут в общем клиенте и как
+      повторять запросы — в разделе
+      <a routerLink="/javascript/rest-api/errors">Обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Комбинирование сигналов: <code>AbortSignal.any</code></h2>
+    <p>
+      Часто нужно отменять запрос сразу по нескольким причинам: и по кнопке «Отмена»,
+      и по таймауту. <code>AbortSignal.any</code> объединяет несколько сигналов в один
+      — он «выстрелит» от первого сработавшего:
+    </p>
+    <app-code-block [code]="anySignalExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Практика: отмена предыдущего поиска</h2>
+    <p>
+      Самый частый повод для отмены — живой поиск (search-as-you-type). На каждое
+      нажатие летит запрос, но отвечают они с разной задержкой, и порядок ответов не
+      гарантирован: ответ на <code>ab</code> может прийти <em>после</em> ответа на
+      <code>abc</code> и затереть его. Лечится это просто — перед новым запросом
+      отменяем предыдущий:
+    </p>
+    <app-code-block [code]="searchRaceExample" lang="javascript" />
+    <p>
+      Тот же приём защищает от гонок при переключении вкладок, фильтров, страниц —
+      везде, где новый запрос делает старый ненужным.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Отмена при уходе со страницы</h2>
+    <p>
+      Если запрос уже не нужен, потому что компонент закрылся, его тоже стоит оборвать
+      — иначе ответ придёт «в пустоту» и может вызвать ошибку. Приятный бонус: тот же
+      сигнал понимает и <code>addEventListener</code>
+      (<code>addEventListener(el, handler, &#123; signal &#125;)</code>), так что один
+      <code>abort()</code> снимает и запрос, и подписки на события:
+    </p>
+    <app-code-block [code]="unmountExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Нюансы</h2>
+    <ul class="rules">
+      <li>
+        <strong>Отмена не откатывает сервер.</strong> <code>abort()</code> рвёт
+        <em>ожидание ответа на клиенте</em>. Запрос мог уже дойти, и сервер мог его
+        выполнить (например, создать запись). Для безопасного повтора нужна
+        <a routerLink="/javascript/rest-api/methods">идемпотентность</a>.
+      </li>
+      <li>
+        <strong>Проверяйте <code>signal.aborted</code>.</strong> Если сигнал отменили
+        ещё до старта, <code>fetch</code> сразу отклонится — лишнюю работу можно не
+        начинать.
+      </li>
+      <li>
+        <strong>Один контроллер — один запрос.</strong> После <code>abort()</code>
+        сигнал не переиспользуют; на новый запрос — новый
+        <code>AbortController</code>.
+      </li>
+      <li>
+        <strong>Потоки отменяют отдельно.</strong> Если вы читаете тело через
+        <code>getReader()</code> (см.
+        <a routerLink="/javascript/rest-api/files">Файлы и бинарные данные</a>), поток
+        закрывают вызовом <code>reader.cancel()</code>.
+      </li>
+    </ul>
+    <p class="note">
+      <strong>Коротко:</strong> создайте <code>AbortController</code>, отдайте его
+      <code>signal</code> в <code>fetch</code>, вызовите <code>abort()</code>, когда
+      результат стал не нужен, и не забудьте отличить <code>AbortError</code> от
+      настоящих ошибок.
+    </p>
+  </section>
+</article>

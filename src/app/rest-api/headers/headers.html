@@ -1,0 +1,269 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Заголовки и форматы</span>
+  </nav>
+
+  <h1 class="doc__title">Заголовки, форматы и CORS</h1>
+  <p class="doc__lead">
+    Кроме URL и тела у каждого HTTP-сообщения есть <strong>заголовки</strong> —
+    служебные пометки, которые не видны обычному пользователю, но объясняют
+    получателю, что именно ему прислали и как это читать. Это как этикетка на
+    посылке: внутри лежит содержимое (тело), а снаружи наклейка говорит, что за
+    груз, кому он и как с ним обращаться.
+  </p>
+  <p class="doc__lead">
+    На этой странице разберём, зачем нужны заголовки, почему в REST по умолчанию
+    возят <strong>JSON</strong>, какие заголовки встречаются чаще всего, и почему
+    браузер иногда блокирует запрос к чужому домену — это правило называется
+    <strong>CORS</strong>. Никакой магии: вы будете видеть каждую строку и
+    понимать, кто её поставил и зачем.
+  </p>
+
+  <section class="doc__section">
+    <h2>Заголовки — это метаданные</h2>
+    <p>
+      Заголовок — это пара <code>Ключ: значение</code>. Заголовки есть и у
+      запроса, и у ответа: клиент ими описывает, что он присылает и что хочет
+      получить, а сервер — что он вернул. В <code>fetch</code> заголовки запроса
+      задают объектом <code>headers</code>, а заголовки ответа читают через
+      <code>res.headers.get(...)</code> (про строение самого HTTP-сообщения — на
+      странице <a routerLink="/javascript/rest-api/http">HTTP: запрос и ответ</a>):
+    </p>
+    <app-code-block [code]="headersExample" lang="javascript" />
+    <p>
+      Каждый заголовок отвечает на свой вопрос: <code>Content-Type</code> — «в
+      каком формате тело?», <code>Accept</code> — «что мне прислать в ответ?»,
+      <code>Authorization</code> — «кто я такой?».
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Content-Type и Accept</h2>
+    <p>
+      Два самых важных заголовка про формат легко перепутать, поэтому запомним
+      разницу через направление:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong><code>Content-Type</code></strong> описывает формат
+        <em>тела этого же сообщения</em> — «то, что я прямо сейчас отправляю,
+        это <code>application/json</code>». Его ставит тот, кто послал тело:
+        клиент — на запросе с телом, сервер — на ответе.
+      </li>
+      <li>
+        <strong><code>Accept</code></strong> — это пожелание клиента:
+        «в ответ я <em>готов принять</em> вот такой формат». Сервер старается
+        его учесть, но окончательный формат ответа он всё равно объявит своим
+        <code>Content-Type</code>.
+      </li>
+    </ul>
+    <p class="note">
+      <strong>Тонкость:</strong> у <code>Content-Type</code> часто есть и
+      кодировка — <code>application/json; charset=utf-8</code>. Часть
+      <code>application/json</code> называется MIME-типом и определяет, как
+      разбирать байты тела.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Почему именно JSON</h2>
+    <p>
+      Формально REST не привязан к одному формату, но на практике почти все API
+      возят данные в <strong>JSON</strong> (JavaScript Object Notation). Причин
+      несколько:
+    </p>
+    <ul class="rules">
+      <li><strong>Человекочитаемый</strong> — обычный текст, его видно и можно понять глазами.</li>
+      <li><strong>Компактный</strong> — меньше «шума», чем в XML.</li>
+      <li>
+        <strong>Родной для JavaScript</strong> — в браузере уже есть
+        <code>JSON.parse</code> (текст → объект) и <code>JSON.stringify</code>
+        (объект → текст), ничего доустанавливать не нужно.
+      </li>
+    </ul>
+    <p>Так выглядит тело ответа в JSON — обратите внимание, что структура один в один похожа на объект JavaScript:</p>
+    <app-code-block [code]="jsonExample" lang="json" />
+    <p>
+      Разница лишь в мелочах: в JSON все ключи в двойных кавычках, нет функций,
+      нет <code>undefined</code> и завершающих запятых. А превращение в объект
+      JS и обратно — это две строчки:
+    </p>
+    <app-code-block [code]="jsonJsExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно:</strong> <code>fetch</code> не разбирает JSON
+      автоматически — он отдаёт «сырой» ответ, а вы вызываете
+      <code>await res.json()</code>, чтобы получить объект. Подробно про это — на
+      странице <a routerLink="/javascript/rest-api/fetch">Fetch API на практике</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Частые заголовки</h2>
+    <p>
+      Заголовков в спецификации десятки, но в повседневной работе с REST
+      встречается небольшой набор. Вот шпаргалка — кто их обычно ставит и зачем:
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Заголовок</th>
+            <th>Кто ставит</th>
+            <th>Зачем нужен</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Content-Type</code></td>
+            <td>клиент и сервер</td>
+            <td>формат тела этого сообщения (например, <code>application/json</code>)</td>
+          </tr>
+          <tr>
+            <td><code>Accept</code></td>
+            <td>клиент</td>
+            <td>какой формат ответа клиент готов принять</td>
+          </tr>
+          <tr>
+            <td><code>Authorization</code></td>
+            <td>клиент</td>
+            <td>кто отправитель: токен, ключ (см. <a routerLink="/javascript/rest-api/auth">Аутентификация</a>)</td>
+          </tr>
+          <tr>
+            <td><code>Cache-Control</code></td>
+            <td>клиент и сервер</td>
+            <td>можно ли кэшировать ответ и как долго</td>
+          </tr>
+          <tr>
+            <td><code>Set-Cookie</code></td>
+            <td>сервер</td>
+            <td>просит браузер сохранить cookie (сессию) и слать её обратно</td>
+          </tr>
+          <tr>
+            <td><code>User-Agent</code></td>
+            <td>клиент</td>
+            <td>кто клиент: браузер, версия, платформа</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>CORS: почему браузер блокирует чужие домены</h2>
+    <p>
+      Представьте: вы залогинены на <code>bank.com</code>, а в соседней вкладке
+      открыт вредоносный <code>evil.com</code>. Если бы его скрипт мог свободно
+      слать запросы на <code>bank.com</code> с вашими cookie, он бы перевёл
+      деньги от вашего имени. Чтобы этого не случилось, в браузере действует
+      <strong>Same-Origin Policy</strong>: по умолчанию код с одного «источника»
+      (origin = протокол + домен + порт) не может читать ответы с другого.
+    </p>
+    <p>
+      Но легальным сайтам часто <em>нужно</em> ходить на чужой API (фронтенд на
+      <code>app.example.com</code> — к бэкенду на <code>api.example.com</code>).
+      Для этого придуман <strong>CORS</strong> (Cross-Origin Resource Sharing):
+      сервер может <em>разрешить</em> себя вызывать, добавив в ответ заголовок
+      <code>Access-Control-Allow-Origin</code>. Браузер видит разрешение и
+      пропускает ответ в код.
+    </p>
+    <p>
+      Для «простых» запросов (обычный <code>GET</code> или <code>POST</code> без
+      необычных заголовков) браузер шлёт запрос сразу. Но для «непростых» —
+      например, <code>PUT</code>/<code>DELETE</code>, или с заголовком
+      <code>Authorization</code>, или с <code>Content-Type: application/json</code>
+      — браузер сначала отправляет <strong>предварительный (preflight) запрос</strong>
+      методом <code>OPTIONS</code>: спрашивает у сервера «а можно мне вообще так
+      обратиться?». Только получив разрешение, он шлёт настоящий запрос.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 320" width="100%" role="img"
+        aria-label="Схема CORS preflight: браузер шлёт OPTIONS, сервер отвечает Access-Control-Allow-*, затем идёт реальный запрос">
+        <defs>
+          <marker id="cors-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <!-- две стороны -->
+        <rect x="24" y="24" width="180" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="114" y="47" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="700">Браузер</text>
+        <text x="114" y="65" text-anchor="middle" fill="var(--muted)" font-size="11">app.example.com</text>
+
+        <rect x="436" y="24" width="180" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="526" y="47" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="700">Сервер</text>
+        <text x="526" y="65" text-anchor="middle" fill="var(--muted)" font-size="11">api.example.com</text>
+
+        <!-- вертикальные линии жизни -->
+        <line x1="114" y1="76" x2="114" y2="300" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4 4" />
+        <line x1="526" y1="76" x2="526" y2="300" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4 4" />
+
+        <!-- шаг 1: preflight OPTIONS -->
+        <text x="120" y="108" fill="var(--muted)" font-size="11" font-weight="700">1. preflight</text>
+        <text x="320" y="126" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">OPTIONS /articles</text>
+        <line x1="114" y1="134" x2="522" y2="134" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#cors-arrow)" />
+
+        <!-- шаг 2: разрешение -->
+        <text x="320" y="164" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11.5">Access-Control-Allow-Origin</text>
+        <text x="320" y="180" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">Access-Control-Allow-Methods</text>
+        <line x1="526" y1="190" x2="118" y2="190" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#cors-arrow)" />
+
+        <!-- разделитель -->
+        <text x="320" y="222" text-anchor="middle" fill="var(--muted)" font-size="11">браузер увидел разрешение &rarr;</text>
+
+        <!-- шаг 3: реальный запрос -->
+        <text x="120" y="248" fill="var(--muted)" font-size="11" font-weight="700">2. реальный запрос</text>
+        <text x="320" y="266" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">POST /articles</text>
+        <line x1="114" y1="274" x2="522" y2="274" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#cors-arrow)" />
+
+        <text x="320" y="298" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">200 OK + данные</text>
+      </svg>
+      <figcaption>
+        Preflight: браузер сначала спрашивает у сервера разрешение методом
+        <code>OPTIONS</code>, сервер отвечает заголовками
+        <code>Access-Control-Allow-*</code>, и только потом уходит настоящий
+        запрос.
+      </figcaption>
+    </figure>
+
+    <p>
+      Ключевая мысль, которая экономит часы отладки: CORS — это ограничение
+      <strong>браузера</strong>, а не сервера и не вашего кода. Сервер честно
+      получает запрос и даже отвечает — но браузер прячет ответ от JS, если нет
+      нужных заголовков. Поэтому <code>curl</code> или запрос с бэкенда никакого
+      CORS не видят: ограничение действует только внутри вкладки браузера.
+    </p>
+    <p class="note">
+      <strong>CORS чинится на сервере, не на фронтенде:</strong> нельзя
+      «победить» CORS-ошибку из клиентского кода — ни заголовками в
+      <code>fetch</code>, ни настройками. Разрешение обязан выдать сервер
+      (заголовки <code>Access-Control-Allow-*</code>); на время разработки
+      помогает прокси, который подставляет их за вас. Как отличить CORS-ошибку от
+      обычной сетевой — на странице
+      <a routerLink="/javascript/rest-api/errors">Обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Заголовки во fetch</h2>
+    <p>
+      На практике заголовки задаются в объекте <code>headers</code> при вызове
+      <code>fetch</code>. Обратите внимание: именно наличие
+      <code>Content-Type: application/json</code> и <code>Authorization</code>
+      делает этот запрос «непростым» и заставляет браузер сперва сделать
+      preflight:
+    </p>
+    <app-code-block [code]="fetchHeadersExample" lang="javascript" />
+    <p>
+      Запрос уходит в сеть и выполняется асинхронно, поэтому мы пишем
+      <code>await</code> (почему сеть асинхронна — в разделе
+      <a routerLink="/javascript/event-loop/basics">Event Loop</a>). А колбэки и
+      функции-обработчики, которыми часто дополняют такие вызовы, — это
+      <a routerLink="/javascript/functions/first-class">функции как значения</a>.
+    </p>
+  </section>
+</article>

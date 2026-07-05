@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { CodeBlock } from '../code/code-block';
+import { CodeBlock } from '../../code/code-block';
 
 @Component({
-  selector: 'app-temporal',
+  selector: 'app-dates-temporal',
   imports: [CodeBlock, RouterLink],
   templateUrl: './temporal.html',
-  styleUrls: ['../content/doc.scss'],
+  styleUrls: ['../../content/doc.scss'],
 })
-export class Temporal {
+export class DatesTemporal {
   protected readonly nowExample = `// текущий момент в разных представлениях
 Temporal.Now.plainDateISO();     // 2024-01-26 — только дата
 Temporal.Now.plainTimeISO();     // 14:30:15  — только время

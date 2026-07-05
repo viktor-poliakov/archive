@@ -1,0 +1,263 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Аутентификация</span>
+  </nav>
+
+  <h1 class="doc__title">Аутентификация и авторизация</h1>
+  <p class="doc__lead">
+    Большинство API не отдают данные кому попало: сервер должен понять, <strong>кто
+    к нему пришёл</strong> и <strong>что этому пришедшему можно</strong>. За первое
+    отвечает аутентификация, за второе — авторизация. Слова похожи, но это два разных
+    шага, и путать их не стоит.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — вход на поезд.</strong> На перроне контролёр смотрит ваш
+    паспорт: он устанавливает, что вы — это вы (аутентификация). А билет говорит,
+    в какой вагон и на какое место вам можно (авторизация). Паспорт не пускает вас
+    в вагон бизнес-класса сам по себе, а билет бизнес-класса ничего не значит без
+    паспорта. Сервер рассуждает так же: сначала «кто ты», потом «что тебе разрешено».
+  </p>
+
+  <section class="doc__section">
+    <h2>Аутентификация &ne; авторизация</h2>
+    <p>
+      Эти два понятия идут парой, но решают разные задачи. Разберём по шагам, чтобы
+      дальше не путаться в терминах:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Аутентификация</strong> (authentication) — <em>кто ты</em>. Клиент
+        предъявляет удостоверение (токен, ключ, логин с паролем), а сервер убеждается,
+        что оно подлинное. Если удостоверения нет или оно недействительно — сервер
+        отвечает <code>401 Unauthorized</code>.
+      </li>
+      <li>
+        <strong>Авторизация</strong> (authorization) — <em>что тебе можно</em>. Это
+        <strong>следующий шаг после</strong> аутентификации: личность уже подтверждена,
+        и теперь сервер решает, разрешено ли <em>этому</em> пользователю конкретное
+        действие (например, удалить чужой заказ). Не хватает прав — сервер отвечает
+        <code>403 Forbidden</code>: «я знаю, кто ты, но сюда нельзя».
+      </li>
+    </ul>
+    <p class="note">
+      <strong>Осторожно со словом «авторизация».</strong> В обиходе «авторизоваться»
+      обычно значит «войти по логину и паролю». Но строго по терминам ввод логина с
+      паролем — это <em>аутентификация</em>: сервер как раз <strong>устанавливает</strong>,
+      кто вы. Авторизация начинается уже <em>после</em>, когда личность известна, и
+      отвечает на другой вопрос — «что этому пользователю можно». Дальше термины
+      используем строго: сначала аутентификация («кто ты»), потом авторизация («что
+      можно»).
+    </p>
+    <p class="note">
+      <strong>Мнемоника кодов:</strong> <code>401</code> — «не знаю тебя, покажи
+      удостоверение», <code>403</code> — «знаю тебя, но не пущу». Подробнее — в разделе
+      <a routerLink="/javascript/rest-api/status-codes">Коды состояния</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Заголовок <code>Authorization</code></h2>
+    <p>
+      Удостоверение почти всегда кладут в стандартный HTTP-заголовок
+      <code>Authorization</code>. Его значение состоит из <strong>схемы</strong>
+      (например, <code>Bearer</code> или <code>Basic</code>) и самих учётных данных
+      через пробел. Сервер читает схему и понимает, как разбирать то, что за ней:
+    </p>
+    <app-code-block [code]="bearerRequest" lang="http" />
+    <p>
+      Заголовок — часть каждого запроса, поэтому предъявлять удостоверение приходится
+      всякий раз заново: HTTP не помнит предыдущие обращения (см.
+      <a routerLink="/javascript/rest-api/headers">Заголовки и форматы</a>). Ниже —
+      четыре распространённых способа заполнить этот заголовок (или обойтись без него).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Способы удостоверить клиента</h2>
+
+    <h3 class="doc__subtitle">API-ключ</h3>
+    <p>
+      Самый простой вариант: сервер заранее выдаёт длинную случайную строку — ключ.
+      Клиент прикладывает её к каждому запросу, обычно в отдельном заголовке
+      (<code>X-API-Key</code>) или, реже, в query-параметре. Ключ ничего не знает
+      о пользователе — он просто «пропуск». Чаще всего так общаются
+      <strong>сервер с сервером</strong>, где ключ можно спрятать в переменных
+      окружения:
+    </p>
+    <app-code-block [code]="apiKeyExample" lang="javascript" />
+
+    <h3 class="doc__subtitle">Bearer-токен и JWT</h3>
+    <p>
+      Схема <code>Bearer</code> («на предъявителя») означает: кто держит токен, тот
+      и получает доступ. Токен выдаётся при входе и прикладывается к запросам. Часто
+      в роли такого токена выступает <strong>JWT</strong> (JSON Web Token) — токен,
+      который сам несёт данные о пользователе:
+    </p>
+    <app-code-block [code]="jwtExample" lang="javascript" />
+    <p>
+      JWT состоит из <strong>трёх частей</strong> через точку: заголовок, полезная
+      нагрузка (payload) и подпись. Первые две — это просто <code>base64url</code> от
+      JSON, их может прочитать любой; секретов туда класть нельзя. Ценность — в
+      <strong>подписи</strong>: её ставит сервер своим секретным ключом, и он же
+      проверяет, что header и payload не подменили. Подделать подпись без секрета
+      нельзя, а сам секрет клиенту не отдаётся. У токена есть срок жизни (поле
+      <code>exp</code>): после него сервер токен не примет.
+    </p>
+
+    <h3 class="doc__subtitle">Cookies и сессии</h3>
+    <p>
+      В браузерных приложениях удостоверение часто хранят иначе. После входа сервер
+      создаёт <strong>сессию</strong> у себя и отдаёт браузеру cookie с её
+      идентификатором. Дальше браузер <em>сам</em> прикладывает эту cookie к каждому
+      запросу на тот же домен — вручную заголовок ставить не нужно. Сервер по
+      идентификатору находит сессию и узнаёт пользователя.
+    </p>
+    <p class="note">
+      <strong>Про CSRF:</strong> раз браузер шлёт cookie автоматически, чужой сайт
+      может исподтишка отправить запрос от вашего имени. От этой атаки
+      (Cross-Site Request Forgery) защищаются CSRF-токенами и атрибутом
+      <code>SameSite</code> у cookie.
+    </p>
+
+    <h3 class="doc__subtitle">Basic</h3>
+    <p>
+      Самая старая схема: логин и пароль склеивают через двоеточие и кодируют в
+      <code>base64</code>. Важно понимать — <code>base64</code> это
+      <strong>не шифрование</strong>, а всего лишь способ записи; раскодировать его
+      может кто угодно. Поэтому Basic допустим только поверх <strong>HTTPS</strong>:
+    </p>
+    <app-code-block [code]="basicExample" lang="http" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Как выглядит запрос с токеном</h2>
+    <p>
+      На стороне клиента всё сводится к добавлению заголовка <code>Authorization</code>
+      в вызов <a routerLink="/javascript/rest-api/fetch"><code>fetch</code></a>. Запрос
+      асинхронный (почему — см.
+      <a routerLink="/javascript/event-loop/basics">событийный цикл</a>), поэтому ждём
+      его через <code>await</code>:
+    </p>
+    <app-code-block [code]="fetchTokenExample" lang="javascript" />
+    <p>
+      Обратите внимание: <code>fetch</code> не считает ответ с кодом
+      <code>401</code> ошибкой и <em>не бросает исключение</em> — он спокойно
+      возвращает ответ, а проверять статус нужно самим. Про это отличие подробно
+      в разделе <a routerLink="/javascript/rest-api/errors">Обработка ошибок</a>.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 250" width="100%" role="img"
+        aria-label="Клиент прикладывает токен к запросу, сервер проверяет подпись и отвечает данными или кодом 401">
+        <defs>
+          <marker id="auth-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="24" y="88" width="150" height="74" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="99" y="120" text-anchor="middle" fill="var(--fg)" font-size="13.5" font-weight="700">Клиент</text>
+        <text x="99" y="142" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">хранит токен</text>
+
+        <rect x="466" y="88" width="150" height="74" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="541" y="120" text-anchor="middle" fill="var(--fg)" font-size="13.5" font-weight="700">Сервер</text>
+        <text x="541" y="142" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">знает секрет</text>
+
+        <text x="320" y="70" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12" font-weight="700">Authorization: Bearer …</text>
+        <line x1="174" y1="102" x2="462" y2="102" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#auth-arrow)" />
+
+        <text x="320" y="182" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">проверяет подпись</text>
+        <text x="320" y="214" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">200 + данные&nbsp;&nbsp;|&nbsp;&nbsp;401 / 403</text>
+        <line x1="462" y1="150" x2="174" y2="150" stroke="var(--border)" stroke-width="1.6" marker-end="url(#auth-arrow)" />
+      </svg>
+      <figcaption>
+        Клиент прикладывает токен к каждому запросу; сервер проверяет подпись своим
+        секретом и решает — отдать данные или ответить <code>401</code>/<code>403</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение способов</h2>
+    <p>Коротко, чем способы отличаются на практике:</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Способ</th>
+            <th>Где живёт</th>
+            <th>Есть срок жизни?</th>
+            <th>Типичный сценарий</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>API-ключ</td>
+            <td>заголовок / query</td>
+            <td class="no">обычно нет</td>
+            <td>сервер &rarr; сервер</td>
+          </tr>
+          <tr>
+            <td>Bearer / JWT</td>
+            <td><code>Authorization</code></td>
+            <td class="yes">да (<code>exp</code>)</td>
+            <td>SPA, мобильные приложения</td>
+          </tr>
+          <tr>
+            <td>Cookie + сессия</td>
+            <td>cookie браузера</td>
+            <td class="yes">да (сессия)</td>
+            <td>классические сайты</td>
+          </tr>
+          <tr>
+            <td>Basic</td>
+            <td><code>Authorization</code></td>
+            <td class="no">нет</td>
+            <td>простые внутренние API</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Безопасность: чего нельзя делать</h2>
+    <p>
+      Аутентификация имеет смысл, только если удостоверение нельзя перехватить или
+      украсть. Несколько правил, которые нарушать нельзя:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Только HTTPS.</strong> По <code>http://</code> заголовок
+        <code>Authorization</code> и cookie идут открытым текстом — их прочитает любой
+        на пути. HTTPS шифрует весь запрос целиком.
+      </li>
+      <li>
+        <strong>Секреты — не во фронтенде.</strong> Весь клиентский JavaScript
+        пользователь может открыть и прочитать. Долгоживущий API-ключ или секрет
+        подписи JWT в браузерном коде — это ключ, приклеенный к входной двери снаружи.
+      </li>
+      <li>
+        <strong>У токенов — короткий срок жизни.</strong> Access-токен делают
+        короткоживущим: даже если он утечёт, окно для злоупотребления мало́. Для
+        продления используют отдельный долгоживущий refresh-токен.
+      </li>
+      <li>
+        <strong>На <code>401</code> — реагировать.</strong> Получили
+        <code>401</code> — токен истёк или недействителен: обновляем его или
+        отправляем пользователя на повторный вход.
+      </li>
+    </ul>
+    <app-code-block [code]="refreshExample" lang="javascript" />
+    <p class="note">
+      <strong>Главное про фронтенд:</strong> клиентский код виден пользователю
+      целиком. Любой «секретный» ключ, зашитый в браузерный JavaScript, секретом быть
+      перестаёт. Настоящие секреты держат на сервере, а браузеру выдают лишь
+      короткоживущие токены с ограниченными правами.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,277 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Проектирование и нюансы</span>
+  </nav>
+
+  <h1 class="doc__title">Проектирование REST API и подводные камни</h1>
+  <p class="doc__lead">
+    Спроектировать REST API — это как составить понятную инструкцию к прибору:
+    другой человек должен угадывать, «за какую ручку тянуть», не заглядывая в
+    исходники. Если адреса называются по одному правилу, ошибки приходят в едином
+    виде, а большие списки не валятся на клиента целиком — с таким API приятно
+    работать. Здесь разберём приёмы, которые делают API предсказуемым, и типичные
+    ошибки, из-за которых он превращается в загадку.
+  </p>
+  <p class="doc__lead">
+    Важная мысль: почти всё это — не про «уметь писать код», а про
+    <strong>договорённости</strong>. Хорошее API — это набор понятных правил,
+    которые вы держите одинаковыми во всех уголках сервиса.
+  </p>
+
+  <section class="doc__section">
+    <h2>Именование ресурсов</h2>
+    <p>
+      В основе REST лежит идея <strong>ресурса</strong> — сущности, к которой мы
+      обращаемся: пользователь, заказ, товар. URL называет <em>ресурс</em>, а не
+      действие над ним. Поэтому в пути стоит существительное во множественном числе
+      (<code>/users</code>), а <em>что</em> с ним делать — говорит
+      <a routerLink="/javascript/rest-api/methods">HTTP-метод</a>
+      (<code>GET</code>, <code>POST</code> и т. д.).
+    </p>
+    <app-code-block [code]="namingExample" lang="bash" />
+    <p>
+      Глаголу в URL места нет: <code>/getUser</code> и <code>/createUser</code> —
+      это дублирование того, что и так выражает метод. Один и тот же адрес
+      <code>/users/42</code> обслуживает разные действия в зависимости от метода:
+      <code>GET</code> — прочитать, <code>PATCH</code> — изменить,
+      <code>DELETE</code> — удалить.
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Множественное число</strong> — коллекция это
+        <code>/users</code>, а один элемент — <code>/users/42</code>.
+      </li>
+      <li>
+        <strong>Иерархия</strong> — вложенность показывает принадлежность:
+        <code>/users/42/orders</code> — «заказы <em>этого</em> пользователя».
+      </li>
+      <li>
+        <strong>Никаких глаголов</strong> — действие всегда несёт метод, а не путь.
+      </li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Версионирование</h2>
+    <p>
+      Рано или поздно формат ответа придётся менять: переименовать поле, убрать
+      лишнее, изменить структуру. Но у API уже есть клиенты — мобильные приложения,
+      чужие интеграции, — которые обновятся не сразу. Если сломать старый формат,
+      сломаются и они. <strong>Версионирование</strong> позволяет выпустить новый
+      формат, не трогая старый.
+    </p>
+    <app-code-block [code]="versioningExample" lang="bash" />
+    <p>
+      Чаще всего версию кладут прямо в путь (<code>/v1/…</code>,
+      <code>/v2/…</code>): это видно в логах, легко тестировать вручную и удобно
+      кэшировать. Реже версию передают
+      <a routerLink="/javascript/rest-api/headers">заголовком</a>
+      <code>Accept</code>. Главное — завести версию с самого начала, чтобы потом не
+      ломать существующих клиентов.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Пагинация, фильтрация, сортировка</h2>
+    <p>
+      Коллекция может содержать миллионы записей. Отдавать всё разом нельзя: ответ
+      будет огромным, сервер и сеть перегрузятся, а клиенту столько и не нужно.
+      Поэтому список <strong>нарезают на страницы</strong> и позволяют его сузить —
+      всё это задаётся
+      <a routerLink="/javascript/rest-api/query-params">query-параметрами</a>
+      (страница, лимит, фильтры, сортировка). Как их правильно собирать и кодировать —
+      на отдельной странице.
+    </p>
+    <p>
+      С точки зрения проектирования важнее, как устроен <em>ответ</em>. Сами записи
+      обычно кладут в поле <code>data</code>, а рядом — метаданные о странице, чтобы
+      клиент знал, есть ли ещё:
+    </p>
+    <app-code-block [code]="paginationResponseExample" lang="json" />
+    <p class="note">
+      <strong>Тонкость:</strong> фильтр и сортировка — это параметры чтения, поэтому
+      живут в query-строке <code>GET</code>-запроса. Тело запроса у <code>GET</code>
+      не используют — все условия помещаются прямо в URL.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Единый формат ошибок</h2>
+    <p>
+      Когда что-то пошло не так, клиенту мало
+      <a routerLink="/javascript/rest-api/status-codes">кода состояния</a> — нужны
+      детали: что именно сломалось и можно ли это показать пользователю. Худший
+      вариант — когда каждый эндпоинт отвечает на ошибку по-своему: где-то строка,
+      где-то массив, где-то поле <code>msg</code>, а где-то <code>error</code>.
+      Клиенту приходится разбирать каждый случай отдельно.
+    </p>
+    <p>
+      Решение — <strong>один формат ошибки на весь API</strong> со стабильными
+      полями. Машиночитаемый <code>code</code> (по нему код клиента ветвится) и
+      человекочитаемый <code>message</code> (его можно показать или залогировать):
+    </p>
+    <app-code-block [code]="errorFormatExample" lang="json" />
+    <p>
+      На стороне клиента такой формат разбирается единообразно. Важно помнить:
+      <code>fetch</code> <strong>не бросает исключение</strong> на ответы
+      <code>4xx</code>/<code>5xx</code> — промис исполняется успешно, и проверять
+      <code>res.ok</code> нужно вручную:
+    </p>
+    <app-code-block [code]="errorHandlingExample" lang="javascript" />
+    <p>
+      Подробнее о стратегиях разбора и повторов — на странице
+      <a routerLink="/javascript/rest-api/errors">Обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Идемпотентность и повторы</h2>
+    <p>
+      <strong>Идемпотентный</strong> запрос можно повторить сколько угодно раз с тем
+      же результатом. <code>GET</code>, <code>PUT</code>, <code>DELETE</code> —
+      идемпотентны; повторный <code>GET</code> ничего не портит, а повторный
+      <code>DELETE</code> оставляет ресурс удалённым. А вот <code>POST</code>
+      <em>не</em> идемпотентен: каждый вызов создаёт новую запись.
+    </p>
+    <p>
+      Отсюда проблема: клиент отправил <code>POST /orders</code>, соединение
+      оборвалось до ответа — и он не знает, дошёл заказ или нет. Повторит — рискует
+      создать дубль. Приём <strong>Idempotency-Key</strong> решает это: клиент
+      генерирует уникальный ключ <em>один раз</em> и шлёт его при каждом повторе.
+      Сервер по ключу понимает, что это тот же запрос, и не выполняет операцию
+      дважды.
+    </p>
+    <app-code-block [code]="idempotencyExample" lang="javascript" />
+    <p class="note">
+      <strong>REST — это соглашения, а не жёсткий стандарт.</strong> Ни один
+      документ не обязывает вас именовать пути именно так или возвращать ошибки в
+      таком виде. Все эти правила служат одной цели —
+      <strong>предсказуемости и единообразию</strong>: чтобы, увидев одну часть API,
+      разработчик уже угадывал, как устроена остальная.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Частые ошибки и как правильно</h2>
+    <p>
+      Большинство проблем повторяются от проекта к проекту. Вот сводка типичных
+      ошибок и того, как стоит делать вместо них:
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Частая ошибка</th>
+            <th>Как правильно</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="no">Глагол в URL: <code>POST /createUser</code></td>
+            <td class="yes">Существительное + метод: <code>POST /users</code></td>
+          </tr>
+          <tr>
+            <td class="no">Всегда возвращать <code>200 OK</code>, даже на ошибку</td>
+            <td class="yes">
+              Верный код: <code>201</code> при создании, <code>400</code>/
+              <code>404</code>/<code>500</code> при ошибках
+            </td>
+          </tr>
+          <tr>
+            <td class="no">Отдавать всю коллекцию одним ответом</td>
+            <td class="yes">
+              Пагинация: <code>GET /users?page=1&amp;limit=20</code>
+            </td>
+          </tr>
+          <tr>
+            <td class="no">Повторять неидемпотентный <code>POST</code> вслепую</td>
+            <td class="yes">
+              Слать заголовок <code>Idempotency-Key</code> и повторять с ним
+            </td>
+          </tr>
+          <tr>
+            <td class="no">Секретный ключ (API key) зашит во фронтенде</td>
+            <td class="yes">
+              Секреты держать на сервере, клиент ходит через свой бэкенд
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Про правильные коды подробно — на странице
+      <a routerLink="/javascript/rest-api/status-codes">Коды состояния</a>, а про то,
+      почему секреты нельзя держать в браузере, — в разделе
+      <a routerLink="/javascript/rest-api/auth">Аутентификация</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как устроен путь к ресурсу</h2>
+    <p>
+      Соберём всё вместе: один URL складывается из версии, коллекции, идентификатора
+      и необязательной query-строки. Каждая часть отвечает за своё:
+    </p>
+    <figure class="diagram">
+      <svg viewBox="0 0 640 210" width="100%" role="img"
+        aria-label="Разбор URL на части: версия, коллекция, идентификатор, вложенная коллекция и query-параметры">
+        <rect x="20" y="70" width="66" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="53" y="95" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">/v1</text>
+        <text x="53" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">версия</text>
+
+        <rect x="94" y="70" width="96" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="142" y="95" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">/users</text>
+        <text x="142" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">коллекция</text>
+
+        <rect x="198" y="70" width="60" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="228" y="95" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14" font-weight="700">/42</text>
+        <text x="228" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">элемент</text>
+
+        <rect x="266" y="70" width="104" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="318" y="95" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">/orders</text>
+        <text x="318" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">вложенная</text>
+
+        <rect x="382" y="70" width="238" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="501" y="95" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">?status=active&amp;sort=-date</text>
+        <text x="501" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">query-параметры</text>
+
+        <text x="320" y="34" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">GET /v1/users/42/orders?status=active&amp;sort=-date</text>
+        <line x1="20" y1="50" x2="620" y2="50" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 4" />
+
+        <text x="320" y="178" text-anchor="middle" fill="var(--muted)" font-size="11.5">путь называет ресурс · query-строка уточняет выборку</text>
+      </svg>
+      <figcaption>
+        Части одного URL: версия и коллекция задают ресурс, идентификатор указывает
+        на конкретный элемент, а query-строка фильтрует и сортирует выдачу.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Чеклист хорошего REST API</h2>
+    <p>Короткий список для самопроверки перед тем, как отдавать API клиентам:</p>
+    <ul class="rules">
+      <li>Пути — существительные во множественном числе, без глаголов
+        (<code>/users</code>, не <code>/getUsers</code>).</li>
+      <li>Действие задаёт <a routerLink="/javascript/rest-api/methods">метод</a>, а
+        не URL; методы используются по назначению (<code>GET</code> не меняет
+        данные).</li>
+      <li>Ответы несут корректные
+        <a routerLink="/javascript/rest-api/status-codes">коды состояния</a>, а не
+        всегда <code>200</code>.</li>
+      <li>Ошибки приходят в едином формате со стабильными полями
+        (<code>code</code>, <code>message</code>).</li>
+      <li>Коллекции пагинируются; фильтр и сортировка — через query-параметры.</li>
+      <li>Есть версия (<code>/v1/…</code>), чтобы менять формат, не ломая клиентов.</li>
+      <li>Указаны правильные
+        <a routerLink="/javascript/rest-api/headers">заголовки</a>
+        (<code>Content-Type</code>, <code>Accept</code>).</li>
+      <li>Секреты и ключи живут на сервере, а не во фронтенде (см.
+        <a routerLink="/javascript/rest-api/auth">Аутентификация</a>).</li>
+    </ul>
+  </section>
+</article>

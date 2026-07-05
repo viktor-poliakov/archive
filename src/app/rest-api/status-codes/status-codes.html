@@ -1,0 +1,286 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Коды состояния</span>
+  </nav>
+
+  <h1 class="doc__title">Коды состояния HTTP</h1>
+  <p class="doc__lead">
+    Когда клиент отправляет запрос, сервер обязан коротко сообщить, чем всё
+    кончилось. Делает он это <strong>кодом состояния</strong> — трёхзначным
+    числом в самой первой строке ответа: <code>200</code>, <code>404</code>,
+    <code>500</code>. Это язык, на котором сервер и клиент договорились заранее:
+    по одному числу понятно, сработал запрос или нет и на чьей стороне проблема.
+  </p>
+  <p class="doc__lead">
+    Аналогия — ответ курьера, который отвёз вашу посылку. Он не пересказывает
+    всю поездку, а отвечает коротко: «доставлено», «адресат не найден», «нужен
+    пропуск», «на складе авария». Код состояния — ровно такая пометка: по ней
+    вы сразу понимаете, что делать дальше, не разбирая тело ответа целиком.
+  </p>
+
+  <section class="doc__section">
+    <h2>Зачем нужны коды</h2>
+    <p>
+      Код состояния стоит в <strong>стартовой строке ответа</strong>, рядом с
+      версией протокола и краткой текстовой расшифровкой (её называют reason
+      phrase). Вот как выглядит эта строка для разных исходов:
+    </p>
+    <app-code-block [code]="responseLineExample" lang="http" />
+    <p>
+      Клиенту не нужно угадывать результат по телу ответа: сначала он читает
+      число и уже по нему выбирает ветку логики. Показать данные? Повторить
+      запрос? Отправить пользователя на страницу входа? Ответ определяется в
+      первую очередь кодом. Как из этого числа складывается вся стартовая
+      строка ответа, разобрано на странице
+      <a routerLink="/javascript/rest-api/http">HTTP: запрос и ответ</a>.
+    </p>
+    <p class="note">
+      <strong>Главная подсказка — первая цифра.</strong> Она задаёт
+      <em>класс</em> ответа. Даже незнакомый код вроде <code>418</code> можно
+      грубо истолковать: <code>4xx</code> — значит, ошибка на стороне клиента.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Пять семейств</h2>
+    <p>
+      Все коды делятся на пять групп по первой цифре. Запомнив смысл каждой
+      группы, вы читаете большинство ответов не глядя в справочник:
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 210" width="100%" role="img"
+        aria-label="Пять семейств кодов состояния HTTP по первой цифре: 1xx информация, 2xx успех, 3xx перенаправление, 4xx ошибка клиента, 5xx ошибка сервера">
+        <rect x="16" y="70" width="112" height="70" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+        <text x="72" y="104" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="20" font-weight="700">1xx</text>
+        <text x="72" y="126" text-anchor="middle" fill="var(--muted)" font-size="11.5">информация</text>
+
+        <rect x="140" y="70" width="112" height="70" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+        <text x="196" y="104" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="20" font-weight="700">2xx</text>
+        <text x="196" y="126" text-anchor="middle" fill="var(--muted)" font-size="11.5">успех</text>
+
+        <rect x="264" y="70" width="112" height="70" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="320" y="104" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="20" font-weight="700">3xx</text>
+        <text x="320" y="126" text-anchor="middle" fill="var(--muted)" font-size="11.5">редирект</text>
+
+        <rect x="388" y="70" width="112" height="70" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+        <text x="444" y="104" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="20" font-weight="700">4xx</text>
+        <text x="444" y="126" text-anchor="middle" fill="var(--muted)" font-size="11.5">клиент виноват</text>
+
+        <rect x="512" y="70" width="112" height="70" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+        <text x="568" y="104" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="20" font-weight="700">5xx</text>
+        <text x="568" y="126" text-anchor="middle" fill="var(--muted)" font-size="11.5">сервер виноват</text>
+
+        <text x="320" y="34" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="700">Первая цифра = класс ответа</text>
+        <text x="320" y="176" text-anchor="middle" fill="var(--muted)" font-size="11.5">слева направо: чем правее, тем «хуже» исход</text>
+      </svg>
+      <figcaption>Пять семейств кодов состояния. Первая цифра сразу говорит о классе исхода.</figcaption>
+    </figure>
+
+    <ul class="rules">
+      <li>
+        <strong><code>1xx</code> — информационные.</strong> Промежуточный
+        сигнал «запрос принят, продолжаю обработку». На практике в браузерном
+        коде вы их почти не видите — протокол обрабатывает их сам.
+      </li>
+      <li>
+        <strong><code>2xx</code> — успех.</strong> Запрос принят и выполнен.
+        Самый желанный класс: данные пришли, ресурс создан или удалён.
+      </li>
+      <li>
+        <strong><code>3xx</code> — перенаправление.</strong> Ресурс есть, но
+        находится в другом месте или не изменился. Часто требует ещё одного шага
+        (перейти по новому адресу или взять данные из кэша).
+      </li>
+      <li>
+        <strong><code>4xx</code> — ошибка клиента.</strong> Сервер понял
+        запрос, но выполнять отказывается: неверные данные, нет прав, нет такого
+        ресурса. Повторять тот же запрос без изменений бессмысленно.
+      </li>
+      <li>
+        <strong><code>5xx</code> — ошибка сервера.</strong> Запрос был
+        корректным, но сервер сам не справился: сбой, перегрузка, недоступный
+        сервис. Клиент часто может повторить попытку позже.
+      </li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ключевые коды на практике</h2>
+    <p>
+      Кодов в стандарте десятки, но в реальной работе с
+      <a routerLink="/javascript/rest-api/methods">HTTP-методами</a> и API вы
+      постоянно встречаете один и тот же набор. Вот шпаргалка по самым важным —
+      что означает код, когда он приходит и как на него реагировать клиенту:
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Код</th>
+            <th>Значение</th>
+            <th>Когда возникает</th>
+            <th>Что делать клиенту</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="yes"><code>200 OK</code></td>
+            <td>Успех, есть тело ответа</td>
+            <td>Удачный <code>GET</code>; успешный <code>PUT</code>/<code>PATCH</code> с телом</td>
+            <td>Прочитать тело (обычно <code>response.json()</code>)</td>
+          </tr>
+          <tr>
+            <td class="yes"><code>201 Created</code></td>
+            <td>Создан новый ресурс</td>
+            <td>Успешный <code>POST</code>, который создал запись</td>
+            <td>Взять адрес нового ресурса из заголовка <code>Location</code></td>
+          </tr>
+          <tr>
+            <td class="yes"><code>204 No Content</code></td>
+            <td>Успех, тела нет</td>
+            <td>Успешный <code>DELETE</code> или <code>PUT</code> без ответа</td>
+            <td>Не вызывать <code>.json()</code> — тело пустое</td>
+          </tr>
+          <tr>
+            <td><code>301 / 302</code></td>
+            <td>Перемещён (навсегда / временно)</td>
+            <td>Ресурс переехал на другой адрес</td>
+            <td>Перейти по <code>Location</code>; <code>fetch</code> следует за редиректом сам</td>
+          </tr>
+          <tr>
+            <td><code>304 Not Modified</code></td>
+            <td>Не изменился с прошлого раза</td>
+            <td>Условный <code>GET</code> с <code>If-None-Match</code>/<code>If-Modified-Since</code></td>
+            <td>Взять данные из кэша, тело не придёт</td>
+          </tr>
+          <tr>
+            <td class="no"><code>400 Bad Request</code></td>
+            <td>Некорректный запрос</td>
+            <td>Битый JSON, отсутствует обязательное поле</td>
+            <td>Исправить запрос; повтор «как есть» не поможет</td>
+          </tr>
+          <tr>
+            <td class="no"><code>401 Unauthorized</code></td>
+            <td>Не аутентифицирован</td>
+            <td>Нет токена или он истёк</td>
+            <td>Войти заново, обновить токен (см. ниже)</td>
+          </tr>
+          <tr>
+            <td class="no"><code>403 Forbidden</code></td>
+            <td>Нет прав на действие</td>
+            <td>Пользователь известен, но доступ запрещён</td>
+            <td>Не повторять; показать «нет доступа»</td>
+          </tr>
+          <tr>
+            <td class="no"><code>404 Not Found</code></td>
+            <td>Ресурс не найден</td>
+            <td>Неверный URL или запись удалена</td>
+            <td>Проверить адрес; показать «не найдено»</td>
+          </tr>
+          <tr>
+            <td class="no"><code>405 Method Not Allowed</code></td>
+            <td>Метод не поддержан</td>
+            <td><code>DELETE</code> там, где разрешён только <code>GET</code></td>
+            <td>Использовать метод из заголовка <code>Allow</code></td>
+          </tr>
+          <tr>
+            <td class="no"><code>409 Conflict</code></td>
+            <td>Конфликт состояния</td>
+            <td>Дубликат записи, параллельное редактирование</td>
+            <td>Перечитать данные и решить конфликт</td>
+          </tr>
+          <tr>
+            <td class="no"><code>422 Unprocessable Entity</code></td>
+            <td>Синтаксис верен, данные — нет</td>
+            <td>Провалилась бизнес-валидация полей</td>
+            <td>Показать ошибки полей из тела ответа</td>
+          </tr>
+          <tr>
+            <td class="no"><code>429 Too Many Requests</code></td>
+            <td>Слишком много запросов</td>
+            <td>Превышен лимит частоты (rate limit)</td>
+            <td>Подождать по заголовку <code>Retry-After</code> и повторить</td>
+          </tr>
+          <tr>
+            <td class="no"><code>500 Internal Server Error</code></td>
+            <td>Сбой на сервере</td>
+            <td>Необработанное исключение в коде сервера</td>
+            <td>Повторить позже; сообщить об ошибке</td>
+          </tr>
+          <tr>
+            <td class="no"><code>502 / 503</code></td>
+            <td>Шлюз / сервис недоступен</td>
+            <td>Перегрузка, деплой, недоступный upstream</td>
+            <td>Повторить позже с задержкой (backoff)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Про <code>2xx</code> и тело:</strong> <code>200</code> обычно
+      несёт данные, а <code>204</code> и <code>304</code> —
+      <em>никогда</em>. Вызывать у них <code>response.json()</code> нельзя:
+      парсер упадёт на пустом теле. Сначала смотрите на код, потом решайте,
+      читать ли тело.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>401 против 403</h2>
+    <p>
+      Эти два кода путают чаще всего, потому что оба означают «отказано». Но
+      причина отказа разная, и клиент должен реагировать по-разному:
+    </p>
+    <p class="note">
+      <strong>401 — «Кто ты?»</strong> Сервер не понял, кто отправитель:
+      токена нет, он просрочен или неверен. Лечится
+      <em>аутентификацией</em> — войти заново или обновить токен.<br />
+      <strong>403 — «Тебе нельзя.»</strong> Сервер прекрасно знает, кто вы, но
+      на это действие у вас нет прав. Повторный вход не поможет — нужны другие
+      полномочия. Подробнее — на странице
+      <a routerLink="/javascript/rest-api/auth">Аутентификация</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как прочитать код в JS</h2>
+    <p>
+      В <a routerLink="/javascript/rest-api/fetch">Fetch API</a> код ответа
+      лежит в свойстве <code>response.status</code>, а его текстовая
+      расшифровка — в <code>response.statusText</code>:
+    </p>
+    <app-code-block [code]="readStatusExample" lang="javascript" />
+    <p>
+      Сравнивать <code>status</code> с каждым числом вручную неудобно. Для
+      частого случая «успех или нет» есть готовый флаг
+      <code>response.ok</code> — он равен <code>true</code>
+      <strong>только для диапазона 200–299</strong> и <code>false</code> для
+      всего остального.
+    </p>
+    <p class="note">
+      <strong>Важно про <code>fetch</code>:</strong> запрос, вернувший
+      <code>404</code> или <code>500</code>, для <code>fetch</code> —
+      <em>успех</em>. Промис завершается штатно, исключение
+      <strong>не</strong> бросается. <code>fetch</code> отклоняет промис только
+      при сетевом сбое (нет соединения, оборвалась связь). Значит, исход по коду
+      нужно проверять самим:
+    </p>
+    <app-code-block [code]="okBranchExample" lang="javascript" />
+    <p>
+      Асинхронность здесь не случайна: сеть медленная, и запрос не блокирует
+      страницу — почему это так, разобрано в разделе
+      <a routerLink="/javascript/event-loop/basics">Событийный цикл</a>, а
+      передача функции «на потом» (колбэки) — в разделе
+      <a routerLink="/javascript/functions/first-class">Функции как значения</a>.
+      Как аккуратно разложить ответ по веткам <code>4xx</code>/<code>5xx</code>,
+      прочитать тело ошибки и повторить запрос при <code>429</code>/<code>503</code>,
+      подробно показано на странице
+      <a routerLink="/javascript/rest-api/errors">Обработка ошибок</a>.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,249 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">HTTP-методы</span>
+  </nav>
+
+  <h1 class="doc__title">HTTP-методы</h1>
+  <p class="doc__lead">
+    В каждом запросе к API вы указываете не только <em>с чем</em> работаете (адрес
+    ресурса, например <code>/users/42</code>), но и <em>что именно</em> хотите с ним
+    сделать. Это «что именно» и есть <strong>HTTP-метод</strong> — глагол, который
+    ставится перед ресурсом-существительным. Один и тот же адрес
+    <code>/users/42</code> можно прочитать (<code>GET</code>), обновить
+    (<code>PUT</code>) или удалить (<code>DELETE</code>) — разница только в методе.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — заявка в картотеку.</strong> Адрес — это карточка в
+    ящике: «сотрудник №42». А метод — пометка на заявке: «показать карточку»,
+    «завести новую», «переписать целиком», «выбросить». Клерк смотрит на глагол и
+    точно знает, что делать. Вы сами понимаете, что произойдёт, — здесь нет магии,
+    правила методов чётко описаны стандартом.
+  </p>
+
+  <section class="doc__section">
+    <h2>Методы — глаголы над ресурсами</h2>
+    <p>
+      В приложениях данные почти всегда проходят четыре базовые операции: создать,
+      прочитать, обновить, удалить. Их сокращённо называют <strong>CRUD</strong>
+      (Create, Read, Update, Delete). REST кладёт на эти операции подходящие
+      HTTP-методы — так, чтобы глагол читался естественно:
+    </p>
+    <ul class="rules">
+      <li><strong>Create</strong> (создать) → <code>POST</code>;</li>
+      <li><strong>Read</strong> (прочитать) → <code>GET</code>;</li>
+      <li><strong>Update</strong> (обновить) → <code>PUT</code> (целиком) или
+        <code>PATCH</code> (частично);</li>
+      <li><strong>Delete</strong> (удалить) → <code>DELETE</code>.</li>
+    </ul>
+    <p>
+      Важная идея REST: адрес описывает <em>ресурс</em> (существительное), а метод —
+      <em>действие</em> (глагол). Поэтому в правильном API нет URL вида
+      <code>/getUser</code> или <code>/deleteUser?id=42</code> — глагол не прячут в
+      адрес, для него есть отдельное поле. Есть только ресурс
+      <code>/users/42</code>, а что с ним делать, говорит метод.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Разбор методов</h2>
+
+    <h3 class="doc__subtitle"><code>GET</code> — получить</h3>
+    <p>
+      Читает ресурс и возвращает его представление. Тела запроса у
+      <code>GET</code> нет: всё, что нужно серверу, передаётся в самом адресе (а
+      фильтры и постраничность — в строке запроса, например
+      <code>/users?role=admin&amp;page=2</code>). <code>GET</code> ничего не меняет
+      на сервере, поэтому его безопасно повторять и кешировать.
+    </p>
+    <app-code-block [code]="getExample" lang="javascript" />
+
+    <h3 class="doc__subtitle"><code>POST</code> — создать</h3>
+    <p>
+      Отправляет данные на сервер, чтобы создать новый ресурс. Данные едут в
+      <strong>теле запроса</strong>, а тип тела указывается заголовком
+      <code>Content-Type</code> (обычно <code>application/json</code>). Запрос идёт
+      на <em>коллекцию</em> (<code>/users</code>), потому что нового элемента ещё нет
+      и его ID назначит сам сервер. Успешный ответ — код
+      <a routerLink="/javascript/rest-api/status-codes">201 Created</a>, часто с
+      заголовком <code>Location</code>, где лежит адрес созданного ресурса.
+    </p>
+    <app-code-block [code]="postExample" lang="javascript" />
+
+    <h3 class="doc__subtitle"><code>PUT</code> — заменить целиком</h3>
+    <p>
+      Кладёт по указанному адресу <strong>полное</strong> новое представление
+      ресурса, заменяя предыдущее целиком. Запрос идёт на конкретный элемент
+      (<code>/users/42</code>), а в теле — весь объект. Всё, что вы не прислали,
+      считается удалённым.
+    </p>
+    <app-code-block [code]="putExample" lang="javascript" />
+
+    <h3 class="doc__subtitle"><code>PATCH</code> — обновить частично</h3>
+    <p>
+      Применяет к ресурсу <strong>частичные</strong> изменения: в теле — только те
+      поля, которые нужно поменять. Остальное сервер оставляет как было. Удобно,
+      когда меняется одно-два поля большого объекта.
+    </p>
+    <app-code-block [code]="patchExample" lang="javascript" />
+
+    <h3 class="doc__subtitle"><code>DELETE</code> — удалить</h3>
+    <p>
+      Удаляет ресурс по адресу. Тела запроса обычно нет. В ответ, как правило,
+      приходит <code>200 OK</code> (иногда с телом об удалённом объекте) или
+      <code>204 No Content</code>, если возвращать нечего.
+    </p>
+    <app-code-block [code]="deleteExample" lang="javascript" />
+
+    <p>
+      <strong>curl</strong> — это консольная утилита: программа, которую запускают в
+      терминале (командной строке), а не в браузере. Она умеет слать HTTP-запросы
+      напрямую, поэтому ей удобно быстро «постучаться» в API руками и посмотреть
+      ответ — не открывая сайт и не написав ни строчки кода. Те же операции через
+      <code>curl</code> выглядят так:
+    </p>
+    <app-code-block [code]="curlExample" lang="bash" />
+    <p class="note">
+      <strong>Метод по умолчанию:</strong> и в браузере (<code>fetch</code>), и в
+      <code>curl</code> без явного указания используется <code>GET</code>. Для любого
+      другого метода его нужно задать явно — как разобрано на странице
+      <a routerLink="/javascript/rest-api/fetch">Fetch API на практике</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Безопасность и идемпотентность</h2>
+    <p>
+      У методов есть два свойства, которые определяют, насколько спокойно их можно
+      повторять. Это ключ к устойчивости приложения при сбоях сети.
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Безопасный</strong> (safe) — метод только читает и <em>не меняет</em>
+        состояние на сервере. Таковы <code>GET</code> и <code>HEAD</code>. Их можно
+        вызывать сколько угодно раз без последствий.
+      </li>
+      <li>
+        <strong>Идемпотентный</strong> (idempotent) — повтор запроса приводит
+        сервер <em>к тому же итоговому состоянию</em>, что и один запрос.
+        Идемпотентны <code>GET</code>, <code>PUT</code> и <code>DELETE</code>;
+        <code>POST</code> — нет; <code>PATCH</code> — обычно нет.
+      </li>
+    </ul>
+    <p>
+      Любой безопасный метод автоматически идемпотентен (раз он ничего не меняет, то
+      и повторять безопасно), но не наоборот: <code>PUT</code> и <code>DELETE</code>
+      меняют состояние, но остаются идемпотентными.
+    </p>
+
+    <h3 class="doc__subtitle">Аналогия: кнопка лифта против корзины</h3>
+    <p>
+      <strong>Идемпотентно</strong> — как кнопка «этаж 3» в лифте: нажмите её один
+      раз или десять, результат один — лифт едет на третий этаж. Таковы
+      <code>PUT</code> (<em>«сделай role равным user»</em> — сколько ни повторяй,
+      значение одно) и <code>DELETE</code> (<em>«пусть ресурса не будет»</em> —
+      после первого раза его уже нет, повтор ничего не ломает).
+    </p>
+    <p>
+      <strong>Не идемпотентно</strong> — как кнопка «добавить в корзину»: каждое
+      нажатие добавляет ещё один товар. Таков <code>POST</code>: два одинаковых
+      запроса создадут <em>два</em> ресурса.
+    </p>
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Метод</th>
+            <th>Назначение (CRUD)</th>
+            <th>Тело запроса</th>
+            <th>Безопасный</th>
+            <th>Идемпотентный</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GET</code></td>
+            <td>Read — прочитать</td>
+            <td class="no">нет</td>
+            <td class="yes">да</td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td><code>POST</code></td>
+            <td>Create — создать</td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td><code>PUT</code></td>
+            <td>Update — заменить целиком</td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td><code>PATCH</code></td>
+            <td>Update — обновить частично</td>
+            <td class="yes">да</td>
+            <td class="no">нет</td>
+            <td class="no">обычно нет</td>
+          </tr>
+          <tr>
+            <td><code>DELETE</code></td>
+            <td>Delete — удалить</td>
+            <td class="no">нет</td>
+            <td class="no">нет</td>
+            <td class="yes">да</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      <strong>Зачем это на практике:</strong> если ответ на запрос потерялся в сети,
+      клиент не знает, дошёл он или нет. Идемпотентный запрос (<code>GET</code>,
+      <code>PUT</code>, <code>DELETE</code>) можно спокойно повторить — хуже не
+      станет. А вот <code>POST</code> повторять опасно: рискуете создать дубль.
+      Как безопасно повторять запросы и обрабатывать такие ситуации — на странице
+      <a routerLink="/javascript/rest-api/errors">Обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>PUT против PATCH</h2>
+    <p>
+      Оба метода обновляют существующий ресурс, но по-разному. <code>PUT</code>
+      требует <strong>полное</strong> представление и заменяет ресурс целиком:
+      поля, которых нет в теле, будут стёрты. <code>PATCH</code> присылает
+      <strong>только изменения</strong> и оставляет остальное нетронутым. Сравните на
+      одном и том же исходном объекте:
+    </p>
+    <app-code-block [code]="putVsPatchExample" lang="json" />
+    <p>
+      Отсюда и разница в идемпотентности из таблицы выше: повторный
+      <code>PUT</code> с тем же телом снова выставит те же поля — итог не изменится.
+      А <code>PATCH</code> может быть неидемпотентным: например, инструкция
+      <em>«увеличить счётчик на 1»</em> при каждом повторе даёт новый результат.
+    </p>
+    <p>
+      В браузере все эти запросы отправляются через <code>fetch</code> — как в
+      примерах с методами выше. Полностью (заголовки, разбор ответа,
+      асинхронность) это разобрано в разделах
+      <a routerLink="/javascript/rest-api/http">HTTP: запрос и ответ</a> и
+      <a routerLink="/javascript/rest-api/fetch">Fetch API на практике</a>.
+    </p>
+    <p class="note">
+      <strong>Почему запрос асинхронный:</strong> сеть работает медленно и
+      непредсказуемо, поэтому <code>fetch</code> возвращает промис, а не результат
+      сразу — иначе интерфейс замер бы на время ожидания. Почему так устроено —
+      в разделе <a routerLink="/javascript/event-loop/basics">Событийный цикл</a>,
+      а про передачу функций «на потом» — в
+      <a routerLink="/javascript/functions/first-class">Функции как значения</a>.
+    </p>
+  </section>
+</article>

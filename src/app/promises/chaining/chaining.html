@@ -1,0 +1,184 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/promises">Промисы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Цепочки</span>
+  </nav>
+
+  <h1 class="doc__title">Цепочки промисов</h1>
+  <p class="doc__lead">
+    Реальная асинхронная задача редко состоит из одного шага: сначала загрузить
+    пользователя, потом его заказы, потом детали первого заказа. Каждый следующий шаг
+    начинается только после того, как готов предыдущий. <strong>Цепочка промисов</strong>
+    — это способ выстроить такие шаги друг за другом плоско и читаемо, без вложенных
+    колбэков.
+  </p>
+  <p class="doc__lead">
+    Аналогия — <strong>рецепт из нескольких пунктов</strong>: «замесить тесто →
+    подождать, пока подойдёт → испечь → достать». Вы не начинаете печь, пока тесто не
+    подошло; каждый пункт передаёт результат следующему. Цепочка <code>.then</code>
+    описывает ровно такой список шагов, и мы, автор рецепта, видим каждый его этап — это
+    не «чёрный ящик».
+  </p>
+
+  <section class="doc__section">
+    <h2>Зачем нужны цепочки</h2>
+    <p>
+      До промисов последовательные асинхронные шаги писали вложенными колбэками. Каждый
+      новый шаг уходил на уровень глубже, лесенка ползла вправо, а обработку ошибок
+      приходилось повторять на каждом уровне. Это и есть знаменитый
+      <strong>«ад колбэков»</strong> (callback hell), о котором мы говорили в
+      <a routerLink="/javascript/promises/basics">основах промисов</a>:
+    </p>
+    <app-code-block [code]="callbackHellExample" lang="javascript" />
+    <p>
+      Ключевое свойство промиса в том, что <code>.then</code> <strong>возвращает новый
+      промис</strong>. А значит, на нём снова можно вызвать <code>.then</code>, потом
+      ещё раз — и получить не лесенку, а плоский список шагов:
+    </p>
+    <app-code-block [code]="flatChainExample" lang="javascript" />
+    <p>
+      Читается сверху вниз, как обычная последовательность действий. И заметьте: один
+      <code>.catch</code> в конце ловит ошибку любого шага — не нужно дублировать
+      обработку на каждом уровне. Подробнее про <code>.then</code>, <code>.catch</code>
+      и <code>.finally</code> — в разделе
+      <a routerLink="/javascript/promises/then-catch-finally">then, catch, finally</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Возврат значения из <code>then</code></h2>
+    <p>
+      Цепочка держится на простом правиле: <strong>что вернул обработчик
+      <code>.then</code>, то придёт аргументом в следующий <code>.then</code></strong>.
+      Вернули число — получат число, вернули строку — получат строку. Так значение
+      «течёт» по цепочке, преобразуясь на каждом шаге:
+    </p>
+    <app-code-block [code]="returnValueExample" lang="javascript" />
+    <p>
+      Каждое звено берёт результат предыдущего и передаёт дальше своё. Если обработчик
+      ничего не вернул явно, дальше уйдёт <code>undefined</code> — об этой ловушке
+      поговорим ниже.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Возврат промиса из <code>then</code></h2>
+    <p>
+      Самое важное свойство цепочек: если обработчик <code>.then</code> вернул
+      <strong>не обычное значение, а промис</strong>, цепочка не побежит дальше сразу.
+      Она <strong>дождётся</strong> этого промиса и передаст в следующий <code>.then</code>
+      уже его результат, а не сам промис. Это называют <strong>разворачиванием</strong>
+      (unwrapping): вложенный промис как бы «вливается» в общую цепочку.
+    </p>
+    <p>
+      Именно так делают зависимые запросы, где второй шаг использует результат первого:
+    </p>
+    <app-code-block [code]="returnPromiseExample" lang="javascript" />
+    <p>
+      Второй <code>fetch</code> запускается только после того, как пришёл первый ответ и
+      мы узнали <code>user.id</code>. Следующий <code>.then</code> дождётся второго
+      запроса и получит уже разобранные заказы. О реальной работе с сетью — в разделе
+      <a routerLink="/javascript/rest-api/fetch">Fetch</a>.
+    </p>
+    <p class="note">
+      <strong>Правило:</strong> вернули из <code>.then</code> обычное значение — оно
+      пойдёт дальше как есть; вернули промис — цепочка подождёт его и отдаст дальше
+      результат. Благодаря этому асинхронные и синхронные шаги свободно смешиваются в
+      одной цепочке.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ошибка проваливается вниз</h2>
+    <p>
+      Пока всё идёт хорошо, значение течёт через обработчики <code>.then</code>. Но
+      стоит любому звену <strong>отклониться</strong> (<code>reject</code>) или бросить
+      исключение через <code>throw</code> — и значение исчезает, а по цепочке начинает
+      «падать» ошибка. Она <strong>пролетает мимо всех следующих <code>.then</code></strong>
+      (им нечего обрабатывать — успешного значения нет) и попадает в ближайший
+      <code>.catch</code>:
+    </p>
+    <app-code-block [code]="errorFallExample" lang="javascript" />
+    <p>
+      Обработчики успеха между местом ошибки и <code>.catch</code> просто
+      пропускаются. Это очень удобно: один <code>.catch</code> в конце ловит сбой любого
+      шага. Как устроена обработка ошибок в цепочках подробно — в разделе
+      <a routerLink="/javascript/promises/error-handling">Обработка ошибок</a>.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 660 300" width="100%" role="img"
+        aria-label="Значение течёт слева направо через звенья then, а ошибка уходит вниз в catch">
+        <defs>
+          <marker id="pc-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+          <marker id="pc-arrow-err" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--red)" />
+          </marker>
+        </defs>
+
+        <text x="330" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Значение течёт вправо, ошибка падает вниз</text>
+
+        <!-- верхний ряд: успешный путь -->
+        <rect x="24" y="60" width="150" height="60" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="99" y="86" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="600">Промис</text>
+        <text x="99" y="105" text-anchor="middle" fill="var(--muted)" font-size="11.5">исходное значение</text>
+
+        <line x1="176" y1="90" x2="216" y2="90" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#pc-arrow)" />
+
+        <rect x="220" y="60" width="150" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="295" y="86" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">.then</text>
+        <text x="295" y="105" text-anchor="middle" fill="var(--muted)" font-size="11.5">преобразует значение</text>
+
+        <line x1="372" y1="90" x2="412" y2="90" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#pc-arrow)" />
+
+        <rect x="416" y="60" width="150" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="491" y="86" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">.then</text>
+        <text x="491" y="105" text-anchor="middle" fill="var(--muted)" font-size="11.5">следующий шаг</text>
+
+        <!-- стрелки ошибки вниз -->
+        <line x1="295" y1="122" x2="295" y2="216" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#pc-arrow-err)" />
+        <line x1="491" y1="122" x2="491" y2="216" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#pc-arrow-err)" />
+        <text x="315" y="170" text-anchor="start" fill="var(--red)" font-size="11.5">throw / reject</text>
+
+        <!-- нижний блок: catch -->
+        <rect x="220" y="220" width="346" height="56" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+        <text x="393" y="245" text-anchor="middle" fill="var(--red)" font-size="13" font-weight="600">.catch</text>
+        <text x="393" y="263" text-anchor="middle" fill="var(--muted)" font-size="11.5">ловит ошибку любого звена выше</text>
+      </svg>
+      <figcaption>
+        Пока всё успешно — значение идёт вправо через звенья <code>.then</code>. Любая
+        ошибка сворачивает вниз, минуя оставшиеся <code>.then</code>, прямо в
+        <code>.catch</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Частая ошибка — забыть <code>return</code></h2>
+    <p>
+      Раз цепочка строится на возвращаемых значениях, самая распространённая ошибка —
+      <strong>забыть <code>return</code></strong> внутри обработчика с фигурными скобками.
+      Без <code>return</code> обработчик неявно вернёт <code>undefined</code>: следующий
+      <code>.then</code> получит <code>undefined</code> и <strong>не дождётся</strong>
+      асинхронного шага, который вы там запустили.
+    </p>
+    <app-code-block [code]="forgotReturnExample" lang="javascript" />
+    <p>
+      В плохом варианте <code>response.json()</code> вызван, но его промис никому не
+      возвращён — цепочка «не знает», что нужно его подождать, и мчится дальше с
+      <code>undefined</code>. Со стрелочной функцией без скобок
+      (<code>(response) =&gt; response.json()</code>) <code>return</code> подразумевается
+      автоматически, поэтому там этой ошибки не бывает.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> у цепочек есть и другие тонкости — «повисшие» промисы,
+      возврат из <code>.catch</code>, порядок с микрозадачами. Собрали их отдельно в
+      разделе <a routerLink="/javascript/promises/pitfalls">Нюансы и подводные камни</a>.
+    </p>
+  </section>
+</article>

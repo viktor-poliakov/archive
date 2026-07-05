@@ -1,0 +1,239 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/promises">Промисы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Обработка ошибок</span>
+  </nav>
+
+  <h1 class="doc__title">Обработка ошибок в промисах</h1>
+  <p class="doc__lead">
+    Асинхронный код ошибается ничуть не реже синхронного: сеть отвалилась, сервер
+    ответил ошибкой, данные пришли не в том формате. Промисы дают для этого стройную
+    систему — любая ошибка внутри цепочки «стекает» вниз, как капля по наклонному
+    жёлобу, пока не встретит первый <code>.catch</code>. Наша задача — грамотно
+    поставить этот жёлоб и решить, что делать с пойманным.
+  </p>
+  <p class="doc__lead">
+    Аналогия: цепочка промисов — как конвейер на кухне. Если на любом этапе повар
+    уронил заготовку, дальше по конвейеру она не пойдёт — вместо неё поедет сигнал
+    «брак», и его подхватит контролёр в конце линии. Здесь нет «магии»: мы точно
+    знаем, куда уедет ошибка и кто её примет. Разберём это по шагам.
+  </p>
+
+  <section class="doc__section">
+    <h2>Два способа отклонить промис</h2>
+    <p>
+      Промис оказывается в состоянии <code>rejected</code> («отклонён») двумя путями.
+      Первый — явно позвать <code>reject(error)</code> внутри исполнителя (executor).
+      Второй — просто <strong>бросить исключение</strong> через <code>throw</code>:
+      это работает и в executor, и в любом колбэке <code>.then</code>. Движок сам
+      перехватит <code>throw</code> и превратит его в отклонение.
+    </p>
+    <app-code-block [code]="twoWaysExample" lang="javascript" />
+    <p>
+      Обратите внимание: и в reject, и в throw мы передаём <strong>объект
+      <code>Error</code></strong>, а не строку. Это не формальность. Объект
+      <code>Error</code> несёт с собой стек вызовов (<code>err.stack</code>) —
+      бесценную подсказку о том, где именно всё сломалось:
+    </p>
+    <app-code-block [code]="whyErrorExample" lang="javascript" />
+    <p class="note">
+      <strong>Правило:</strong> всегда отклоняйте промис объектом
+      <code>Error</code> (или его потомком), а не строкой или числом. Так вы
+      сохраните стек, тип ошибки и единообразие с обычными синхронными
+      <code>throw</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>.catch</code> ловит ошибки всей цепочки выше</h2>
+    <p>
+      Главная сила <code>.catch</code> в том, что один обработчик в конце цепочки
+      перехватывает ошибку <strong>любого</strong> предыдущего звена. Не важно, на
+      каком шаге всё пошло не так — отклонение «проваливается» мимо всех промежуточных
+      <code>.then</code> прямо до ближайшего <code>.catch</code>:
+    </p>
+    <app-code-block [code]="catchWholeChainExample" lang="javascript" />
+    <p>
+      Как только какое-то звено отклонилось, все следующие <code>.then</code>
+      пропускаются — их колбэки просто не вызываются. Управление «перепрыгивает» сразу
+      к <code>.catch</code>. Поэтому чаще всего достаточно одного
+      <code>.catch</code> в конце, чтобы прикрыть всю цепочку разом.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 210" width="100%" role="img"
+        aria-label="Ошибка на среднем звене цепочки проваливается мимо then прямо в catch">
+        <defs>
+          <marker id="pe-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+          <marker id="pe-arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)" />
+          </marker>
+        </defs>
+
+        <text x="320" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Отклонение проваливается до первого .catch</text>
+
+        <rect x="20" y="60" width="120" height="52" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="80" y="83" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="600">.then #1</text>
+        <text x="80" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">ок</text>
+
+        <line x1="142" y1="86" x2="176" y2="86" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#pe-arrow-muted)" />
+
+        <rect x="180" y="60" width="120" height="52" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+        <text x="240" y="83" text-anchor="middle" fill="var(--red)" font-size="13" font-weight="600">.then #2</text>
+        <text x="240" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">бросил ошибку</text>
+
+        <rect x="340" y="60" width="120" height="52" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-dasharray="5 4" />
+        <text x="400" y="83" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="600">.then #3</text>
+        <text x="400" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">пропущен</text>
+
+        <rect x="500" y="60" width="120" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="560" y="83" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">.catch</text>
+        <text x="560" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">поймал</text>
+
+        <!-- error jump path: from .then #2 down and across to .catch -->
+        <path d="M240 114 L240 160 L560 160 L560 114" fill="none" stroke="var(--accent)" stroke-width="2" marker-end="url(#pe-arrow)" />
+        <text x="400" y="180" text-anchor="middle" fill="var(--accent)" font-size="12">ошибка минует все .then и уходит в .catch</text>
+      </svg>
+      <figcaption>
+        Ошибка на любом звене пропускает оставшиеся <code>.then</code> и попадает в
+        ближайший <code>.catch</code> ниже.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Поймать и продолжить</h2>
+    <p>
+      <code>.catch</code> — это не обязательно «конец истории». Если внутри него
+      <strong>не пробросить ошибку дальше</strong>, а просто вернуть значение (или
+      ничего не бросить), цепочка «выздоравливает»: следующий промис снова становится
+      <code>fulfilled</code>. Значение из <code>.catch</code> поедет дальше по
+      конвейеру, как будто ошибки и не было.
+    </p>
+    <p>
+      Типичный сценарий — подстановка значения по умолчанию, когда сбой не критичен:
+    </p>
+    <app-code-block [code]="catchAndContinueExample" lang="javascript" />
+    <p>
+      Здесь <code>.catch</code> перехватывает сбой загрузки настроек и возвращает
+      резервный объект. Следующий <code>.then</code> получит это значение как обычный
+      результат — приложение продолжит работать с настройками по умолчанию вместо
+      того, чтобы упасть. Так <code>.catch</code> работает и как «предохранитель», и
+      как «план Б».
+    </p>
+    <p class="note">
+      <strong>Осторожно:</strong> восстанавливать цепочку стоит только тогда, когда вы
+      действительно можете разумно продолжить. Если ошибка критична (например, не
+      удалось авторизоваться), лучше пробросить её дальше — <code>throw</code> внутри
+      <code>.catch</code> или <code>return Promise.reject(err)</code> — чтобы её
+      увидел следующий обработчик.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Где ставить <code>.catch</code></h2>
+    <p>
+      Базовое правило простое: <strong>один <code>.catch</code> в самом конце</strong>
+      цепочки. Он прикроет все звенья сразу — это самый частый и надёжный шаблон. Но
+      иногда полезны и несколько <code>.catch</code>: например, обработать ошибку
+      конкретного шага «на месте» и, при желании, продолжить.
+    </p>
+    <p>
+      Есть тонкость, о которой стоит знать. У <code>.then</code> бывает
+      <em>два</em> аргумента — <code>then(onFulfilled, onRejected)</code>. И
+      <code>.catch(fn)</code> — это на самом деле сокращение для
+      <code>.then(undefined, fn)</code>. Разница между вторым аргументом
+      <code>.then</code> и отдельным <code>.catch</code> становится критичной, если
+      ошибку бросает <em>сам первый колбэк</em>:
+    </p>
+    <app-code-block [code]="thenSecondArgExample" lang="javascript" />
+    <p>
+      Второй аргумент <code>.then</code> ловит только отклонение
+      <strong>предыдущего</strong> промиса. Ошибку, брошенную первым колбэком того же
+      <code>.then</code>, он поймать <em>не может</em> — они «соседи», а не «родитель и
+      потомок». А вот <code>.catch</code>, стоящий следующим звеном, перехватит и её.
+      Поэтому <code>.catch</code> в конце надёжнее, чем <code>onRejected</code>-аргумент.
+    </p>
+    <p class="note">
+      <strong>Запомните:</strong> <code>.catch(fn)</code> полностью эквивалентно
+      <code>.then(undefined, fn)</code>. Это просто более читаемая форма для отлова
+      ошибок.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Необработанные отклонения: <code>unhandledrejection</code></h2>
+    <p>
+      Что будет, если промис отклонён, а <code>.catch</code> для него так и не нашёлся?
+      Ошибка не исчезнет бесследно. В браузере на глобальном объекте
+      <code>window</code> сработает событие <code>unhandledrejection</code>, а в Node.js
+      вы увидите предупреждение (в новых версиях — падение процесса). Это ваш
+      последний рубеж, чтобы залогировать проблему:
+    </p>
+    <app-code-block [code]="unhandledExample" lang="javascript" />
+    <p>
+      Обработчик <code>unhandledrejection</code> хорош для мониторинга и логирования,
+      но это не замена нормальному <code>.catch</code> в коде. И отдельно про
+      антипаттерн из примера: <strong>никогда не «глотайте» ошибки пустым
+      <code>.catch</code></strong>. Пустой <code>catch(() =&gt; &#123;&#125;)</code> прячет сбой
+      от вас же — приложение продолжит работать в сломанном состоянии, а вы даже не
+      узнаете причину. Как минимум залогируйте ошибку, а лучше — обработайте её
+      осмысленно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Коротко: где ловится, а где нет</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Ситуация</th>
+            <th>Поймает <code>.then(f1, f2)</code></th>
+            <th>Поймает финальный <code>.catch</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Отклонён предыдущий промис</td>
+            <td class="yes">Да (через <code>f2</code>)</td>
+            <td class="yes">Да</td>
+          </tr>
+          <tr>
+            <td>Ошибка брошена в самом <code>f1</code></td>
+            <td class="no">Нет</td>
+            <td class="yes">Да</td>
+          </tr>
+          <tr>
+            <td>Ошибка на любом звене выше</td>
+            <td class="no">Нет (ловит только своё)</td>
+            <td class="yes">Да</td>
+          </tr>
+          <tr>
+            <td>Никто не поймал</td>
+            <td class="no">—</td>
+            <td class="no">Событие <code>unhandledrejection</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Дальше:</strong> обработка ошибок гораздо нагляднее выглядит с
+      <a routerLink="/javascript/promises/async-await">async/await</a>, где вместо
+      <code>.catch</code> можно писать привычный <code>try…catch</code>. А как ведут
+      себя ошибки в
+      <a routerLink="/javascript/promises/static-methods">статических методах</a>
+      (<code>Promise.all</code> падает от первой же ошибки, а
+      <code>Promise.allSettled</code> — нет) и какие ещё
+      <a routerLink="/javascript/promises/pitfalls">подводные камни</a> подстерегают —
+      в соседних разделах. Смотрите также
+      <a routerLink="/javascript/promises/chaining">цепочки промисов</a> и
+      <a routerLink="/javascript/rest-api/errors">ошибки сети в fetch</a>.
+    </p>
+  </section>
+</article>

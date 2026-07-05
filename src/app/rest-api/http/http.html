@@ -1,0 +1,246 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/rest-api">REST API</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">HTTP: запрос и ответ</span>
+  </nav>
+
+  <h1 class="doc__title">Анатомия HTTP: запрос и ответ</h1>
+  <p class="doc__lead">
+    Когда браузер или ваше приложение обращается к серверу, они общаются на языке
+    <strong>HTTP</strong> (HyperText Transfer Protocol). Всё общение сводится к простой
+    схеме: клиент отправляет <strong>запрос</strong> (request), сервер возвращает
+    <strong>ответ</strong> (response). Один запрос — один ответ, как реплика и отклик в
+    диалоге.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — заказ по почте.</strong> Запрос похож на бланк заказа: сверху вы
+    пишете, что именно хотите (метод и адрес товара), затем отмечаете пожелания
+    доставки (заголовки), а в конце при необходимости вкладываете само содержимое
+    посылки (тело). Ответ — это то, что приходит обратно: сверху штамп «выполнено» или
+    «не найдено» (код состояния), пометки об упаковке (заголовки) и сам товар (тело). Тут
+    нет никакой магии: и запрос, и ответ — это обычный текст со строго заданной
+    структурой, который можно прочитать глазами.
+  </p>
+
+  <section class="doc__section">
+    <h2>HTTP — язык клиента и сервера</h2>
+    <p>
+      HTTP работает по модели <strong>«запрос — ответ»</strong>. Инициатором всегда
+      выступает клиент: сервер сам по себе ничего не присылает, он лишь отвечает на то,
+      о чём его спросили. Клиент формулирует «вопрос» («дай мне пользователя с номером
+      42», «создай новый заказ»), а сервер даёт «ответ» — с данными или с сообщением об
+      ошибке.
+    </p>
+    <p>
+      Обмен происходит <strong>асинхронно</strong>: ответ приходит не мгновенно, и всё
+      это время программа не должна «замирать». Именно поэтому в JavaScript сетевые
+      запросы устроены на промисах и <code>async/await</code> — почему так, разобрано в
+      разделе <a routerLink="/javascript/event-loop/basics">«Событийный цикл»</a>.
+    </p>
+    <p class="note">
+      <strong>Важно:</strong> и запрос, и ответ имеют одинаковую структуру из трёх
+      частей — <em>стартовая строка</em>, <em>заголовки</em> и <em>тело</em>. Разобравшись
+      с одним, вы автоматически понимаете и второе.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Из чего состоит запрос</h2>
+    <p>HTTP-запрос — это текст из четырёх последовательных частей:</p>
+    <ul class="rules">
+      <li>
+        <strong>Стартовая строка</strong> — <code>метод</code>, <code>путь</code> и
+        <code>версия</code> протокола. Например, <code>GET /users/42 HTTP/1.1</code>:
+        «получить (метод) ресурс по адресу <code>/users/42</code> (путь) по версии
+        <code>HTTP/1.1</code>».
+      </li>
+      <li>
+        <strong>Заголовки</strong> — пары <code>Имя: значение</code>, по одной на
+        строку. Это метаданные запроса: на какой хост идём, какой формат ждём в ответ,
+        чем удостоверяем личность.
+      </li>
+      <li>
+        <strong>Пустая строка</strong> — обязательный разделитель, который отделяет
+        заголовки от тела.
+      </li>
+      <li>
+        <strong>Тело</strong> (body) — сами передаваемые данные, обычно JSON. У запросов
+        вроде <code>GET</code> тела нет, у <code>POST</code>/<code>PUT</code> — есть.
+      </li>
+    </ul>
+    <p>
+      Вот как выглядит «сырой» <code>GET</code>-запрос — ровно то, что уходит по сети
+      (тела нет, поэтому после заголовков идёт только пустая строка):
+    </p>
+    <app-code-block [code]="rawRequest" lang="http" />
+    <p>
+      А это запрос <code>POST</code> с телом: обратите внимание на пустую строку перед
+      JSON и на заголовки <code>Content-Type</code> (формат тела) и
+      <code>Content-Length</code> (его длина):
+    </p>
+    <app-code-block [code]="rawPostRequest" lang="http" />
+    <p class="note">
+      <strong>Подробнее:</strong> какие бывают методы и чем <code>GET</code> отличается
+      от <code>POST</code> — на странице
+      <a routerLink="/javascript/rest-api/methods">«HTTP-методы»</a>. Про заголовки и
+      форматы — на странице <a routerLink="/javascript/rest-api/headers">«Заголовки и
+      форматы»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>URL и эндпоинты</h2>
+    <p>
+      Стартовая строка ссылается на <strong>путь</strong>, а полный адрес ресурса
+      задаёт <strong>URL</strong>. URL — это не одна сплошная строка, а несколько частей
+      с чётким назначением:
+    </p>
+    <app-code-block [code]="urlParts" lang="http" />
+    <ul class="rules">
+      <li><strong>Схема</strong> (<code>https</code>) — по какому протоколу обращаться.</li>
+      <li><strong>Хост</strong> (<code>api.example.com</code>) — на какой сервер идёт запрос.</li>
+      <li><strong>Путь</strong> (<code>/users/42</code>) — адрес конкретного ресурса на сервере.</li>
+      <li>
+        <strong>Query-строка</strong> (<code>?fields=name,email</code>) — необязательные
+        параметры после <code>?</code>, разделённые <code>&amp;</code>.
+      </li>
+      <li>
+        <strong>Fragment</strong> (<code>#top</code>) — якорь внутри страницы; на сервер
+        он <em>не</em> отправляется и в API обычно не используется.
+      </li>
+    </ul>
+    <p>
+      <strong>Эндпоинт</strong> (endpoint) — это адрес ресурса, к которому обращается
+      API. В REST принято различать <strong>коллекцию</strong> (много элементов) и
+      <strong>элемент</strong> коллекции. А query-параметры служат для фильтрации,
+      сортировки и <strong>пагинации</strong> (выдача по страницам) — они уточняют
+      запрос, не меняя сам путь к ресурсу:
+    </p>
+    <app-code-block [code]="endpoints" lang="http" />
+    <p class="note">
+      <strong>Правило:</strong> путь описывает <em>какой</em> ресурс нужен
+      (<code>/users/42</code>), а query-параметры — <em>как</em> его выдать (какие поля,
+      какая страница). Не путайте: <code>/users/42</code> и <code>/users?id=42</code> —
+      это разные вещи; первое адресует один элемент, второе фильтрует коллекцию.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Из чего состоит ответ</h2>
+    <p>
+      Ответ устроен зеркально запросу — те же три части, только вместо стартовой строки
+      здесь <strong>статусная строка</strong>:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Статусная строка</strong> — <code>версия</code>, <code>код состояния</code>
+        и <code>текст</code>. Например, <code>HTTP/1.1 200 OK</code>: версия протокола,
+        числовой код <code>200</code> и человекочитаемая пометка <code>OK</code>.
+      </li>
+      <li>
+        <strong>Заголовки</strong> — метаданные ответа: тип и длина тела, правила
+        кэширования и прочее.
+      </li>
+      <li>
+        <strong>Тело</strong> — сами данные, чаще всего JSON. Отделено от заголовков всё
+        той же пустой строкой.
+      </li>
+    </ul>
+    <app-code-block [code]="rawResponse" lang="http" />
+    <p>
+      Числовой код в статусной строке — самое важное в ответе: по нему клиент понимает,
+      успешен ли запрос. <code>200</code> — успех, <code>404</code> — ресурс не найден,
+      <code>500</code> — ошибка на сервере. Полный разбор — на странице
+      <a routerLink="/javascript/rest-api/status-codes">«Коды состояния»</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Анатомия HTTP-сообщения</h2>
+    <p>
+      Соберём всё вместе. И запрос, и ответ — это одно и то же «сообщение» из трёх
+      блоков; отличается лишь первая строка:
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 300" width="100%" role="img"
+        aria-label="Строение HTTP-запроса и HTTP-ответа: стартовая или статусная строка, заголовки, пустая строка-разделитель и тело">
+        <text x="160" y="24" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">Запрос</text>
+        <text x="480" y="24" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">Ответ</text>
+
+        <!-- Request column -->
+        <rect x="24" y="40" width="272" height="52" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="160" y="64" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="700">Стартовая строка</text>
+        <text x="160" y="82" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">GET /users/42 HTTP/1.1</text>
+
+        <rect x="24" y="102" width="272" height="70" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="160" y="124" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="700">Заголовки</text>
+        <text x="160" y="142" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">Host: api.example.com</text>
+        <text x="160" y="159" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">Accept: application/json</text>
+
+        <text x="160" y="192" text-anchor="middle" fill="var(--muted)" font-size="10.5" font-style="italic">— пустая строка-разделитель —</text>
+
+        <rect x="24" y="204" width="272" height="70" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-dasharray="5 4" />
+        <text x="160" y="226" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="700">Тело</text>
+        <text x="160" y="245" text-anchor="middle" fill="var(--muted)" font-size="11">(у GET обычно отсутствует)</text>
+
+        <!-- Response column -->
+        <rect x="344" y="40" width="272" height="52" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="480" y="64" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="700">Статусная строка</text>
+        <text x="480" y="82" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">HTTP/1.1 200 OK</text>
+
+        <rect x="344" y="102" width="272" height="70" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="480" y="124" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="700">Заголовки</text>
+        <text x="480" y="142" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">Content-Type: application/json</text>
+        <text x="480" y="159" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">Content-Length: 62</text>
+
+        <text x="480" y="192" text-anchor="middle" fill="var(--muted)" font-size="10.5" font-style="italic">— пустая строка-разделитель —</text>
+
+        <rect x="344" y="204" width="272" height="70" rx="9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="480" y="226" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="700">Тело</text>
+        <text x="480" y="246" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">&#123;"id": 42, "name": "Anna"&#125;</text>
+      </svg>
+      <figcaption>
+        Три блока сообщения одинаковы для запроса и ответа: отличается только первая
+        строка (стартовая против статусной) и то, у кого есть тело.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Полный обмен</h2>
+    <p>
+      Вот как выглядит один полный цикл — клиент спрашивает, сервер отвечает. Прочитайте
+      сверху вниз: сначала уходит запрос, затем возвращается ответ:
+    </p>
+    <app-code-block [code]="fullExchange" lang="http" />
+    <p>
+      На практике «сырой» текст вы почти никогда не пишете руками — это делает браузер
+      или библиотека. В JavaScript обмен запускает функция <code>fetch</code>: она
+      собирает запрос, а его результат отдаёт как объект <code>Response</code>, где
+      статусная строка, заголовки и тело уже разложены по свойствам:
+    </p>
+    <app-code-block [code]="fetchExample" lang="javascript" />
+    <p>
+      Ключевой момент: тело приходит отдельно от заголовков, и его нужно
+      <strong>прочитать</strong> — метод <code>response.json()</code> разбирает JSON-тело
+      в объект. Заметьте, что <code>fetch</code> считает успехом <em>любой</em> полученный
+      ответ, даже с кодом <code>404</code> или <code>500</code>: сама передача ведь
+      состоялась. Проверять код нужно вручную через <code>response.ok</code> — этот и
+      другие нюансы разобраны на страницах
+      <a routerLink="/javascript/rest-api/fetch">«Fetch API на практике»</a> и
+      <a routerLink="/javascript/rest-api/errors">«Обработка ошибок»</a>.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> вы знаете строение запроса и ответа. Логичный следующий
+      шаг — разобраться, что означает метод в стартовой строке
+      (<a routerLink="/javascript/rest-api/methods">«HTTP-методы»</a>) и код в статусной
+      (<a routerLink="/javascript/rest-api/status-codes">«Коды состояния»</a>). Общая
+      картина того, что такое REST, — на странице
+      <a routerLink="/javascript/rest-api/basics">«Что такое REST»</a>.
+    </p>
+  </section>
+</article>

@@ -40,6 +40,7 @@ export class HighlighterService {
         import('shiki/langs/css.mjs'),
         import('shiki/langs/json.mjs'),
         import('shiki/langs/bash.mjs'),
+        import('shiki/langs/http.mjs'),
       ],
       engine: createOnigurumaEngine(import('shiki/wasm')),
     });

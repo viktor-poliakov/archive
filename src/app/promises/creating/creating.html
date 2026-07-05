@@ -1,0 +1,97 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/promises">Промисы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Создание и промисификация</span>
+  </nav>
+
+  <h1 class="doc__title">Создание промисов и промисификация</h1>
+  <p class="doc__lead">
+    Чаще всего промисы приходят к вам уже готовыми — из <code>fetch</code>, библиотек,
+    браузерных API. Но иногда промис нужно создать самому: обычно чтобы «завернуть» в него
+    старый код на колбэках и дальше пользоваться удобными <code>await</code> и цепочками.
+    Разберём, как делать это правильно — и какие тут есть тонкости.
+  </p>
+
+  <section class="doc__section">
+    <h2>Конструктор <code>new Promise</code></h2>
+    <p>
+      Промис создаётся через <code>new Promise(executor)</code>. Функция-исполнитель
+      (<code>executor</code>) получает два колбэка — <code>resolve</code> (перевести
+      промис в успех) и <code>reject</code> (перевести в ошибку). Движок вызывает
+      <code>executor</code> <strong>сразу же</strong>:
+    </p>
+    <app-code-block [code]="newPromiseExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно:</strong> в <code>reject</code> передавайте объект <code>Error</code>,
+      а не строку — тогда сохранится стек вызова и с ошибкой удобно работать (см.
+      <a routerLink="/javascript/promises/error-handling">«Обработка ошибок»</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Промисификация: оборачиваем колбэк</h2>
+    <p>
+      Классический пример — <code>setTimeout</code>. Он ничего не возвращает и работает
+      через колбэк. Обернём его в промис и получим функцию <code>delay</code>, паузу от
+      которой можно «подождать» через <code>await</code>:
+    </p>
+    <app-code-block [code]="delayExample" lang="javascript" />
+    <p>
+      Если вызвать <code>resolve</code> со значением, оно и придёт в <code>await</code>
+      или <code>.then</code>:
+    </p>
+    <app-code-block [code]="delayValueExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Универсальный <code>promisify</code></h2>
+    <p>
+      Многие старые API (особенно в Node.js) устроены одинаково: последний аргумент —
+      колбэк вида <code>(err, result)</code>. Такой шаблон можно обернуть один раз общей
+      функцией <code>promisify</code>:
+    </p>
+    <app-code-block [code]="promisifyExample" lang="javascript" />
+    <p>
+      Теперь любую колбэчную функцию легко превратить в промис-версию и использовать с
+      <a routerLink="/javascript/promises/async-await"><code>async/await</code></a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>thenable</code> и <code>Promise.resolve</code></h2>
+    <p>
+      Промису не обязательно быть «настоящим». <strong>thenable</strong> — это любой
+      объект с методом <code>then(resolve, reject)</code>. И <code>await</code>, и
+      <code>Promise.resolve</code> умеют работать с любым thenable, приводя его к обычному
+      промису:
+    </p>
+    <app-code-block [code]="thenableExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Антипаттерн: лишний <code>new Promise</code></h2>
+    <p>
+      Раз промис нужен только чтобы обернуть колбэк, не стоит оборачивать в
+      <code>new Promise</code> то, что <em>и так</em> промис. Это лишний код, в котором
+      легко потерять ошибку:
+    </p>
+    <app-code-block [code]="antipatternBadExample" lang="javascript" />
+    <p>Правильно — просто вернуть уже готовый промис (или зачейнить его):</p>
+    <app-code-block [code]="antipatternGoodExample" lang="javascript" />
+    <p class="note">
+      <strong>Тонкость: <code>resolve</code> &ne; «выполнить этим значением».</strong>
+      Если передать в <code>resolve</code> другой промис, внешний промис не станет
+      «промисом-значением» — он дождётся внутренний и переймёт его результат:
+    </p>
+    <app-code-block [code]="resolveVsFulfillExample" lang="javascript" />
+    <p>
+      Больше тонкостей и частых ошибок — в разделе
+      <a routerLink="/javascript/promises/pitfalls">«Подводные камни»</a>. А с устройства
+      промиса с самого начала — в
+      <a routerLink="/javascript/promises/basics">«Основах»</a>.
+    </p>
+  </section>
+</article>

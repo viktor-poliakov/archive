@@ -120,6 +120,20 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'promises',
+        label: 'Промисы',
+        children: [
+          { id: 'basics', label: 'Что такое промис' },
+          { id: 'then-catch-finally', label: 'then, catch, finally' },
+          { id: 'chaining', label: 'Цепочки' },
+          { id: 'error-handling', label: 'Обработка ошибок' },
+          { id: 'static-methods', label: 'Статические методы' },
+          { id: 'async-await', label: 'async/await' },
+          { id: 'creating', label: 'Создание и промисификация' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'event-loop',
         label: 'Event Loop',
         children: [
@@ -142,15 +156,33 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'rest-api',
+        label: 'REST API',
+        children: [
+          { id: 'basics', label: 'Что такое REST' },
+          { id: 'http', label: 'HTTP: запрос и ответ' },
+          { id: 'methods', label: 'HTTP-методы' },
+          { id: 'status-codes', label: 'Коды состояния' },
+          { id: 'headers', label: 'Заголовки и форматы' },
+          { id: 'fetch', label: 'Fetch API на практике' },
+          { id: 'query-params', label: 'Query-параметры' },
+          { id: 'files', label: 'Файлы и бинарные данные' },
+          { id: 'cancellation', label: 'Отмена запроса' },
+          { id: 'auth', label: 'Аутентификация' },
+          { id: 'errors', label: 'Обработка ошибок' },
+          { id: 'pitfalls', label: 'Проектирование и нюансы' },
+        ],
+      },
+      {
         id: 'dates',
         label: 'Даты',
         children: [
           { id: 'basics', label: 'Основы' },
           { id: 'format', label: 'Форматирование и парсинг' },
           { id: 'pitfalls', label: 'Вычисления и подводные камни' },
+          { id: 'temporal', label: 'Temporal API' },
         ],
       },
-      { id: 'temporal', label: 'Temporal API' },
       {
         id: 'garbage-collection',
         label: 'Сборщик мусора',

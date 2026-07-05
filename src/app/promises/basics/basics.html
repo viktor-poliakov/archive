@@ -1,0 +1,226 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/promises">Промисы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Что такое промис</span>
+  </nav>
+
+  <h1 class="doc__title">Промисы: основы</h1>
+  <p class="doc__lead">
+    <strong>Промис</strong> (promise, «обещание») — это объект, который представляет
+    результат операции, завершающейся <em>в будущем</em>. Вы запускаете что-то
+    долгое — запрос к серверу, чтение файла, таймер — и сразу получаете на руки не
+    сам результат, а обещание: «результат появится позже — либо значение при успехе,
+    либо ошибка при неудаче».
+  </p>
+  <p class="doc__lead">
+    Аналогия: вы заказали кофе, и вам сразу дают <strong>номерок</strong> (или
+    пейджер). Кофе ещё нет, но у вас на руках обещание, что он будет. Через какое-то
+    время одно из двух: либо номерок «срабатывает» и вы получаете кофе, либо бариста
+    извиняется — закончились зёрна. Промис — это тот самый номерок: с ним удобно
+    работать, пока результата ещё нет. И это не «чёрный ящик»: ниже мы разберём, из
+    каких состояний он состоит и как устроен внутри.
+  </p>
+
+  <section class="doc__section">
+    <h2>Проблема колбэков</h2>
+    <p>
+      Раньше асинхронность делали <strong>колбэками</strong> (callback) — функциями,
+      которые передают внутрь и вызывают «потом», когда результат готов (подробнее о
+      функциях-значениях — в разделе
+      <a routerLink="/javascript/functions/first-class">Функции как значения</a>). Для
+      одной операции это удобно. Но как только операции становятся
+      <strong>зависимыми</strong> — результат первой нужен второй, второй третьей — код
+      начинает расти вложенной «лесенкой» вправо:
+    </p>
+    <app-code-block [code]="callbackHellExample" lang="javascript" />
+    <p>
+      Это и называют <strong>«адом колбэков»</strong> (callback hell) или «пирамидой
+      вложенности». Проблем сразу несколько:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>Тяжело читать</strong> — логика уезжает вправо, а порядок шагов
+        приходится собирать «изнутри наружу».
+      </li>
+      <li>
+        <strong>Обработка ошибок дублируется</strong> — на каждом уровне свой отдельный
+        обработчик, и легко забыть один из них.
+      </li>
+      <li>
+        <strong>Трудно комбинировать</strong> — запустить несколько операций
+        параллельно или прервать цепочку колбэками неудобно.
+      </li>
+    </ul>
+    <p>
+      Промисы решают ровно это: они позволяют выстроить асинхронные шаги в плоскую
+      <a routerLink="/javascript/promises/chaining">цепочку</a> и обрабатывать ошибки в
+      одном месте.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Промис — обещание результата</h2>
+    <p>
+      Промис — это специальный объект-«посредник» между кодом, который
+      <em>производит</em> результат (асинхронная операция), и кодом, который этот
+      результат <em>ждёт</em>. Пока операция идёт, промис держит вас в курсе: готово
+      или нет, успех или ошибка.
+    </p>
+    <p>
+      Вернёмся к кофейне. Бариста (асинхронная операция) не заставляет вас стоять у
+      стойки и ждать — он даёт номерок (промис) и отпускает вас заниматься своими
+      делами. Вы не знаете и не должны знать, как именно варится кофе. Вам важно лишь,
+      что по номерку в итоге придёт <strong>ровно один</strong> из двух исходов: кофе
+      (значение) или извинение (ошибка). Промис — это надёжный посредник, который
+      гарантирует, что вас в любом случае оповестят.
+    </p>
+    <p class="note">
+      <strong>Важно:</strong> промис не делает код быстрее и не «распараллеливает» его
+      сам по себе. Он лишь <em>описывает</em> будущий результат и даёт удобный способ
+      на него подписаться. Сама асинхронность (сеть, таймер) живёт за пределами промиса.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Три состояния</h2>
+    <p>
+      В каждый момент времени промис находится ровно в одном из трёх состояний:
+    </p>
+    <ul class="rules">
+      <li>
+        <strong>pending</strong> (ожидание) — начальное состояние: операция ещё идёт,
+        результата пока нет. Номерок выдан, кофе варится.
+      </li>
+      <li>
+        <strong>fulfilled</strong> (выполнен) — операция завершилась успехом. У промиса
+        появилось <strong>значение</strong> (например, данные ответа). Кофе готов.
+      </li>
+      <li>
+        <strong>rejected</strong> (отклонён) — операция завершилась ошибкой. У промиса
+        появилась <strong>причина</strong> (обычно объект <code>Error</code>). Зёрна
+        закончились.
+      </li>
+    </ul>
+    <p>
+      Состояния <code>fulfilled</code> и <code>rejected</code> вместе называют
+      <strong>settled</strong> (улажен, «завершён»). Ключевое правило:
+    </p>
+    <p class="note">
+      <strong>Однажды settled — навсегда:</strong> как только промис перешёл в
+      <code>fulfilled</code> или <code>rejected</code>, его состояние и результат
+      <strong>больше не меняются</strong>. Повторные вызовы <code>resolve</code> или
+      <code>reject</code> внутри просто игнорируются. Номерок срабатывает один раз.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 640 260" width="100%" role="img"
+        aria-label="Машина состояний промиса: из pending либо resolve в fulfilled, либо reject в rejected">
+        <defs>
+          <marker id="pr-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="320" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Жизненный цикл промиса</text>
+
+        <!-- pending -->
+        <rect x="34" y="97" width="150" height="66" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="109" y="126" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="600">pending</text>
+        <text x="109" y="146" text-anchor="middle" fill="var(--muted)" font-size="11.5">ожидание</text>
+
+        <!-- to fulfilled -->
+        <line x1="186" y1="112" x2="452" y2="70" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#pr-arrow)" />
+        <text x="318" y="78" text-anchor="middle" fill="var(--muted)" font-size="11.5">resolve(value)</text>
+
+        <!-- to rejected -->
+        <line x1="186" y1="148" x2="452" y2="190" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#pr-arrow)" />
+        <text x="318" y="185" text-anchor="middle" fill="var(--muted)" font-size="11.5">reject(error)</text>
+
+        <!-- fulfilled -->
+        <rect x="456" y="40" width="160" height="66" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="536" y="68" text-anchor="middle" fill="var(--green)" font-size="14" font-weight="600">fulfilled</text>
+        <text x="536" y="88" text-anchor="middle" fill="var(--muted)" font-size="11.5">успех + значение</text>
+
+        <!-- rejected -->
+        <rect x="456" y="154" width="160" height="66" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="536" y="182" text-anchor="middle" fill="var(--red)" font-size="14" font-weight="600">rejected</text>
+        <text x="536" y="202" text-anchor="middle" fill="var(--muted)" font-size="11.5">ошибка + причина</text>
+
+        <text x="320" y="245" text-anchor="middle" fill="var(--muted)" font-size="12">fulfilled и rejected = settled — состояние больше не меняется</text>
+      </svg>
+      <figcaption>
+        Из <code>pending</code> есть только два выхода, и ровно один из них сработает:
+        <code>resolve</code> ведёт в <code>fulfilled</code>, <code>reject</code> — в
+        <code>rejected</code>. Обратной дороги нет.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как создать промис</h2>
+    <p>
+      Промис создают конструктором <code>new Promise(executor)</code>. В него передают
+      функцию-<strong>executor</strong> («исполнитель») с двумя аргументами —
+      <code>resolve</code> и <code>reject</code>. Их даёт сам движок; вызвав один из
+      них, вы переводите промис в нужное состояние:
+    </p>
+    <ul class="rules">
+      <li><code>resolve(value)</code> — успех: переводит промис в <code>fulfilled</code> и кладёт в него значение.</li>
+      <li><code>reject(reason)</code> — ошибка: переводит промис в <code>rejected</code> и кладёт причину.</li>
+    </ul>
+    <p>
+      Важная деталь: <strong>executor запускается сразу и синхронно</strong> — прямо в
+      момент вызова <code>new Promise</code>, не «потом». Обычно внутри него стартует
+      что-то асинхронное, а <code>resolve</code>/<code>reject</code> вызывают уже когда
+      результат готов:
+    </p>
+    <app-code-block [code]="createExample" lang="javascript" />
+    <p>
+      На практике вы будете создавать промисы руками довольно редко. Гораздо чаще
+      промис <strong>возвращает готовый API</strong> — например,
+      <a routerLink="/javascript/rest-api/fetch"><code>fetch</code></a> для сетевых
+      запросов. Ручное создание нужно в основном чтобы «обернуть» в промис старый
+      код на колбэках (этому посвящён раздел
+      <a routerLink="/javascript/promises/creating">Создание и промисификация</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как получить результат</h2>
+    <p>
+      Сам по себе промис бесполезен, пока мы не <strong>подпишемся</strong> на его
+      исход. Для этого есть метод <code>.then(…)</code> — он принимает функцию, которую
+      движок вызовет со значением, когда промис станет <code>fulfilled</code>. А для
+      ошибок есть <code>.catch(…)</code>:
+    </p>
+    <app-code-block [code]="consumeExample" lang="javascript" />
+    <p>
+      Колбэк из <code>.then</code> не выполняется сразу — движок откладывает его до тех
+      пор, пока промис не завершится, и запускает как <strong>микрозадачу</strong>.
+      Именно поэтому промисы тесно связаны с
+      <a routerLink="/javascript/event-loop/basics">событийным циклом</a>: их колбэки
+      имеют приоритет над обычными таймерами. Так же устроен и запрос к серверу — вот
+      типичный вид работы с настоящей асинхронностью:
+    </p>
+    <app-code-block [code]="fetchExample" lang="javascript" />
+    <p class="note">
+      <strong>Совет:</strong> в <code>reject(…)</code> и при <code>throw</code>
+      передавайте <strong>объект <code>Error</code></strong>, а не строку
+      (пишите <code>reject(new Error("Request failed"))</code>, не
+      <code>reject("Request failed")</code>). <code>Error</code> несёт стек вызовов,
+      с ним ошибку гораздо проще отлаживать. Подробнее — в разделе
+      <a routerLink="/javascript/rest-api/errors">Ошибки сети</a>.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> методы <code>.then</code>, <code>.catch</code> и
+      <code>.finally</code> — тема отдельного разбора. Как они возвращают новый промис,
+      как строить из них
+      <a routerLink="/javascript/promises/chaining">цепочки</a> и корректно
+      обрабатывать ошибки — читайте на странице
+      <a routerLink="/javascript/promises/then-catch-finally">then, catch, finally</a>.
+    </p>
+  </section>
+</article>
