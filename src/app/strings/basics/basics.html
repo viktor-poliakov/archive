@@ -1,0 +1,155 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/strings">Строки</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Строки: основы</h1>
+  <p class="doc__lead">
+    Строка — это <strong>примитивный тип</strong> для текста: имена, сообщения,
+    адреса, ключи в JSON — всё это строки. Работать с текстом приходится почти в
+    каждой программе, поэтому строки стоит знать хорошо.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — гравировка на табличке.</strong> Текст на табличке нельзя
+    «подтереть» и вписать другую букву: чтобы получить новую надпись, делают новую
+    табличку. Строки в JavaScript устроены так же — они <em>неизменяемы</em>, и это
+    важное свойство, к которому мы вернёмся ниже.
+  </p>
+
+  <section class="doc__section">
+    <h2>Три вида кавычек</h2>
+    <p>
+      Строковый литерал можно записать тремя способами. Одинарные <code>'…'</code> и
+      двойные <code>"…"</code> кавычки <strong>полностью равнозначны</strong> —
+      выбирайте один стиль и держитесь его. Обратные кавычки <code>`…`</code>
+      (backticks) — это <strong>шаблонные строки</strong> с интерполяцией и
+      многострочностью, им посвящена
+      <a routerLink="/javascript/strings/templates">отдельная страница</a>.
+    </p>
+    <app-code-block [code]="quotesExample" lang="javascript" />
+    <p>
+      Если внутри строки нужна такая же кавычка, какой она обёрнута, — берут другой
+      вид кавычек или экранируют символ обратным слэшем.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Экранирование спецсимволов</h2>
+    <p>
+      Некоторые символы нельзя просто набрать внутри строки — их задают
+      <strong>escape-последовательностями</strong> через обратный слэш
+      <code>\</code>. Самые частые — перенос строки <code>\n</code> и табуляция
+      <code>\t</code>. Чтобы вставить сам обратный слэш, его удваивают:
+      <code>\\</code>.
+    </p>
+    <app-code-block [code]="escapeExample" lang="javascript" />
+    <p>
+      Отдельным символом можно вписать любой знак Юникода по его коду:
+      <code>A</code> (ровно 4 hex-цифры) или <code>\u&#123;1F600&#125;</code>
+      (код в фигурных скобках, любой длины). Подробно про коды символов — в разделе
+      <a routerLink="/javascript/strings/unicode">Юникод и кодирование</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Длина и доступ к символам</h2>
+    <p>
+      У строки есть свойство <code>length</code> — число символов, и к любому символу
+      можно обратиться по индексу в квадратных скобках, <strong>с нуля</strong>. Метод
+      <code>at()</code> делает то же, но понимает отрицательные индексы, отсчитывая с
+      конца: <code>str.at(-1)</code> — последний символ.
+    </p>
+    <app-code-block [code]="lengthAccessExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 520 150" width="100%" role="img"
+        aria-label="Строка Hello разложена на символы с индексами от 0 до 4, длина равна 5">
+        <g font-family="monospace" font-size="20" font-weight="700">
+          <rect x="20" y="40" width="90" height="56" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+          <text x="65" y="76" text-anchor="middle" fill="var(--fg)">H</text>
+          <rect x="118" y="40" width="90" height="56" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+          <text x="163" y="76" text-anchor="middle" fill="var(--fg)">e</text>
+          <rect x="216" y="40" width="90" height="56" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+          <text x="261" y="76" text-anchor="middle" fill="var(--fg)">l</text>
+          <rect x="314" y="40" width="90" height="56" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+          <text x="359" y="76" text-anchor="middle" fill="var(--fg)">l</text>
+          <rect x="412" y="40" width="90" height="56" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+          <text x="457" y="76" text-anchor="middle" fill="var(--fg)">o</text>
+        </g>
+        <g font-family="monospace" font-size="12" fill="var(--muted)">
+          <text x="65" y="118" text-anchor="middle">0</text>
+          <text x="163" y="118" text-anchor="middle">1</text>
+          <text x="261" y="118" text-anchor="middle">2</text>
+          <text x="359" y="118" text-anchor="middle">3</text>
+          <text x="457" y="118" text-anchor="middle">4</text>
+        </g>
+        <text x="260" y="20" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">'Hello'.length === 5 · индексы 0…4</text>
+      </svg>
+      <figcaption>
+        Строка — это последовательность символов с индексами от <code>0</code> до
+        <code>length&nbsp;-&nbsp;1</code>.
+      </figcaption>
+    </figure>
+    <p class="note">
+      <strong>Откуда у примитива методы?</strong> При обращении через точку движок на
+      миг оборачивает строку в объект-обёртку <code>String</code>. Подробнее — в
+      разделе <a routerLink="/javascript/types">Типы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Строки неизменяемы</h2>
+    <p>
+      Ключевое свойство: строку <strong>нельзя изменить на месте</strong>. Присвоение
+      символа по индексу не сработает (а в strict mode бросит ошибку). Все строковые
+      методы не трогают оригинал, а возвращают <strong>новую</strong> строку —
+      «изменить» строку значит переприсвоить переменной новое значение.
+    </p>
+    <app-code-block [code]="immutableExample" lang="javascript" />
+    <p class="note">
+      <strong>Почему это удобно:</strong> раз строку никто не может изменить исподтишка,
+      её безопасно передавать в функции и хранить как ключ. Обратная сторона — частые
+      «изменения» создают новые строки; для больших объёмов текст обычно собирают в
+      массив и склеивают через <code>join</code> (см.
+      <a routerLink="/javascript/strings/methods">Методы</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Конкатенация</h2>
+    <p>
+      Простейший способ соединить строки — оператор <code>+</code> (и <code>+=</code>
+      для дописывания). Если рядом со строкой оказывается число, оно
+      <strong>приводится к строке</strong> — это и удобно, и источник ошибок
+      (подробнее — на странице
+      <a routerLink="/javascript/strings/pitfalls">Нюансы и подводные камни</a>).
+    </p>
+    <app-code-block [code]="concatExample" lang="javascript" />
+    <p>
+      Когда кусков много, склейка через <code>+</code> читается плохо. Для этого есть
+      <a routerLink="/javascript/strings/templates">шаблонные строки</a> — они гораздо
+      нагляднее.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Строка</strong> — примитив для текста; три вида кавычек, из них
+        <code>'…'</code> и <code>"…"</code> равнозначны, а <code>`…`</code> —
+        шаблонные строки.</li>
+      <li><strong>Экранирование</strong> обратным слэшем: <code>\n</code>,
+        <code>\t</code>, <code>\\</code>, <code>\u…</code>.</li>
+      <li><strong>Доступ:</strong> <code>str.length</code>, <code>str[i]</code>,
+        <code>str.at(-1)</code>; символ — это строка длины 1.</li>
+      <li><strong>Неизменяемость:</strong> изменить символ по индексу нельзя; методы
+        возвращают новую строку.</li>
+      <li><strong>Конкатенация</strong> через <code>+</code>; число рядом со строкой
+        становится строкой. Для сборки удобнее шаблонные строки.</li>
+    </ul>
+  </section>
+</article>

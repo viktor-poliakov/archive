@@ -100,6 +100,28 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'numbers',
+        label: 'Числа и Math',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'methods', label: 'Методы и преобразование' },
+          { id: 'math', label: 'Объект Math' },
+          { id: 'precision', label: 'Точность и большие числа' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
+        id: 'strings',
+        label: 'Строки',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'templates', label: 'Шаблонные строки' },
+          { id: 'methods', label: 'Методы работы со строками' },
+          { id: 'unicode', label: 'Юникод и кодирование' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'arrays',
         label: 'Массивы',
         children: [

@@ -1,0 +1,123 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/strings">Строки</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Юникод и кодирование</span>
+  </nav>
+
+  <h1 class="doc__title">Юникод и кодирование</h1>
+  <p class="doc__lead">
+    Под капотом строка в JavaScript — это последовательность
+    <strong>16-битных кодовых единиц</strong> (кодировка UTF-16). Обычные символы
+    занимают одну единицу, но эмодзи и редкие символы — <strong>две</strong>
+    (суррогатная пара). Отсюда все сюрпризы: почему у эмодзи <code>length</code> равен
+    2 и почему перебор по индексу иногда «ломает» символ.
+  </p>
+
+  <section class="doc__section">
+    <h2>Кодовые точки</h2>
+    <p>
+      У каждого символа есть <strong>кодовая точка</strong> (code point) — его номер в
+      таблице Юникода. Получить его — <code>codePointAt</code>, а построить символ по
+      коду — <code>String.fromCodePoint</code>. Есть и старые методы
+      <code>charCodeAt</code>/<code>fromCharCode</code>, но они работают с 16-битными
+      единицами, поэтому спотыкаются на символах вне основной таблицы.
+    </p>
+    <app-code-block [code]="codePointExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Суррогатные пары и <code>length</code></h2>
+    <p>
+      Символов в Юникоде больше, чем помещается в 16 бит. Такие символы (эмодзи, редкие
+      иероглифы) кодируются <strong>двумя</strong> единицами — суррогатной парой.
+      Поэтому <code>length</code> считает не «символы», а кодовые единицы, и у одного
+      эмодзи он равен <code>2</code>. Обращение по индексу вернёт лишь половину пары —
+      бессмысленную саму по себе.
+    </p>
+    <app-code-block [code]="surrogateExample" lang="javascript" />
+    <figure class="diagram">
+      <svg viewBox="0 0 520 140" width="100%" role="img"
+        aria-label="Эмодзи занимает две кодовые единицы, поэтому его length равен 2">
+        <g font-family="monospace" font-size="14">
+          <rect x="150" y="30" width="100" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+          <text x="200" y="61" text-anchor="middle" fill="var(--fg)" font-size="20">😀</text>
+          <text x="200" y="16" text-anchor="middle" fill="var(--muted)" font-size="11">один символ</text>
+
+          <text x="272" y="60" fill="var(--muted)" font-size="16">=</text>
+
+          <rect x="296" y="30" width="100" height="50" rx="8" fill="var(--bg)" stroke="var(--border)" />
+          <text x="346" y="60" text-anchor="middle" fill="var(--accent)">\ud83d</text>
+          <rect x="404" y="30" width="100" height="50" rx="8" fill="var(--bg)" stroke="var(--border)" />
+          <text x="454" y="60" text-anchor="middle" fill="var(--accent)">\ude00</text>
+          <text x="400" y="16" text-anchor="middle" fill="var(--muted)" font-size="11">две кодовые единицы → length 2</text>
+        </g>
+        <text x="260" y="112" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">'😀'.length === 2 · [...'😀'].length === 1</text>
+      </svg>
+      <figcaption>
+        Эмодзи — это <strong>две</strong> кодовые единицы (суррогатная пара), поэтому
+        <code>length</code> равен 2, а не 1.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Правильный перебор</h2>
+    <p>
+      Есть два способа «пройтись» по строке, и они дают разный результат. Индекс
+      <code>[i]</code> и обычный цикл идут по <strong>кодовым единицам</strong> и рвут
+      эмодзи пополам. А <code>for…of</code> и spread <code>[...str]</code> идут по
+      <strong>кодовым точкам</strong> — то есть по настоящим символам. Если в тексте
+      возможны эмодзи, перебирайте через них.
+    </p>
+    <app-code-block [code]="iterateExample" lang="javascript" />
+    <p class="note">
+      <strong>Как честно посчитать символы:</strong> <code>str.length</code> считает
+      кодовые единицы. «Настоящую» длину в символах даёт
+      <code>[...str].length</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Нормализация</h2>
+    <p>
+      Один и тот же на вид символ бывает записан по-разному. Например, <code>é</code> —
+      это либо одна кодовая точка, либо «буква <code>e</code> + отдельный знак
+      ударения». Выглядят одинаково, но по кодам это <strong>разные</strong> строки, и
+      прямое сравнение вернёт <code>false</code>. Метод <code>normalize()</code>
+      приводит строки к единой форме — сравнивать нужно после него.
+    </p>
+    <app-code-block [code]="normalizeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение и сортировка</h2>
+    <p>
+      Операторы <code>&lt;</code> и <code>&gt;</code> сравнивают строки по кодам
+      кодовых единиц, а не по алфавиту языка. Отсюда сюрпризы: все заглавные латинские
+      буквы идут «раньше» строчных, а кириллица и буквы с диакритикой сортируются
+      непредсказуемо. Для человекочитаемого порядка есть
+      <code>localeCompare</code>.
+    </p>
+    <app-code-block [code]="localeCompareExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Строки — это UTF-16:</strong> символ занимает одну или две
+        (суррогатная пара) 16-битные кодовые единицы.</li>
+      <li><strong><code>length</code></strong> считает кодовые единицы, а не «символы»:
+        у эмодзи он равен 2.</li>
+      <li><strong>Перебор:</strong> <code>[i]</code> — по единицам (рвёт эмодзи);
+        <code>for…of</code>/<code>[...str]</code> — по символам.</li>
+      <li><strong>Код символа:</strong> <code>codePointAt</code> и
+        <code>String.fromCodePoint</code> (а не устаревшие <code>charCodeAt</code>/
+        <code>fromCharCode</code>).</li>
+      <li><strong>Сравнение:</strong> <code>normalize()</code> перед сравнением,
+        <code>localeCompare</code> для сортировки по алфавиту языка.</li>
+    </ul>
+  </section>
+</article>

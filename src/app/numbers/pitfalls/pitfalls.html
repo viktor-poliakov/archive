@@ -1,0 +1,89 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/numbers">Числа и Math</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Числа: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Собрали типичные грабли при работе с числами. Большинство — следствие двух вещей:
+    числа хранятся с ограниченной точностью, а функции преобразования ведут себя
+    по-разному.
+  </p>
+
+  <section class="doc__section">
+    <h2>Дробные хранятся неточно</h2>
+    <p>
+      Классика: <code>0.1 + 0.2</code> даёт <code>0.30000000000000004</code>, а не
+      <code>0.3</code>. Поэтому дробные нельзя сравнивать через <code>===</code> и нельзя
+      слепо доверять <code>toFixed</code> с деньгами. Подробный разбор с решением — на
+      странице <a routerLink="/javascript/numbers/precision">Точность и большие числа</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>NaN</code> не равен самому себе</h2>
+    <p>
+      <code>NaN</code> — единственное значение в языке, для которого
+      <code>x === x</code> ложно. Причём <code>typeof NaN</code> — это
+      <code>'number'</code>. Из-за этого проверять на <code>NaN</code> через сравнение
+      бессмысленно; для этого есть <code>Number.isNaN</code>.
+    </p>
+    <app-code-block [code]="nanExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>parseInt</code> против <code>Number</code></h2>
+    <p>
+      Их легко перепутать, а ведут они себя по-разному на «неаккуратных» строках.
+      <code>Number('')</code> — это <code>0</code>, а <code>parseInt('')</code> —
+      <code>NaN</code>. <code>Number('12px')</code> — <code>NaN</code>, а
+      <code>parseInt('12px')</code> — <code>12</code>. Выбирайте осознанно: строгий
+      <code>Number</code> для «должно быть числом целиком» и <code>parseInt</code> для
+      «вытащить число из начала».
+    </p>
+    <app-code-block [code]="parseVsNumberExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>toFixed</code> и деньги</h2>
+    <p>
+      <code>toFixed</code> округляет <em>двоичное</em> представление числа, а оно
+      неточное — поэтому изредка результат «мажет» на копейку:
+      <code>(1.005).toFixed(2)</code> даёт <code>'1.00'</code>, а не <code>'1.01'</code>.
+      Плюс <code>toFixed</code> возвращает <strong>строку</strong>. Для денег считайте в
+      целых копейках (см. <a routerLink="/javascript/numbers/precision">Точность</a>).
+    </p>
+    <app-code-block [code]="toFixedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Глобальный <code>isNaN</code> обманывает</h2>
+    <p>
+      Глобальная функция <code>isNaN</code> перед проверкой <strong>приводит</strong>
+      аргумент к числу, из-за чего <code>isNaN('abc')</code> — это <code>true</code>, а
+      <code>isNaN('')</code> — <code>false</code>. Это редко то, что нужно. Берите
+      строгий <code>Number.isNaN</code> — он не приводит типы.
+    </p>
+    <app-code-block [code]="isNaNExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Дробные неточны:</strong> <code>0.1 + 0.2 !== 0.3</code>; сравнивайте
+        с <code>Number.EPSILON</code>.</li>
+      <li><strong><code>NaN !== NaN</code></strong>, а <code>typeof NaN</code> это
+        <code>'number'</code>; проверяйте через <code>Number.isNaN</code>.</li>
+      <li><strong><code>parseInt</code> ≠ <code>Number</code></strong> на пустых и
+        «грязных» строках — выбирайте осознанно.</li>
+      <li><strong><code>toFixed</code></strong> возвращает строку и округляет неточно;
+        деньги считайте в целых единицах.</li>
+      <li><strong>Глобальный <code>isNaN</code></strong> приводит типы — берите
+        <code>Number.isNaN</code>.</li>
+    </ul>
+  </section>
+</article>

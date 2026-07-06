@@ -1,0 +1,123 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/strings">Строки</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Методы работы со строками</span>
+  </nav>
+
+  <h1 class="doc__title">Методы работы со строками</h1>
+  <p class="doc__lead">
+    У строк есть большой набор встроенных методов: искать, вырезать куски, менять
+    регистр, заменять и разбивать. Главное помнить из
+    <a routerLink="/javascript/strings/basics">основ</a>: строки неизменяемы, поэтому
+    <strong>ни один метод не меняет исходную строку</strong> — все возвращают новую.
+    Разберём методы по задачам.
+  </p>
+
+  <section class="doc__section">
+    <h2>Поиск и проверка</h2>
+    <p>
+      Чтобы узнать, есть ли подстрока, читаемее всего <code>includes</code>,
+      <code>startsWith</code> и <code>endsWith</code> — они возвращают
+      <code>boolean</code>. Если нужна <em>позиция</em>, есть <code>indexOf</code> и
+      <code>lastIndexOf</code>; важно помнить, что при отсутствии совпадения они
+      возвращают <code>-1</code>, а не <code>0</code>.
+    </p>
+    <app-code-block [code]="searchExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Извлечение подстроки</h2>
+    <p>
+      Основной инструмент — <code>slice(start, end)</code>: возвращает кусок от
+      <code>start</code> до <code>end</code> (не включая его) и понимает
+      <strong>отрицательные</strong> индексы, отсчитывая с конца. Есть похожий
+      <code>substring</code>, но он отрицательные индексы превращает в <code>0</code> и
+      молча меняет аргументы местами, если <code>start &gt; end</code> — поведение
+      неочевидное. Старый <code>substr</code> считается устаревшим.
+    </p>
+    <app-code-block [code]="extractExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Вызов</th>
+            <th><code>slice</code></th>
+            <th><code>substring</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Отрицательный индекс</td>
+            <td class="yes">отсчёт с конца</td>
+            <td class="no">превращается в <code>0</code></td>
+          </tr>
+          <tr>
+            <td><code>start &gt; end</code></td>
+            <td class="no">пустая строка</td>
+            <td class="no">меняет аргументы местами</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Совет:</strong> в новом коде почти всегда берите <code>slice</code> — он
+      предсказуемее. К <code>substring</code> прибегают редко.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Регистр и обрезка пробелов</h2>
+    <p>
+      <code>toUpperCase</code> и <code>toLowerCase</code> меняют регистр (частый приём
+      перед сравнением без учёта регистра). Семейство <code>trim</code> убирает пробелы
+      по краям — например, из того, что ввёл пользователь.
+    </p>
+    <app-code-block [code]="caseTrimExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Замена</h2>
+    <p>
+      Здесь популярная ловушка: <code>replace</code> со строкой-образцом заменяет
+      <strong>только первое</strong> совпадение. Чтобы заменить все, есть
+      <code>replaceAll</code> или регулярное выражение с флагом <code>g</code>. Вторым
+      аргументом можно передать функцию — она получит совпадение и вернёт замену.
+    </p>
+    <app-code-block [code]="replaceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Разбиение и сборка</h2>
+    <p>
+      <code>split(разделитель)</code> превращает строку в
+      <a routerLink="/javascript/arrays/basics">массив</a>, а обратная операция —
+      <code>join</code> (уже метод массива). Ещё пара полезных: <code>repeat</code>
+      повторяет строку, а <code>padStart</code>/<code>padEnd</code> дополняют её до
+      нужной длины (удобно для выравнивания и форматирования чисел).
+    </p>
+    <app-code-block [code]="splitPadExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Методы не меняют строку</strong> — всегда возвращают новую.</li>
+      <li><strong>Поиск:</strong> <code>includes</code>/<code>startsWith</code>/
+        <code>endsWith</code> → <code>boolean</code>; <code>indexOf</code> →
+        позиция или <code>-1</code>.</li>
+      <li><strong>Извлечение:</strong> берите <code>slice</code> (умеет отрицательные
+        индексы); <code>substring</code> ведёт себя неочевидно.</li>
+      <li><strong>Замена:</strong> <code>replace</code> — первое совпадение;
+        <code>replaceAll</code> или <code>/g</code> — все.</li>
+      <li><strong>Разбиение:</strong> <code>split</code> ↔ <code>join</code>; плюс
+        <code>repeat</code>, <code>padStart</code>/<code>padEnd</code>.</li>
+    </ul>
+    <p class="note">
+      <strong>Регулярные выражения</strong> открывают куда более мощный поиск и замену
+      по шаблону — это отдельная большая тема, которая заслуживает своего раздела.
+    </p>
+  </section>
+</article>

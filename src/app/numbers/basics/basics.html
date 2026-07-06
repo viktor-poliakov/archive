@@ -1,0 +1,97 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/numbers">Числа и Math</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Числа: основы</h1>
+  <p class="doc__lead">
+    В JavaScript всего <strong>один</strong> числовой тип для повседневной работы —
+    <code>number</code>. Это 64-битное число с плавающей точкой (стандарт IEEE 754), и
+    что важно — <strong>целые и дробные числа хранятся в нём одинаково</strong>.
+    Отдельного типа для целых (<code>int</code>), как в других языках, здесь нет.
+  </p>
+  <p class="doc__lead">
+    У этого есть удобная сторона (не нужно думать, «целое или дробное») и коварная
+    (ограниченная точность). С удобной начнём здесь, а к точности вернёмся на
+    <a routerLink="/javascript/numbers/precision">отдельной странице</a>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Один тип для всех чисел</h2>
+    <p>
+      И <code>42</code>, и <code>3.14</code> — это <code>number</code>. Запись
+      <code>1</code> и <code>1.0</code> обозначает <strong>одно и то же</strong> число.
+      Для очень больших целых, которые не помещаются в <code>number</code> без потери
+      точности, есть отдельный примитив <code>BigInt</code> — о нём в разделе
+      <a routerLink="/javascript/numbers/precision">Точность и большие числа</a>.
+    </p>
+    <app-code-block [code]="basicExample" lang="javascript" />
+    <p class="note">
+      <strong>Откуда у числа методы</strong> вроде <code>toString()</code>? Как и у
+      строки, при обращении через точку движок на миг оборачивает примитив в объект
+      <code>Number</code>. Подробнее про примитивы — в разделе
+      <a routerLink="/javascript/types">Типы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Запись чисел</h2>
+    <p>
+      Кроме привычных <code>42</code> и <code>3.14</code>, числа можно записывать
+      <strong>экспоненциально</strong> (число, умноженное на степень десяти) — удобно
+      для очень больших и очень маленьких величин. А чтобы длинное число читалось
+      легче, разряды разделяют подчёркиванием <code>_</code> — на само значение это
+      никак не влияет.
+    </p>
+    <app-code-block [code]="literalsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Системы счисления</h2>
+    <p>
+      Число можно задать не только в десятичной системе: префиксы <code>0x</code>,
+      <code>0b</code> и <code>0o</code> задают шестнадцатеричную, двоичную и
+      восьмеричную запись. Это удобно для битовых масок, цветов, прав доступа. Обратно —
+      вывести число в другой системе — умеет <code>toString(основание)</code>.
+    </p>
+    <app-code-block [code]="basesExample" lang="javascript" />
+    <p class="note">
+      <strong>Осторожно с точкой:</strong> <code>255.toString(16)</code> — синтаксическая
+      ошибка (точка воспринимается как начало дробной части). Поэтому число берут в
+      скобки: <code>(255).toString(16)</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Особые значения: NaN, Infinity, -0</h2>
+    <p>
+      У числового типа есть несколько специальных значений. <code>NaN</code> («not a
+      number») — результат некорректной операции; его главная странность в том, что
+      <strong>он не равен даже сам себе</strong>, поэтому проверяют его особым способом
+      (см. <a routerLink="/javascript/numbers/methods">Методы</a>). <code>Infinity</code>
+      — «бесконечность» при делении на ноль или переполнении. А <code>-0</code> — редкая
+      тонкость: «минус ноль», который почти всегда неотличим от обычного нуля.
+    </p>
+    <app-code-block [code]="specialExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Один тип</strong> — <code>number</code> (64-битный double); целые и
+        дробные вместе, отдельного <code>int</code> нет.</li>
+      <li><strong>Запись:</strong> экспоненциальная <code>1e6</code>, разделитель
+        <code>1_000_000</code>, системы счисления <code>0x</code>/<code>0b</code>/
+        <code>0o</code>.</li>
+      <li><strong>Вывод в другой системе</strong> — <code>(n).toString(основание)</code>.</li>
+      <li><strong>Особые значения:</strong> <code>NaN</code> (не равен себе),
+        <code>Infinity</code>/<code>-Infinity</code>, редкий <code>-0</code>.</li>
+      <li><strong>BigInt</strong> — отдельный тип для больших целых (см.
+        <a routerLink="/javascript/numbers/precision">Точность</a>).</li>
+    </ul>
+  </section>
+</article>

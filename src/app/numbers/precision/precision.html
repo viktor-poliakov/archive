@@ -1,0 +1,93 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/numbers">Числа и Math</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Точность и большие числа</span>
+  </nav>
+
+  <h1 class="doc__title">Точность и большие числа</h1>
+  <p class="doc__lead">
+    <code>number</code> — это 64-битное число с плавающей точкой, и в него помещается
+    <strong>конечное</strong> количество значащих цифр. Отсюда два класса сюрпризов:
+    дробные числа хранятся приближённо, а очень большие целые теряют точность. Разберём
+    оба и что с ними делать.
+  </p>
+
+  <section class="doc__section">
+    <h2>Почему <code>0.1 + 0.2 ≠ 0.3</code></h2>
+    <p>
+      Это самый знаменитый «баг, который не баг». Компьютер хранит дробь в
+      <strong>двоичной</strong> системе, а в ней <code>0.1</code> и <code>0.2</code>
+      представить точно нельзя — как нельзя точно записать <code>1/3 = 0.333…</code> в
+      десятичной. Числа сохраняются с крошечной погрешностью, которая и «вылезает» при
+      сложении.
+    </p>
+    <app-code-block [code]="floatExample" lang="javascript" />
+    <p class="note">
+      <strong>Это не особенность JavaScript.</strong> Так работает стандарт IEEE 754
+      почти во всех языках (Python, Java, C…). Просто в JS это чаще бросается в глаза.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение с погрешностью</h2>
+    <p>
+      Раз дробные хранятся неточно, сравнивать их через <code>===</code> нельзя. Правильно
+      — проверять, что разница <strong>меньше некоторой малой величины</strong>. Для
+      этого есть <code>Number.EPSILON</code> — наименьшая различимая разница около
+      единицы.
+    </p>
+    <app-code-block [code]="epsilonExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Безопасные целые</h2>
+    <p>
+      Целые числа тоже точны не безгранично, а лишь до
+      <code>Number.MAX_SAFE_INTEGER</code> (это <code>2**53 - 1</code>). Дальше соседние
+      целые начинают «слипаться»: между ними уже не помещается единица, и разные на
+      бумаге числа дают один и тот же результат. Проверить, что целое ещё в безопасной
+      зоне, помогает <code>Number.isSafeInteger</code>.
+    </p>
+    <app-code-block [code]="safeIntExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>BigInt — целые любого размера</h2>
+    <p>
+      Когда целые выходят за безопасный предел (крупные идентификаторы, счётчики,
+      финансовые суммы в минимальных единицах), используют <strong>BigInt</strong> —
+      отдельный тип для целых <em>любого</em> размера без потери точности. Пишется с
+      суффиксом <code>n</code> или через <code>BigInt(...)</code>.
+    </p>
+    <app-code-block [code]="bigintExample" lang="javascript" />
+    <p>
+      У BigInt два важных ограничения: его <strong>нельзя смешивать</strong> с обычным
+      <code>number</code> в одной операции (будет <code>TypeError</code>), и у него
+      <strong>нет дробной части</strong> — деление отбрасывает остаток. Поэтому BigInt
+      берут именно для больших <em>целых</em>, а не как замену дробным.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Дробные хранятся приближённо</strong> (IEEE 754), поэтому
+        <code>0.1 + 0.2 !== 0.3</code>.</li>
+      <li><strong>Не сравнивайте дробные через <code>===</code></strong> — используйте
+        разницу меньше <code>Number.EPSILON</code>.</li>
+      <li><strong>Целые точны до <code>Number.MAX_SAFE_INTEGER</code></strong>
+        (<code>2**53 - 1</code>); дальше нужен <code>Number.isSafeInteger</code>.</li>
+      <li><strong>BigInt</strong> (<code>10n</code>) — целые любого размера; не мешать
+        с <code>number</code>, дробей нет.</li>
+    </ul>
+    <p class="note">
+      <strong>Деньги не храните во <code>float</code>.</strong> Из-за погрешности
+      <code>0.1 + 0.2</code> копейки «поедут». Считайте в минимальных единицах — целых
+      копейках/центах (<code>1050</code> вместо <code>10.50</code>), а для сложных
+      расчётов берите специальные библиотеки.
+    </p>
+  </section>
+</article>

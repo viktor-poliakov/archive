@@ -1,0 +1,143 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/numbers">Числа и Math</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Объект Math</span>
+  </nav>
+
+  <h1 class="doc__title">Объект Math</h1>
+  <p class="doc__lead">
+    <code>Math</code> — встроенный объект со всеми математическими функциями и
+    константами: округление, степени, корни, минимум/максимум, случайные числа. Это
+    <strong>не конструктор</strong> — новый <code>Math</code> не создают, а просто
+    вызывают его методы: <code>Math.round(...)</code>, <code>Math.max(...)</code> и т. д.
+  </p>
+
+  <section class="doc__section">
+    <h2>Округление</h2>
+    <p>
+      Есть четыре метода, и путать их — частая ошибка. <code>round</code> округляет к
+      ближайшему целому, <code>floor</code> — всегда вниз, <code>ceil</code> — всегда
+      вверх, а <code>trunc</code> просто отбрасывает дробную часть. На положительных
+      числах разница невелика, но на отрицательных они расходятся:
+    </p>
+    <app-code-block [code]="roundingExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Число</th>
+            <th><code>round</code></th>
+            <th><code>floor</code></th>
+            <th><code>ceil</code></th>
+            <th><code>trunc</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>2.7</code></td>
+            <td>3</td>
+            <td>2</td>
+            <td>3</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td><code>2.5</code></td>
+            <td>3</td>
+            <td>2</td>
+            <td>3</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td><code>-2.5</code></td>
+            <td>-2</td>
+            <td>-3</td>
+            <td>-2</td>
+            <td>-2</td>
+          </tr>
+          <tr>
+            <td><code>-2.7</code></td>
+            <td>-3</td>
+            <td>-3</td>
+            <td>-2</td>
+            <td>-2</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Тонкость <code>round</code>:</strong> ровно половина (<code>.5</code>)
+      округляется в сторону <em>плюс</em> бесконечности, поэтому
+      <code>Math.round(-2.5)</code> это <code>-2</code>, а не <code>-3</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Степени, корни, модуль</h2>
+    <p>
+      <code>Math.abs</code> даёт модуль, <code>Math.sign</code> — знак числа. Для
+      возведения в степень есть и метод <code>Math.pow</code>, и оператор
+      <code>**</code> — они равнозначны, оператор просто короче. Корни —
+      <code>Math.sqrt</code> и <code>Math.cbrt</code>.
+    </p>
+    <app-code-block [code]="powExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Минимум и максимум</h2>
+    <p>
+      <code>Math.min</code> и <code>Math.max</code> принимают числа
+      <strong>через запятую</strong>, а не массивом. Чтобы найти минимум/максимум в
+      массиве, его разворачивают оператором spread <code>...</code>. Полезно помнить,
+      что <code>Math.max()</code> без аргументов возвращает <code>-Infinity</code>
+      (а <code>Math.min()</code> — <code>Infinity</code>): это «нейтральные» стартовые
+      значения.
+    </p>
+    <app-code-block [code]="minMaxExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Случайные числа</h2>
+    <p>
+      <code>Math.random()</code> возвращает псевдослучайное число в диапазоне
+      <strong>от 0 (включительно) до 1 (не включая)</strong>. Чтобы получить целое в
+      нужном диапазоне, его масштабируют и округляют вниз:
+    </p>
+    <app-code-block [code]="randomExample" lang="javascript" />
+    <p class="note">
+      <strong>Не для криптографии:</strong> <code>Math.random()</code> не подходит для
+      паролей, токенов и всего, что должно быть непредсказуемым. Для этого есть
+      <code>crypto.getRandomValues()</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Константы</h2>
+    <p>
+      В <code>Math</code> есть и математические константы — чаще всего нужны
+      <code>Math.PI</code> и <code>Math.E</code>. Помимо них есть логарифмы
+      (<code>Math.log</code>, <code>Math.log2</code>) и тригонометрия
+      (<code>Math.sin</code>, <code>Math.cos</code>…).
+    </p>
+    <app-code-block [code]="constantsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>Math</code> — не конструктор</strong>; вызывают методы напрямую:
+        <code>Math.round(x)</code>.</li>
+      <li><strong>Округление:</strong> <code>round</code> (к ближайшему, .5 вверх),
+        <code>floor</code> (вниз), <code>ceil</code> (вверх), <code>trunc</code>
+        (отбросить).</li>
+      <li><strong>Степени:</strong> оператор <code>**</code> или <code>Math.pow</code>;
+        корни — <code>sqrt</code>/<code>cbrt</code>.</li>
+      <li><strong><code>min</code>/<code>max</code></strong> — числа через запятую; для
+        массива <code>Math.max(...arr)</code>.</li>
+      <li><strong><code>Math.random()</code></strong> — число в <code>[0, 1)</code>; не
+        для криптографии.</li>
+    </ul>
+  </section>
+</article>

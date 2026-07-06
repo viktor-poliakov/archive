@@ -24,6 +24,28 @@ function normalize(input) {
   return Promise.resolve(input);
 }`;
 
+  protected readonly withResolversExample = `// withResolvers() возвращает сам промис и функции resolve/reject —
+// теперь его можно завершить СНАРУЖИ исполнителя, откуда угодно
+const { promise, resolve, reject } = Promise.withResolvers();
+
+// например, промис «ждёт» внешнее событие
+socket.addEventListener("message", (e) => resolve(e.data));
+socket.addEventListener("error", () => reject(new Error("Socket error")));
+
+// а потребитель просто ждёт результат
+const data = await promise; // выполнится, когда придёт сообщение`;
+
+  protected readonly deferredExample = `// Раньше для этого resolve/reject «вытаскивали» из исполнителя вручную —
+// приём называли deferred:
+let resolve, reject;
+const promise = new Promise((res, rej) => {
+  resolve = res;
+  reject = rej;
+});
+
+// withResolvers() делает ровно это, но встроенно и без лишнего кода:
+// const { promise, resolve, reject } = Promise.withResolvers();`;
+
   protected readonly allExample = `// три независимых запроса стартуют сразу, параллельно
 const user = fetch("/api/user").then((r) => r.json());
 const posts = fetch("/api/posts").then((r) => r.json());

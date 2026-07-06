@@ -52,6 +52,38 @@
   </section>
 
   <section class="doc__section">
+    <h2><code>Promise.withResolvers</code> — управление промисом снаружи</h2>
+    <p>
+      Обычно промис завершают <em>внутри</em> исполнителя — функции, которую передают в
+      <code>new Promise((resolve, reject) => …)</code>. Но иногда решать судьбу промиса
+      нужно из совсем другого места: когда сработает событие, придёт сообщение по
+      сокету, отработает внешний колбэк. <code>Promise.withResolvers()</code> (появился
+      в ES2024) отдаёт наружу сразу три вещи — сам промис и функции
+      <code>resolve</code>/<code>reject</code> к нему:
+    </p>
+    <app-code-block [code]="withResolversExample" lang="javascript" />
+    <p>
+      Метод возвращает обычный объект
+      <code>&#123; promise, resolve, reject &#125;</code>, который удобно разложить
+      деструктуризацией. Дальше промис живёт своей жизнью, а завершить его можно откуда
+      угодно — вызвав сохранённые <code>resolve</code> или <code>reject</code>.
+    </p>
+    <h3 class="doc__subtitle">Что было раньше: шаблон deferred</h3>
+    <p>
+      До <code>withResolvers</code> тот же приём делали руками: заводили переменные и
+      «вытаскивали» в них <code>resolve</code>/<code>reject</code> из исполнителя. Код
+      работал, но выглядел громоздко:
+    </p>
+    <app-code-block [code]="deferredExample" lang="javascript" />
+    <p class="note">
+      <strong>Когда брать:</strong> <code>withResolvers</code> уместен, когда промис
+      завершается <em>внешним</em> событием — как мост между колбэк-/событийным API и
+      промисами, для очередей и ручного управления. Если же результат вычисляется прямо
+      внутри — достаточно обычного <code>new Promise(...)</code>, не усложняйте.
+    </p>
+  </section>
+
+  <section class="doc__section">
     <h2><code>Promise.all</code> — все или ничего</h2>
     <p>
       <code>Promise.all(iterable)</code> принимает массив (точнее — любой итерабельный

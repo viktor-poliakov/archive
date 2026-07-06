@@ -1,0 +1,90 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/numbers">Числа и Math</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Методы и преобразование</span>
+  </nav>
+
+  <h1 class="doc__title">Методы и преобразование</h1>
+  <p class="doc__lead">
+    На практике числа постоянно нужно <strong>получать из строк</strong> (ввод
+    пользователя, данные с сервера), <strong>проверять</strong> и
+    <strong>форматировать</strong> для вывода. Разберём инструменты для каждой из этих
+    задач и их подводные камни.
+  </p>
+
+  <section class="doc__section">
+    <h2>Строка → число: <code>Number()</code></h2>
+    <p>
+      Функция <code>Number(x)</code> — <strong>строгий</strong> способ: строка должна
+      целиком быть числом, иначе результат <code>NaN</code>. Есть пара сюрпризов:
+      пустая строка превращается в <code>0</code>, а строка с «хвостом» вроде
+      <code>'12px'</code> — в <code>NaN</code>. Унарный плюс <code>+x</code> делает то
+      же самое, только короче.
+    </p>
+    <app-code-block [code]="toNumberExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>parseInt</code> и <code>parseFloat</code></h2>
+    <p>
+      Это «прощающие» разборщики: они читают число <strong>с начала</strong> строки и
+      останавливаются на первом нечисловом символе. Поэтому <code>'12px'</code> для них
+      — это <code>12</code>. Удобно для значений вроде <code>'20px'</code> из CSS.
+    </p>
+    <app-code-block [code]="parseExample" lang="javascript" />
+    <p class="note">
+      <strong>Всегда указывайте <code>radix</code></strong> — второй аргумент
+      <code>parseInt</code> (основание системы счисления). Без него разбор строки,
+      начинающейся с <code>0x</code>, и в старых движках строки с ведущим нулём может
+      удивить. Привычка <code>parseInt(str, 10)</code> избавляет от сюрпризов.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Проверки: <code>isNaN</code>, <code>isFinite</code>, <code>isInteger</code></h2>
+    <p>
+      Здесь важно различать <strong>глобальные</strong> функции и методы объекта
+      <code>Number</code>. Глобальный <code>isNaN</code> перед проверкой
+      <em>приводит</em> аргумент к числу, из-за чего <code>isNaN('abc')</code> — это
+      <code>true</code>. Строгие <code>Number.isNaN</code> и <code>Number.isFinite</code>
+      ничего не приводят и потому предсказуемее — используйте именно их.
+    </p>
+    <app-code-block [code]="checksExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Форматирование для вывода</h2>
+    <p>
+      Когда число нужно <em>показать</em>, его форматируют. Главное помнить:
+      <code>toFixed</code> и <code>toPrecision</code> <strong>возвращают строку</strong>,
+      а не число, и округляют. <code>toLocaleString</code> выводит число по правилам
+      локали — с разделителями разрядов и даже как валюту.
+    </p>
+    <app-code-block [code]="formatExample" lang="javascript" />
+    <p class="note">
+      <strong>Осторожно с деньгами:</strong> <code>toFixed</code> округляет
+      <em>двоичное</em> представление числа и иногда ошибается на копейку. Почему так и
+      как считать деньги правильно — в разделах
+      <a routerLink="/javascript/numbers/precision">Точность</a> и
+      <a routerLink="/javascript/numbers/pitfalls">Нюансы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>Number(x)</code></strong> / <code>+x</code> — строгое
+        преобразование (вся строка); <code>Number('')</code> это <code>0</code>.</li>
+      <li><strong><code>parseInt</code>/<code>parseFloat</code></strong> — читают с
+        начала; у <code>parseInt</code> всегда указывайте <code>radix</code>.</li>
+      <li><strong>Проверки:</strong> берите строгие <code>Number.isNaN</code>,
+        <code>Number.isFinite</code>, <code>Number.isInteger</code> (глобальный
+        <code>isNaN</code> приводит типы).</li>
+      <li><strong>Форматирование:</strong> <code>toFixed</code>/<code>toPrecision</code>
+        возвращают строку; <code>toLocaleString</code> — формат по локали.</li>
+    </ul>
+  </section>
+</article>

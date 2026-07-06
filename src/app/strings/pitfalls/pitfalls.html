@@ -1,0 +1,92 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/strings">Строки</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Строки: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Собрали типичные грабли, на которые наступают при работе со строками. Почти все —
+    следствие двух вещей: строки хранятся в UTF-16, а операторы охотно приводят типы.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>length</code> — это не число символов</h2>
+    <p>
+      <code>length</code> считает 16-битные кодовые единицы, а не «символы». Для
+      обычного текста разницы нет, но эмодзи и редкие символы — это суррогатная пара из
+      двух единиц, поэтому их <code>length</code> равен 2. Подробно — в разделе
+      <a routerLink="/javascript/strings/unicode">Юникод и кодирование</a>.
+    </p>
+    <app-code-block [code]="lengthExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение строк-чисел и приведение типов</h2>
+    <p>
+      Строки сравниваются <strong>лексикографически</strong> — посимвольно по кодам, а
+      не как числа. Поэтому <code>'2' &gt; '10'</code> — это <code>true</code>. А ещё
+      оператор <code>+</code> со строкой <em>склеивает</em>, тогда как <code>-</code>,
+      <code>*</code> и другие приводят строку к числу. Смешение этих правил — источник
+      незаметных багов.
+    </p>
+    <app-code-block [code]="comparisonExample" lang="javascript" />
+    <p class="note">
+      <strong>Правило:</strong> прежде чем сравнивать или считать, приводите типы
+      явно — <code>Number(x)</code> или <code>String(x)</code>. И сравнивайте через
+      строгое <code>===</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>replace</code> заменяет только первое</h2>
+    <p>
+      Классическая ловушка: <code>replace</code> со строкой-образцом меняет
+      <strong>лишь первое</strong> совпадение, а не все. Чтобы заменить все, нужен
+      <code>replaceAll</code> или регулярка с флагом <code>g</code> (см.
+      <a routerLink="/javascript/strings/methods">Методы</a>).
+    </p>
+    <app-code-block [code]="replaceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>substring</code> и отрицательные индексы</h2>
+    <p>
+      <code>substring</code> не понимает отрицательные индексы — он превращает их в
+      <code>0</code>, из-за чего <code>substring(-3)</code> возвращает всю строку. Если
+      нужен отсчёт с конца — берите <code>slice</code>.
+    </p>
+    <app-code-block [code]="substringExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Строку нельзя менять по индексу</h2>
+    <p>
+      Строки неизменяемы, поэтому присвоение символа по индексу
+      <strong>ничего не делает</strong> (а в strict mode бросает ошибку). Чтобы
+      «изменить» строку, собирают новую.
+    </p>
+    <app-code-block [code]="immutableExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>length</code></strong> — это кодовые единицы; для эмодзи
+        считайте через <code>[...str].length</code>.</li>
+      <li><strong>Сравнение</strong> строк — лексикографическое; <code>'2' &gt; '10'</code>
+        это <code>true</code>. Приводите типы явно и сравнивайте через
+        <code>===</code>.</li>
+      <li><strong><code>+</code> склеивает</strong>, а <code>-</code>/<code>*</code>
+        приводят к числу.</li>
+      <li><strong><code>replace</code></strong> — только первое совпадение; для всех —
+        <code>replaceAll</code> или <code>/g</code>.</li>
+      <li><strong><code>substring</code></strong> не понимает отрицательные индексы —
+        берите <code>slice</code>.</li>
+      <li><strong>Изменить символ по индексу нельзя</strong> — соберите новую строку.</li>
+    </ul>
+  </section>
+</article>
