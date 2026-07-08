@@ -29,6 +29,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     children: [
       { id: 'variables', label: 'Переменные' },
       { id: 'types', label: 'Типы' },
+      {
+        id: 'operators',
+        label: 'Операторы и приведение типов',
+        children: [
+          { id: 'arithmetic', label: 'Арифметические операторы' },
+          { id: 'comparison', label: 'Сравнение' },
+          { id: 'logical', label: 'Логические и условные' },
+          { id: 'coercion', label: 'Приведение типов' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
       { id: 'hoisting', label: 'Hoisting' },
       {
         id: 'functions',
@@ -96,7 +107,19 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         children: [
           { id: 'basics', label: 'Что такое прототип' },
           { id: 'proto-vs-prototype', label: '__proto__ vs prototype' },
+          { id: 'constructors', label: 'Оператор new и конструкторы' },
           { id: 'chain', label: 'Цепочка и практика' },
+        ],
+      },
+      {
+        id: 'modules',
+        label: 'Модули (ES Modules)',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'export', label: 'Экспорт' },
+          { id: 'import', label: 'Импорт' },
+          { id: 'dynamic', label: 'Динамический импорт' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
         ],
       },
       {

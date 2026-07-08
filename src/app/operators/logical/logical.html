@@ -1,0 +1,107 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/operators">Операторы и приведение типов</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Логические и условные</span>
+  </nav>
+
+  <h1 class="doc__title">Логические и условные операторы</h1>
+  <p class="doc__lead">
+    Логические операторы <code>&amp;&amp;</code>, <code>||</code> и <code>!</code>
+    кажутся простыми, но у них есть неожиданная суперсила: <code>&amp;&amp;</code> и
+    <code>||</code> возвращают <strong>один из операндов</strong>, а не обязательно
+    <code>true</code>/<code>false</code>. На этом построены удобные приёмы — значения по
+    умолчанию, «стражи» и короткое замыкание.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>!</code> и truthy / falsy</h2>
+    <p>
+      Оператор <code>!</code> приводит значение к <code>boolean</code> и инвертирует его.
+      Двойное <code>!!</code> — идиома «просто приведи к <code>boolean</code>». Напомним:
+      «ложных» значений всего восемь, всё остальное — истинно (полный список — в разделе
+      <a routerLink="/javascript/types">Типы</a>).
+    </p>
+    <app-code-block [code]="boolLogicExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Короткое замыкание</h2>
+    <p>
+      Вот ключевая идея. <code>||</code> возвращает <strong>первый truthy</strong>
+      операнд (а если все ложные — последний). <code>&amp;&amp;</code> — наоборот,
+      <strong>первый falsy</strong> (а если все истинные — последний). И вычисление
+      идёт слева направо ровно до тех пор, пока исход не станет ясен: правый операнд
+      могут вообще <strong>не выполнить</strong>. Это и называют
+      <em>коротким замыканием</em>.
+    </p>
+    <app-code-block [code]="shortCircuitExample" lang="javascript" />
+    <p class="note">
+      <strong>Отсюда приёмы:</strong> <code>value || 'default'</code> — подставить
+      запасное значение; <code>isReady &amp;&amp; start()</code> — вызвать функцию
+      только при условии. Но у <code>||</code> есть ловушка с <code>0</code> и
+      <code>''</code> — её решает <code>??</code> ниже.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Оператор <code>??</code> (nullish)</h2>
+    <p>
+      <code>??</code> похож на <code>||</code>, но срабатывает <strong>только</strong> на
+      <code>null</code> и <code>undefined</code>, а не на любое falsy. Это важно, когда
+      <code>0</code>, <code>''</code> или <code>false</code> — <em>валидные</em>
+      значения, которые нельзя заменять на «дефолт».
+    </p>
+    <app-code-block [code]="nullishExample" lang="javascript" />
+    <p>
+      Часто <code>??</code> идёт в паре с опциональной цепочкой <code>?.</code> для
+      безопасного доступа к вложенным свойствам — это подробно разобрано в разделе
+      <a routerLink="/javascript/objects/pitfalls">Объекты: нюансы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Тернарный оператор <code>?:</code></h2>
+    <p>
+      Единственный оператор с <strong>тремя</strong> операндами:
+      <code>условие ? значение1 : значение2</code>. Это компактная замена
+      <code>if/else</code> там, где нужно <em>выражение</em> (то, что возвращает
+      значение), а не блок кода.
+    </p>
+    <app-code-block [code]="ternaryExample" lang="javascript" />
+    <p class="note">
+      <strong>Не увлекайтесь вложенностью:</strong> два-три вложенных тернарника уже
+      трудно читать — такой код яснее записать через <code>if/else</code> или
+      <code>switch</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Логическое присваивание</h2>
+    <p>
+      Свежая тройка операторов объединяет логику с присваиванием:
+      <code>||=</code>, <code>&amp;&amp;=</code> и <code>??=</code>. Например,
+      <code>x ??= 5</code> присвоит <code>5</code>, только если <code>x</code> сейчас
+      <code>null</code> или <code>undefined</code>.
+    </p>
+    <app-code-block [code]="logicalAssignExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>&amp;&amp;</code>/<code>||</code> возвращают операнд</strong>, а
+        не <code>true</code>/<code>false</code>; вычисляются с коротким замыканием.</li>
+      <li><strong><code>||</code></strong> — первый truthy; <strong><code>&amp;&amp;</code></strong>
+        — первый falsy.</li>
+      <li><strong><code>??</code></strong> — как <code>||</code>, но ловит только
+        <code>null</code>/<code>undefined</code> (не <code>0</code>/<code>''</code>).</li>
+      <li><strong>Тернарник <code>?:</code></strong> — <code>if/else</code> как
+        выражение; глубоко не вкладывать.</li>
+      <li><strong><code>||=</code>, <code>&amp;&amp;=</code>, <code>??=</code></strong> —
+        логика плюс присваивание.</li>
+    </ul>
+  </section>
+</article>

@@ -1,0 +1,148 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/prototypes">proto и prototype</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Оператор new и конструкторы</span>
+  </nav>
+
+  <h1 class="doc__title">Оператор <code>new</code> и конструкторы</h1>
+  <p class="doc__lead">
+    Мы уже знаем главное равенство темы:
+    <a routerLink="/javascript/prototypes/proto-vs-prototype"><code>new F()</code> ⇒
+    <code>экземпляр.__proto__ === F.prototype</code></a>. Теперь разберём полную картину:
+    что <code>new</code> делает <strong>по шагам</strong> и почему конструктор может
+    вернуть совсем другой объект.
+  </p>
+
+  <section class="doc__section">
+    <h2>Функция-конструктор</h2>
+    <p>
+      Конструктор — это <strong>обычная функция</strong>, которую вызвали через
+      <code>new</code>. По соглашению её имя пишут с большой буквы. Внутри доступен
+      <code>this</code> — новый объект, который создал <code>new</code>; его нужно лишь
+      дозаполнить свойствами.
+    </p>
+    <app-code-block [code]="constructorFnExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Что делает <code>new</code> по шагам</h2>
+    <p>
+      Оператор <code>new</code> делает больше, чем «просто вызывает функцию». Сначала он
+      <strong>сам готовит объект</strong>, и только потом отдаёт его конструктору на
+      дозаполнение. Всю его работу можно записать псевдокодом:
+    </p>
+    <app-code-block [code]="newStepsExample" lang="javascript" />
+    <ul class="rules">
+      <li><strong>1.</strong> создаётся новый пустой объект, и его
+        <code>__proto__</code> сразу ставится на <code>Constructor.prototype</code>;</li>
+      <li><strong>2.</strong> вызывается конструктор с <code>this</code>, равным этому
+        объекту;</li>
+      <li><strong>3.</strong> если конструктор вернул объект — результатом будет он,
+        иначе — тот объект из шага 1.</li>
+    </ul>
+    <p>
+      Ключевой вывод: объект создаётся <strong>до</strong> тела конструктора, а не
+      конструктором. Конструктор получает уже готовый (но пустой) объект как
+      <code>this</code> и просто <em>дозаполняет</em> его — в 99% случаев он ничего не
+      создаёт с нуля.
+    </p>
+    <app-code-block [code]="insideExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Возврат из конструктора</h2>
+    <p>
+      Тот самый шаг 3 — самый неожиданный. Если внутри конструктора есть
+      <code>return</code>, правило такое:
+    </p>
+    <ul class="rules">
+      <li><strong>Вернули примитив</strong> (число, строку, boolean) или ничего —
+        <code>return</code> игнорируется, вы получаете обычный <code>this</code>.</li>
+      <li><strong>Вернули объект</strong> — именно он станет результатом
+        <code>new F()</code>, а <code>this</code> отбрасывается.</li>
+    </ul>
+    <app-code-block [code]="returnObjectExample" lang="javascript" />
+    <p class="note">
+      <strong>Правило про <code>__proto__</code> не нарушается.</strong> Просто в этом
+      случае <code>__proto__</code> указывает на прототип того объекта, который реально
+      вернули (у литерала <code>&#123;&#125;</code> это <code>Object.prototype</code>), а
+      не на <code>Animal.prototype</code>. То есть <code>new</code> гарантирует связку
+      <code>__proto__ = F.prototype</code> только когда конструктор не подменил результат
+      явным <code>return</code> объекта.
+    </p>
+    <app-code-block [code]="returnPrimitiveExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Условный и явный <code>return</code></h2>
+    <p>
+      Особой синтаксической конструкции для «условного возврата» не существует — это
+      обычный <code>if</code> в теле функции. JavaScript в конце просто смотрит, что
+      вернул конструктор: объект или нет.
+    </p>
+    <app-code-block [code]="conditionalReturnExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Практические паттерны</h2>
+    <p>
+      Возможность подменить результат лежит в основе нескольких приёмов.
+      <strong>Синглтон</strong> — конструктор всегда отдаёт один и тот же экземпляр:
+    </p>
+    <app-code-block [code]="singletonExample" lang="javascript" />
+    <p>
+      <strong>Кэширование инстансов</strong> — если объект с таким ключом уже создан,
+      вернуть его из кэша вместо нового (у него <code>__proto__</code> был выставлен ещё
+      при первом создании):
+    </p>
+    <app-code-block [code]="cacheExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>А если вызвать без <code>new</code>?</h2>
+    <p>
+      Тогда <code>this</code> — уже не новый объект. В строгом режиме (а в модулях и
+      классах он включён всегда, см.
+      <a routerLink="/javascript/context/default-binding">Контекст</a>) <code>this</code>
+      равен <code>undefined</code>, и первое же <code>this.x = …</code> бросит
+      <code>TypeError</code> — это спасает от частой ошибки новичков. В нестрогом режиме
+      было бы хуже: свойства «утекли» бы в глобальный объект.
+    </p>
+    <app-code-block [code]="withoutNewExample" lang="javascript" />
+    <p class="note">
+      <strong>С классами проще:</strong> вызов класса без <code>new</code>
+      <strong>сразу</strong> бросает <code>TypeError</code> — язык не даёт случайно
+      потерять <code>this</code>. Подробнее — в разделе
+      <a routerLink="/javascript/context/classes-new">this в классах и new</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Конструктор</strong> — обычная функция, вызванная через
+        <code>new</code>; <code>this</code> — готовый объект для дозаполнения.</li>
+      <li><strong><code>new</code> по шагам:</strong> создать объект и связать его
+        <code>__proto__</code> с <code>F.prototype</code> → вызвать конструктор с этим
+        <code>this</code> → вернуть его (или объект из <code>return</code>).</li>
+      <li><strong>Объект создаётся до тела</strong> конструктора — тот его лишь
+        дозаполняет.</li>
+      <li><strong>Возврат:</strong> примитив игнорируется; объект подменяет
+        <code>this</code> (и <code>__proto__</code> будет от него).</li>
+      <li><strong>Паттерны:</strong> синглтон и кэш инстансов — через
+        <code>return</code> готового объекта.</li>
+      <li><strong>Без <code>new</code></strong>: у функции — <code>TypeError</code> в
+        strict; у класса — <code>TypeError</code> всегда.</li>
+    </ul>
+    <p class="note">
+      <strong>Дальше:</strong> как из этих ссылок складывается полная
+      <a routerLink="/javascript/prototypes/chain">цепочка прототипов</a> и как работает
+      <code>instanceof</code>. А про то, что <code>class</code> — это та же
+      функция-конструктор под капотом, — в разделе
+      <a routerLink="/javascript/classes/under-the-hood">Классы: под капотом</a>.
+    </p>
+  </section>
+</article>

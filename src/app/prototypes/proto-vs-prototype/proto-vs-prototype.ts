@@ -43,6 +43,17 @@ const u = new User();
 // у классов ровно тот же механизм: методы лежат в User.prototype
 Object.getPrototypeOf(u) === User.prototype; // true`;
 
+  protected readonly prototypeProtoExample = `// prototype — это тоже объект, значит у него есть свой __proto__.
+// При наследовании он указывает на prototype РОДИТЕЛЯ:
+class Animal {}
+class Dog extends Animal {}
+
+Dog.prototype.__proto__ === Animal.prototype;    // true
+Animal.prototype.__proto__ === Object.prototype; // true
+
+// так цепочка экземпляра и прошивается сквозь уровни наследования:
+// dog → Dog.prototype → Animal.prototype → Object.prototype → null`;
+
   protected readonly arrowExample = `function Regular() {}
 Regular.prototype; // { constructor: Regular } — есть
 

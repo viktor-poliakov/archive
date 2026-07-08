@@ -1,0 +1,88 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/operators">Операторы и приведение типов</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Арифметические операторы</span>
+  </nav>
+
+  <h1 class="doc__title">Арифметические операторы</h1>
+  <p class="doc__lead">
+    Оператор — это символ, который выполняет действие над значениями (их называют
+    <strong>операндами</strong>): <code>2 + 3</code> — здесь <code>+</code> оператор, а
+    <code>2</code> и <code>3</code> — операнды. Начнём с арифметики: сложение,
+    вычитание, остаток, степень и операторы присваивания.
+  </p>
+
+  <section class="doc__section">
+    <h2>Базовая арифметика</h2>
+    <p>
+      Пять привычных действий плюс два, о которых часто забывают: остаток от деления
+      <code>%</code> и возведение в степень <code>**</code>. Остаток особенно полезен —
+      например, чтобы определить чётность числа.
+    </p>
+    <app-code-block [code]="arithExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Двойная природа <code>+</code></h2>
+    <p>
+      <code>+</code> — особенный оператор. Если оба операнда числа, он
+      <strong>складывает</strong>. Но если хотя бы один операнд — строка, он
+      <strong>склеивает</strong> их в одну строку (конкатенация). Все остальные
+      арифметические операторы (<code>-</code>, <code>*</code>, <code>/</code>) такой
+      двойственности не имеют — они всегда приводят операнды к числу.
+    </p>
+    <app-code-block [code]="plusExample" lang="javascript" />
+    <p class="note">
+      <strong>Это частый источник багов.</strong> Подробно про приведение типов — в
+      разделе <a routerLink="/javascript/operators/coercion">Приведение типов</a>, а про
+      конкатенацию строк — в разделе
+      <a routerLink="/javascript/strings/pitfalls">Строки: нюансы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Унарные операторы и инкремент</h2>
+    <p>
+      Унарный оператор действует на <em>один</em> операнд. Унарный <code>+</code> —
+      короткий способ привести значение к числу (детали — в разделе
+      <a routerLink="/javascript/numbers/methods">Числа: методы</a>), а унарный
+      <code>-</code> ещё и меняет знак. Отдельная пара — инкремент <code>++</code> и
+      декремент <code>--</code>: они увеличивают или уменьшают переменную на единицу, и
+      важно, стоят ли они <strong>до</strong> или <strong>после</strong> переменной.
+    </p>
+    <app-code-block [code]="unaryExample" lang="javascript" />
+    <p class="note">
+      <strong>Префикс vs постфикс:</strong> <code>n++</code> возвращает <em>старое</em>
+      значение, а потом увеличивает; <code>++n</code> сначала увеличивает и возвращает
+      <em>новое</em>. На саму переменную это влияет одинаково — разница только в том,
+      что «отдаёт» выражение.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Операторы присваивания</h2>
+    <p>
+      Кроме обычного <code>=</code> есть <strong>составные</strong> операторы: они
+      выполняют действие и тут же присваивают результат. <code>x += 5</code> — это
+      короткая запись <code>x = x + 5</code>.
+    </p>
+    <app-code-block [code]="assignExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Арифметика:</strong> <code>+ - * / % **</code>; <code>%</code> —
+        остаток, <code>**</code> — степень.</li>
+      <li><strong><code>+</code> двойственен:</strong> числа складывает, со строкой —
+        склеивает; остальные операторы приводят к числу.</li>
+      <li><strong>Унарный <code>+</code></strong> приводит к числу; <code>++</code>/
+        <code>--</code> различаются как префикс/постфикс.</li>
+      <li><strong>Составное присваивание:</strong> <code>+=</code>, <code>-=</code>,
+        <code>*=</code> и т. д. — «действие + присваивание».</li>
+    </ul>
+  </section>
+</article>

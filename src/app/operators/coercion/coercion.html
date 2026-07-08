@@ -1,0 +1,165 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/operators">Операторы и приведение типов</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Приведение типов</span>
+  </nav>
+
+  <h1 class="doc__title">Приведение типов</h1>
+  <p class="doc__lead">
+    JavaScript — язык со слабой типизацией: он охотно <strong>сам приводит</strong> один
+    тип к другому, когда операция этого требует. Приведение бывает <strong>явным</strong>
+    (мы вызываем <code>Number()</code>, <code>String()</code>, <code>Boolean()</code>) и
+    <strong>неявным</strong> (происходит автоматически внутри операторов). Всего три
+    направления: к <code>boolean</code>, к <code>number</code> и к <code>string</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Явное преобразование</h2>
+    <p>
+      Самый понятный случай — мы сами просим преобразовать значение, вызвав функцию.
+      Детали работы <code>Number()</code> и <code>parseInt</code> разобраны в разделе
+      <a routerLink="/javascript/numbers/methods">Числа: методы</a>; здесь важна общая
+      картина всех трёх направлений.
+    </p>
+    <app-code-block [code]="explicitExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>К <code>boolean</code></h2>
+    <p>
+      Приведение к <code>boolean</code> случается в условиях (<code>if</code>,
+      <code>while</code>), в операторе <code>!</code> и в логических операторах.
+      Запомнить нужно ровно 8 <strong>falsy</strong>-значений — всё остальное истинно
+      (полный список — в разделе <a routerLink="/javascript/types">Типы</a>). Главные
+      сюрпризы: строка <code>'0'</code>, пустой массив и пустой объект — все
+      <strong>truthy</strong>.
+    </p>
+    <app-code-block [code]="toBoolExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>К <code>number</code></h2>
+    <p>
+      К числу значение приводится в арифметике (кроме особого <code>+</code>), в
+      сравнениях и при унарном <code>+</code>. Правила по большей части интуитивны, но
+      массивы и объекты дают неожиданные результаты: пустой массив это <code>0</code>,
+      массив из одного числа — само число, а из нескольких — уже <code>NaN</code>.
+    </p>
+    <app-code-block [code]="toNumberExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>К <code>string</code></h2>
+    <p>
+      К строке значение приводится оператором <code>+</code> рядом со строкой, функцией
+      <code>String()</code> и внутри шаблонных строк. Массив склеивается через запятую,
+      а обычный объект превращается в малополезную строку
+      <code>'[object Object]'</code>.
+    </p>
+    <app-code-block [code]="toStringExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Объекты → примитивы</h2>
+    <p>
+      Когда объект попадает в операцию, ожидающую примитив, он сначала преобразуется —
+      как правило, через <code>toString()</code>. Отсюда знаменитые «странности» вроде
+      <code>[] + &#123;&#125;</code>. Управлять этим можно методами
+      <code>valueOf</code>, <code>toString</code> и символом
+      <code>Symbol.toPrimitive</code>.
+    </p>
+    <app-code-block [code]="objectCoercionExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Сводная таблица</h2>
+    <p>Как популярные значения приводятся к каждому из трёх типов:</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Значение</th>
+            <th><code>Number()</code></th>
+            <th><code>String()</code></th>
+            <th><code>Boolean()</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>''</code></td>
+            <td>0</td>
+            <td><code>''</code></td>
+            <td class="no">false</td>
+          </tr>
+          <tr>
+            <td><code>'0'</code></td>
+            <td>0</td>
+            <td><code>'0'</code></td>
+            <td class="yes">true</td>
+          </tr>
+          <tr>
+            <td><code>0</code></td>
+            <td>0</td>
+            <td><code>'0'</code></td>
+            <td class="no">false</td>
+          </tr>
+          <tr>
+            <td><code>null</code></td>
+            <td>0</td>
+            <td><code>'null'</code></td>
+            <td class="no">false</td>
+          </tr>
+          <tr>
+            <td><code>undefined</code></td>
+            <td>NaN</td>
+            <td><code>'undefined'</code></td>
+            <td class="no">false</td>
+          </tr>
+          <tr>
+            <td><code>[]</code></td>
+            <td>0</td>
+            <td><code>''</code></td>
+            <td class="yes">true</td>
+          </tr>
+          <tr>
+            <td><code>[5]</code></td>
+            <td>5</td>
+            <td><code>'5'</code></td>
+            <td class="yes">true</td>
+          </tr>
+          <tr>
+            <td><code>&#123;&#125;</code></td>
+            <td>NaN</td>
+            <td><code>'[object Object]'</code></td>
+            <td class="yes">true</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <strong>Осторожно:</strong> пустой массив <code>[]</code> — это <code>0</code> как
+      число, но <code>true</code> как boolean. Такие расхождения — частый источник
+      багов; лучше приводить типы явно (см.
+      <a routerLink="/javascript/operators/pitfalls">Нюансы</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Три направления:</strong> к <code>boolean</code>, <code>number</code>,
+        <code>string</code>; приведение бывает явным и неявным.</li>
+      <li><strong>К boolean:</strong> 8 falsy-значений, всё прочее truthy (в т. ч.
+        <code>'0'</code>, <code>[]</code>, <code>&#123;&#125;</code>).</li>
+      <li><strong>К number:</strong> <code>''</code>→0, <code>'12px'</code>→NaN,
+        <code>[]</code>→0, <code>[5]</code>→5, объект→NaN.</li>
+      <li><strong>К string:</strong> массив через запятую, объект →
+        <code>'[object Object]'</code>.</li>
+      <li><strong>Не полагайтесь на неявное</strong> — приводите типы явно, это надёжнее
+        и понятнее.</li>
+    </ul>
+  </section>
+</article>

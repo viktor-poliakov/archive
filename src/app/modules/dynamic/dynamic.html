@@ -1,0 +1,79 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/modules">Модули (ES Modules)</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Динамический импорт</span>
+  </nav>
+
+  <h1 class="doc__title">Динамический импорт</h1>
+  <p class="doc__lead">
+    Обычный <code>import</code> — <strong>статический</strong>: он пишется в самом верху
+    файла и выполняется всегда, ещё до запуска кода. Но иногда модуль нужен не сразу, а
+    по условию или по действию пользователя. Для этого есть <code>import()</code> —
+    функция, которая грузит модуль <strong>по требованию</strong> и возвращает промис.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>import()</code> возвращает промис</h2>
+    <p>
+      Динамический <code>import()</code> — это функция, а не инструкция. Она возвращает
+      <a routerLink="/javascript/promises/basics">промис</a>, который выполнится объектом
+      со всеми экспортами модуля (экспорт по умолчанию лежит в свойстве
+      <code>default</code>). Результат удобно дождаться через <code>await</code> — как и
+      ответ <a routerLink="/javascript/rest-api/fetch"><code>fetch</code></a>.
+    </p>
+    <app-code-block [code]="dynamicBasicExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Ленивая загрузка и разбиение бандла</h2>
+    <p>
+      Главное применение — <strong>не грузить всё сразу</strong>. Тяжёлый модуль
+      (редактор, график, экспорт в PDF) подключают только в тот момент, когда он реально
+      понадобился. Сборщик видит <code>import()</code> и автоматически выносит такой
+      модуль в отдельный файл (чанк) — стартовая загрузка страницы остаётся быстрой.
+    </p>
+    <app-code-block [code]="lazyExample" lang="javascript" />
+    <p class="note">
+      <strong>Так устроено и это приложение:</strong> каждая страница-раздел подключается
+      через <code>import()</code> и грузится лениво — при переходе на неё, а не сразу.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Условный импорт</h2>
+    <p>
+      Поскольку <code>import()</code> — обычный вызов, его можно поставить внутрь
+      <code>if</code> или собрать путь на лету. Так грузят полифилл только старым
+      браузерам или подтягивают нужный файл переводов по языку.
+    </p>
+    <app-code-block [code]="conditionalExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Top-level await</h2>
+    <p>
+      В модулях <code>await</code> разрешён на <strong>верхнем уровне</strong> — без
+      оборачивания в <code>async</code>-функцию. Это удобно для инициализации (загрузить
+      конфиг, дождаться соединения), но у медали есть обратная сторона: пока такой
+      <code>await</code> не завершится, модули, которые зависят от этого, будут ждать.
+    </p>
+    <app-code-block [code]="tlaExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>import()</code></strong> — функция, возвращает промис с объектом
+        экспортов (<code>default</code> в свойстве <code>default</code>).</li>
+      <li><strong>Ленивая загрузка:</strong> грузим тяжёлый модуль по требованию;
+        сборщик выносит его в отдельный чанк.</li>
+      <li><strong>Условный импорт:</strong> <code>import()</code> внутри <code>if</code>
+        или с динамически собранным путём.</li>
+      <li><strong>Top-level await</strong> — <code>await</code> на верхнем уровне модуля;
+        задерживает зависящие модули.</li>
+    </ul>
+  </section>
+</article>

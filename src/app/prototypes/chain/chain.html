@@ -31,6 +31,12 @@
       каждом массиве, а один раз в <code>Array.prototype</code>, общем для всех:
     </p>
     <app-code-block [code]="builtinChainExample" lang="javascript" />
+    <p>
+      Обратите внимание на две последние строки: сам <code>Array.prototype</code> — тоже
+      объект, поэтому его прототип — <code>Object.prototype</code>. А у
+      <code>Object.prototype</code> прототипа уже нет: его <code>__proto__</code> равен
+      <code>null</code> — это и есть вершина любой цепочки.
+    </p>
 
     <figure class="diagram">
       <svg viewBox="0 0 480 320" width="100%" role="img"

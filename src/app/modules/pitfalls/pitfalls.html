@@ -1,0 +1,120 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/modules">Модули (ES Modules)</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Модули: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Модули устроены иначе, чем «просто файлы со скриптами». Пара их особенностей регулярно
+    удивляет: импорт — это живая связь, а не копия, и модуль выполняется один раз на всех.
+    Плюс разберём отличие от старого формата CommonJS.
+  </p>
+
+  <section class="doc__section">
+    <h2>Импорты — живые связи, а не копии</h2>
+    <p>
+      Импортированное имя — это не снимок значения на момент импорта, а
+      <strong>живое «окно»</strong> в экспортирующий модуль. Если там значение изменится,
+      импортёр увидит новое. При этом само импортированное имя доступно
+      <strong>только для чтения</strong> — присвоить ему нельзя.
+    </p>
+    <app-code-block [code]="liveBindingExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Модуль выполняется один раз</h2>
+    <p>
+      Тело модуля исполняется единожды, а результат кэшируется. Значит, состояние на
+      уровне модуля <strong>общее</strong> для всех, кто его импортирует. Это и удобно
+      (единый конфиг, общий стор), и опасно — легко случайно завести скрытое глобальное
+      состояние, которое делят несвязанные части приложения.
+    </p>
+    <app-code-block [code]="singletonExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Циклические зависимости</h2>
+    <p>
+      Если модуль <code>A</code> импортирует <code>B</code>, а <code>B</code> — обратно
+      <code>A</code>, получается цикл. Язык это допускает, но на момент обращения одно из
+      значений может быть ещё <code>undefined</code> (модуль не успел доисполниться).
+      Лучший выход — <strong>разорвать цикл</strong>, вынеся общее в третий модуль.
+    </p>
+    <app-code-block [code]="circularExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>ESM против CommonJS</h2>
+    <p>
+      До стандартных модулей в Node.js использовали <strong>CommonJS</strong>:
+      <code>require()</code> и <code>module.exports</code>. Вы и сейчас встретите его в
+      старых пакетах. Главное отличие: ES-модули <strong>статичны</strong> (импорты
+      известны заранее — отсюда tree-shaking) и <strong>асинхронны</strong>, а CommonJS
+      загружается синхронно во время выполнения.
+    </p>
+    <app-code-block [code]="esmCjsExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th></th>
+            <th>CommonJS</th>
+            <th>ES Modules</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Синтаксис</td>
+            <td><code>require</code> / <code>module.exports</code></td>
+            <td><code>import</code> / <code>export</code></td>
+          </tr>
+          <tr>
+            <td>Где</td>
+            <td>Node (исторически)</td>
+            <td>Стандарт: браузер и Node</td>
+          </tr>
+          <tr>
+            <td>Загрузка</td>
+            <td class="no">синхронная, динамическая</td>
+            <td class="yes">асинхронная, статическая</td>
+          </tr>
+          <tr>
+            <td>Живые связи</td>
+            <td class="no">нет (копия значения)</td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td>Top-level await</td>
+            <td class="no">нет</td>
+            <td class="yes">да</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      На практике: файлы <code>.mjs</code> — всегда ESM, <code>.cjs</code> — всегда
+      CommonJS, а обычный <code>.js</code> трактуется по полю <code>"type"</code> в
+      <code>package.json</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Импорт — живая связь</strong>, доступная только для чтения (видит
+        актуальное значение, присваивать нельзя).</li>
+      <li><strong>Модуль исполняется один раз</strong> — состояние общее для всех
+        импортёров (осторожно со скрытым глобальным состоянием).</li>
+      <li><strong>Циклы</strong> дают <code>undefined</code> при раннем обращении —
+        выносите общее в отдельный модуль.</li>
+      <li><strong>ESM vs CommonJS:</strong> <code>import/export</code> (стандарт,
+        статичный, асинхронный) против <code>require</code> (Node, синхронный).</li>
+      <li>На верхнем уровне модуля <code>this</code> — <code>undefined</code>; неиспользуемые
+        именованные экспорты убирает tree-shaking.</li>
+    </ul>
+  </section>
+</article>

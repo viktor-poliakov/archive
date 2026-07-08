@@ -27,7 +27,11 @@ Object.getPrototypeOf(arr) === Array.prototype;             // true
 Object.getPrototypeOf(Array.prototype) === Object.prototype; // true
 
 arr.map;      // это Array.prototype.map — один на все массивы
-arr.toString; // а это Object.prototype.toString — ещё выше по цепочке`;
+arr.toString; // а это Object.prototype.toString — ещё выше по цепочке
+
+// то же самое короткой (устаревшей) записью через __proto__:
+Array.prototype.__proto__ === Object.prototype; // true — сам Array.prototype это объект
+Object.prototype.__proto__ === null;            // true — вершина цепочки, выше ничего нет`;
 
   protected readonly instanceofExample = `const arr = [1, 2, 3];
 

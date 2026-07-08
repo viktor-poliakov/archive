@@ -1,0 +1,87 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/modules">Модули (ES Modules)</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Импорт</span>
+  </nav>
+
+  <h1 class="doc__title">Импорт</h1>
+  <p class="doc__lead">
+    Ключевое слово <code>import</code> подключает то, что экспортировал другой модуль.
+    Форма записи зависит от того, что именно вы забираете: именованные экспорты, экспорт
+    по умолчанию, всё пространство имён — или вообще ничего, только ради побочного
+    эффекта.
+  </p>
+
+  <section class="doc__section">
+    <h2>Именованный импорт</h2>
+    <p>
+      Именованные экспорты забирают в фигурных скобках, перечисляя нужные имена. Имена
+      <strong>должны совпадать</strong> с теми, что указаны в <code>export</code> — но
+      локально их можно переименовать через <code>as</code> (например, если имя занято).
+    </p>
+    <app-code-block [code]="namedImportExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Импорт по умолчанию</h2>
+    <p>
+      Экспорт по умолчанию импортируют <strong>без</strong> фигурных скобок, и имя вы
+      выбираете сами — оно не обязано совпадать с исходным. Отсюда и гибкость, и риск:
+      один и тот же default в разных файлах могут назвать по-разному.
+    </p>
+    <app-code-block [code]="defaultImportExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>default и именованные вместе</h2>
+    <p>
+      Если модуль отдаёт и <code>default</code>, и именованные экспорты, их забирают
+      одним <code>import</code>: сначала имя для default, затем список в скобках.
+    </p>
+    <app-code-block [code]="combinedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Импорт пространства имён</h2>
+    <p>
+      <code>import * as имя</code> подключает <strong>все</strong> именованные экспорты
+      как один объект. Обращаться к ним нужно через точку (<code>math.square</code>), зато
+      сразу видно, откуда что взято — это делает код нагляднее, когда импортов много.
+    </p>
+    <app-code-block [code]="namespaceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Импорт ради побочного эффекта</h2>
+    <p>
+      Иногда модуль ничего не отдаёт — он просто должен <em>выполниться</em> (подключить
+      стили, зарегистрировать что-то, запустить инициализацию). Тогда пишут
+      <code>import</code> без привязки имён.
+    </p>
+    <app-code-block [code]="sideEffectExample" lang="javascript" />
+    <p class="note">
+      <strong>О путях:</strong> путь к модулю относительный (<code>./</code>,
+      <code>../</code>), и в браузере <strong>расширение обязательно</strong>
+      (<code>'./math.js'</code>, не <code>'./math'</code>). «Голые» имена
+      (<code>import x from 'lodash'</code>) разрешает сборщик или карта импортов
+      (import maps).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Именованный:</strong> <code>import &#123; a, b &#125; from '…'</code>;
+        имена как в экспорте, переименование через <code>as</code>.</li>
+      <li><strong>default:</strong> без скобок, имя выбираете сами.</li>
+      <li><strong>Вместе:</strong> <code>import def, &#123; named &#125; from '…'</code>.</li>
+      <li><strong>Пространство имён:</strong> <code>import * as ns from '…'</code> →
+        <code>ns.member</code>.</li>
+      <li><strong>Побочный эффект:</strong> <code>import '…'</code> — просто выполнить
+        модуль. Путь относительный, расширение обязательно.</li>
+    </ul>
+  </section>
+</article>

@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { CodeBlock } from '../code/code-block';
 
 @Component({
   selector: 'app-variables',
-  imports: [CodeBlock],
+  imports: [CodeBlock, RouterLink],
   templateUrl: './variables.html',
   styleUrls: ['../content/doc.scss'],
 })

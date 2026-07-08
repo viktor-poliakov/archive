@@ -56,6 +56,13 @@
       которая появляется у <em>объекта</em>. Сам конструктор своим <code>prototype</code>
       для поиска своих свойств не пользуется — это заготовка для будущих экземпляров.
     </p>
+    <p>
+      Откуда у объекта берётся его <code>__proto__</code>? Его выставляет тот, кто
+      создал объект: у <code>new F()</code> это <code>F.prototype</code>, у литерала
+      <code>&#123;&#125;</code> — <code>Object.prototype</code>, а у
+      <code>Object.create(x)</code> — сам <code>x</code>. Дальше разберём главный
+      случай — <code>new</code>.
+    </p>
   </section>
 
   <section class="doc__section">
@@ -116,6 +123,12 @@
         вертикальная ссылка экземпляров на тот же объект. <code>new</code> их связывает.
       </figcaption>
     </figure>
+    <p class="note">
+      <strong>Дальше:</strong> что именно <code>new</code> делает по шагам, почему
+      конструктор может вернуть другой объект и как это меняет <code>__proto__</code> —
+      в разделе
+      <a routerLink="/javascript/prototypes/constructors">Оператор new и конструкторы</a>.
+    </p>
   </section>
 
   <section class="doc__section">
@@ -136,6 +149,24 @@
       <a routerLink="/javascript/classes/under-the-hood">«Классы: под капотом»</a>):
     </p>
     <app-code-block [code]="classSameExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>У <code>prototype</code> тоже есть свой <code>__proto__</code></h2>
+    <p>
+      Раз <code>prototype</code> — это обычный объект, у него, как и у любого объекта,
+      есть собственный <code>__proto__</code>. И при наследовании он указывает на
+      <code>prototype</code> <strong>родителя</strong> — именно так цепочка прототипов
+      «прошивается» сквозь уровни наследования:
+    </p>
+    <app-code-block [code]="prototypeProtoExample" lang="javascript" />
+    <p class="note">
+      Без наследования <code>__proto__</code> у <code>prototype</code> указывает прямо на
+      <code>Object.prototype</code>, а его <code>__proto__</code> равен <code>null</code>
+      — это конец цепочки. Как из этих ссылок складывается полная
+      <a routerLink="/javascript/prototypes/chain">цепочка прототипов</a>, разбираем
+      отдельно.
+    </p>
   </section>
 
   <section class="doc__section">

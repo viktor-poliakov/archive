@@ -1,0 +1,114 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/operators">Операторы и приведение типов</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Сравнение</span>
+  </nav>
+
+  <h1 class="doc__title">Операторы сравнения</h1>
+  <p class="doc__lead">
+    Операторы сравнения возвращают <code>boolean</code> — <code>true</code> или
+    <code>false</code>. Главное, что нужно усвоить: разница между <strong>строгим</strong>
+    (<code>===</code>) и <strong>нестрогим</strong> (<code>==</code>) равенством. От неё
+    зависит, приводятся ли типы перед сравнением.
+  </p>
+
+  <section class="doc__section">
+    <h2>Строгое равенство <code>===</code></h2>
+    <p>
+      <code>===</code> (и обратный ему <code>!==</code>) сравнивает
+      <strong>без приведения типов</strong>: значения считаются равными, только если у
+      них совпадают <em>и тип, и значение</em>. Это предсказуемо, поэтому
+      <code>===</code> берут по умолчанию.
+    </p>
+    <app-code-block [code]="strictExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Нестрогое равенство <code>==</code></h2>
+    <p>
+      <code>==</code> (и <code>!=</code>) перед сравнением <strong>приводит типы</strong>
+      по хитрым правилам, из-за чего часто даёт неочевидные результаты. Общая
+      рекомендация — <strong>избегать <code>==</code></strong>. Единственное разумное
+      применение — проверка <code>x == null</code>, которая разом ловит и
+      <code>null</code>, и <code>undefined</code>.
+    </p>
+    <app-code-block [code]="looseExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Сравнение</th>
+            <th><code>==</code> (приводит типы)</th>
+            <th><code>===</code> (без приведения)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>5</code> и <code>'5'</code></td>
+            <td class="yes">true</td>
+            <td class="no">false</td>
+          </tr>
+          <tr>
+            <td><code>0</code> и <code>''</code></td>
+            <td class="yes">true</td>
+            <td class="no">false</td>
+          </tr>
+          <tr>
+            <td><code>null</code> и <code>undefined</code></td>
+            <td class="yes">true</td>
+            <td class="no">false</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Обзор <code>==</code> vs <code>===</code> есть и в разделе
+      <a routerLink="/javascript/types">Типы</a>. Здесь мы смотрим на них как на часть
+      системы операторов.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Реляционные <code>&lt; &gt; &lt;= &gt;=</code></h2>
+    <p>
+      Операторы «больше/меньше» сравнивают числа по величине. Но со строками работают
+      <strong>лексикографически</strong> — посимвольно по кодам символов, а не по длине.
+      Отсюда знаменитое <code>'2' &gt; '10'</code> — это <code>true</code>. Если операнды
+      разного типа, они приводятся к числу.
+    </p>
+    <app-code-block [code]="relationalExample" lang="javascript" />
+    <p>
+      Подробно про сравнение строк и порядок символов (Unicode, <code>localeCompare</code>)
+      — в разделе <a routerLink="/javascript/strings/unicode">Строки: Юникод</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Особые значения: null, undefined, NaN</h2>
+    <p>
+      Три значения ведут себя в сравнениях по-своему. <code>null</code> и
+      <code>undefined</code> нестрого равны друг другу, но строго — нет. А
+      <code>NaN</code> не равен <strong>ничему</strong>, включая самого себя, — поэтому
+      проверять его сравнением бесполезно (только <code>Number.isNaN</code>, см.
+      <a routerLink="/javascript/numbers/pitfalls">Числа: нюансы</a>).
+    </p>
+    <app-code-block [code]="specialCmpExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>===</code> по умолчанию</strong> — сравнивает тип и значение без
+        приведения.</li>
+      <li><strong><code>==</code> приводит типы</strong> и даёт сюрпризы; оправдан лишь
+        как <code>x == null</code>.</li>
+      <li><strong>Реляционные</strong> сравнивают числа по величине, строки —
+        лексикографически (<code>'2' &gt; '10'</code>).</li>
+      <li><strong>Особые:</strong> <code>null == undefined</code> (true), а
+        <code>NaN</code> не равен ничему — берите <code>Number.isNaN</code>.</li>
+    </ul>
+  </section>
+</article>

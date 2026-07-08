@@ -1,0 +1,79 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/modules">Модули (ES Modules)</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Экспорт</span>
+  </nav>
+
+  <h1 class="doc__title">Экспорт</h1>
+  <p class="doc__lead">
+    Ключевое слово <code>export</code> помечает то, что модуль отдаёт наружу. Всё
+    остальное остаётся приватным. Экспорт бывает двух видов: <strong>именованный</strong>
+    (их может быть сколько угодно) и <strong>по умолчанию</strong> (<code>default</code>,
+    ровно один на модуль).
+  </p>
+
+  <section class="doc__section">
+    <h2>Именованный экспорт</h2>
+    <p>
+      Самый частый вид. Помечать можно прямо при объявлении
+      (<code>export const</code>, <code>export function</code>,
+      <code>export class</code>) или собрать всё списком в конце файла — тогда сразу
+      видно, что модуль отдаёт. В списке экспорт можно <strong>переименовать</strong>
+      через <code>as</code>.
+    </p>
+    <app-code-block [code]="namedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Экспорт по умолчанию</h2>
+    <p>
+      <code>export default</code> помечает <strong>главную</strong> сущность модуля — и
+      он может быть только один на файл. Это удобно, когда файл «про одну вещь»: один
+      класс, одна функция, один компонент. Имя при default не обязательно — важно само
+      значение.
+    </p>
+    <app-code-block [code]="defaultExample" lang="javascript" />
+    <p class="note">
+      <strong>Named или default?</strong> Именованные экспорты предпочтительнее: имена
+      фиксированы, их проще искать по коду и они лучше поддаются
+      <a routerLink="/javascript/modules/pitfalls">tree-shaking</a>. <code>default</code>
+      берут, когда в файле действительно одна главная сущность.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>default и именованные вместе</h2>
+    <p>
+      В одном модуле можно иметь и <code>default</code>, и именованные экспорты —
+      например, главную функцию по умолчанию плюс вспомогательные рядом.
+    </p>
+    <app-code-block [code]="mixedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Ре-экспорт (barrel)</h2>
+    <p>
+      Модуль может пробрасывать чужие экспорты дальше — это <strong>ре-экспорт</strong>.
+      На нём строят «бочки» (barrel-файлы, обычно <code>index.js</code>): один файл
+      собирает экспорты целой папки, и снаружи всё импортируется из единой точки входа.
+    </p>
+    <app-code-block [code]="reexportExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Именованный экспорт</strong> — сколько угодно; при объявлении или
+        списком <code>export &#123; … &#125;</code>, с переименованием <code>as</code>.</li>
+      <li><strong><code>export default</code></strong> — один на модуль, для главной
+        сущности файла.</li>
+      <li><strong>Совмещать</strong> default и именованные — можно.</li>
+      <li><strong>Ре-экспорт</strong> <code>export … from</code> — собирает экспорты в
+        barrel-файл (<code>index.js</code>).</li>
+      <li>По возможности предпочитайте <strong>именованные</strong> экспорты.</li>
+    </ul>
+  </section>
+</article>

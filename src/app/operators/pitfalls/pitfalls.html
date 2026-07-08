@@ -1,0 +1,77 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/operators">Операторы и приведение типов</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Операторы: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Собрали самые коварные грабли операторов. Почти все они — следствие неявного
+    приведения типов и приоритета операторов. Общий рецепт против большинства из них:
+    сравнивать через <code>===</code> и приводить типы явно.
+  </p>
+
+  <section class="doc__section">
+    <h2>Ловушки <code>==</code></h2>
+    <p>
+      Нестрогое равенство полно исключений, которые невозможно запомнить логикой. Самая
+      известная пара: <code>null == 0</code> — это <code>false</code>, но
+      <code>null &gt;= 0</code> — уже <code>true</code> (потому что <code>&gt;=</code>
+      приводит <code>null</code> к числу, а <code>==</code> — нет). Именно поэтому
+      <code>==</code> избегают.
+    </p>
+    <app-code-block [code]="eqTrapsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>+</code> зависит от порядка</h2>
+    <p>
+      Поскольку <code>+</code> и складывает, и склеивает, результат зависит от того, где
+      в цепочке встретилась первая строка. Вычисление идёт слева направо, и как только
+      появляется строка — весь остаток превращается в конкатенацию.
+    </p>
+    <app-code-block [code]="plusTrapExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Приоритет операторов</h2>
+    <p>
+      Как и в математике, <code>*</code> и <code>/</code> выполняются раньше
+      <code>+</code> и <code>-</code>; <code>&amp;&amp;</code> связывает сильнее, чем
+      <code>||</code>. Когда сомневаетесь — <strong>ставьте скобки</strong>: они и
+      меняют порядок, и делают код понятнее. Особый случай: <code>??</code>
+      <strong>нельзя</strong> смешивать с <code>||</code>/<code>&amp;&amp;</code> без
+      скобок — это синтаксическая ошибка.
+    </p>
+    <app-code-block [code]="precedenceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Числовые ловушки</h2>
+    <p>
+      Часть граблей приходит из чисел: <code>NaN</code> не равен самому себе, а
+      <code>0.1 + 0.2</code> не равно <code>0.3</code>. Это разобрано в разделах
+      <a routerLink="/javascript/numbers/pitfalls">Числа: нюансы</a> и
+      <a routerLink="/javascript/numbers/precision">Точность и большие числа</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Не используйте <code>==</code></strong>: <code>null &gt;= 0</code> это
+        <code>true</code>, а <code>null == 0</code> — <code>false</code>. Берите
+        <code>===</code>.</li>
+      <li><strong><code>+</code> зависит от порядка:</strong> первая строка превращает
+        остаток в конкатенацию (<code>1 + 2 + '3'</code> → <code>'33'</code>).</li>
+      <li><strong>Скобки решают:</strong> <code>*</code>/<code>/</code> раньше
+        <code>+</code>/<code>-</code>; <code>??</code> нельзя мешать с <code>||</code>/
+        <code>&amp;&amp;</code> без скобок.</li>
+      <li><strong>Числа:</strong> <code>NaN !== NaN</code>, <code>0.1 + 0.2 !== 0.3</code>
+        — см. раздел «Числа».</li>
+    </ul>
+  </section>
+</article>

@@ -1,0 +1,99 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/modules">Модули (ES Modules)</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Модули: основы</h1>
+  <p class="doc__lead">
+    <strong>Модуль</strong> — это отдельный файл с кодом, который явно объявляет, что он
+    <em>отдаёт наружу</em> (<code>export</code>) и что <em>берёт извне</em>
+    (<code>import</code>). Так программу собирают из независимых кусочков, а не из одной
+    огромной кучи кода.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — цех на производстве.</strong> У цеха есть чёткие «выходы»
+    (готовые детали, которые он отдаёт) и «входы» (сырьё, которое он получает от других).
+    Что происходит внутри — его личное дело. Модуль устроен так же: наружу видно только
+    то, что он экспортирует.
+  </p>
+
+  <section class="doc__section">
+    <h2>Зачем нужны модули</h2>
+    <p>
+      Раньше скрипты просто подключали друг за другом через <code>&lt;script&gt;</code>, и
+      весь код жил в <strong>общей глобальной области</strong>. Отсюда три беды: файлы
+      случайно перезаписывали переменные друг друга, зависимости были неявными («этот
+      файл почему-то должен идти после того»), а порядок подключения приходилось держать
+      в голове.
+    </p>
+    <app-code-block [code]="whyExample" lang="javascript" />
+    <p>
+      Модули это решают: у каждого файла своя область, а связи между файлами —
+      <strong>явные</strong>. Исторически ту же изоляцию имитировали через
+      <a routerLink="/javascript/closures/practical">IIFE-модуль на замыкании</a> —
+      модули сделали этот приём частью языка.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как включить модуль</h2>
+    <p>
+      В браузере скрипт становится модулем, если у тега указан
+      <code>type="module"</code>. Такой скрипт по умолчанию ведёт себя как
+      <code>defer</code>: не блокирует разбор страницы и выполняется после него. В
+      Node.js модулем считается файл <code>.mjs</code> или любой <code>.js</code>, если в
+      <code>package.json</code> задано <code>"type": "module"</code>.
+    </p>
+    <app-code-block [code]="enableExample" lang="html" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Своя область видимости</h2>
+    <p>
+      Всё, что объявлено на верхнем уровне модуля, <strong>приватно</strong>: другие
+      файлы этого не видят, пока вы явно не экспортируете. В глобальный объект
+      (<code>window</code>) переменные модуля тоже не попадают — в отличие от
+      классического скрипта (см.
+      <a routerLink="/javascript/variables">Переменные</a>).
+    </p>
+    <app-code-block [code]="scopeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Строгий режим и «один раз»</h2>
+    <p>
+      Две важные особенности. Во-первых, модули <strong>всегда</strong> в строгом режиме
+      — со всеми его правилами (например, верхнеуровневый <code>this</code> равен
+      <code>undefined</code>, см. <a routerLink="/javascript/context/default-binding">Контекст</a>).
+      Во-вторых, тело модуля выполняется <strong>ровно один раз</strong> — при первом
+      импорте, а дальше результат кэшируется и переиспользуется.
+    </p>
+    <app-code-block [code]="onceExample" lang="javascript" />
+    <p class="note">
+      <strong>Следствие «один раз»:</strong> модуль фактически ведёт себя как
+      одиночка (singleton). Это удобно (общий конфиг, единое состояние), но и требует
+      осторожности — об этом в разделе
+      <a routerLink="/javascript/modules/pitfalls">Нюансы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Модуль</strong> — отдельный файл; наружу отдаёт через
+        <code>export</code>, берёт через <code>import</code>.</li>
+      <li><strong>Зачем:</strong> изоляция вместо общей глобальной области и явные
+        зависимости вместо неявного порядка <code>&lt;script&gt;</code>.</li>
+      <li><strong>Включение:</strong> <code>&lt;script type="module"&gt;</code> в
+        браузере; <code>.mjs</code>/<code>"type":"module"</code> в Node.</li>
+      <li><strong>Своя область:</strong> объявления не попадают в <code>window</code>;
+        видно только экспортированное.</li>
+      <li><strong>Всегда strict</strong> и <strong>выполняется один раз</strong>
+        (кэшируется).</li>
+    </ul>
+  </section>
+</article>
