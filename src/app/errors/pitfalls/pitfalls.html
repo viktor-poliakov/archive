@@ -1,0 +1,93 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/errors">Обработка ошибок</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Обработка ошибок: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Собрали типичные ошибки в работе с ошибками — от «проглатывания» до самой частой
+    путаницы: почему <code>try/catch</code> не ловит асинхронный код.
+  </p>
+
+  <section class="doc__section">
+    <h2>Не «проглатывайте» ошибки</h2>
+    <p>
+      Пустой <code>catch</code> (или <code>catch</code> без реакции) — худшее, что можно
+      сделать: программа продолжает работать так, будто всё хорошо, а на самом деле
+      что-то сломалось, и вы об этом не узнаете. Как минимум логируйте ошибку; а лучше —
+      обработайте её или пробросьте дальше.
+    </p>
+    <app-code-block [code]="swallowExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Исключения — не для потока управления</h2>
+    <p>
+      Исключения нужны для <em>внештатных</em> ситуаций, а не для обычной логики.
+      Использовать <code>throw</code>/<code>catch</code> вместо <code>if</code>/
+      <code>return</code> для ожидаемых веток — плохая идея: код труднее читать, а сами
+      исключения работают медленнее обычных проверок.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>finally</code> перекрывает <code>return</code></h2>
+    <p>
+      Коварная деталь: <code>return</code> (или <code>throw</code>) внутри
+      <code>finally</code> <strong>затирает</strong> то, что вернул или бросил
+      <code>try</code>/<code>catch</code>. Поэтому <code>finally</code> держат только для
+      «уборки», без <code>return</code>/<code>throw</code>.
+    </p>
+    <app-code-block [code]="finallyReturnExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Ловите узко, лишнее — пробрасывайте</h2>
+    <p>
+      Не превращайте <code>catch</code> в «ловушку для всего». Обрабатывайте только те
+      ошибки, с которыми знаете что делать (например, по
+      <a routerLink="/javascript/errors/error-object"><code>instanceof</code></a>), а
+      остальные пробрасывайте через <code>throw</code>. Иначе за общим <code>catch</code>
+      легко спрятать настоящий баг.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>try/catch НЕ ловит асинхронное</h2>
+    <p>
+      Это главная путаница темы. <code>try/catch</code> ловит только
+      <strong>синхронные</strong> ошибки, случившиеся <em>во время</em> выполнения
+      <code>try</code>. А колбэк <code>setTimeout</code>, обработчик события или
+      «плавающий» промис выполнятся <strong>позже</strong> — когда <code>try</code> уже
+      завершился, а стек вызовов стал другим. Ошибка из них мимо этого
+      <code>catch</code> пролетит.
+    </p>
+    <app-code-block [code]="asyncNotCaughtExample" lang="javascript" />
+    <p class="note">
+      <strong>Почему так:</strong> отложенный колбэк запускается из событийного цикла с
+      «чистого» стека — см. <a routerLink="/javascript/event-loop/basics">Event Loop</a>.
+      Для асинхронных ошибок есть свои средства: <code>.catch</code> у промисов и
+      <code>try/catch</code> вокруг <code>await</code> — подробно в разделах
+      <a routerLink="/javascript/promises/error-handling">Обработка ошибок в промисах</a>
+      и <a routerLink="/javascript/promises/async-await">async/await</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Не глотайте</strong> ошибки пустым <code>catch</code> — логируйте,
+        обрабатывайте или пробрасывайте.</li>
+      <li><strong>Не используйте исключения</strong> для обычного потока управления.</li>
+      <li><strong><code>return</code>/<code>throw</code> в <code>finally</code></strong>
+        затирают результат из <code>try</code>/<code>catch</code> — не делайте так.</li>
+      <li><strong>Ловите узко</strong>, чужое пробрасывайте дальше.</li>
+      <li><strong>Асинхронные ошибки</strong> (<code>setTimeout</code>, промисы) обычный
+        <code>try/catch</code> не ловит — нужны <code>.catch</code> / <code>await</code>.</li>
+    </ul>
+  </section>
+</article>

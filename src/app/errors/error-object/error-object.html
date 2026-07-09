@@ -1,0 +1,124 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/errors">Обработка ошибок</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Объект Error и типы</span>
+  </nav>
+
+  <h1 class="doc__title">Объект <code>Error</code> и типы ошибок</h1>
+  <p class="doc__lead">
+    Всё, что бросают через <code>throw</code>, по-хорошему — объект <code>Error</code>.
+    Он несёт три вещи: <strong>имя</strong> типа, <strong>сообщение</strong> и
+    <strong>стек</strong> (где произошло). А встроенные подтипы <code>Error</code>
+    подсказывают, <em>что именно</em> пошло не так.
+  </p>
+
+  <section class="doc__section">
+    <h2>Свойства <code>Error</code></h2>
+    <p>
+      У любого объекта ошибки есть три ключевых свойства: <code>name</code> — тип,
+      <code>message</code> — человекочитаемое описание (его передают в конструктор), и
+      <code>stack</code> — строка со стеком вызовов на момент ошибки (бесценна при
+      отладке).
+    </p>
+    <app-code-block [code]="propsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Встроенные типы ошибок</h2>
+    <p>
+      JavaScript сам бросает не безликий <code>Error</code>, а конкретный
+      <strong>подтип</strong> — по нему сразу видно природу проблемы. Знать основные
+      полезно, чтобы понимать сообщения в консоли и осмысленно их обрабатывать.
+    </p>
+    <app-code-block [code]="builtinTypesExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Тип</th>
+            <th>Когда возникает</th>
+            <th>Пример</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>TypeError</code></td>
+            <td>значение не того типа / операция недопустима</td>
+            <td><code>null.foo</code></td>
+          </tr>
+          <tr>
+            <td><code>ReferenceError</code></td>
+            <td>обращение к несуществующей переменной</td>
+            <td><code>notDefined</code></td>
+          </tr>
+          <tr>
+            <td><code>RangeError</code></td>
+            <td>значение вне допустимого диапазона</td>
+            <td><code>(5).toFixed(200)</code></td>
+          </tr>
+          <tr>
+            <td><code>SyntaxError</code></td>
+            <td>невалидный код или данные</td>
+            <td><code>JSON.parse('&#123; x &#125;')</code></td>
+          </tr>
+          <tr>
+            <td><code>URIError</code></td>
+            <td>неверный вызов функций URI</td>
+            <td><code>decodeURIComponent('%')</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Некоторые из этих типов подробно разобраны в контексте своих тем:
+      <code>ReferenceError</code> — в разделах
+      <a routerLink="/javascript/hoisting">Hoisting</a> и
+      <a routerLink="/javascript/closures/lexical-environment">Лексическое окружение</a>,
+      <code>TypeError</code> при вызове конструктора без <code>new</code> — в
+      <a routerLink="/javascript/prototypes/constructors">Оператор new и конструкторы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Разбор через <code>instanceof</code></h2>
+    <p>
+      Раз типы — это классы-потомки <code>Error</code>, их различают оператором
+      <code>instanceof</code> и реагируют по-разному. Проверять важно
+      <strong>от частного к общему</strong>: <code>instanceof Error</code> истинно для
+      <em>любой</em> ошибки, поэтому эту проверку ставят последней.
+    </p>
+    <app-code-block [code]="instanceofExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Цепочка причин: <code>cause</code></h2>
+    <p>
+      Часто низкоуровневую ошибку удобно «завернуть» в понятную высокоуровневую — но при
+      этом не потерять исходную причину. Для этого у <code>Error</code> есть второй
+      аргумент <code>&#123; cause &#125;</code>: он сохраняет оригинальную ошибку в
+      свойстве <code>cause</code>.
+    </p>
+    <app-code-block [code]="causeExample" lang="javascript" />
+    <p class="note">
+      Живой пример такого приёма — обёртка сетевых ошибок в разделе
+      <a routerLink="/javascript/rest-api/errors">REST API: обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>Error</code></strong> несёт <code>name</code>,
+        <code>message</code> и <code>stack</code>.</li>
+      <li><strong>Встроенные типы:</strong> <code>TypeError</code>,
+        <code>ReferenceError</code>, <code>RangeError</code>, <code>SyntaxError</code>,
+        <code>URIError</code> — все потомки <code>Error</code>.</li>
+      <li><strong>Разбор</strong> — через <code>instanceof</code>, от частного к общему.</li>
+      <li><strong><code>&#123; cause &#125;</code></strong> сохраняет первопричину при
+        оборачивании ошибок.</li>
+    </ul>
+  </section>
+</article>

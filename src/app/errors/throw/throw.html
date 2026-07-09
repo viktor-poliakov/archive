@@ -1,0 +1,75 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/errors">Обработка ошибок</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Оператор throw</span>
+  </nav>
+
+  <h1 class="doc__title">Оператор <code>throw</code></h1>
+  <p class="doc__lead">
+    До сих пор ошибки у нас возникали сами (обращение к <code>null</code> и т. п.). Но
+    ошибку можно <strong>бросить самому</strong> — оператором <code>throw</code>. Это
+    способ сказать: «дальше так нельзя, продолжать нет смысла».
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — стоп-кран.</strong> Заметил, что дальше ехать опасно — дёрнул
+    стоп-кран, и поезд останавливается, а сигнал передаётся тому, кто может разобраться.
+    <code>throw</code> ровно так и работает: прерывает выполнение и передаёт ошибку
+    «наверх», ближайшему <code>catch</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Как бросить ошибку</h2>
+    <p>
+      Чаще всего <code>throw</code> используют для <strong>проверки входных данных</strong>:
+      если аргумент не тот, нет смысла работать дальше — бросаем ошибку. Выполнение
+      немедленно прерывается и «летит» к ближайшему <code>catch</code>.
+    </p>
+    <app-code-block [code]="throwBasicExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Бросать нужно <code>Error</code></h2>
+    <p>
+      Технически <code>throw</code> примет любое значение — хоть строку, хоть число. Но
+      так делать <strong>не стоит</strong>: у обычного значения нет ни имени типа
+      (<code>name</code>), ни стека вызовов (<code>stack</code>), а код-обработчик
+      обычно рассчитывает именно на объект <code>Error</code>. Всегда бросайте
+      <code>new Error(...)</code> или его потомка.
+    </p>
+    <app-code-block [code]="throwWhatExample" lang="javascript" />
+    <p class="note">
+      <strong>Почему это важно:</strong> объект <code>Error</code> несёт понятное
+      сообщение, тип и стек — где именно всё сломалось. Подробнее про его устройство и
+      встроенные подтипы — в разделе
+      <a routerLink="/javascript/errors/error-object">Объект Error и типы</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>throw прерывает выполнение</h2>
+    <p>
+      <code>throw</code> похож на <code>return</code> тем, что мгновенно выходит из
+      функции — код после него не выполнится. Но, в отличие от <code>return</code>, он не
+      просто возвращает значение вызвавшему, а «пробивает» функцию насквозь: ошибка летит
+      вверх по цепочке вызовов, пока её не поймает <code>catch</code> (см.
+      <a routerLink="/javascript/errors/propagation">Всплытие по стеку</a>).
+    </p>
+    <app-code-block [code]="throwStopsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>throw</code></strong> бросает ошибку вручную — «дальше так
+        нельзя».</li>
+      <li><strong>Бросайте <code>Error</code></strong> (или потомка), а не строку/число:
+        так сохраняются <code>name</code>, <code>message</code>, <code>stack</code>.</li>
+      <li><strong>Прерывает выполнение</strong> и летит к ближайшему <code>catch</code>
+        вверх по стеку.</li>
+      <li><strong>Частый сценарий</strong> — проверка входных данных (валидация).</li>
+    </ul>
+  </section>
+</article>

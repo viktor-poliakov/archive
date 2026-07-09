@@ -1,0 +1,101 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/errors">Обработка ошибок</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Всплытие по стеку</span>
+  </nav>
+
+  <h1 class="doc__title">Всплытие ошибок по стеку</h1>
+  <p class="doc__lead">
+    Ошибку не обязательно ловить там, где она возникла. Если рядом нет
+    <code>catch</code>, она <strong>всплывает</strong> вверх по цепочке вызовов — от
+    функции к той, что её вызвала, — пока не встретит ближайший <code>try/catch</code>.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — эскалация вверх по начальству.</strong> Рядовой сотрудник не смог
+    решить вопрос — передал руководителю; тот не смог — передал выше. Так до тех пор,
+    пока кто-то не разберётся. А если не разобрался никто на всех уровнях — это уже
+    «авария» для всей компании (необработанная ошибка).
+  </p>
+
+  <section class="doc__section">
+    <h2>Ошибка всплывает до ближайшего <code>catch</code></h2>
+    <p>
+      Функция, которая не поймала ошибку, сама прерывается и «отдаёт» ошибку вызвавшей.
+      В примере <code>c()</code> бросает, <code>b()</code> её не ловит (и потому тоже
+      прерывается), а <code>a()</code> — ловит. Обратите внимание: <code>catch</code>
+      в <code>a()</code> перехватывает ошибку, рождённую двумя уровнями глубже.
+    </p>
+    <app-code-block [code]="propagationExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 520 300" width="100%" role="img"
+        aria-label="Стек вызовов a, b, c: ошибка из c всплывает вверх через b до catch в a">
+        <defs>
+          <marker id="err-pr-up" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--red)" />
+          </marker>
+        </defs>
+
+        <rect x="120" y="34" width="220" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+        <text x="230" y="57" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="700">a() — try / catch</text>
+        <text x="230" y="76" text-anchor="middle" fill="var(--green)" font-size="11">✓ здесь ошибка поймана</text>
+
+        <rect x="120" y="112" width="220" height="56" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="230" y="135" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="700">b() — вызвала c()</text>
+        <text x="230" y="154" text-anchor="middle" fill="var(--muted)" font-size="11">не ловит → прерывается</text>
+
+        <rect x="120" y="190" width="220" height="56" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+        <text x="230" y="213" text-anchor="middle" fill="var(--red)" font-size="13" font-weight="700">c() — throw</text>
+        <text x="230" y="232" text-anchor="middle" fill="var(--muted)" font-size="11">здесь рождается ошибка</text>
+
+        <!-- upward propagation arrow -->
+        <path d="M360 218 L400 218 L400 62 L360 62" fill="none" stroke="var(--red)" stroke-width="1.8" marker-end="url(#err-pr-up)" />
+        <text x="410" y="140" fill="var(--red)" font-size="11" transform="rotate(90 410 140)">ошибка всплывает вверх</text>
+      </svg>
+      <figcaption>
+        Ошибка из <code>c()</code> всплывает через <code>b()</code> (та не ловит) и
+        попадает в <code>catch</code> функции <code>a()</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Необработанная ошибка</h2>
+    <p>
+      Если <code>catch</code> не встретился <strong>нигде</strong> по всей цепочке, ошибка
+      «выпадает» наружу как необработанная. Это не «тихо потерялось» — среда об этом
+      громко сообщит.
+    </p>
+    <app-code-block [code]="unhandledExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Где ловить: не везде</h2>
+    <p>
+      Раз ошибки всплывают, <strong>не нужно</strong> оборачивать в <code>try/catch</code>
+      каждую функцию. Ловите там, где можете <em>осмысленно</em> обработать ошибку:
+      показать сообщение пользователю, повторить запрос, подставить значение по
+      умолчанию. Если обработать нечем — пусть всплывает дальше. А если нужно лишь
+      добавить контекст и передать ошибку выше — её <strong>пробрасывают повторно</strong>
+      через <code>throw</code>.
+    </p>
+    <app-code-block [code]="rethrowExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Не пойманная ошибка всплывает</strong> вверх по стеку вызовов до
+        ближайшего <code>catch</code>.</li>
+      <li><strong>Промежуточные функции прерываются</strong> — их код после вызова не
+        выполнится.</li>
+      <li><strong>Никто не поймал</strong> — ошибка становится необработанной (консоль /
+        <code>window.onerror</code> / падение процесса).</li>
+      <li><strong>Ловите осмысленно:</strong> там, где можете обработать; иначе пусть
+        всплывает или пробрасывайте через <code>throw</code>.</li>
+    </ul>
+  </section>
+</article>

@@ -1,0 +1,102 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/errors">Обработка ошибок</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Свои классы ошибок</span>
+  </nav>
+
+  <h1 class="doc__title">Свои классы ошибок</h1>
+  <p class="doc__lead">
+    Встроенных типов (<code>TypeError</code>, <code>RangeError</code>…) хватает не
+    всегда: у приложения свои виды проблем — «не прошла валидация», «нет доступа», «не
+    найдено». Для них заводят <strong>собственные классы ошибок</strong>, наследуя от
+    <code>Error</code>.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — разные бланки для разных проблем.</strong> Вместо одной
+    безликой «жалобы» вы заводите отдельные формы: «ошибка ввода», «нет прав», «не
+    найдено». Обработчик, взглянув на бланк, сразу понимает, что случилось, и знает, что
+    делать.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>class X extends Error</code></h2>
+    <p>
+      Свой класс ошибки — это класс, унаследованный от <code>Error</code> (см.
+      <a routerLink="/javascript/classes/inheritance">Наследование</a>). В конструкторе
+      обязательно вызывают <code>super(message)</code> и задают <code>this.name</code>
+      (иначе он останется <code>'Error'</code>). Заодно можно добавить любые свои поля —
+      например, какое поле формы не прошло проверку.
+    </p>
+    <app-code-block [code]="customExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Различаем по <code>instanceof</code></h2>
+    <p>
+      Главная польза своих классов — их можно <strong>отличать</strong> от чужих ошибок в
+      общем <code>catch</code>. Свою ошибку обрабатываем осмысленно, а всё неожиданное —
+      пробрасываем дальше (<code>throw err</code>), чтобы не «проглотить» настоящий баг.
+    </p>
+    <app-code-block [code]="customUsageExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Иерархия ошибок</h2>
+    <p>
+      Когда своих ошибок много, их удобно объединить общим базовым классом (например,
+      <code>AppError</code>). Тогда одним <code>instanceof AppError</code> можно поймать
+      <strong>все</strong> ошибки приложения разом, отделив их от системных.
+    </p>
+    <app-code-block [code]="hierarchyExample" lang="javascript" />
+    <p class="note">
+      <strong>Живой пример:</strong> класс <code>ApiError extends Error</code> для сетевых
+      ошибок — в разделе
+      <a routerLink="/javascript/rest-api/errors">REST API: обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Практические примеры</h2>
+
+    <h3 class="doc__subtitle">Валидация формы</h3>
+    <p>
+      Классический сценарий: проверяем поля формы и бросаем
+      <code>ValidationError</code> с указанием, <em>какое именно</em> поле не прошло.
+      Обработчик ловит ошибку и подсвечивает нужное поле — сообщение попадает точно по
+      адресу, а не в общий алерт.
+    </p>
+    <app-code-block [code]="formExample" lang="javascript" />
+
+    <h3 class="doc__subtitle">Слой API: разная реакция на разные ошибки</h3>
+    <p>
+      Функция загрузки превращает коды ответа в <strong>типизированные</strong> ошибки
+      (<code>NotFoundError</code>, <code>ForbiddenError</code>), а вызывающий код по типу
+      решает, что показать: страницу «не найдено», редирект на вход или проброс дальше.
+      Логика «что случилось» отделена от логики «как реагировать».
+    </p>
+    <app-code-block [code]="apiLayerExample" lang="javascript" />
+    <p class="note">
+      Так удобно строить обработку по слоям: нижний слой (запрос) знает, <em>какая</em>
+      ошибка произошла, а верхний (UI) — <em>как</em> на неё отреагировать. Про сетевые
+      ошибки и <code>fetch</code> — в разделе
+      <a routerLink="/javascript/rest-api/errors">REST API: обработка ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>class X extends Error</code></strong> — свой тип ошибки; в
+        конструкторе <code>super(message)</code> и <code>this.name = '...'</code>.</li>
+      <li><strong>Свои поля</strong> (например <code>field</code>, <code>code</code>) —
+        добавляйте по необходимости.</li>
+      <li><strong>Различайте через <code>instanceof</code></strong>; чужие ошибки
+        пробрасывайте дальше.</li>
+      <li><strong>Базовый класс</strong> (<code>AppError</code>) — «зонтик», чтобы ловить
+        все свои ошибки одним <code>instanceof</code>.</li>
+    </ul>
+  </section>
+</article>

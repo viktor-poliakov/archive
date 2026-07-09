@@ -165,6 +165,18 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'errors',
+        label: 'Обработка ошибок',
+        children: [
+          { id: 'try-catch', label: 'try / catch / finally' },
+          { id: 'throw', label: 'Оператор throw' },
+          { id: 'error-object', label: 'Объект Error и типы' },
+          { id: 'custom', label: 'Свои классы ошибок' },
+          { id: 'propagation', label: 'Всплытие по стеку' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'promises',
         label: 'Промисы',
         children: [
