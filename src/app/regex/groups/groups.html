@@ -1,0 +1,82 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/regex">Регулярные выражения</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Группы и альтернация</span>
+  </nav>
+
+  <h1 class="doc__title">Группы и альтернация</h1>
+  <p class="doc__lead">
+    Круглые скобки <code>(…)</code> в регулярке делают две вещи: <strong>объединяют</strong>
+    части в одну единицу и <strong>запоминают</strong> найденное, чтобы потом его достать.
+    А вертикальная черта <code>|</code> задаёт выбор «или».
+  </p>
+
+  <section class="doc__section">
+    <h2>Группировка <code>(…)</code></h2>
+    <p>
+      Скобки позволяют применить квантор сразу к нескольким символам. <code>(ab)+</code>
+      — это «<code>ab</code> повторяется одно или больше раз», тогда как <code>ab+</code>
+      — «<code>a</code>, затем одна или больше <code>b</code>».
+    </p>
+    <app-code-block [code]="groupExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Альтернация <code>|</code></h2>
+    <p>
+      <code>|</code> означает «или». Часто её ставят внутри группы, чтобы предложить
+      выбор из нескольких вариантов на конкретном месте шаблона.
+    </p>
+    <app-code-block [code]="altExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Захват групп</h2>
+    <p>
+      Главная суперсила скобок — они <strong>запоминают</strong> совпавший кусок. В
+      результате <code>match</code> под индексом <code>[0]</code> лежит всё совпадение, а
+      под <code>[1]</code>, <code>[2]</code>, … — то, что попало в 1-ю, 2-ю группы. Так
+      удобно «разбирать» строку на части, например дату на год, месяц и день.
+    </p>
+    <app-code-block [code]="captureExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Именованные группы <code>(?&lt;имя&gt;…)</code></h2>
+    <p>
+      Обращаться к группам по номерам легко запутаться. Именованные группы
+      <code>(?&lt;имя&gt;…)</code> дают им человекочитаемые названия — результат достают
+      через <code>match.groups.имя</code>.
+    </p>
+    <app-code-block [code]="namedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Незахватывающие группы и проверки</h2>
+    <p>
+      Иногда скобки нужны только для группировки, а запоминать кусок не хочется — тогда
+      пишут <code>(?:…)</code> (незахватывающая группа). Отдельная возможность —
+      <strong>опережающая проверка</strong> <code>(?=…)</code>: «дальше должно идти вот
+      это», но сам «хвост» в совпадение не включается (есть и негативная
+      <code>(?!…)</code>, и ретроспективные <code>(?&lt;=…)</code>/<code>(?&lt;!…)</code>).
+    </p>
+    <app-code-block [code]="lookaheadExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>(…)</code></strong> — группируют (квантор ко всей группе) и
+        <strong>запоминают</strong> кусок.</li>
+      <li><strong><code>|</code></strong> — «или», часто внутри группы.</li>
+      <li><strong>Захват:</strong> группы доступны в <code>match</code> как
+        <code>[1]</code>, <code>[2]</code>… или по имени
+        <code>(?&lt;имя&gt;…)</code> → <code>match.groups.имя</code>.</li>
+      <li><strong><code>(?:…)</code></strong> — группировка без запоминания;
+        <strong><code>(?=…)</code></strong> — проверка контекста без захвата.</li>
+    </ul>
+  </section>
+</article>

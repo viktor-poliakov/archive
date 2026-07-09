@@ -1,0 +1,65 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/iterators">Итераторы и генераторы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Свой итератор</span>
+  </nav>
+
+  <h1 class="doc__title">Свой итератор</h1>
+  <p class="doc__lead">
+    Мы видели, что обычный объект не итерируем. Исправим это: научим свой объект работать
+    с <code>for...of</code> и spread. Для этого достаточно добавить ему метод
+    <code>[Symbol.iterator]</code>, который возвращает итератор с <code>next()</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Объект-диапазон</h2>
+    <p>
+      Сделаем объект <code>range</code>, который перебирает числа от <code>from</code> до
+      <code>to</code>. Метод <code>[Symbol.iterator]()</code> заводит счётчик и возвращает
+      итератор; каждый <code>next()</code> выдаёт следующее число, а когда числа
+      кончаются — сообщает <code>done: true</code>.
+    </p>
+    <app-code-block [code]="rangeManualExample" lang="javascript" />
+    <p class="note">
+      <strong>Тонкость:</strong> счётчик <code>current</code> живёт <em>внутри</em>
+      <code>[Symbol.iterator]()</code>, а не на самом объекте. Поэтому каждый новый
+      перебор начинается с начала и можно спокойно запускать несколько
+      <code>for...of</code> одновременно — у каждого свой независимый итератор. (Это тот
+      же приём приватного состояния через
+      <a routerLink="/javascript/closures/practical">замыкание</a>.)
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Теперь работает всё</h2>
+    <p>
+      Как только у объекта появился <code>[Symbol.iterator]</code>, он стал полноценным
+      iterable — и с ним заработали все
+      <a routerLink="/javascript/iterators/for-of">потребители протокола</a>: цикл,
+      spread, <code>Array.from</code>, передача через <code>...</code>.
+    </p>
+    <app-code-block [code]="rangeUsageExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Чтобы объект стал итерируемым</strong>, добавьте метод
+        <code>[Symbol.iterator]()</code>.</li>
+      <li><strong>Он возвращает итератор</strong> — объект с <code>next()</code>, который
+        отдаёт <code>&#123; value, done &#125;</code>.</li>
+      <li><strong>Состояние перебора</strong> держите внутри (в замыкании), чтобы каждый
+        перебор был независимым.</li>
+      <li>Писать это вручную многословно — <strong>генераторы</strong> делают то же
+        самое в разы короче (следующий раздел).</li>
+    </ul>
+    <p class="note">
+      <strong>Дальше:</strong> тот же <code>range</code> через
+      <a routerLink="/javascript/iterators/generators">генератор</a> уместится в три
+      строки.
+    </p>
+  </section>
+</article>

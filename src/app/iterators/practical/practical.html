@@ -1,0 +1,96 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/iterators">Итераторы и генераторы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Практика и async-итераторы</span>
+  </nav>
+
+  <h1 class="doc__title">Практика и асинхронные итераторы</h1>
+  <p class="doc__lead">
+    Соберём всё вместе на реальных задачах: обход дерева, ленивый конвейер обработки и
+    асинхронный перебор данных с сервера. В конце — типичные подводные камни.
+  </p>
+
+  <section class="doc__section">
+    <h2>Обход дерева</h2>
+    <p>
+      Рекурсивный генератор с <code>yield*</code> элегантно «разворачивает» вложенную
+      структуру в плоскую последовательность. Каждый узел отдаёт своё значение, а затем
+      делегирует обход детям — и так до самых листьев.
+    </p>
+    <app-code-block [code]="treeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Ленивый конвейер</h2>
+    <p>
+      <code>map</code> и <code>filter</code> можно написать как генераторы — тогда данные
+      идут по конвейеру <strong>по одному элементу</strong>, без создания промежуточных
+      массивов на каждом шаге. Для больших или бесконечных источников это заметно
+      экономнее, чем цепочка <code>.map().filter()</code> на массивах.
+    </p>
+    <app-code-block [code]="pipelineExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Асинхронные итераторы</h2>
+    <p>
+      А что, если следующий элемент нужно <em>дождаться</em> — например, подгрузить с
+      сервера? Для этого есть асинхронная версия протокола: <code>async function*</code>
+      (её <code>yield</code> может <code>await</code>-ить), а перебирают такой источник
+      циклом <code>for await...of</code>. Он на каждом шаге ждёт готовности очередной
+      порции.
+    </p>
+    <app-code-block [code]="asyncIterExample" lang="javascript" />
+    <p class="note">
+      Под капотом это тот же протокол, только <code>next()</code> возвращает
+      <strong>промис</strong> с <code>&#123; value, done &#125;</code>. Ровно этот
+      паттерн вы уже видели «вручную» — цикл
+      <code>reader.read() → &#123; done, value &#125;</code> при чтении потока в разделе
+      <a routerLink="/javascript/rest-api/files">Файлы</a>. Про сам <code>await</code> и
+      асинхронность — <a routerLink="/javascript/promises/async-await">async/await</a> и
+      <a routerLink="/javascript/event-loop/basics">Event Loop</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Подводные камни</h2>
+    <ul class="rules">
+      <li>
+        <strong>Итератор одноразовый.</strong> Пройдя итератор до конца, его нельзя
+        перебрать снова — он «исчерпан». Поэтому <code>for...of</code> обычно применяют к
+        <em>iterable</em> (массиву, объекту с <code>[Symbol.iterator]</code>,
+        генераторной <strong>функции</strong>), который каждый раз выдаёт свежий итератор.
+      </li>
+      <li>
+        <strong>iterable ≠ iterator.</strong> Генераторная функция <code>gen</code> — не
+        то же, что генератор <code>gen()</code>: перебирать нужно результат вызова.
+      </li>
+      <li>
+        <strong>Бесконечный + spread = зависание.</strong> <code>[...infinite()]</code>
+        и <code>Array.from</code> пытаются взять все элементы — ограничивайте
+        (<code>take(n)</code>).
+      </li>
+      <li>
+        <strong>Генератор ленив.</strong> Вызов генераторной функции не выполняет её тело
+        — оно начнёт работать только с первого <code>next()</code>.
+      </li>
+    </ul>
+    <app-code-block [code]="exhaustedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Обход дерева</strong> — рекурсивный генератор + <code>yield*</code>.</li>
+      <li><strong>Ленивый конвейер</strong> — <code>map</code>/<code>filter</code>
+        генераторами, поэлементно, без промежуточных массивов.</li>
+      <li><strong>Асинхронно</strong> — <code>async function*</code> +
+        <code>for await...of</code> (<code>next()</code> возвращает промис).</li>
+      <li><strong>Помните:</strong> итератор одноразовый; бесконечный не разворачивайте
+        целиком; генератор ленив.</li>
+    </ul>
+  </section>
+</article>

@@ -1,0 +1,85 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/iterators">Итераторы и генераторы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Приёмы генераторов</span>
+  </nav>
+
+  <h1 class="doc__title">Приёмы генераторов</h1>
+  <p class="doc__lead">
+    Генераторы умеют больше, чем просто отдавать значения по очереди. Разберём три
+    мощных приёма: делегирование через <code>yield*</code>, бесконечные (ленивые)
+    последовательности и передачу значений обратно в генератор.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>yield*</code> — делегирование</h2>
+    <p>
+      <code>yield*</code> (со звёздочкой) «вкладывает» перебор другого iterable внутрь
+      текущего генератора: он поочерёдно отдаёт <em>все</em> его значения, будто вы
+      выписали их вручную. Удобно собирать один поток из нескольких источников.
+    </p>
+    <app-code-block [code]="delegationExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Бесконечные последовательности</h2>
+    <p>
+      Генератор с <code>while (true)</code> кажется опасным, но он
+      <strong>не зависает</strong>: значения вычисляются <em>лениво</em> — только в
+      момент, когда их запросили через <code>next()</code>. Пока не просите — ничего не
+      считается.
+    </p>
+    <app-code-block [code]="infiniteExample" lang="javascript" />
+    <p class="note">
+      <strong>Аналогия — кран с водой:</strong> вода «бесконечна», но льётся, только
+      пока кран открыт; берёте ровно сколько нужно.
+      <strong>⚠️ Осторожно:</strong> <code>[...naturals()]</code> или
+      <code>Array.from(naturals())</code> попытаются взять <em>все</em> значения — и
+      действительно зависнут. С бесконечными генераторами берите ограниченное число (см.
+      ниже).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Ленивость: берём только нужное</h2>
+    <p>
+      Ленивость раскрывается в помощнике <code>take(n, iterable)</code>: он берёт первые
+      <code>n</code> значений из <em>любого</em> итератора — даже бесконечного — и
+      останавливается. Ничего лишнего не вычисляется.
+    </p>
+    <app-code-block [code]="takeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Передача значений в <code>next(value)</code></h2>
+    <p>
+      Связь двусторонняя: <code>next(value)</code> может <em>передать</em> значение
+      обратно в генератор — оно станет результатом того <code>yield</code>, на котором
+      генератор стоял на паузе. Приём продвинутый, но полезно знать, что <code>yield</code>
+      — это не только «отдать», но и «получить».
+    </p>
+    <app-code-block [code]="twoWayExample" lang="javascript" />
+    <p class="note">
+      Первый <code>next()</code> лишь <em>запускает</em> генератор до первого
+      <code>yield</code>, поэтому переданное в него значение игнорируется — «слушать»
+      начинают со второго вызова.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>yield*</code></strong> делегирует перебор другому iterable
+        (генератору, массиву, строке…).</li>
+      <li><strong>Бесконечные генераторы</strong> безопасны, пока значения берут по
+        требованию; <code>[...gen]</code> над бесконечным — зависнет.</li>
+      <li><strong>Ленивость</strong> — вычисляем только то, что реально запросили
+        (например, через <code>take(n)</code>).</li>
+      <li><strong><code>next(value)</code></strong> передаёт значение обратно в
+        <code>yield</code> — двусторонняя связь.</li>
+    </ul>
+  </section>
+</article>

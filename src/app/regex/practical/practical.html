@@ -1,0 +1,83 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/regex">Регулярные выражения</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Практика и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Практика и подводные камни</h1>
+  <p class="doc__lead">
+    Соберём изученное на реальных задачах: валидация, извлечение данных, замена и
+    форматирование. А в конце — типичные грабли, о которых стоит знать заранее.
+  </p>
+
+  <section class="doc__section">
+    <h2>Валидация</h2>
+    <p>
+      Проверка «подходит ли строка под формат» — самое частое применение regex. Приём
+      один: обрамляем шаблон якорями <code>^…$</code>, чтобы строка совпала
+      <strong>целиком</strong>. Для пароля пригодятся опережающие проверки
+      <code>(?=…)</code> — «где-то есть буква», «где-то есть цифра».
+    </p>
+    <app-code-block [code]="validateExample" lang="javascript" />
+    <p class="note">
+      <strong>Про email:</strong> «идеального» regex для email не существует — стандарт
+      слишком сложный. Для формы достаточно простой проверки (как выше) плюс реальная
+      отправка письма с подтверждением. Строгую валидацию полей удобно оформлять своими
+      ошибками — см. <a routerLink="/javascript/errors/custom">Свои классы ошибок</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Извлечение данных</h2>
+    <p>
+      Вытащить из текста все совпадения — задача для <code>matchAll</code> с группой:
+      хештеги, цены, ссылки, номера. Собираем результат в массив и берём нужную группу.
+    </p>
+    <app-code-block [code]="extractExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Замена и форматирование</h2>
+    <p>
+      Регулярка + <code>replace</code> отлично чистит и переформатирует текст: схлопнуть
+      пробелы, переставить части, замаскировать данные. В маскировке карты помогает
+      опережающая проверка «после этой цифры есть ещё минимум четыре».
+    </p>
+    <app-code-block [code]="replaceFormatExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Подводные камни</h2>
+    <app-code-block [code]="pitfallsExample" lang="javascript" />
+    <ul class="rules">
+      <li><strong>Жадность по умолчанию</strong> — <code>.+</code> хватает лишнее;
+        помните про ленивое <code>.+?</code> (см.
+        <a routerLink="/javascript/regex/quantifiers">Кванторы</a>).</li>
+      <li><strong>Флаг <code>g</code> хранит <code>lastIndex</code></strong> — не
+        переиспользуйте одну и ту же <code>/g</code>-регулярку в <code>test</code>
+        подряд.</li>
+      <li><strong>Экранируйте ввод пользователя</strong> перед вставкой в
+        <code>new RegExp</code> — иначе его спецсимволы «оживут».</li>
+      <li><strong>Катастрофический откат (ReDoS)</strong> — вложенные кванторы вроде
+        <code>(a+)+</code> на длинной строке могут «повесить» движок; избегайте их.</li>
+      <li><strong>Не парсите HTML/JSON регуляркой</strong> — для вложенных структур
+        нужны настоящие парсеры, regex тут бессилен.</li>
+    </ul>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Валидация:</strong> <code>^…$</code> + при нужде <code>(?=…)</code>;
+        для email — простая проверка, не «идеальная».</li>
+      <li><strong>Извлечение:</strong> <code>matchAll</code> + группа + сбор в массив.</li>
+      <li><strong>Замена:</strong> <code>replace</code> с группами <code>$1</code> или
+        функцией.</li>
+      <li><strong>Грабли:</strong> жадность, <code>lastIndex</code> у <code>/g</code>,
+        неэкранированный ввод, ReDoS, «HTML регуляркой не парсят».</li>
+    </ul>
+  </section>
+</article>

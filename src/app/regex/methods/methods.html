@@ -1,0 +1,107 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/regex">Регулярные выражения</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Методы</span>
+  </nav>
+
+  <h1 class="doc__title">Методы работы с регулярками</h1>
+  <p class="doc__lead">
+    Паттерн написан — как его применить? Часть методов у самой регулярки
+    (<code>test</code>, <code>exec</code>), часть — у строки (<code>match</code>,
+    <code>matchAll</code>, <code>replace</code>, <code>split</code>, <code>search</code>).
+    Разберём, кто что возвращает.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>test</code> и <code>exec</code></h2>
+    <p>
+      Это методы объекта-регулярки. <code>test</code> отвечает «да/нет», а
+      <code>exec</code> возвращает массив с деталями первого совпадения (сам текст,
+      позиция <code>index</code>, группы) или <code>null</code>.
+    </p>
+    <app-code-block [code]="testExecExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>match</code> и <code>matchAll</code></h2>
+    <p>
+      <code>str.match(re)</code> ведёт себя <strong>по-разному</strong> в зависимости от
+      флага <code>g</code>: без него — первое совпадение вместе с группами; с ним —
+      массив всех совпадений, но уже <em>без</em> групп. Когда нужны и все совпадения,
+      <strong>и</strong> их группы — берут <code>matchAll</code> (требует флаг
+      <code>g</code>) и перебирают результат.
+    </p>
+    <app-code-block [code]="matchExample" lang="javascript" />
+    <app-code-block [code]="matchAllExample" lang="javascript" />
+    <p class="note">
+      <code>matchAll</code> возвращает
+      <a routerLink="/javascript/iterators/protocol">итератор</a> — его перебирают
+      <code>for...of</code> или разворачивают в массив через <code>[...]</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>replace</code> и группы</h2>
+    <p>
+      Замена по шаблону — самое частое применение regex. В строке замены доступны
+      захваченные группы: <code>$1</code>, <code>$2</code> (или <code>$&lt;имя&gt;</code>
+      для именованных). А вторым аргументом можно передать <strong>функцию</strong> — она
+      получит совпадение и вернёт замену. Про строковый <code>replace</code>/
+      <code>replaceAll</code> — в разделе
+      <a routerLink="/javascript/strings/methods">Строки: методы</a>.
+    </p>
+    <app-code-block [code]="replaceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>split</code> и <code>search</code></h2>
+    <p>
+      <code>split</code> умеет разбивать не только по строке, но и по
+      <strong>шаблону</strong>-разделителю — удобно, когда разделители «грязные» (разные
+      пробелы, запятые). <code>search</code> возвращает индекс первого совпадения или
+      <code>-1</code>.
+    </p>
+    <app-code-block [code]="splitSearchExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Что возвращает каждый метод</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Метод</th>
+            <th>Возвращает</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>re.test(str)</code></td><td><code>true</code>/<code>false</code></td></tr>
+          <tr><td><code>re.exec(str)</code></td><td>массив первого совпадения или <code>null</code></td></tr>
+          <tr><td><code>str.match(re)</code></td><td>первое (с группами) или все (с <code>g</code>, без групп)</td></tr>
+          <tr><td><code>str.matchAll(re)</code></td><td>итератор всех совпадений с группами</td></tr>
+          <tr><td><code>str.replace(re, …)</code></td><td>новую строку с заменой</td></tr>
+          <tr><td><code>str.split(re)</code></td><td>массив кусков</td></tr>
+          <tr><td><code>str.search(re)</code></td><td>индекс или <code>-1</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>test</code></strong> — да/нет; <strong><code>exec</code></strong>
+        — детали первого совпадения.</li>
+      <li><strong><code>match</code></strong>: без <code>g</code> — первое с группами, с
+        <code>g</code> — все без групп; <strong><code>matchAll</code></strong> — все с
+        группами.</li>
+      <li><strong><code>replace</code></strong> — группы через <code>$1</code>/
+        <code>$&lt;имя&gt;</code> или функция-заменитель.</li>
+      <li><strong><code>split</code></strong> по шаблону, <strong><code>search</code></strong>
+        — индекс или <code>-1</code>.</li>
+    </ul>
+  </section>
+</article>

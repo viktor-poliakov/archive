@@ -1,0 +1,141 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/regex">Регулярные выражения</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Регулярные выражения: основы</h1>
+  <p class="doc__lead">
+    <strong>Регулярное выражение</strong> (regex) — это шаблон для поиска в тексте.
+    С его помощью проверяют («это похоже на email?»), находят («вытащи все числа») и
+    заменяют («убери лишние пробелы») по <em>узору</em>, а не по точной строке.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — трафарет.</strong> Обычный поиск (<code>str.includes</code>)
+    ищет точное слово. Регулярка — это трафарет с «прорезями»: «здесь любая цифра, потом
+    дефис, потом ещё две цифры». Накладываем трафарет на текст и находим все куски,
+    которые в него укладываются.
+  </p>
+
+  <section class="doc__section">
+    <h2>Как создать регулярку</h2>
+    <p>
+      Два способа. Обычно пишут <strong>литерал</strong> — паттерн между слэшами
+      <code>/…/</code>. Если же паттерн собирается динамически (например, из переменной),
+      берут конструктор <code>new RegExp(...)</code> — но тогда спецсимволы приходится
+      экранировать <em>двойным</em> слэшем (строка «съедает» один).
+    </p>
+    <app-code-block [code]="createExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Из чего состоит регулярка</h2>
+    <p>
+      У литерала три части: <strong>границы</strong> (слэши), сам <strong>шаблон</strong>
+      (что искать) и <strong>флаги</strong> (как искать). Разберём на примере
+      <code>/\d+/gi</code>:
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 180" width="100%" role="img"
+        aria-label="Разбор регулярки: слэши это границы, backslash-d-плюс это шаблон, gi это флаги">
+        <defs>
+          <marker id="re-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)" />
+          </marker>
+        </defs>
+
+        <text x="280" y="60" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="34" font-weight="700">/<tspan fill="var(--accent)">\d+</tspan>/<tspan fill="var(--green)">gi</tspan></text>
+
+        <!-- границы -->
+        <line x1="212" y1="74" x2="150" y2="112" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#re-b-arrow)" />
+        <line x1="300" y1="74" x2="150" y2="112" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#re-b-arrow)" />
+        <text x="150" y="130" text-anchor="middle" fill="var(--muted)" font-size="12">границы (слэши)</text>
+
+        <!-- шаблон -->
+        <line x1="262" y1="74" x2="320" y2="112" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#re-b-arrow)" />
+        <text x="330" y="130" text-anchor="middle" fill="var(--accent)" font-size="12">шаблон: что искать</text>
+
+        <!-- флаги -->
+        <line x1="330" y1="74" x2="470" y2="112" stroke="var(--green)" stroke-width="1.6" marker-end="url(#re-b-arrow)" />
+        <text x="470" y="130" text-anchor="middle" fill="var(--green)" font-size="12">флаги: как искать</text>
+
+        <text x="280" y="166" text-anchor="middle" fill="var(--muted)" font-size="11.5">«одна или больше цифр, искать все (g), без учёта регистра (i)»</text>
+      </svg>
+      <figcaption>
+        Части литерала: границы-слэши, шаблон между ними и флаги после закрывающего слэша.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Быстрая проверка: <code>test</code></h2>
+    <p>
+      Самый простой способ применить регулярку — метод <code>test</code>: он отвечает
+      «да/нет» — есть ли в строке хоть одно совпадение. Другие методы (найти, заменить,
+      разбить) разберём в разделе
+      <a routerLink="/javascript/regex/methods">Методы</a>.
+    </p>
+    <app-code-block [code]="testExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Флаги</h2>
+    <p>
+      Флаги (буквы после закрывающего слэша) меняют поведение поиска. Самые нужные —
+      <code>g</code> (найти все, а не только первое) и <code>i</code> (без учёта
+      регистра).
+    </p>
+    <app-code-block [code]="flagsExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Флаг</th>
+            <th>Что делает</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>g</code></td>
+            <td>global — все совпадения, а не только первое</td>
+          </tr>
+          <tr>
+            <td><code>i</code></td>
+            <td>ignore case — без учёта регистра</td>
+          </tr>
+          <tr>
+            <td><code>m</code></td>
+            <td>multiline — <code>^</code> и <code>$</code> работают на каждой строке</td>
+          </tr>
+          <tr>
+            <td><code>s</code></td>
+            <td>dotAll — точка <code>.</code> включает и перевод строки</td>
+          </tr>
+          <tr>
+            <td><code>u</code></td>
+            <td>unicode — корректная работа с эмодзи и <code>\u&#123;…&#125;</code> (см.
+              <a routerLink="/javascript/strings/unicode">Юникод</a>)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Регулярка</strong> — шаблон для поиска/проверки/замены в тексте по
+        узору.</li>
+      <li><strong>Создание:</strong> литерал <code>/…/</code> или
+        <code>new RegExp('…')</code> (там спецсимволы с двойным слэшем).</li>
+      <li><strong>Три части:</strong> границы-слэши, шаблон, флаги.</li>
+      <li><strong>Флаги:</strong> <code>g</code> (все), <code>i</code> (регистр),
+        <code>m</code>, <code>s</code>, <code>u</code>.</li>
+      <li><strong><code>test</code></strong> — быстрый ответ «есть совпадение?».</li>
+    </ul>
+  </section>
+</article>

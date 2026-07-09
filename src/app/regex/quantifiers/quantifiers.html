@@ -1,0 +1,104 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/regex">Регулярные выражения</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Кванторы и жадность</span>
+  </nav>
+
+  <h1 class="doc__title">Кванторы и жадность</h1>
+  <p class="doc__lead">
+    <strong>Квантор</strong> отвечает на вопрос «сколько раз повторить» предыдущий
+    элемент шаблона. Именно кванторы превращают regex из «найди один символ» в «найди
+    последовательность любой длины».
+  </p>
+
+  <section class="doc__section">
+    <h2>Основные кванторы</h2>
+    <p>
+      Три «символьных» квантора — <code>*</code> (ноль или больше), <code>+</code> (один
+      или больше), <code>?</code> (ноль или один, то есть «необязательно»). И точная
+      форма в фигурных скобках: <code>&#123;n&#125;</code> — ровно <code>n</code> раз,
+      <code>&#123;n,&#125;</code> — от <code>n</code>, <code>&#123;n,m&#125;</code> — от
+      <code>n</code> до <code>m</code>.
+    </p>
+    <app-code-block [code]="quantifiersExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Квантор</th>
+            <th>Сколько раз</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>*</code></td><td>0 или больше</td></tr>
+          <tr><td><code>+</code></td><td>1 или больше</td></tr>
+          <tr><td><code>?</code></td><td>0 или 1 (необязательно)</td></tr>
+          <tr><td><code>&#123;n&#125;</code></td><td>ровно <code>n</code> раз</td></tr>
+          <tr><td><code>&#123;n,&#125;</code></td><td>не меньше <code>n</code></td></tr>
+          <tr><td><code>&#123;n,m&#125;</code></td><td>от <code>n</code> до <code>m</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Жадность: по умолчанию — «максимум»</h2>
+    <p>
+      Важнейшая тонкость: кванторы <strong>жадные</strong> — стараются захватить
+      <em>как можно больше</em>. Классическая ловушка — попытка достать текст «в
+      кавычках» шаблоном <code>".+"</code>: жадная <code>.+</code> протянется от первой
+      кавычки до <strong>последней</strong>, проглотив всё между ними.
+    </p>
+    <app-code-block [code]="greedyExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Лень: добавь <code>?</code> — станет «минимум»</h2>
+    <p>
+      Чтобы квантор брал <em>как можно меньше</em>, после него ставят <code>?</code>:
+      <code>+?</code>, <code>*?</code>, <code>&#123;n,m&#125;?</code>. Тогда
+      <code>.+?</code> остановится на первой же закрывающей кавычке — то, что нужно.
+    </p>
+    <app-code-block [code]="lazyExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 540 210" width="100%" role="img"
+        aria-label="Жадный шаблон захватывает всю строку от первой до последней кавычки, ленивый — только первую пару кавычек">
+        <text x="30" y="46" fill="var(--fg)" font-family="monospace" font-size="22">&quot;a&quot; and &quot;b&quot;</text>
+
+        <!-- greedy -->
+        <rect x="28" y="58" width="150" height="8" rx="3" fill="var(--red)" />
+        <text x="30" y="86" fill="var(--red)" font-family="monospace" font-size="13">/&quot;.+&quot;/</text>
+        <text x="92" y="86" fill="var(--muted)" font-size="12">жадно → захватил всю строку</text>
+
+        <!-- lazy -->
+        <rect x="28" y="120" width="42" height="8" rx="3" fill="var(--green)" />
+        <text x="30" y="148" fill="var(--green)" font-family="monospace" font-size="13">/&quot;.+?&quot;/</text>
+        <text x="98" y="148" fill="var(--muted)" font-size="12">лениво → только &quot;a&quot;</text>
+
+        <text x="30" y="186" fill="var(--muted)" font-size="11.5">Красное — что захватит жадный шаблон, зелёное — ленивый.</text>
+      </svg>
+      <figcaption>
+        Жадный <code>.+</code> тянется до последней кавычки, ленивый <code>.+?</code> —
+        до первой закрывающей.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Кванторы:</strong> <code>*</code> (0+), <code>+</code> (1+),
+        <code>?</code> (0/1), <code>&#123;n&#125;</code>, <code>&#123;n,&#125;</code>,
+        <code>&#123;n,m&#125;</code>.</li>
+      <li><strong>По умолчанию жадные</strong> — берут максимум.</li>
+      <li><strong>Добавьте <code>?</code></strong> (<code>+?</code>, <code>*?</code>) —
+        станут ленивыми, берут минимум.</li>
+      <li><strong>Частая ловушка:</strong> <code>".+"</code> захватывает лишнее — нужен
+        <code>".+?"</code>.</li>
+    </ul>
+  </section>
+</article>

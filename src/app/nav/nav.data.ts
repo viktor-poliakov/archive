@@ -145,6 +145,18 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'regex',
+        label: 'Регулярные выражения',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'char-classes', label: 'Классы символов и якоря' },
+          { id: 'quantifiers', label: 'Кванторы и жадность' },
+          { id: 'groups', label: 'Группы и альтернация' },
+          { id: 'methods', label: 'Методы' },
+          { id: 'practical', label: 'Практика и подводные камни' },
+        ],
+      },
+      {
         id: 'arrays',
         label: 'Массивы',
         children: [
@@ -162,6 +174,18 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         children: [
           { id: 'map-set', label: 'Map и Set' },
           { id: 'weak', label: 'WeakMap и WeakSet' },
+        ],
+      },
+      {
+        id: 'iterators',
+        label: 'Итераторы и генераторы',
+        children: [
+          { id: 'protocol', label: 'Протокол итерации' },
+          { id: 'for-of', label: 'for...of и потребители' },
+          { id: 'custom', label: 'Свой итератор' },
+          { id: 'generators', label: 'Генераторы' },
+          { id: 'techniques', label: 'Приёмы генераторов' },
+          { id: 'practical', label: 'Практика и async-итераторы' },
         ],
       },
       {

@@ -1,0 +1,73 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/iterators">Итераторы и генераторы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">for...of и потребители</span>
+  </nav>
+
+  <h1 class="doc__title">for...of и потребители протокола</h1>
+  <p class="doc__lead">
+    Хорошая новость: раз есть единый
+    <a routerLink="/javascript/iterators/protocol">протокол итерации</a>, вам почти
+    никогда не придётся звать <code>next()</code> руками. Множество конструкций языка
+    умеют «потреблять» <em>любой</em> iterable — и главная из них — <code>for...of</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Цикл <code>for...of</code></h2>
+    <p>
+      <code>for...of</code> перебирает <strong>значения</strong> итерируемого — без возни
+      с индексами. Работают привычные <code>break</code> и <code>continue</code>. Если
+      нужен ещё и индекс, у массива есть <code>entries()</code>.
+    </p>
+    <app-code-block [code]="forOfExample" lang="javascript" />
+    <p class="note">
+      <strong>Не путайте с <code>for...in</code>:</strong> <code>for...in</code>
+      перебирает <em>ключи</em> объекта (и не гарантирует порядок), а
+      <code>for...of</code> — <em>значения</em> итерируемого. Подробнее про перебор
+      массивов — в разделе
+      <a routerLink="/javascript/arrays/iteration">Массивы: перебор</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Потребители протокола</h2>
+    <p>
+      <code>for...of</code> — не единственный. Один и тот же протокол используют spread
+      <code>...</code>, деструктуризация, <code>Array.from</code>, конструкторы
+      <code>new Set(...)</code>/<code>new Map(...)</code>, передача аргументов через
+      <code>f(...it)</code> и даже
+      <a routerLink="/javascript/promises/static-methods"><code>Promise.all(iterable)</code></a>.
+      Научились делать что-то итерируемым — и всё это заработает с ним автоматически.
+    </p>
+    <app-code-block [code]="consumersExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кто итерируем из коробки</h2>
+    <p>
+      Готовые iterable в языке: <code>Array</code>, <code>String</code>,
+      <code>Map</code>, <code>Set</code>, а также <code>arguments</code> и коллекции DOM
+      (<code>NodeList</code>). А вот <strong>обычный объект</strong>
+      <code>&#123; a: 1 &#125;</code> — <strong>не</strong> итерируем: у него нет
+      <code>[Symbol.iterator]</code>. Для него перебирают
+      <a routerLink="/javascript/objects/iteration"><code>Object.keys/values/entries</code></a>,
+      либо делают объект итерируемым самому — об этом следующий раздел.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>for...of</code></strong> перебирает значения любого iterable;
+        <code>break</code>/<code>continue</code> работают.</li>
+      <li><strong>Тот же протокол</strong> используют spread, деструктуризация,
+        <code>Array.from</code>, <code>new Set/Map</code>, <code>Promise.all</code>.</li>
+      <li><strong>Итерируемы:</strong> Array, String, Map, Set, arguments, NodeList.</li>
+      <li><strong>Обычный объект — нет</strong>; для него — <code>Object.entries</code>
+        или свой <code>[Symbol.iterator]</code>.</li>
+    </ul>
+  </section>
+</article>

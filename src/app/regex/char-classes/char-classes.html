@@ -1,0 +1,105 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/regex">Регулярные выражения</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Классы символов и якоря</span>
+  </nav>
+
+  <h1 class="doc__title">Классы символов и якоря</h1>
+  <p class="doc__lead">
+    Шаблон складывается из «кирпичиков» — что именно должно совпасть в этой позиции.
+    Самые частые кирпичики — <strong>классы символов</strong> (сокращения для групп
+    символов) и <strong>якоря</strong> (привязки к началу, концу и границам слова).
+  </p>
+
+  <section class="doc__section">
+    <h2>Спецклассы <code>\d</code> <code>\w</code> <code>\s</code></h2>
+    <p>
+      Три сокращения покрывают почти всё: <code>\d</code> — цифра, <code>\w</code> —
+      «символ слова» (латинская буква, цифра или <code>_</code>), <code>\s</code> —
+      пробельный символ (пробел, таб, перевод строки). Их <strong>заглавные</strong>
+      версии означают ровно противоположное.
+    </p>
+    <app-code-block [code]="classesExample" lang="javascript" />
+    <p class="note">
+      <strong>Важно про <code>\w</code>:</strong> он охватывает только латиницу, цифры и
+      <code>_</code> — кириллица под <code>\w</code> <em>не</em> подпадает. Для букв
+      любого алфавита берут наборы (<code>[а-яё]</code>) или юникод-свойства
+      <code>\p&#123;L&#125;</code> с флагом <code>u</code> (см.
+      <a routerLink="/javascript/strings/unicode">Юникод</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Точка <code>.</code> и наборы <code>[…]</code></h2>
+    <p>
+      Точка <code>.</code> совпадает с любым символом (кроме перевода строки). А в
+      квадратных скобках <code>[…]</code> вы задаёте <strong>свой</strong> набор: перечень
+      (<code>[aeiou]</code>), диапазон (<code>[a-z]</code>, <code>[0-9]</code>) или
+      отрицание (<code>[^…]</code> — «любой, кроме перечисленных»).
+    </p>
+    <app-code-block [code]="setsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Якоря <code>^</code> <code>$</code> <code>\b</code></h2>
+    <p>
+      Якоря совпадают не с символом, а с <strong>позицией</strong>. <code>^</code> —
+      начало строки, <code>$</code> — конец, <code>\b</code> — граница слова. Связка
+      <code>^…$</code> — частый приём «строка должна целиком совпасть с шаблоном»
+      (валидация).
+    </p>
+    <app-code-block [code]="anchorsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Экранирование спецсимволов</h2>
+    <p>
+      У символов <code>. * + ? ( ) [ ] &#123; &#125; ^ $ | \ /</code> в регулярке
+      <em>особый</em> смысл. Чтобы искать их <strong>буквально</strong>, ставят перед
+      ними слэш: <code>\.</code> — именно точка, <code>\+</code> — именно плюс.
+    </p>
+    <app-code-block [code]="escapeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Шпаргалка</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Запись</th>
+            <th>Совпадает с</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>\d</code> / <code>\D</code></td><td>цифра / не цифра</td></tr>
+          <tr><td><code>\w</code> / <code>\W</code></td><td>буква/цифра/_ / не они</td></tr>
+          <tr><td><code>\s</code> / <code>\S</code></td><td>пробельный / не пробельный</td></tr>
+          <tr><td><code>.</code></td><td>любой символ (кроме перевода строки)</td></tr>
+          <tr><td><code>[abc]</code></td><td>один из перечисленных</td></tr>
+          <tr><td><code>[a-z]</code></td><td>любой из диапазона</td></tr>
+          <tr><td><code>[^abc]</code></td><td>любой, КРОМЕ перечисленных</td></tr>
+          <tr><td><code>^</code> / <code>$</code></td><td>начало / конец строки</td></tr>
+          <tr><td><code>\b</code></td><td>граница слова</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Классы:</strong> <code>\d</code> цифра, <code>\w</code> буква/цифра/_,
+        <code>\s</code> пробел; заглавные — отрицание.</li>
+      <li><strong>Наборы:</strong> <code>[abc]</code>, <code>[a-z]</code>,
+        <code>[^…]</code>; точка <code>.</code> — любой символ.</li>
+      <li><strong>Якоря:</strong> <code>^</code>/<code>$</code> — края строки,
+        <code>\b</code> — граница слова; <code>^…$</code> для валидации целиком.</li>
+      <li><strong>Экранируйте</strong> спецсимволы слэшем, чтобы искать их буквально
+        (<code>\.</code>).</li>
+    </ul>
+  </section>
+</article>

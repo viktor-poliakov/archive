@@ -1,0 +1,117 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/iterators">Итераторы и генераторы</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Генераторы</span>
+  </nav>
+
+  <h1 class="doc__title">Генераторы</h1>
+  <p class="doc__lead">
+    Писать <code>[Symbol.iterator]</code> с <code>next()</code> вручную — многословно.
+    <strong>Генераторы</strong> создают итераторы почти «на автомате»: пишете обычную с
+    виду функцию, а язык сам превращает её в итератор. Отличают генератор две вещи:
+    звёздочка <code>function*</code> и слово <code>yield</code>.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — функция с кнопкой «пауза».</strong> Обычная функция выполняется
+    за один присест, от начала до конца. Генератор умеет <em>остановиться</em> на каждом
+    <code>yield</code>, отдать значение и «поставить закладку» — запомнить, где замер.
+    Вызов <code>next()</code> — это кнопка «продолжить с закладки».
+  </p>
+
+  <section class="doc__section">
+    <h2><code>function*</code> и <code>yield</code></h2>
+    <p>
+      Вызов генераторной функции <strong>не выполняет её тело</strong> — он лишь
+      возвращает генератор (это готовый итератор). Тело начинает исполняться только с
+      первого <code>next()</code> — и работает до ближайшего <code>yield</code>, где
+      отдаёт значение и замирает. Следующий <code>next()</code> продолжает с того же
+      места.
+    </p>
+    <app-code-block [code]="genBasicExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 620 250" width="100%" role="img"
+        aria-label="Каждый вызов next выполняет код до следующего yield и возвращает value с done, последний вызов даёт done true">
+        <defs>
+          <marker id="it-g-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="310" y="20" text-anchor="middle" fill="var(--fg)" font-size="14" font-weight="600">Каждый next() = «доработать до следующего yield»</text>
+
+        <!-- row 1 -->
+        <text x="20" y="60" fill="var(--accent)" font-family="monospace" font-size="12">next() #1</text>
+        <rect x="110" y="36" width="230" height="42" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="225" y="62" text-anchor="middle" fill="var(--fg)" font-size="12">код до yield 1</text>
+        <line x1="340" y1="57" x2="380" y2="57" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#it-g-arrow)" />
+        <rect x="384" y="36" width="216" height="42" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+        <text x="492" y="62" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="11.5">&#123; value: 1, done: false &#125;</text>
+
+        <text x="225" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">⏸ пауза на yield 1</text>
+
+        <!-- row 2 -->
+        <text x="20" y="134" fill="var(--accent)" font-family="monospace" font-size="12">next() #2</text>
+        <rect x="110" y="110" width="230" height="42" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="225" y="136" text-anchor="middle" fill="var(--fg)" font-size="12">код до yield 2</text>
+        <line x1="340" y1="131" x2="380" y2="131" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#it-g-arrow)" />
+        <rect x="384" y="110" width="216" height="42" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+        <text x="492" y="136" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="11.5">&#123; value: 2, done: false &#125;</text>
+
+        <text x="225" y="172" text-anchor="middle" fill="var(--muted)" font-size="11">⏸ пауза на yield 2</text>
+
+        <!-- row 3 -->
+        <text x="20" y="208" fill="var(--accent)" font-family="monospace" font-size="12">next() #3</text>
+        <rect x="110" y="184" width="230" height="42" rx="8" fill="var(--surface)" stroke="var(--border)" />
+        <text x="225" y="210" text-anchor="middle" fill="var(--fg)" font-size="12">код до конца</text>
+        <line x1="340" y1="205" x2="380" y2="205" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#it-g-arrow)" />
+        <rect x="384" y="184" width="216" height="42" rx="8" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.6" />
+        <text x="492" y="210" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">&#123; value: undefined, done: true &#125;</text>
+      </svg>
+      <figcaption>
+        Генератор «просыпается» на каждый <code>next()</code>, доходит до очередного
+        <code>yield</code> и снова засыпает; последний <code>next()</code> доводит код до
+        конца и даёт <code>done: true</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Генератор — это и итератор, и iterable</h2>
+    <p>
+      Генератор удобен вдвойне: у него есть <code>next()</code> (значит, он итератор), и
+      он <strong>сам итерируем</strong> (его <code>[Symbol.iterator]</code> возвращает
+      его же). Поэтому генератор напрямую работает с <code>for...of</code>, spread и
+      прочими потребителями — без единой строчки про <code>Symbol.iterator</code>.
+    </p>
+    <app-code-block [code]="genIsIterableExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Range через генератор</h2>
+    <p>
+      Сравните с ручным вариантом из
+      <a routerLink="/javascript/iterators/custom">предыдущего раздела</a>: тот же
+      диапазон умещается в несколько строк, без <code>next()</code>, <code>done</code> и
+      счётчиков вручную — за нас всё делает <code>yield</code>.
+    </p>
+    <app-code-block [code]="genRangeExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>function*</code></strong> + <strong><code>yield</code></strong> —
+        генераторная функция; её вызов возвращает генератор, не выполняя тело.</li>
+      <li><strong><code>yield</code></strong> отдаёт значение и ставит на паузу;
+        <code>next()</code> возобновляет до следующего <code>yield</code>.</li>
+      <li><strong>Генератор — сразу iterable</strong>: работает с <code>for...of</code>,
+        spread, <code>Array.from</code>.</li>
+      <li><strong>Короче ручного итератора</strong> — язык сам ведёт состояние и
+        <code>done</code>.</li>
+    </ul>
+  </section>
+</article>
