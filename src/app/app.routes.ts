@@ -247,6 +247,16 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./collections/map-set/map-set').then((m) => m.CollectionsMapSet),
   'javascript/collections/weak': () =>
     import('./collections/weak/weak').then((m) => m.CollectionsWeak),
+  'javascript/symbol/basics': () =>
+    import('./symbol/basics/basics').then((m) => m.SymbolBasics),
+  'javascript/symbol/as-keys': () =>
+    import('./symbol/as-keys/as-keys').then((m) => m.SymbolAsKeys),
+  'javascript/symbol/global-registry': () =>
+    import('./symbol/global-registry/global-registry').then((m) => m.SymbolGlobalRegistry),
+  'javascript/symbol/well-known': () =>
+    import('./symbol/well-known/well-known').then((m) => m.SymbolWellKnown),
+  'javascript/symbol/pitfalls': () =>
+    import('./symbol/pitfalls/pitfalls').then((m) => m.SymbolPitfalls),
 };
 
 // A leaf route: a real content page if registered in PAGE_OVERRIDES, otherwise

@@ -1,0 +1,125 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/symbol">Symbol</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Глобальный реестр</span>
+  </nav>
+
+  <h1 class="doc__title">Глобальный реестр символов</h1>
+  <p class="doc__lead">
+    Уникальность символов — их сила, но иногда и неудобство: если <code>Symbol('id')</code>
+    каждый раз новый, то как получить <strong>один и тот же</strong> символ в двух разных
+    местах программы? Для этого есть <strong>глобальный реестр</strong> и пара
+    <code>Symbol.for</code> / <code>Symbol.keyFor</code>.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — камера хранения с именными ячейками.</strong> Обычный
+    <code>Symbol()</code> — как разовый жетон: каждый новый, и «повторить» его нельзя.
+    А <code>Symbol.for('app.id')</code> — как ячейка с табличкой «app.id»: назвав это имя,
+    вы всегда откроете <em>ту же самую</em> ячейку, из какого бы места программы ни
+    пришли.
+  </p>
+
+  <section class="doc__section">
+    <h2>Проблема: обычный символ не достать заново</h2>
+    <p>
+      Два вызова <code>Symbol('app.id')</code> дают разные символы. Чтобы пользоваться
+      одним символом в нескольких местах, пришлось бы аккуратно передавать саму
+      переменную — не всегда удобно:
+    </p>
+    <app-code-block [code]="problemExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Symbol.for</code> — общий символ по имени</h2>
+    <p>
+      <code>Symbol.for(key)</code> работает через <strong>глобальный реестр</strong>:
+      первый вызов с данным строковым ключом создаёт символ и запоминает его, а все
+      последующие вызовы с тем же ключом возвращают <strong>тот же самый</strong> символ.
+    </p>
+    <app-code-block [code]="forExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 540 200" width="100%" role="img"
+        aria-label="Два вызова Symbol.for с одним ключом указывают на одну запись в глобальном реестре">
+        <text x="20" y="24" fill="var(--fg)" font-size="13" font-weight="600">Глобальный реестр: ключ → символ</text>
+
+        <rect x="40" y="44" width="150" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="115" y="69" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">Symbol.for('app.id')</text>
+
+        <rect x="40" y="140" width="150" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="115" y="165" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">Symbol.for('app.id')</text>
+
+        <line x1="192" y1="64" x2="332" y2="104" stroke="var(--accent)" stroke-width="1.6" />
+        <line x1="192" y1="160" x2="332" y2="120" stroke="var(--accent)" stroke-width="1.6" />
+
+        <rect x="336" y="84" width="180" height="56" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+        <text x="426" y="108" text-anchor="middle" fill="var(--muted)" font-size="11">'app.id' →</text>
+        <text x="426" y="126" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">один символ</text>
+      </svg>
+      <figcaption>
+        Один ключ — одна запись в реестре. Поэтому
+        <code>Symbol.for('app.id') === Symbol.for('app.id')</code> — это
+        <code>true</code>. Реестр общий на весь запуск программы.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Symbol.keyFor</code> — обратный путь</h2>
+    <p>
+      Если символ лежит в реестре, по нему можно узнать ключ — методом
+      <code>Symbol.keyFor</code>. Для обычного символа (созданного через
+      <code>Symbol()</code>) он вернёт <code>undefined</code>: такого символа в реестре
+      просто нет.
+    </p>
+    <app-code-block [code]="keyForExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Когда что использовать</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>Symbol()</code></th>
+            <th><code>Symbol.for(key)</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Результат при повторном вызове</td>
+            <td>всегда новый символ</td>
+            <td class="yes">тот же символ по ключу</td>
+          </tr>
+          <tr>
+            <td>Где хранится</td>
+            <td>нигде, живёт как обычное значение</td>
+            <td>в глобальном реестре</td>
+          </tr>
+          <tr>
+            <td>Найти ключ</td>
+            <td class="no">нельзя (<code>keyFor</code> → <code>undefined</code>)</td>
+            <td class="yes"><code>Symbol.keyFor</code></td>
+          </tr>
+          <tr>
+            <td>Когда брать</td>
+            <td>почти всегда — локальный уникальный ключ</td>
+            <td>нужен один символ в несвязанных местах</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Реестр — глобальный на всю программу, а ключ в нём — <strong>обычная строка</strong>.
+      Значит, две библиотеки, взявшие ключ <code>'id'</code>, получат один и тот же
+      символ и снова могут столкнуться. Поэтому ключам дают уникальные префиксы
+      (<code>'my-lib.id'</code>). В большинстве случаев проще экспортировать обычный
+      символ из <a routerLink="/javascript/modules/basics">модуля</a>, а реестр приберечь
+      для особых ситуаций.
+    </p>
+  </section>
+</article>

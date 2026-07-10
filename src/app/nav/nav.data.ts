@@ -177,6 +177,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'symbol',
+        label: 'Symbol',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'as-keys', label: 'Символы как ключи' },
+          { id: 'global-registry', label: 'Глобальный реестр' },
+          { id: 'well-known', label: 'Системные символы' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'iterators',
         label: 'Итераторы и генераторы',
         children: [

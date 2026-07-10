@@ -1,0 +1,118 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/symbol">Symbol</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Symbol — основы</h1>
+  <p class="doc__lead">
+    <code>Symbol</code> (символ) — это <strong>один из семи примитивных типов</strong> в
+    JavaScript, наряду со строкой, числом и булевым значением. У него одна
+    суперспособность: каждое созданное значение <strong>гарантированно уникально</strong> —
+    другого такого во всей программе нет и быть не может.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — заводской серийный номер.</strong> На двух одинаковых с виду
+    телефонах наклейка с одним и тем же названием модели, но серийные номера у них
+    разные — по номеру всегда можно отличить один аппарат от другого. Символ работает
+    так же: описание можно повторять сколько угодно, но сам символ каждый раз новый и
+    ни с чем не совпадает.
+  </p>
+
+  <section class="doc__section">
+    <h2>Как создать символ</h2>
+    <p>
+      Символ создаётся вызовом функции <code>Symbol()</code>. В скобки можно передать
+      строку-<strong>описание</strong> (<code>description</code>): она ни на что не
+      влияет и нужна только для удобства отладки — чтобы в консоли было видно, что это
+      за символ.
+    </p>
+    <app-code-block [code]="createExample" lang="javascript" />
+    <p class="note">
+      Обратите внимание: <code>Symbol</code> вызывают <strong>как функцию</strong>, без
+      <code>new</code>. Это отличает его от <code>Number</code>, <code>String</code> и
+      других обёрток.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Главное свойство — уникальность</h2>
+    <p>
+      Сколько бы раз вы ни вызвали <code>Symbol()</code> — хоть с одинаковым описанием —
+      вы каждый раз получаете <strong>новый</strong>, ни на что не похожий символ.
+      Два символа никогда не равны друг другу; символ равен только самому себе.
+    </p>
+    <app-code-block [code]="uniqueExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 520 180" width="100%" role="img"
+        aria-label="Два вызова Symbol('id') создают два разных символа, они не равны">
+        <text x="20" y="26" fill="var(--fg)" font-size="13" font-weight="600">Два вызова — два разных символа</text>
+
+        <rect x="24" y="52" width="180" height="70" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="114" y="82" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">a = Symbol('id')</text>
+        <text x="114" y="104" text-anchor="middle" fill="var(--muted)" font-size="11">уникальный #1</text>
+
+        <text x="260" y="94" text-anchor="middle" fill="var(--red)" font-size="26" font-weight="700">≠</text>
+
+        <rect x="316" y="52" width="180" height="70" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="406" y="82" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">b = Symbol('id')</text>
+        <text x="406" y="104" text-anchor="middle" fill="var(--muted)" font-size="11">уникальный #2</text>
+
+        <text x="260" y="150" text-anchor="middle" fill="var(--muted)" font-size="11.5">описание одинаковое, но значения разные → a === b даёт false</text>
+      </svg>
+      <figcaption>
+        Описание <code>'id'</code> — всего лишь подпись. На уникальность оно не влияет:
+        каждый <code>Symbol('id')</code> — отдельное значение.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Описание: <code>description</code> и <code>toString()</code></h2>
+    <p>
+      Прочитать описание можно через свойство <code>.description</code>. А метод
+      <code>.toString()</code> даёт строковое представление вида
+      <code>Symbol(описание)</code> — им пользуются, когда символ нужно показать
+      человеку (например, в логах).
+    </p>
+    <app-code-block [code]="descriptionExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Symbol — это примитив</h2>
+    <p>
+      Символ — примитивное значение, а не объект, поэтому создать его через
+      <code>new</code> нельзя (см. <a routerLink="/javascript/types">Типы</a>). Этим он
+      отличается от объектов-обёрток <code>Number</code> и <code>String</code>, где
+      <code>new</code> формально работает и возвращает объект. Попытка же вызвать
+      <code>new Symbol()</code> завершается ошибкой:
+    </p>
+    <app-code-block [code]="notConstructorExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Зачем вообще нужны символы</h2>
+    <p>
+      Уникальное значение, которое невозможно случайно повторить, полезно в двух
+      ситуациях:
+    </p>
+    <ul class="rules">
+      <li><strong>Ключи свойств без коллизий.</strong> Символом можно пометить свойство
+        объекта так, что оно точно не столкнётся с чужим свойством с таким же именем —
+        см. <a routerLink="/javascript/symbol/as-keys">Символы как ключи</a>.</li>
+      <li><strong>Системные «хуки».</strong> Встроенные символы (например,
+        <code>Symbol.iterator</code>) — это точки, за которые сам движок JavaScript
+        «цепляется», чтобы понять, как объект должен себя вести — см.
+        <a routerLink="/javascript/symbol/well-known">Системные символы</a>.</li>
+    </ul>
+    <p class="note">
+      Дальше по разделу мы разберём обе ситуации на практике, а в конце соберём
+      <a routerLink="/javascript/symbol/pitfalls">подводные камни</a>, о которые чаще
+      всего спотыкаются.
+    </p>
+  </section>
+</article>

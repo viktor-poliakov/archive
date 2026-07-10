@@ -1,0 +1,165 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/symbol">Symbol</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Системные символы</span>
+  </nav>
+
+  <h1 class="doc__title">Системные (well-known) символы</h1>
+  <p class="doc__lead">
+    У объекта <code>Symbol</code> есть набор <strong>готовых, встроенных символов</strong>:
+    <code>Symbol.iterator</code>, <code>Symbol.toPrimitive</code> и другие. Их называют
+    системными (well-known). Смысл такой: <strong>сам движок JavaScript</strong>
+    заглядывает в объект по этим ключам, чтобы понять, как объект должен себя вести в
+    той или иной ситуации.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — стандартный разъём.</strong> USB-порт устроен так, что любое
+    устройство с подходящим штекером техника подхватывает автоматически. Системные
+    символы — такие же «разъёмы»: добавили объекту метод под ключом
+    <code>[Symbol.iterator]</code> — и он заработал в <code>for...of</code> и спреде;
+    добавили <code>[Symbol.toPrimitive]</code> — и движок знает, как превратить объект
+    в число или строку.
+  </p>
+
+  <section class="doc__section">
+    <h2>Почему именно символы</h2>
+    <p>
+      Такие «точки подключения» специально сделали символами, а не строками вроде
+      <code>'iterator'</code>. Иначе они могли бы случайно совпасть с обычным свойством
+      объекта (мало ли у кого есть поле <code>iterator</code>) и всё сломать. Символ же
+      уникален — конфликт исключён. По сути, это тот же приём, что и с
+      <a routerLink="/javascript/symbol/as-keys">ключами без коллизий</a>, только ключи
+      здесь заранее заготовил сам язык.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Symbol.iterator</code> — сделать объект перебираемым</h2>
+    <p>
+      Самый частый системный символ. Если у объекта есть метод
+      <code>[Symbol.iterator]</code>, он становится <strong>итерируемым</strong>: его
+      можно перебирать <code>for...of</code>, раскладывать спредом
+      <code>[...obj]</code> и деструктурировать. Соберём объект-диапазон, который
+      выдаёт числа от <code>from</code> до <code>to</code>:
+    </p>
+    <app-code-block [code]="iteratorExample" lang="javascript" />
+    <p class="note">
+      Это фундамент целого раздела — как устроен протокол итерации и что такое
+      <code>next()</code> / <code>done</code>, подробно разбирается в
+      <a routerLink="/javascript/iterators/protocol">Итераторы: протокол итерации</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Symbol.toPrimitive</code> — управление приведением</h2>
+    <p>
+      Когда объект попадает туда, где ждут примитив (арифметика, склейка строк), движок
+      пытается превратить его в число или строку. Метод <code>[Symbol.toPrimitive]</code>
+      берёт этот процесс под контроль. Ему передаётся <strong>hint</strong> —
+      «подсказка», какой примитив ожидается:
+    </p>
+    <app-code-block [code]="toPrimitiveExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 540 190" width="100%" role="img"
+        aria-label="Объект money через Symbol.toPrimitive с разным hint даёт число, строку или значение по умолчанию">
+        <defs>
+          <marker id="sym-wk-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="24" y="72" width="150" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="99" y="94" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">money</text>
+        <text x="99" y="110" text-anchor="middle" fill="var(--muted)" font-size="10.5">amount: 1000</text>
+
+        <line x1="176" y1="84" x2="316" y2="40" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#sym-wk-arrow)" />
+        <line x1="176" y1="96" x2="316" y2="96" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#sym-wk-arrow)" />
+        <line x1="176" y1="108" x2="316" y2="152" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#sym-wk-arrow)" />
+
+        <text x="215" y="52" fill="var(--muted)" font-size="10">'number'</text>
+        <text x="215" y="88" fill="var(--muted)" font-size="10">'string'</text>
+        <text x="215" y="145" fill="var(--muted)" font-size="10">'default'</text>
+
+        <rect x="320" y="22" width="200" height="36" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="420" y="45" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">1000</text>
+        <rect x="320" y="78" width="200" height="36" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="420" y="101" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">'$1000'</text>
+        <rect x="320" y="134" width="200" height="36" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="420" y="157" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">'Money(1000)'</text>
+      </svg>
+      <figcaption>
+        Один объект — три разных представления в зависимости от <code>hint</code>. Про
+        приведение типов в целом — <a routerLink="/javascript/operators/coercion">Приведение
+        типов</a>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Symbol.toStringTag</code> — свой ярлык типа</h2>
+    <p>
+      Метод <code>Object.prototype.toString</code> возвращает строку вида
+      <code>[object Тип]</code>. Что стоит на месте «Тип», как раз и задаёт системный
+      символ <code>[Symbol.toStringTag]</code>:
+    </p>
+    <app-code-block [code]="toStringTagExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>Symbol.hasInstance</code> — свой <code>instanceof</code></h2>
+    <p>
+      Обычно <code>x instanceof C</code> проверяет прототипы. Но если у <code>C</code>
+      есть статический метод <code>[Symbol.hasInstance]</code>, движок вызовет его и
+      спросит: «считать ли <code>x</code> экземпляром?». Так проверке можно задать любое
+      правило:
+    </p>
+    <app-code-block [code]="hasInstanceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Шпаргалка по системным символам</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Символ</th>
+            <th>За что отвечает</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Symbol.iterator</code></td>
+            <td>перебор: <code>for...of</code>, спред, деструктуризация</td>
+          </tr>
+          <tr>
+            <td><code>Symbol.asyncIterator</code></td>
+            <td>асинхронный перебор: <code>for await...of</code></td>
+          </tr>
+          <tr>
+            <td><code>Symbol.toPrimitive</code></td>
+            <td>превращение объекта в число / строку</td>
+          </tr>
+          <tr>
+            <td><code>Symbol.toStringTag</code></td>
+            <td>тег в <code>Object.prototype.toString</code></td>
+          </tr>
+          <tr>
+            <td><code>Symbol.hasInstance</code></td>
+            <td>поведение <code>instanceof</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Есть и более редкие: <code>Symbol.match</code> / <code>Symbol.replace</code> и
+      компания настраивают работу со строками у
+      <a routerLink="/javascript/regex/methods">регулярных выражений</a>, а
+      <code>Symbol.species</code> влияет на наследование коллекций. Все они —
+      «заготовленные разъёмы» языка, доступные как свойства объекта <code>Symbol</code>.
+    </p>
+  </section>
+</article>

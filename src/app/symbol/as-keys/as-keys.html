@@ -1,0 +1,108 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/symbol">Symbol</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Символы как ключи</span>
+  </nav>
+
+  <h1 class="doc__title">Символы как ключи свойств</h1>
+  <p class="doc__lead">
+    Ключом свойства объекта может быть только <strong>строка</strong> или
+    <strong>символ</strong> — других вариантов нет. И если строковые ключи легко
+    случайно столкнуть друг с другом, то символьный ключ <strong>гарантированно
+    уникален</strong>. Это главное, ради чего символы вообще придумали.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — ящик с подписью.</strong> Строковый ключ <code>'id'</code> — это
+    общий ящик с надписью «id»: кто угодно, написав <code>obj.id = …</code>, попадёт в
+    тот же ящик и перезапишет содержимое. Символьный ключ — ваш личный ящик с уникальным
+    замком: даже если сосед повесит рядом ящик с той же надписью «id», это будет
+    <em>другой</em> ящик, и ваши вещи останутся на месте.
+  </p>
+
+  <section class="doc__section">
+    <h2>Символ в роли ключа</h2>
+    <p>
+      Записать свойство под символом можно только через <strong>квадратные
+      скобки</strong> — и при создании объекта (вычисляемый ключ), и потом. Читают тоже
+      по скобкам, передавая <em>тот же самый</em> символ:
+    </p>
+    <app-code-block [code]="useAsKeyExample" lang="javascript" />
+    <p class="note">
+      Точечная запись <code>user.id</code> здесь <strong>не сработает</strong> — она
+      создаст обычный строковый ключ <code>'id'</code>, а не символьный. Почему так —
+      разбираем в <a routerLink="/javascript/symbol/pitfalls">подводных камнях</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Зачем: свойства без коллизий</h2>
+    <p>
+      Представьте, что к одному объекту (например, к объекту пользователя) добавляют
+      свои служебные поля сразу несколько библиотек или частей кода. Со строковыми
+      ключами легко «наступить» друг другу на свойство. С символами это невозможно:
+      разные символы — разные ключи, даже если описание совпадает.
+    </p>
+    <app-code-block [code]="collisionExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 540 210" width="100%" role="img"
+        aria-label="Строковый ключ id перезаписывается, два символьных ключа с описанием id сосуществуют">
+        <text x="16" y="24" fill="var(--red)" font-size="12.5" font-weight="600">Строковый ключ — один общий ящик</text>
+        <rect x="16" y="36" width="230" height="48" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+        <text x="131" y="58" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'id'</text>
+        <text x="131" y="74" text-anchor="middle" fill="var(--muted)" font-size="10.5">B затирает A</text>
+
+        <text x="300" y="24" fill="var(--green)" font-size="12.5" font-weight="600">Символьные ключи — разные ящики</text>
+        <rect x="300" y="36" width="110" height="48" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+        <text x="355" y="58" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11.5">Symbol('id')</text>
+        <text x="355" y="74" text-anchor="middle" fill="var(--muted)" font-size="10.5">библиотека A</text>
+        <rect x="418" y="36" width="110" height="48" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+        <text x="473" y="58" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11.5">Symbol('id')</text>
+        <text x="473" y="74" text-anchor="middle" fill="var(--muted)" font-size="10.5">библиотека B</text>
+
+        <text x="16" y="122" fill="var(--muted)" font-size="11.5">Со строкой два кода делят один ключ и портят данные друг друга.</text>
+        <text x="16" y="142" fill="var(--muted)" font-size="11.5">С символами у каждого — свой уникальный ключ, конфликта нет.</text>
+      </svg>
+      <figcaption>
+        Одинаковое описание <code>'id'</code> не делает символы одинаковыми — поэтому
+        два независимых куска кода спокойно живут в одном объекте.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Символьные ключи скрыты от перебора</h2>
+    <p>
+      У символьных ключей есть вторая приятная особенность: обычные способы перебрать
+      объект их <strong>не замечают</strong>. Символ не попадёт ни в
+      <code>Object.keys</code>, ни в <code>for...in</code>, ни в
+      <code>JSON.stringify</code>:
+    </p>
+    <app-code-block [code]="hiddenExample" lang="javascript" />
+    <p>
+      Благодаря этому символом удобно вешать <strong>служебные, «внутренние»</strong>
+      данные: они не мешаются при обычном обходе объекта и не попадают в JSON случайно
+      (о переборе свойств — раздел
+      <a routerLink="/javascript/objects/iteration">Объекты: перебор свойств</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Но это не приватность</h2>
+    <p>
+      «Скрыто от перебора» — не то же самое, что «недоступно». Символьные ключи можно
+      достать специальными методами, поэтому <strong>защитой данных символы не
+      являются</strong> — они лишь избавляют от случайных коллизий:
+    </p>
+    <app-code-block [code]="revealExample" lang="javascript" />
+    <p class="note">
+      Нужны по-настоящему приватные поля — используйте
+      <a routerLink="/javascript/classes/static-private">приватные поля класса
+      (<code>#field</code>)</a>. А про то, что символы всё же «видны», подробнее — в
+      <a routerLink="/javascript/symbol/pitfalls">подводных камнях</a>.
+    </p>
+  </section>
+</article>

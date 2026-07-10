@@ -1,0 +1,124 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/symbol">Symbol</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Symbol: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Символы удобны, но ведут себя не так, как остальные значения. Соберём здесь то, обо
+    что чаще всего спотыкаются: молчаливые исчезновения, неожиданные ошибки приведения и
+    путаницу со строковыми ключами.
+  </p>
+
+  <section class="doc__section">
+    <h2>Символ не приводится к строке сам собой</h2>
+    <p>
+      Почти все значения в JavaScript можно неявно склеить со строкой. С символом это
+      <strong>намеренно запрещено</strong>: попытка вставить его в шаблонную строку,
+      сложить со строкой или превратить в число бросает <code>TypeError</code>. Так язык
+      страхует от случайной потери символа. Приводить нужно <strong>явно</strong>:
+    </p>
+    <app-code-block [code]="coercionExample" lang="javascript" />
+    <p class="note">
+      Логика такая: символ — уникальный идентификатор, и «случайно» превратить его в
+      строку почти всегда ошибка. Поэтому язык требует написать
+      <code>String(sym)</code> или <code>sym.description</code> явно — чтобы намерение
+      было видно.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>JSON.stringify</code> молча выкидывает символы</h2>
+    <p>
+      При сериализации в JSON символы просто исчезают — и как значения, и как ключи. Без
+      ошибок и предупреждений. Держите это в голове, если используете символы для
+      важных данных:
+    </p>
+    <app-code-block [code]="jsonExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Спред и <code>Object.assign</code> всё-таки копируют символы</h2>
+    <p>
+      Вот по-настоящему коварный момент. Мы привыкли, что символьные ключи «скрыты»: их
+      не видно в <code>Object.keys</code> и <code>for...in</code>. Но
+      <strong>копирование объекта</strong> спредом или <code>Object.assign</code>
+      переносит и символьные ключи тоже:
+    </p>
+    <app-code-block [code]="spreadExample" lang="javascript" />
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Операция</th>
+            <th>Видит символьный ключ?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Object.keys</code>, <code>for...in</code></td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td><code>JSON.stringify</code></td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>спред <code>&#123;...obj&#125;</code>, <code>Object.assign</code></td>
+            <td class="yes">да — копирует</td>
+          </tr>
+          <tr>
+            <td><code>Object.getOwnPropertySymbols</code></td>
+            <td class="yes">да</td>
+          </tr>
+          <tr>
+            <td><code>Reflect.ownKeys</code></td>
+            <td class="yes">да (все ключи)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Отсюда вывод: «не виден при переборе» <strong>не</strong> значит «не скопируется».
+      Именно поэтому символы — способ избежать коллизий, а не инструмент приватности
+      (о разнице — в разделе
+      <a routerLink="/javascript/symbol/as-keys">Символы как ключи</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Точка создаёт строковый ключ, а не символьный</h2>
+    <p>
+      Символьный ключ доступен <strong>только</strong> через квадратные скобки с самим
+      символом. Запись через точку — это всегда обычный строковый ключ, даже если рядом
+      есть переменная-символ с похожим именем:
+    </p>
+    <app-code-block [code]="dotExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Приведение только явное:</strong> <code>String(sym)</code> /
+        <code>sym.description</code>; неявное (<code>`$&#123;sym&#125;`</code>,
+        <code>+sym</code>) бросает <code>TypeError</code>.</li>
+      <li><strong>JSON игнорирует символы</strong> — и ключи, и значения, без
+        предупреждений.</li>
+      <li><strong>Копирование переносит символьные ключи</strong> (спред,
+        <code>Object.assign</code>), хотя перебор их не показывает.</li>
+      <li><strong>Точка — это строковый ключ.</strong> Для символа —
+        <code>obj[sym]</code>.</li>
+      <li><strong>Скрытость ≠ приватность:</strong> символы достаются через
+        <code>Object.getOwnPropertySymbols</code>; для настоящей приватности берите
+        <a routerLink="/javascript/classes/static-private">приватные поля
+        (<code>#field</code>)</a>.</li>
+      <li><strong>Только без <code>new</code>:</strong> <code>Symbol()</code> — функция,
+        а не конструктор.</li>
+    </ul>
+  </section>
+</article>
