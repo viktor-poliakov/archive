@@ -1,0 +1,115 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/json">JSON</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">JSON.stringify</span>
+  </nav>
+
+  <h1 class="doc__title">JSON.stringify — упаковка в строку</h1>
+  <p class="doc__lead">
+    <code>JSON.stringify</code> превращает значение JavaScript (обычно объект или
+    массив) в <strong>строку JSON</strong>. Это тот самый «упаковщик» из аналогии с
+    посылкой — только умный: он умеет ещё и <strong>отбирать</strong> нужные поля и
+    <strong>красиво форматировать</strong> результат.
+  </p>
+
+  <section class="doc__section">
+    <h2>Базовое использование</h2>
+    <p>
+      Передаём значение — получаем строку. Объекты и массивы упаковываются со всей
+      вложенностью, строки получают двойные кавычки:
+    </p>
+    <app-code-block [code]="basicExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Что отбрасывается</h2>
+    <p>
+      В JSON нет функций, <code>undefined</code> и
+      <a routerLink="/javascript/symbol/basics">символов</a>. Поэтому такие поля
+      <strong>молча пропадают</strong> при упаковке. Важная тонкость: в объекте они
+      просто исчезают, а в массиве заменяются на <code>null</code> — иначе съехали бы
+      индексы соседних элементов.
+    </p>
+    <app-code-block [code]="droppedExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 210" width="100%" role="img"
+        aria-label="При stringify поле name сохраняется, а функция, undefined и символ отбрасываются">
+        <defs>
+          <marker id="json-s-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="20" y="24" fill="var(--fg)" font-size="12.5" font-weight="600">Объект</text>
+        <rect x="20" y="34" width="210" height="26" rx="6" fill="var(--surface)" stroke="var(--green)" stroke-width="1.5" />
+        <text x="32" y="51" fill="var(--green)" font-family="monospace" font-size="11.5">name: 'Anna'</text>
+        <rect x="20" y="66" width="210" height="26" rx="6" fill="var(--surface)" stroke="var(--red)" stroke-dasharray="4 3" />
+        <text x="32" y="83" fill="var(--red)" font-family="monospace" font-size="11.5">greet() &#123;&#125; — функция</text>
+        <rect x="20" y="98" width="210" height="26" rx="6" fill="var(--surface)" stroke="var(--red)" stroke-dasharray="4 3" />
+        <text x="32" y="115" fill="var(--red)" font-family="monospace" font-size="11.5">age: undefined</text>
+        <rect x="20" y="130" width="210" height="26" rx="6" fill="var(--surface)" stroke="var(--red)" stroke-dasharray="4 3" />
+        <text x="32" y="147" fill="var(--red)" font-family="monospace" font-size="11.5">id: Symbol('id')</text>
+
+        <path d="M238 95 L360 95" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#json-s-arrow)" />
+        <text x="300" y="87" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="10.5">stringify</text>
+
+        <rect x="364" y="78" width="184" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="456" y="99" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">'&#123;"name":"Anna"&#125;'</text>
+        <text x="456" y="140" text-anchor="middle" fill="var(--muted)" font-size="10.5">осталось только «выразимое»</text>
+      </svg>
+      <figcaption>
+        Всё, чего нет в JSON (функции, <code>undefined</code>, символы), при упаковке
+        отбрасывается.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Форматирование: аргумент <code>space</code></h2>
+    <p>
+      Третий аргумент задаёт <strong>отступ</strong> — и строка становится читаемой, с
+      переносами и вложенностью. Обычно передают число (сколько пробелов) — чаще всего
+      <code>2</code>. Второй аргумент здесь — <code>null</code>: это
+      <code>replacer</code>, он нам сейчас не нужен (о нём в следующем разделе).
+      Форматирование незаменимо для конфигов и вывода в консоль:
+    </p>
+    <app-code-block [code]="spaceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>replacer</code>: отбор и трансформация полей</h2>
+    <p>
+      Второй аргумент (<code>replacer</code>) решает, <strong>что и как</strong> попадёт
+      в JSON. Он бывает двух видов. Первый — <strong>массив ключей</strong>: в результат
+      войдут только перечисленные поля:
+    </p>
+    <app-code-block [code]="replacerArrayExample" lang="javascript" />
+    <p>
+      Второй — <strong>функция</strong>: её зовут для каждого поля, и она может изменить
+      значение или убрать его (вернув <code>undefined</code>). Удобно, например, чтобы
+      не выгружать пароль:
+    </p>
+    <app-code-block [code]="replacerFnExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Метод <code>toJSON</code></h2>
+    <p>
+      Если у объекта есть метод <code>toJSON</code>, <code>stringify</code> берёт не сам
+      объект, а то, что вернёт этот метод. Так объект может сам задать своё
+      представление в JSON. На этом же механизме работает <code>Date</code> — у неё
+      встроенный <code>toJSON</code>, отдающий строку в формате ISO:
+    </p>
+    <app-code-block [code]="toJsonExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> обратная операция — разбор строки в объект — это
+      <a routerLink="/javascript/json/parse">JSON.parse</a>. А полный список того, что
+      теряется или ломается при упаковке (даты, <code>NaN</code>, большие числа, циклы),
+      собран в <a routerLink="/javascript/json/pitfalls">подводных камнях</a>.
+    </p>
+  </section>
+</article>

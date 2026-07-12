@@ -1,0 +1,114 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/json">JSON</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Практика</span>
+  </nav>
+
+  <h1 class="doc__title">JSON на практике</h1>
+  <p class="doc__lead">
+    Методы <code>JSON</code> решают несколько очень частых бытовых задач:
+    <strong>скопировать</strong> объект целиком и <strong>сохранить</strong> его между
+    перезагрузками страницы (обе — связка <code>stringify</code> + <code>parse</code>), а
+    также <strong>наглядно вывести</strong> в консоль (тут хватает одного
+    <code>stringify</code>). Разберём каждую — и честно обозначим пределы.
+  </p>
+
+  <section class="doc__section">
+    <h2>Глубокое копирование</h2>
+    <p>
+      Обычное копирование объекта (присваивание, спред <code>&#123;...obj&#125;</code>)
+      затрагивает только верхний уровень: вложенные объекты остаются <strong>общими</strong>
+      по ссылке (см. <a routerLink="/javascript/objects/references">Объекты: копирование
+      и ссылки</a>). Приём «упаковать и распаковать» создаёт полностью независимую копию
+      со всей вложенностью:
+    </p>
+    <app-code-block [code]="deepCloneExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>…и его ограничения</h2>
+    <p>
+      Копия проходит через JSON, а значит теряет всё, чего в JSON нет: функции,
+      <code>undefined</code>, а <code>Date</code> превращается в строку. Поэтому приём
+      годится только для <strong>«чистых данных»</strong> — объектов из строк, чисел,
+      булевых, массивов и вложенных объектов:
+    </p>
+    <app-code-block [code]="cloneLimitsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>structuredClone</code> — правильный клон</h2>
+    <p>
+      Для честного глубокого копирования в браузерах и Node есть встроенная функция
+      <code>structuredClone</code>. Она сохраняет <code>Date</code>, <code>Map</code>,
+      <code>Set</code> и даже <a routerLink="/javascript/json/pitfalls">циклические
+      ссылки</a> — то, на чём приём с JSON спотыкается:
+    </p>
+    <app-code-block [code]="structuredCloneExample" lang="javascript" />
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>JSON.parse(JSON.stringify)</code></th>
+            <th><code>structuredClone</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Вложенные объекты</td>
+            <td class="yes">копирует</td>
+            <td class="yes">копирует</td>
+          </tr>
+          <tr>
+            <td><code>Date</code></td>
+            <td class="no">станет строкой</td>
+            <td class="yes">сохраняет</td>
+          </tr>
+          <tr>
+            <td><code>Map</code> / <code>Set</code></td>
+            <td class="no">теряются</td>
+            <td class="yes">сохраняет</td>
+          </tr>
+          <tr>
+            <td>Функции</td>
+            <td class="no">отбрасываются</td>
+            <td class="no">ошибка</td>
+          </tr>
+          <tr>
+            <td>Циклические ссылки</td>
+            <td class="no">ошибка</td>
+            <td class="yes">поддерживает</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Правило: нужен клон «данных ради данных» и код должен работать в любой среде — годится
+      приём с JSON; нужен точный клон с датами, <code>Map</code>/<code>Set</code> и циклами
+      — берите <code>structuredClone</code>. Функции не копирует ни то, ни другое.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Хранение в <code>localStorage</code></h2>
+    <p>
+      <code>localStorage</code> умеет хранить <strong>только строки</strong>. Поэтому
+      объект перед сохранением упаковывают в JSON, а при чтении — распаковывают обратно:
+    </p>
+    <app-code-block [code]="localStorageExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Красивый вывод для отладки</h2>
+    <p>
+      Когда нужно рассмотреть вложенный объект в консоли или записать его в лог,
+      <code>stringify</code> с отступом даёт аккуратный, читаемый текст:
+    </p>
+    <app-code-block [code]="prettyLogExample" lang="javascript" />
+  </section>
+</article>

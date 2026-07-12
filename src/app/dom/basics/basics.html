@@ -1,0 +1,109 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dom">DOM</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">DOM — основы</h1>
+  <p class="doc__lead">
+    <strong>DOM</strong> (Document Object Model) — это <strong>представление страницы в
+    виде дерева объектов</strong>. Браузер, прочитав HTML, строит из него дерево, а
+    JavaScript работает уже с этим деревом, а не с текстом HTML. Меняешь дерево —
+    меняется то, что видит пользователь.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — генеалогическое дерево.</strong> У страницы есть общий предок
+    (<code>&lt;html&gt;</code>), у него дети (<code>&lt;head&gt;</code> и
+    <code>&lt;body&gt;</code>), у них — свои дети, и так вглубь. Каждый «человек» в этом
+    дереве — <strong>узел</strong>, к которому можно обратиться из кода: найти, прочитать,
+    изменить, удалить. DOM — это и есть такое живое дерево страницы.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>document</code> — корень всего</h2>
+    <p>
+      Всё начинается с объекта <code>document</code> — это вся страница целиком и точка
+      входа в дерево. От него добираются до любого элемента, а у элемента есть имя тега,
+      обычно родитель и, возможно, потомки:
+    </p>
+    <app-code-block [code]="introExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Страница — это дерево узлов</h2>
+    <p>Вот как небольшой HTML превращается в дерево:</p>
+    <app-code-block [code]="markupExample" lang="html" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 300" width="100%" role="img"
+        aria-label="Дерево DOM: document содержит html, внутри head и body, внутри body — h1 и ul, внутри ul — два li">
+        <defs>
+          <marker id="dom-b-line" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <circle cx="5" cy="5" r="2" fill="var(--muted)" />
+          </marker>
+        </defs>
+
+        <line x1="90" y1="42" x2="90" y2="72" stroke="var(--muted)" stroke-width="1.4" />
+        <line x1="90" y1="96" x2="90" y2="120" stroke="var(--muted)" stroke-width="1.4" />
+        <line x1="90" y1="108" x2="250" y2="120" stroke="var(--muted)" stroke-width="1.4" />
+        <line x1="250" y1="144" x2="250" y2="168" stroke="var(--muted)" stroke-width="1.4" />
+        <line x1="250" y1="156" x2="410" y2="168" stroke="var(--muted)" stroke-width="1.4" />
+        <line x1="410" y1="192" x2="410" y2="204" stroke="var(--muted)" stroke-width="1.4" />
+        <line x1="410" y1="204" x2="330" y2="216" stroke="var(--muted)" stroke-width="1.4" />
+        <line x1="410" y1="204" x2="490" y2="216" stroke="var(--muted)" stroke-width="1.4" />
+
+        <rect x="30" y="18" width="120" height="26" rx="6" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="90" y="35" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">document</text>
+
+        <rect x="40" y="72" width="100" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" />
+        <text x="90" y="89" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&lt;html&gt;</text>
+
+        <rect x="30" y="120" width="120" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" />
+        <text x="90" y="137" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&lt;head&gt;</text>
+        <rect x="190" y="120" width="120" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" />
+        <text x="250" y="137" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&lt;body&gt;</text>
+
+        <rect x="190" y="168" width="120" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" />
+        <text x="250" y="185" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&lt;h1&gt;</text>
+        <rect x="350" y="168" width="120" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" />
+        <text x="410" y="185" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&lt;ul&gt;</text>
+
+        <rect x="280" y="216" width="100" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" />
+        <text x="330" y="233" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&lt;li&gt;</text>
+        <rect x="440" y="216" width="100" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" />
+        <text x="490" y="233" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&lt;li&gt;</text>
+
+        <text x="30" y="278" fill="var(--muted)" font-size="11">Каждый прямоугольник — узел. Стрелки вниз — «родитель → ребёнок».</text>
+      </svg>
+      <figcaption>
+        HTML разбирается в дерево: <code>&lt;html&gt;</code> — предок,
+        <code>&lt;body&gt;</code> — его ребёнок, <code>&lt;li&gt;</code> — потомки
+        <code>&lt;ul&gt;</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Узлы и элементы — не одно и то же</h2>
+    <p>
+      Важное различие. <strong>Узел (node)</strong> — это любой «кусочек» дерева: не
+      только теги, но и текст между ними, и комментарии. <strong>Элемент
+      (element)</strong> — это узел-тег (<code>&lt;p&gt;</code>, <code>&lt;div&gt;</code>).
+      Отсюда две разные коллекции детей: <code>childNodes</code> (все узлы) и
+      <code>children</code> (только элементы):
+    </p>
+    <app-code-block [code]="nodeTypesExample" lang="javascript" />
+    <p class="note">
+      На практике почти всегда работают с <strong>элементами</strong> и свойством
+      <code>children</code>. Про «лишние» текстовые узлы из пробелов между тегами —
+      в <a routerLink="/javascript/dom/pitfalls">подводных камнях</a>.
+    </p>
+    <p class="note">
+      <strong>Дальше:</strong> научимся <a routerLink="/javascript/dom/search">находить
+      элементы</a> в дереве и ходить по нему от узла к узлу.
+    </p>
+  </section>
+</article>

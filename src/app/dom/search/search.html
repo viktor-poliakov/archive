@@ -1,0 +1,138 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dom">DOM</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Поиск и навигация</span>
+  </nav>
+
+  <h1 class="doc__title">Поиск элементов и навигация</h1>
+  <p class="doc__lead">
+    Прежде чем что-то на странице изменить, нужный элемент надо <strong>найти</strong>.
+    Есть два подхода: <strong>точечный поиск</strong> по всему документу (по селектору
+    или id) и <strong>хождение по дереву</strong> — от найденного узла к его родителю,
+    детям и соседям.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>querySelector</code> — поиск по CSS-селектору</h2>
+    <p>
+      Главный инструмент. Он принимает <strong>тот же селектор, что и CSS</strong>, —
+      значит, ничего нового учить не нужно. <code>querySelector</code> возвращает первый
+      подходящий элемент (или <code>null</code>), а <code>querySelectorAll</code> — сразу
+      все:
+    </p>
+    <app-code-block [code]="querySelectorExample" lang="javascript" />
+    <p class="note">
+      Если ничего не найдено, <code>querySelector</code> возвращает <code>null</code> —
+      и обращение к его свойствам упадёт с ошибкой. Это частая ловушка, разбираем её в
+      <a routerLink="/javascript/dom/pitfalls">подводных камнях</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>getElementById</code> и старые методы</h2>
+    <p>
+      Если у элемента есть <code>id</code>, самый короткий путь — <code>getElementById</code>.
+      Есть и более старые методы (<code>getElementsByClassName</code>,
+      <code>getElementsByTagName</code>), но сегодня в новом коде почти везде хватает
+      <code>querySelector</code>:
+    </p>
+    <app-code-block [code]="getByIdExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Поиск внутри элемента</h2>
+    <p>
+      <code>querySelector</code> и <code>querySelectorAll</code> можно звать не только на
+      <code>document</code>, но и на любом элементе — тогда поиск идёт <strong>только
+      среди его потомков</strong>. Удобно, чтобы не зацепить лишнее с других частей
+      страницы:
+    </p>
+    <app-code-block [code]="scopedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Навигация по дереву</h2>
+    <p>
+      Когда один элемент уже найден, до соседних можно добраться «пешком» по связям
+      дерева — не повторяя поиск:
+    </p>
+    <app-code-block [code]="navExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 520 250" width="100%" role="img"
+        aria-label="От элемента: вверх parentElement, вниз children, вбок nextElementSibling и previousElementSibling">
+        <defs>
+          <marker id="dom-s-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="200" y="105" width="120" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="260" y="130" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">.item</text>
+
+        <rect x="200" y="20" width="120" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="260" y="42" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">родитель</text>
+        <line x1="260" y1="103" x2="260" y2="56" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#dom-s-arrow)" />
+        <text x="268" y="82" fill="var(--muted)" font-size="10">parentElement</text>
+
+        <rect x="200" y="196" width="120" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="260" y="218" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">дети</text>
+        <line x1="260" y1="147" x2="260" y2="194" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#dom-s-arrow)" />
+        <text x="268" y="175" fill="var(--muted)" font-size="10">children</text>
+
+        <rect x="20" y="108" width="150" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="95" y="130" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="10.5">пред. сосед</text>
+        <line x1="198" y1="125" x2="172" y2="125" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#dom-s-arrow)" />
+
+        <rect x="350" y="108" width="150" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="425" y="130" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="10.5">след. сосед</text>
+        <line x1="322" y1="125" x2="348" y2="125" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#dom-s-arrow)" />
+      </svg>
+      <figcaption>
+        От любого элемента можно шагнуть вверх (к родителю), вниз (к детям) и вбок (к
+        соседям).
+      </figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Свойство / метод</th>
+            <th>Куда ведёт</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>parentElement</code></td>
+            <td>вверх — к родителю</td>
+          </tr>
+          <tr>
+            <td><code>children</code></td>
+            <td>вниз — ко всем детям-элементам</td>
+          </tr>
+          <tr>
+            <td><code>firstElementChild</code> / <code>lastElementChild</code></td>
+            <td>к первому / последнему ребёнку</td>
+          </tr>
+          <tr>
+            <td><code>nextElementSibling</code> / <code>previousElementSibling</code></td>
+            <td>к соседям на том же уровне</td>
+          </tr>
+          <tr>
+            <td><code>closest(selector)</code></td>
+            <td>вверх по предкам до совпадения (включая сам элемент)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <code>closest</code> особенно полезен в обработчиках событий — он помогает от
+      места клика подняться к нужному контейнеру. Это основа
+      <a routerLink="/javascript/events/delegation">делегирования событий</a>.
+    </p>
+  </section>
+</article>

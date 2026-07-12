@@ -1,0 +1,83 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/json">JSON</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">JSON.parse</span>
+  </nav>
+
+  <h1 class="doc__title">JSON.parse — разбор строки</h1>
+  <p class="doc__lead">
+    <code>JSON.parse</code> делает обратное <a routerLink="/javascript/json/stringify">
+    <code>stringify</code></a>: берёт <strong>строку JSON</strong> и превращает её в
+    настоящее значение JavaScript, с которым уже можно работать. Это «распаковщик»
+    посылки — из текста снова получаем объект.
+  </p>
+
+  <section class="doc__section">
+    <h2>Базовое использование</h2>
+    <p>
+      На входе — строка, на выходе — обычный объект (или массив, число, строка…). К
+      результату сразу можно обращаться по ключам и индексам:
+    </p>
+    <app-code-block [code]="basicExample" lang="javascript" />
+    <p class="note">
+      Так обычно и читают ответ от сервера: <code>fetch</code> отдаёт тело ответа
+      строкой, а её разбирают в объект — подробнее в
+      <a routerLink="/javascript/rest-api/fetch">REST API: Fetch на практике</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>reviver</code>: трансформация при разборе</h2>
+    <p>
+      Второй аргумент — функция <code>reviver</code> — вызывается для каждого значения
+      по мере разбора и может его заменить. Самый частый случай: в JSON дат нет (они
+      хранятся строками), и при разборе их возвращают в объект <code>Date</code>. Это
+      зеркало метода <code>toJSON</code> со стороны <code>stringify</code>:
+    </p>
+    <app-code-block [code]="reviverExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Ошибки: невалидный JSON</h2>
+    <p>
+      Если строка — не корректный JSON, <code>JSON.parse</code> не возвращает
+      <code>null</code>, а <strong>бросает <code>SyntaxError</code></strong>. Частые
+      причины: одинарные кавычки, висячая запятая, ключи без кавычек. Поскольку данные
+      «извне» бывают битыми, разбор оборачивают в
+      <a routerLink="/javascript/errors/try-catch">try / catch</a>:
+    </p>
+    <app-code-block [code]="errorExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 176" width="100%" role="img"
+        aria-label="Корректный JSON превращается в объект, некорректный вызывает SyntaxError">
+        <defs>
+          <marker id="json-p-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="16" y="30" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.5" />
+        <text x="116" y="52" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">'&#123;"name":"Anna"&#125;'</text>
+        <path d="M220 47 L330 47" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#json-p-arrow)" />
+        <text x="275" y="39" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="10">parse</text>
+        <rect x="334" y="30" width="210" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+        <text x="439" y="52" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="11">объект &#123; name: 'Anna' &#125;</text>
+
+        <rect x="16" y="112" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--red)" stroke-width="1.5" />
+        <text x="116" y="134" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">"&#123;'name':'Anna'&#125;"</text>
+        <path d="M220 129 L330 129" fill="none" stroke="var(--red)" stroke-width="1.5" marker-end="url(#json-p-arrow)" />
+        <text x="275" y="121" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="10">parse</text>
+        <rect x="334" y="112" width="210" height="34" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.5" />
+        <text x="439" y="134" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="11">SyntaxError</text>
+      </svg>
+      <figcaption>
+        Корректная строка превращается в объект; малейшая ошибка формата — и вместо
+        результата исключение.
+      </figcaption>
+    </figure>
+  </section>
+</article>

@@ -1,0 +1,84 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/json">JSON</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">JSON: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    JSON выглядит простым, но у него узкий набор типов, и всё, что в него не влезает,
+    ведёт себя неожиданно: что-то тихо меняет тип, что-то пропадает, а что-то и вовсе
+    роняет программу. Соберём самое частое.
+  </p>
+
+  <section class="doc__section">
+    <h2>Даты превращаются в строки</h2>
+    <p>
+      В JSON нет типа «дата». При упаковке <code>Date</code> становится строкой (в
+      формате ISO), а обратно <code>parse</code> её <strong>не восстанавливает</strong>
+      — на выходе так и останется строка:
+    </p>
+    <app-code-block [code]="datesExample" lang="javascript" />
+    <p class="note">
+      Чтобы вернуть настоящий <code>Date</code>, нужен <code>reviver</code> при разборе —
+      см. <a routerLink="/javascript/json/parse">JSON.parse</a>. Про сами даты — раздел
+      <a routerLink="/javascript/dates/basics">Даты</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>NaN</code>, <code>Infinity</code> и <code>BigInt</code></h2>
+    <p>
+      Специальных числовых значений в JSON тоже нет. <code>NaN</code> и
+      <code>Infinity</code> молча превращаются в <code>null</code>, а <code>BigInt</code>
+      и вовсе <strong>бросает ошибку</strong>:
+    </p>
+    <app-code-block [code]="specialNumbersExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Точность больших чисел</h2>
+    <p>
+      Числа в JSON — это обычные числа JavaScript, а они хранят целыми лишь значения до
+      <code>2⁵³</code> (см. <a routerLink="/javascript/numbers/precision">Числа:
+      точность</a>). Число длиннее — и при разборе последние цифры «уплывают»:
+    </p>
+    <app-code-block [code]="precisionExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Циклические ссылки</h2>
+    <p>
+      Если объект (прямо или через цепочку) ссылается сам на себя,
+      <code>JSON.stringify</code> не может его обойти и бросает <code>TypeError</code>:
+    </p>
+    <app-code-block [code]="circularExample" lang="javascript" />
+    <p class="note">
+      Такие структуры умеет копировать
+      <a routerLink="/javascript/json/practical"><code>structuredClone</code></a> — но в
+      JSON их не превратить.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Даты → строки.</strong> Обратно в <code>Date</code> — только вручную
+        через <code>reviver</code>.</li>
+      <li><strong><code>undefined</code>, функции, символы отбрасываются</strong> — в
+        объекте исчезают, в массиве становятся <code>null</code>.</li>
+      <li><strong><code>NaN</code> и <code>Infinity</code> → <code>null</code></strong>,
+        а <code>BigInt</code> → <code>TypeError</code>.</li>
+      <li><strong>Большие числа теряют точность</strong> — длинные ID храните и
+        передавайте строкой.</li>
+      <li><strong>Циклические ссылки → <code>TypeError</code></strong>; для копирования
+        берите <code>structuredClone</code>.</li>
+      <li><strong>Невалидный JSON → <code>SyntaxError</code></strong> (одинарные кавычки,
+        висячая запятая, ключи без кавычек); разбор данных «извне» — в
+        <a routerLink="/javascript/errors/try-catch">try / catch</a>.</li>
+    </ul>
+  </section>
+</article>

@@ -1,0 +1,82 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dom">DOM</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Атрибуты, классы, стили</span>
+  </nav>
+
+  <h1 class="doc__title">Атрибуты, классы и стили</h1>
+  <p class="doc__lead">
+    Кроме содержимого у элемента есть <strong>атрибуты</strong> (<code>href</code>,
+    <code>src</code>, <code>id</code>…), <strong>классы</strong> (ими удобно управлять
+    внешним видом) и <strong>стили</strong>. Разберём, как всё это читать и менять — и
+    почему атрибут и свойство иногда расходятся.
+  </p>
+
+  <section class="doc__section">
+    <h2>Атрибуты: get / set / has / remove</h2>
+    <p>Базовый набор для работы с любым атрибутом по его имени:</p>
+    <app-code-block [code]="attrExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Атрибут ≠ свойство</h2>
+    <p>
+      Важный и коварный момент. <strong>Атрибут</strong> — это то, что написано в HTML
+      (начальное значение). <strong>Свойство</strong> — поле объекта-элемента, живущее в
+      DOM (текущее состояние). У многих (например, <code>id</code>) они совпадают, но у
+      полей ввода расходятся: пока пользователь печатает, меняется <strong>свойство</strong>
+      <code>value</code>, а атрибут хранит исходное значение из разметки:
+    </p>
+    <app-code-block [code]="attrVsPropExample" lang="javascript" />
+    <p class="note">
+      Практическое правило: <strong>текущее</strong> состояние читайте и меняйте через
+      свойство (<code>input.value</code>, <code>checkbox.checked</code>), а
+      <code>getAttribute</code> берите, когда нужно именно то, что записано в разметке.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Классы: <code>classList</code></h2>
+    <p>
+      Классы можно править как строку <code>className</code>, но удобнее — через
+      <code>classList</code>: он добавляет, убирает и переключает классы по одному, не
+      затрагивая остальные:
+    </p>
+    <app-code-block [code]="classListExample" lang="javascript" />
+    <p class="note">
+      Управлять видом лучше <strong>через классы</strong>, а не правкой стилей по одному:
+      описываете состояние классом в CSS и переключаете его одним
+      <code>classList.toggle</code>. Код чище, а оформление остаётся в таблицах стилей.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Свои данные: <code>data-*</code> и <code>dataset</code></h2>
+    <p>
+      Чтобы привязать к элементу собственные данные (id записи, роль, состояние), в HTML
+      используют атрибуты с префиксом <code>data-</code>. Из кода к ним обращаются через
+      <code>dataset</code>, где имена переводятся в camelCase:
+    </p>
+    <app-code-block [code]="datasetExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Стили: <code>style</code> и <code>getComputedStyle</code></h2>
+    <p>
+      Свойство <code>style</code> управляет <strong>инлайновыми</strong> стилями (как
+      атрибут <code>style="…"</code>). Имена CSS-свойств пишутся в camelCase. А чтобы
+      узнать <strong>итоговое, вычисленное</strong> значение (нормализованное — и с учётом
+      правил из CSS-файлов, и наследования) — есть <code>getComputedStyle</code> (только
+      на чтение). В примере ниже видно, как инлайновый <code>'red'</code> нормализуется в
+      <code>'rgb(255, 0, 0)'</code>:
+    </p>
+    <app-code-block [code]="styleExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> до сих пор мы меняли уже существующие элементы — теперь
+      научимся <a routerLink="/javascript/dom/create">создавать и удалять узлы</a>.
+    </p>
+  </section>
+</article>

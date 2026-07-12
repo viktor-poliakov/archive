@@ -169,6 +169,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'json',
+        label: 'JSON',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'stringify', label: 'JSON.stringify' },
+          { id: 'parse', label: 'JSON.parse' },
+          { id: 'practical', label: 'Практика' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'collections',
         label: 'Коллекции',
         children: [
@@ -233,6 +244,18 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'macro-micro', label: 'Макро- и микрозадачи' },
           { id: 'rendering', label: 'Отрисовка и rAF' },
           { id: 'pitfalls', label: 'Подводные камни' },
+        ],
+      },
+      {
+        id: 'dom',
+        label: 'DOM',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'search', label: 'Поиск и навигация' },
+          { id: 'content', label: 'Текст и разметка' },
+          { id: 'attributes', label: 'Атрибуты, классы, стили' },
+          { id: 'create', label: 'Создание и удаление узлов' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
         ],
       },
       {

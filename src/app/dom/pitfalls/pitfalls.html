@@ -1,0 +1,129 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dom">DOM</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">DOM: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    DOM прощает мало: тут и брешь в безопасности из-за одной строки, и падение на
+    <code>null</code>, и «живые» коллекции, которые незаметно меняются под ногами.
+    Соберём то, на чём спотыкаются чаще всего.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>innerHTML</code> и XSS</h2>
+    <p>
+      <code>innerHTML</code> <strong>исполняет</strong> переданную разметку. Если вставить
+      туда данные от пользователя, злоумышленник сможет внедрить на страницу свой код —
+      это уязвимость <strong>XSS</strong>. Для текста всегда берите
+      <code>textContent</code>:
+    </p>
+    <app-code-block [code]="xssExample" lang="javascript" />
+    <p class="note">
+      Правило простое: разметку в <code>innerHTML</code> собираем <strong>только из своих,
+      доверенных</strong> строк. Всё, что пришло извне, выводим через
+      <code>textContent</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>querySelector</code> может вернуть <code>null</code></h2>
+    <p>
+      Если элемент не найден, поиск возвращает <code>null</code>, и следующая же строка
+      с обращением к его свойствам роняет скрипт. Проверяйте результат:
+    </p>
+    <app-code-block [code]="nullExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Живые и статические коллекции</h2>
+    <p>
+      <code>getElementsByTagName</code>/<code>ByClassName</code> возвращают
+      <strong>живую</strong> коллекцию (<code>HTMLCollection</code>): она автоматически
+      отражает изменения дерева. А <code>querySelectorAll</code> даёт
+      <strong>статический</strong> снимок (<code>NodeList</code>) — каким было дерево в
+      момент вызова:
+    </p>
+    <app-code-block [code]="liveCollectionExample" lang="javascript" />
+    <p>
+      Из-за этого живую коллекцию легко «сломать» в цикле: удаляя элементы, вы
+      одновременно укорачиваете саму коллекцию, и индексы съезжают. Надёжнее взять
+      статический снимок:
+    </p>
+    <app-code-block [code]="liveLoopExample" lang="javascript" />
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th><code>getElementsBy*</code></th>
+            <th><code>querySelectorAll</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Тип</td>
+            <td><code>HTMLCollection</code></td>
+            <td><code>NodeList</code></td>
+          </tr>
+          <tr>
+            <td>Реагирует на изменения DOM</td>
+            <td class="no">да, меняется на ходу</td>
+            <td class="yes">нет, это снимок</td>
+          </tr>
+          <tr>
+            <td>Метод <code>forEach</code></td>
+            <td class="no">нет</td>
+            <td class="yes">есть</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>Массовые изменения и reflow</h2>
+    <p>
+      Каждая правка живого дерева помечает раскладку страницы как устаревшую — её нужно
+      пересчитать (<strong>reflow</strong>). Браузер старается объединять такие пересчёты,
+      но тысячи отдельных правок в цикле всё равно заметно тормозят (особенно если между
+      ними читать геометрию — <code>offsetHeight</code> и подобное). Чем меньше правок
+      живого дерева, тем лучше: соберите всё в
+      <a routerLink="/javascript/dom/create"><code>DocumentFragment</code></a> и вставьте
+      одним разом:
+    </p>
+    <app-code-block [code]="reflowExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Текстовые узлы из пробелов</h2>
+    <p>
+      Переносы строк и отступы между тегами в HTML — это тоже узлы (текстовые). Поэтому
+      <code>childNodes</code> почти всегда «длиннее», чем кажется. Чтобы работать именно
+      с тегами, берите <code>children</code> (см.
+      <a routerLink="/javascript/dom/basics">Основы</a>):
+    </p>
+    <app-code-block [code]="whitespaceExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>innerHTML</code> с данными извне = XSS.</strong> Для текста —
+        <code>textContent</code>.</li>
+      <li><strong><code>querySelector</code> → <code>null</code>,</strong> если не нашёл;
+        проверяйте перед обращением.</li>
+      <li><strong>Живые коллекции</strong> (<code>getElementsBy*</code>) меняются на ходу;
+        для перебора с удалением берите снимок <code>querySelectorAll</code>.</li>
+      <li><strong>Массовые вставки</strong> делайте через <code>DocumentFragment</code> —
+        одна правка дерева вместо многих.</li>
+      <li><strong>Пробелы между тегами</strong> — это текстовые узлы; работайте с
+        <code>children</code>, а не <code>childNodes</code>.</li>
+    </ul>
+  </section>
+</article>

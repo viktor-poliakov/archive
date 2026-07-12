@@ -1,0 +1,106 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dom">DOM</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Текст и разметка</span>
+  </nav>
+
+  <h1 class="doc__title">Текст и разметка элемента</h1>
+  <p class="doc__lead">
+    У элемента есть содержимое — текст и вложенные теги. Читают и меняют его через три
+    свойства: <code>textContent</code>, <code>innerHTML</code> и <code>innerText</code>.
+    Разница между ними — про <strong>смысл</strong> (текст или разметка) и про
+    <strong>безопасность</strong>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Прочитать: <code>textContent</code> и <code>innerHTML</code></h2>
+    <p>
+      <code>textContent</code> отдаёт <strong>только текст</strong>, будто теги стёрли.
+      <code>innerHTML</code> отдаёт содержимое <strong>вместе с разметкой</strong>, в
+      виде строки:
+    </p>
+    <app-code-block [code]="readExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Записать содержимое</h2>
+    <p>
+      При записи разница принципиальная. <code>textContent</code> вставляет строку
+      <strong>как текст</strong>: теги в ней не оживают, а показываются символами.
+      <code>innerHTML</code> <strong>разбирает строку как HTML</strong> и строит из неё
+      настоящие элементы:
+    </p>
+    <app-code-block [code]="writeExample" lang="javascript" />
+    <p class="note">
+      ⚠️ Никогда не подставляйте <strong>данные от пользователя</strong> в
+      <code>innerHTML</code> — так на страницу можно внедрить чужой код (атака XSS).
+      Для текста берите <code>textContent</code>. Подробно — в
+      <a routerLink="/javascript/dom/pitfalls">подводных камнях</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Чем отличается <code>innerText</code></h2>
+    <p>
+      Есть ещё <code>innerText</code>. В отличие от <code>textContent</code>, он отдаёт
+      только <strong>видимый</strong> текст: то, что спрятано через CSS
+      (<code>display: none</code>), в него не попадёт, а переносы строк учитываются как
+      на экране. Но он медленнее (браузеру нужно посчитать раскладку), поэтому по
+      умолчанию берут <code>textContent</code>.
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Свойство</th>
+            <th>При чтении</th>
+            <th>При записи</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>textContent</code></td>
+            <td>весь текст, без тегов</td>
+            <td class="yes">вставит как текст (безопасно)</td>
+          </tr>
+          <tr>
+            <td><code>innerHTML</code></td>
+            <td>текст + разметка</td>
+            <td class="no">разберёт как HTML (риск XSS)</td>
+          </tr>
+          <tr>
+            <td><code>innerText</code></td>
+            <td>только видимый текст</td>
+            <td>вставит как текст</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>insertAdjacentHTML</code> — добавить, не стирая</h2>
+    <p>
+      Присваивание <code>innerHTML</code> заменяет содержимое целиком. Если нужно
+      <strong>добавить</strong> разметку рядом, не трогая остальное, — берут
+      <code>insertAdjacentHTML</code>. Первый аргумент задаёт, <strong>куда</strong>
+      именно вставить:
+    </p>
+    <app-code-block [code]="insertAdjacentExample" lang="javascript" />
+    <ul class="rules">
+      <li><code>'beforebegin'</code> — перед самим элементом (снаружи);</li>
+      <li><code>'afterbegin'</code> — внутри, перед первым ребёнком;</li>
+      <li><code>'beforeend'</code> — внутри, после последнего ребёнка;</li>
+      <li><code>'afterend'</code> — после самого элемента (снаружи).</li>
+    </ul>
+    <p class="note">
+      <strong>Дальше:</strong> кроме текста и разметки у элемента есть
+      <a routerLink="/javascript/dom/attributes">атрибуты, классы и стили</a>, а новые
+      узлы можно <a routerLink="/javascript/dom/create">собирать вручную</a> — без строк
+      HTML.
+    </p>
+  </section>
+</article>

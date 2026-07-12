@@ -1,0 +1,149 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/json">JSON</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">JSON — основы</h1>
+  <p class="doc__lead">
+    <strong>JSON</strong> (JavaScript Object Notation) — это <strong>текстовый формат
+    для хранения и передачи данных</strong>. Он выглядит почти как объект JavaScript, но
+    это не объект, а обычная строка, которую понимает любой язык и любая программа.
+    Именно в JSON браузер общается с сервером, а приложения сохраняют настройки.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — почтовая посылка.</strong> Объект в памяти программы — как вещь у
+    вас дома: пользоваться удобно, но по почте не отправишь. Чтобы переслать её, вещь
+    <em>упаковывают</em> в стандартную коробку (JSON-строку), которую примет любая почта
+    в мире. На другом конце коробку <em>распаковывают</em> обратно в вещь. JSON — это и
+    есть такая универсальная упаковка для данных.
+  </p>
+
+  <section class="doc__section">
+    <h2>JSON — это просто текст</h2>
+    <p>
+      Главное, что нужно уложить в голове: JSON — <strong>всегда строка</strong>. Объект
+      и JSON — два представления одних и тех же данных: одно удобно для работы в коде,
+      другое — для пересылки и хранения. Превращение туда-обратно делают два метода:
+      <code>JSON.stringify</code> (упаковать) и <code>JSON.parse</code> (распаковать).
+    </p>
+    <app-code-block [code]="roundTripExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 170" width="100%" role="img"
+        aria-label="Объект в памяти превращается в строку JSON методом stringify и обратно методом parse">
+        <defs>
+          <marker id="json-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="52" width="180" height="66" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="110" y="80" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="700">Объект в памяти</text>
+        <text x="110" y="100" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">user.name</text>
+
+        <path d="M204 74 L356 74" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#json-b-arrow)" />
+        <text x="280" y="66" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="11">JSON.stringify</text>
+
+        <path d="M356 96 L204 96" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#json-b-arrow)" />
+        <text x="280" y="112" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">JSON.parse</text>
+
+        <rect x="360" y="52" width="180" height="66" rx="10" fill="var(--bg)" stroke="var(--border)" />
+        <text x="450" y="80" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="700">Строка JSON</text>
+        <text x="450" y="100" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="10.5">'&#123;"name":"Anna"&#125;'</text>
+      </svg>
+      <figcaption>
+        <code>stringify</code> упаковывает объект в текст, <code>parse</code>
+        распаковывает текст обратно в объект.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как выглядит JSON</h2>
+    <p>Пример JSON-документа — здесь встречаются все допустимые виды значений:</p>
+    <app-code-block [code]="jsonDocExample" lang="json" />
+    <p>В JSON значением может быть только одно из шести:</p>
+    <ul class="rules">
+      <li><strong>строка</strong> — обязательно в <strong>двойных</strong> кавычках:
+        <code>"Anna"</code>;</li>
+      <li><strong>число</strong> — <code>30</code>, <code>3.14</code>,
+        <code>-1</code>;</li>
+      <li><strong>булево</strong> — <code>true</code> или <code>false</code>;</li>
+      <li><strong><code>null</code></strong> — «пусто»;</li>
+      <li><strong>массив</strong> — список в квадратных скобках:
+        <code>["cat", "dog"]</code>;</li>
+      <li><strong>объект</strong> — пары «ключ-значение», ключ — всегда строка в двойных
+        кавычках.</li>
+    </ul>
+    <p class="note">
+      Всё остальное (функции, <code>undefined</code>, даты, <code>Map</code>) в JSON не
+      существует. Как ведут себя такие значения при упаковке — разбираем в
+      <a routerLink="/javascript/json/stringify">JSON.stringify</a> и
+      <a routerLink="/javascript/json/pitfalls">подводных камнях</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>JSON — это не объект JavaScript</h2>
+    <p>
+      JSON <em>похож</em> на объектный литерал, и новички их путают. Но JSON — строгий
+      формат: в нём запрещено многое из того, что разрешено в коде. Вот объект JS,
+      который придётся «причесать», чтобы получить валидный JSON:
+    </p>
+    <app-code-block [code]="jsObjectExample" lang="javascript" />
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th>Объект JS</th>
+            <th>JSON</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ключи</td>
+            <td>можно без кавычек: <code>name:</code></td>
+            <td class="yes">только в двойных: <code>"name":</code></td>
+          </tr>
+          <tr>
+            <td>Строки</td>
+            <td><code>'…'</code>, <code>"…"</code>, <code>`…`</code></td>
+            <td class="yes">только двойные <code>"…"</code></td>
+          </tr>
+          <tr>
+            <td>Функции / методы</td>
+            <td>да</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td><code>undefined</code></td>
+            <td>да</td>
+            <td class="no">нет (есть только <code>null</code>)</td>
+          </tr>
+          <tr>
+            <td>Комментарии</td>
+            <td>да</td>
+            <td class="no">нет</td>
+          </tr>
+          <tr>
+            <td>Висячая запятая</td>
+            <td>да</td>
+            <td class="no">нет</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Поэтому JSON нельзя «просто вставить как объект» — его нужно разобрать методом
+      <a routerLink="/javascript/json/parse">JSON.parse</a>. А чтобы из объекта получить
+      корректный JSON, есть <a routerLink="/javascript/json/stringify">JSON.stringify</a>
+      — он сам следит за всеми этими правилами.
+    </p>
+  </section>
+</article>
