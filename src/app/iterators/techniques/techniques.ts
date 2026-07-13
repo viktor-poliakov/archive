@@ -41,7 +41,15 @@ gen.next().value; // 2
 gen.next().value; // 3
 // ...можно продолжать сколько угодно`;
 
-  protected readonly takeExample = `// берём первые n значений даже из БЕСКОНЕЧНОГО итератора — лениво
+  protected readonly takeExample = `// naturals() — тот же бесконечный генератор, что и в примере выше
+function* naturals() {
+  let n = 1;
+  while (true) {
+    yield n++;
+  }
+}
+
+// берём первые n значений даже из БЕСКОНЕЧНОГО итератора — лениво
 function* take(n, iterable) {
   let i = 0;
   for (const x of iterable) {

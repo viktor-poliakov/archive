@@ -28,8 +28,8 @@ function* walk(node) {
 
 [...walk(tree)]; // [1, 2, 3, 4]`;
 
-  protected readonly pipelineExample = `// ленивый конвейер: map и filter как генераторы — обрабатывают
-// по одному элементу, без промежуточных массивов
+  protected readonly pipelineExample = `// map и filter как ГЕНЕРАТОРЫ: обрабатывают по одному элементу,
+// не создавая промежуточных массивов
 function* map(iterable, fn) {
   for (const x of iterable) yield fn(x);
 }
@@ -42,22 +42,32 @@ const result = filter(
   (x) => x > 20,
 );
 
-[...result]; // [30, 40]`;
+[...result]; // [30, 40]
 
-  protected readonly asyncIterExample = `// асинхронный генератор + for await...of: тянем страницы по мере надобности
+// как течёт КАЖДЫЙ элемент — сразу через весь конвейер, по одному:
+// 1 → ×10 → 10 → 10 > 20? нет → отброшен
+// 2 → ×10 → 20 → 20 > 20? нет → отброшен
+// 3 → ×10 → 30 → 30 > 20? да  → наружу
+// 4 → ×10 → 40 → 40 > 20? да  → наружу`;
+
+  protected readonly asyncIterExample = `// сервер отдаёт данные постранично, например:
+// GET /api/list → { items: ['a', 'b'], nextUrl: '/api/list?page=2' }
+// GET ?page=2   → { items: ['c', 'd'], nextUrl: null }  // последняя страница
+
 async function* fetchPages(startUrl) {
   let url = startUrl;
   while (url) {
     const res = await fetch(url);
     const page = await res.json();
-    yield page.items;   // отдаём порцию, когда она пришла
+    yield page.items;   // отдаём порцию — массив записей этой страницы
     url = page.nextUrl; // ссылка на следующую страницу (или null в конце)
   }
 }
 
-// for await...of ждёт каждую порцию по очереди
+// fetchPages(...) НЕ качает всё сразу — возвращает асинхронный итератор.
+// for await...of на каждом витке просит следующую страницу и ЖДЁТ её:
 for await (const items of fetchPages('/api/list')) {
-  console.log(items);
+  console.log(items); // 1-й виток: ['a', 'b'];  2-й виток: ['c', 'd']
 }`;
 
   protected readonly exhaustedExample = `function* gen() {

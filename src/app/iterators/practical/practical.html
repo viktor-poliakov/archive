@@ -26,24 +26,98 @@
   <section class="doc__section">
     <h2>Ленивый конвейер</h2>
     <p>
-      <code>map</code> и <code>filter</code> можно написать как генераторы — тогда данные
-      идут по конвейеру <strong>по одному элементу</strong>, без создания промежуточных
-      массивов на каждом шаге. Для больших или бесконечных источников это заметно
-      экономнее, чем цепочка <code>.map().filter()</code> на массивах.
+      Привычная цепочка <code>arr.map(...).filter(...)</code> на массивах делает
+      <strong>два полных прохода</strong>: сначала <code>.map()</code> обходит весь массив
+      и строит <strong>промежуточный</strong> массив (<code>[10, 20, 30, 40]</code>), а
+      затем <code>.filter()</code> обходит уже его и строит ещё один. Получается лишний
+      массив в памяти и лишний проход.
+    </p>
+    <p>
+      Если написать <code>map</code> и <code>filter</code> как генераторы, промежуточные
+      массивы <strong>не создаются вообще</strong>: каждый элемент проходит
+      <strong>всю цепочку целиком</strong> и только потом берётся следующий.
     </p>
     <app-code-block [code]="pipelineExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 250" width="100%" role="img"
+        aria-label="Сравнение: цепочка на массивах строит промежуточный массив, ленивый конвейер обрабатывает по одному элементу">
+        <defs>
+          <marker id="it-pr-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <text x="16" y="20" fill="var(--red)" font-size="12" font-weight="600">На массивах: два прохода + промежуточный массив</text>
+        <rect x="16" y="32" width="118" height="38" rx="7" fill="var(--surface)" stroke="var(--border)" />
+        <text x="75" y="55" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">[1,2,3,4]</text>
+        <line x1="136" y1="51" x2="180" y2="51" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#it-pr-arrow)" />
+        <text x="158" y="44" text-anchor="middle" fill="var(--muted)" font-size="9.5">map</text>
+        <rect x="184" y="32" width="152" height="38" rx="7" fill="var(--surface)" stroke="var(--red)" stroke-dasharray="4 3" />
+        <text x="260" y="50" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">[10,20,30,40]</text>
+        <text x="260" y="64" text-anchor="middle" fill="var(--red)" font-size="9">промежуточный</text>
+        <line x1="338" y1="51" x2="382" y2="51" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#it-pr-arrow)" />
+        <text x="360" y="44" text-anchor="middle" fill="var(--muted)" font-size="9.5">filter</text>
+        <rect x="386" y="32" width="108" height="38" rx="7" fill="var(--surface)" stroke="var(--border)" />
+        <text x="440" y="55" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">[30,40]</text>
+
+        <line x1="16" y1="108" x2="544" y2="108" stroke="var(--border)" stroke-dasharray="3 3" />
+
+        <text x="16" y="138" fill="var(--green)" font-size="12" font-weight="600">На генераторах: по одному элементу, без промежуточных массивов</text>
+        <rect x="16" y="152" width="92" height="42" rx="7" fill="var(--surface)" stroke="var(--border)" />
+        <text x="62" y="177" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="10.5">1,2,3,4…</text>
+        <line x1="110" y1="173" x2="150" y2="173" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#it-pr-arrow)" />
+        <rect x="154" y="152" width="96" height="42" rx="7" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.4" />
+        <text x="202" y="172" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="11">map ×10</text>
+        <text x="202" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">3 → 30</text>
+        <line x1="252" y1="173" x2="292" y2="173" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#it-pr-arrow)" />
+        <rect x="296" y="152" width="112" height="42" rx="7" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.4" />
+        <text x="352" y="172" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="11">filter &gt; 20</text>
+        <text x="352" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">30 → наружу</text>
+        <line x1="410" y1="173" x2="450" y2="173" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#it-pr-arrow)" />
+        <rect x="454" y="152" width="90" height="42" rx="7" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+        <text x="499" y="177" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="11">30, 40</text>
+      </svg>
+      <figcaption>
+        Сверху — <code>.map().filter()</code> на массивах: между шагами появляется целый
+        промежуточный массив. Снизу — генераторы: каждый элемент проходит весь конвейер
+        сам, промежуточных массивов нет.
+      </figcaption>
+    </figure>
+
+    <p class="note">
+      <strong>Когда это реально выгодно.</strong> На крошечном массиве, как здесь, разницы
+      нет — обычный <code>.map().filter()</code> проще и читабельнее, его и берите. Выгода
+      генераторов появляется на <strong>больших</strong> данных (не тратим память на
+      промежуточные массивы) и особенно на <strong>бесконечных</strong> источниках: чтобы
+      применить обычные <code>.map().filter()</code>, сначала нужен массив, а превратить
+      бесконечный генератор в массив (<code>[...naturals()]</code>) нельзя — зависнет.
+      Ленивый конвейер работает прямо на генераторе и его можно оборвать в любой момент
+      (например, <a routerLink="/javascript/iterators/techniques"><code>take(n)</code></a>).
+    </p>
   </section>
 
   <section class="doc__section">
     <h2>Асинхронные итераторы</h2>
     <p>
-      А что, если следующий элемент нужно <em>дождаться</em> — например, подгрузить с
-      сервера? Для этого есть асинхронная версия протокола: <code>async function*</code>
-      (её <code>yield</code> может <code>await</code>-ить), а перебирают такой источник
-      циклом <code>for await...of</code>. Он на каждом шаге ждёт готовности очередной
-      порции.
+      А что, если следующий элемент нужно <em>дождаться</em> — например, подгружать с
+      сервера страницу за страницей? Для этого есть асинхронная версия протокола:
+      <code>async function*</code> (внутри её <code>yield</code> можно
+      <code>await</code>-ить), а перебирают такой источник циклом
+      <code>for await...of</code>.
     </p>
     <app-code-block [code]="asyncIterExample" lang="javascript" />
+    <p>
+      Здесь важны две вещи. Во-первых, вызов <code>fetchPages('/api/list')</code>
+      <strong>ничего не скачивает сразу</strong> — он возвращает <strong>асинхронный
+      итератор</strong>, готовый выдавать страницы по запросу. Во-вторых,
+      <code>for await...of</code> на каждом витке просит у него следующую страницу,
+      <strong>ждёт</strong> ответа сервера и кладёт в <code>items</code> её порцию —
+      массив записей одной страницы. Поэтому <code>console.log(items)</code> печатает не
+      всё сразу, а по одному массиву за страницу: сперва <code>['a', 'b']</code>, затем
+      <code>['c', 'd']</code>, и цикл завершается, когда <code>nextUrl</code> станет
+      <code>null</code>.
+    </p>
     <p class="note">
       Под капотом это тот же протокол, только <code>next()</code> возвращает
       <strong>промис</strong> с <code>&#123; value, done &#125;</code>. Ровно этот
@@ -86,7 +160,8 @@
     <ul class="rules">
       <li><strong>Обход дерева</strong> — рекурсивный генератор + <code>yield*</code>.</li>
       <li><strong>Ленивый конвейер</strong> — <code>map</code>/<code>filter</code>
-        генераторами, поэлементно, без промежуточных массивов.</li>
+        генераторами, поэлементно, без промежуточных массивов; выгода — на больших и
+        бесконечных данных.</li>
       <li><strong>Асинхронно</strong> — <code>async function*</code> +
         <code>for await...of</code> (<code>next()</code> возвращает промис).</li>
       <li><strong>Помните:</strong> итератор одноразовый; бесконечный не разворачивайте

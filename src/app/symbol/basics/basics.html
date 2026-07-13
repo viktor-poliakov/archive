@@ -32,9 +32,12 @@
     </p>
     <app-code-block [code]="createExample" lang="javascript" />
     <p class="note">
-      Обратите внимание: <code>Symbol</code> вызывают <strong>как функцию</strong>, без
-      <code>new</code>. Это отличает его от <code>Number</code>, <code>String</code> и
-      других обёрток.
+      Обратите внимание: символ создают обычным вызовом функции — <code>Symbol()</code>;
+      через <code>new</code> нельзя — <code>new Symbol()</code> бросает ошибку. Тут легко
+      запутаться: <code>Number</code> и <code>String</code> тоже можно звать без
+      <code>new</code> (например, <code>Number('1')</code> вернёт число <code>1</code>).
+      Разница в том, что им <code>new</code> <strong>разрешён</strong> и создаёт
+      объект-обёртку, а <code>Symbol</code> с <code>new</code> не работает вовсе.
     </p>
   </section>
 
