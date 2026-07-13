@@ -1,0 +1,64 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/proxy-reflect">Proxy и Reflect</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Практика</span>
+  </nav>
+
+  <h1 class="doc__title">Proxy на практике</h1>
+  <p class="doc__lead">
+    Теперь соберём всё вместе. Ниже — четыре приёма, ради которых Proxy чаще всего и
+    берут: проверка данных, значения по умолчанию, реактивность и «умные» массивы.
+  </p>
+
+  <section class="doc__section">
+    <h2>Валидация при записи</h2>
+    <p>
+      Ловушка <code>set</code> — идеальное место проверять значения до того, как они
+      попадут в объект. Если данные неверны, бросаем ошибку:
+    </p>
+    <app-code-block [code]="validationExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Значения по умолчанию</h2>
+    <p>
+      Обычный объект на отсутствующий ключ возвращает <code>undefined</code>. С ловушкой
+      <code>get</code> можно отдавать осмысленное значение по умолчанию:
+    </p>
+    <app-code-block [code]="defaultsExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Реактивность (как во Vue 3)</h2>
+    <p>
+      Если в ловушке <code>set</code> не только сохранять значение, но и вызывать
+      колбэк, — получится <strong>реактивность</strong>: код узнаёт об изменениях данных
+      и может, например, перерисовать интерфейс. Ровно на этом построена реактивность во
+      Vue 3:
+    </p>
+    <app-code-block [code]="reactiveExample" lang="javascript" />
+    <p class="note">
+      Настоящие реактивные системы сложнее (отслеживают, кто какие свойства читал, и
+      обновляют только нужное), но <strong>сердце</strong> у них именно такое — Proxy
+      поверх данных.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Отрицательные индексы массива</h2>
+    <p>
+      В JavaScript <code>arr[-1]</code> не работает как «последний элемент». С Proxy это
+      легко починить, а для обычных индексов передать управление дальше через
+      <a routerLink="/javascript/proxy-reflect/reflect"><code>Reflect.get</code></a>:
+    </p>
+    <app-code-block [code]="negativeIndexExample" lang="javascript" />
+    <p class="note">
+      <strong>Осторожно:</strong> у прокси есть цена и подводные камни (скорость,
+      инварианты, приватные поля). О них — на
+      <a routerLink="/javascript/proxy-reflect/pitfalls">последней странице</a>.
+    </p>
+  </section>
+</article>

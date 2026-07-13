@@ -1,0 +1,98 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/proxy-reflect">Proxy и Reflect</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы Proxy</span>
+  </nav>
+
+  <h1 class="doc__title">Proxy — основы</h1>
+  <p class="doc__lead">
+    <strong>Proxy</strong> («прокси», посредник) — это <strong>объект-обёртка</strong>,
+    который <strong>перехватывает операции</strong> над другим объектом: чтение свойства,
+    запись, удаление, вызов и другие. Перехватив операцию, прокси может её
+    залогировать, проверить, изменить — или просто передать дальше.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — секретарь.</strong> Вы не звоните начальнику напрямую — все
+    обращения идут через секретаря. Он может записать, кто и о чём спрашивал, проверить,
+    можно ли пропустить запрос, что-то поправить и только потом передать начальнику (или
+    ответить сам). Proxy — такой секретарь для объекта.
+  </p>
+
+  <section class="doc__section">
+    <h2>Устройство: <code>target</code> и <code>handler</code></h2>
+    <p>
+      У <code>new Proxy(target, handler)</code> два аргумента: <strong>target</strong> —
+      объект, который оборачиваем, и <strong>handler</strong> — объект с
+      <strong>ловушками</strong> (traps). Ловушка — это функция с известным именем
+      (<code>get</code>, <code>set</code>…), которую движок зовёт вместо обычной
+      операции:
+    </p>
+    <app-code-block [code]="basicExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 180" width="100%" role="img"
+        aria-label="Обращение к proxy проходит через ловушку в handler и попадает в target">
+        <defs>
+          <marker id="pr-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="14" y="66" width="130" height="46" rx="8" fill="var(--surface)" stroke="var(--border)" />
+        <text x="79" y="86" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11.5">proxy.name</text>
+        <text x="79" y="103" text-anchor="middle" fill="var(--muted)" font-size="10">обращение из кода</text>
+
+        <line x1="146" y1="89" x2="206" y2="89" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-b-arrow)" />
+
+        <rect x="210" y="52" width="150" height="74" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="285" y="76" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="700">Proxy</text>
+        <text x="285" y="96" text-anchor="middle" fill="var(--muted)" font-size="10.5">ловушка get / set</text>
+        <text x="285" y="112" text-anchor="middle" fill="var(--muted)" font-size="10">лог, проверка, правка</text>
+
+        <line x1="362" y1="89" x2="422" y2="89" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#pr-b-arrow)" />
+
+        <rect x="426" y="66" width="120" height="46" rx="8" fill="var(--bg)" stroke="var(--border)" />
+        <text x="486" y="86" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11.5">target</text>
+        <text x="486" y="103" text-anchor="middle" fill="var(--muted)" font-size="10">исходный объект</text>
+      </svg>
+      <figcaption>
+        Обращаются к <code>proxy</code>, а не к объекту напрямую. Прокси перехватывает
+        операцию ловушкой и решает, что делать: обычно — передать в <code>target</code>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Пустой <code>handler</code> — прозрачная обёртка</h2>
+    <p>
+      Ловушки <strong>необязательны</strong>. Если ловушки для операции нет, она просто
+      выполняется над <code>target</code> как обычно. Поэтому прокси с пустым
+      <code>handler</code> ведёт себя неотличимо от самого объекта:
+    </p>
+    <app-code-block [code]="emptyHandlerExample" lang="javascript" />
+    <p class="note">
+      Это удобно: перехватывают только нужные операции, а всё остальное «пролетает»
+      насквозь без лишнего кода.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Зачем это нужно</h2>
+    <p>Перехват операций открывает много практичных приёмов:</p>
+    <ul class="rules">
+      <li><strong>Проверка данных</strong> при записи (валидация);</li>
+      <li><strong>Значения по умолчанию</strong> для отсутствующих свойств;</li>
+      <li><strong>Реактивность</strong> — реагировать на изменения (так устроен Vue 3);</li>
+      <li><strong>Логирование и защита</strong> объекта от изменений.</li>
+    </ul>
+    <p class="note">
+      Дальше разберём <a routerLink="/javascript/proxy-reflect/traps">полный набор
+      ловушек</a>, познакомимся с напарником прокси —
+      <a routerLink="/javascript/proxy-reflect/reflect">Reflect</a> — и соберём
+      <a routerLink="/javascript/proxy-reflect/practical">практические примеры</a>.
+    </p>
+  </section>
+</article>

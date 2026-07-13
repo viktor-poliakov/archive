@@ -1,0 +1,93 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/web-workers">Web Workers</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Виды воркеров</span>
+  </nav>
+
+  <h1 class="doc__title">Виды воркеров</h1>
+  <p class="doc__lead">
+    «Воркер» — это не одно, а <strong>три</strong> разных инструмента. До сих пор мы
+    говорили о самом частом (Dedicated). Разберём кратко все три и когда какой нужен.
+  </p>
+
+  <section class="doc__section">
+    <h2>Dedicated Worker — личный</h2>
+    <p>
+      Обычный воркер, «привязанный» к одной странице, которая его создала. Именно о нём
+      были прошлые страницы — он для того, чтобы <strong>вынести вычисления</strong> из
+      главного потока:
+    </p>
+    <app-code-block [code]="dedicatedExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Shared Worker — общий на вкладки</h2>
+    <p>
+      Один воркер, <strong>общий для нескольких вкладок</strong> (окон, iframe) одного
+      сайта. Полезен, когда вкладкам нужно общее состояние или связь друг с другом.
+      Общение идёт не напрямую, а через <strong>порт</strong> (<code>port</code>):
+    </p>
+    <app-code-block [code]="sharedExample" lang="javascript" />
+    <p class="note">
+      На практике встречается редко — часто ту же задачу (синхронизацию вкладок) решают
+      проще через
+      <a routerLink="/javascript/storage/local-session">событие <code>storage</code></a>
+      или <code>BroadcastChannel</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Service Worker — сетевой посредник</h2>
+    <p>
+      Особый воркер — <strong>прокси между страницей и сетью</strong>. Он умеет
+      перехватывать запросы, отдавать ответы из кэша и работать <strong>офлайн</strong>.
+      На нём держатся PWA (устанавливаемые веб-приложения) и push-уведомления. Живёт даже
+      когда вкладка закрыта:
+    </p>
+    <app-code-block [code]="serviceExample" lang="javascript" />
+    <p class="note">
+      Service Worker — большая отдельная тема (кэш-стратегии, жизненный цикл, обновления).
+      Здесь важно запомнить его роль: <strong>перехват сети и офлайн</strong>, а не
+      «вынести вычисления».
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Сравнение</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Вид</th>
+            <th>Область</th>
+            <th>Зачем</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Dedicated</strong></td>
+            <td>одна страница</td>
+            <td>вынести тяжёлые вычисления</td>
+          </tr>
+          <tr>
+            <td><strong>Shared</strong></td>
+            <td>несколько вкладок сайта</td>
+            <td>общее состояние, связь между вкладками</td>
+          </tr>
+          <tr>
+            <td><strong>Service</strong></td>
+            <td>весь сайт, между страницей и сетью</td>
+            <td>кэш, офлайн, PWA, push</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      В 9 случаях из 10 «воркер» означает именно <strong>Dedicated</strong> — с него и
+      начинайте.
+    </p>
+  </section>
+</article>

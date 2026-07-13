@@ -1,0 +1,78 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/proxy-reflect">Proxy и Reflect</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Reflect</span>
+  </nav>
+
+  <h1 class="doc__title">Reflect</h1>
+  <p class="doc__lead">
+    <strong>Reflect</strong> — встроенный объект с набором методов, которые повторяют
+    базовые операции над объектами: <code>Reflect.get</code>, <code>Reflect.set</code>,
+    <code>Reflect.has</code> и другие. Это не класс и не функция — его не создают через
+    <code>new</code>, а просто вызывают методы. Главное: <strong>имена этих методов
+    совпадают с именами ловушек Proxy</strong>.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — пульт со стандартными кнопками.</strong> Proxy перехватывает
+    нажатия, а Reflect — это сам пульт с «правильными» кнопками для тех же операций.
+    Поэтому внутри ловушки достаточно нажать одноимённую кнопку Reflect, чтобы выполнить
+    операцию «как обычно».
+  </p>
+
+  <section class="doc__section">
+    <h2>Операции как функции</h2>
+    <p>
+      Всё, что делают операторы и синтаксис (<code>.</code>, <code>=</code>,
+      <code>in</code>, <code>delete</code>), <code>Reflect</code> позволяет сделать
+      вызовом функции:
+    </p>
+    <app-code-block [code]="basicExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Идеальная пара к Proxy</h2>
+    <p>
+      Главная польза — в ловушках. Имена методов <code>Reflect</code> один в один
+      совпадают с именами ловушек, поэтому «передать операцию дальше по умолчанию» — это
+      просто вызвать одноимённый метод <code>Reflect</code> с теми же аргументами:
+    </p>
+    <app-code-block [code]="inTrapExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Аргумент <code>receiver</code></h2>
+    <p>
+      Третий аргумент ловушки <code>get</code> — <strong><code>receiver</code></strong>
+      (тот объект, к которому реально обратились, — обычно сам прокси). Его нужно
+      прокидывать в <code>Reflect.get</code>, чтобы <code>this</code> внутри геттеров
+      указывал куда надо. Именно поэтому в ловушках пишут
+      <code>Reflect.get(obj, prop, receiver)</code>, а не <code>obj[prop]</code>:
+    </p>
+    <app-code-block [code]="receiverExample" lang="javascript" />
+    <p class="note">
+      Это неочевидно, но важно: без <code>receiver</code> геттеры и наследование в
+      обёрнутых объектах могут повести себя неправильно. Правило простое — в ловушках
+      всегда передавайте <code>receiver</code> в <code>Reflect</code>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Статус вместо исключения</h2>
+    <p>
+      Ещё одна деталь. Методы <code>Reflect</code>, которые отвечают за операции,
+      способные <strong>не удаться</strong> (<code>set</code>,
+      <code>defineProperty</code>, <code>deleteProperty</code>), возвращают
+      <strong>булев результат</strong> — получилось или нет — вместо исключения.
+      Остальные (<code>get</code>, <code>ownKeys</code>, <code>apply</code>…) возвращают
+      своё обычное значение. Булев статус удобен для проверок:
+    </p>
+    <app-code-block [code]="statusExample" lang="javascript" />
+    <p class="note">
+      <strong>Дальше:</strong> соберём Proxy и Reflect вместе в
+      <a routerLink="/javascript/proxy-reflect/practical">практических примерах</a>.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,79 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/web-workers">Web Workers</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Web Workers: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Воркеры мощные, но живут по своим правилам и не бесплатны. Соберём главное, о чём
+    стоит помнить, прежде чем выносить работу в фоновый поток.
+  </p>
+
+  <section class="doc__section">
+    <h2>Нет доступа к DOM</h2>
+    <p>
+      Воркер не видит страницу: <code>document</code>, <code>window</code> и
+      <a routerLink="/javascript/dom/basics">DOM</a> ему недоступны. Значит, менять
+      интерфейс из воркера нельзя — он только считает и присылает данные, а рисует
+      главный поток:
+    </p>
+    <app-code-block [code]="noDomExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Данные копируются — и это не бесплатно</h2>
+    <p>
+      Каждое <code>postMessage</code> делает <strong>копию</strong> данных
+      (структурное клонирование). Для мелочи незаметно, но копировать десятки мегабайт —
+      уже ощутимая цена. Для больших бинарных данных есть выход: <strong>передаваемые
+      (Transferable) объекты</strong> — их не копируют, а «отдают» воркеру:
+    </p>
+    <app-code-block [code]="transferExample" lang="javascript" />
+    <p class="note">
+      После передачи буфер в главном потоке становится пустым (<code>byteLength</code>
+      равен 0) — владение перешло воркеру. Это осознанный компромисс: скорость вместо
+      копии.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что нельзя отправить</h2>
+    <p>
+      Через <code>postMessage</code> проходит не всё. Функции и
+      <a routerLink="/javascript/dom/basics">DOM-узлы</a> отправить нельзя — будет
+      <code>DataCloneError</code>. А объекты копируются <strong>без методов</strong> —
+      только данные:
+    </p>
+    <app-code-block [code]="cantSendExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Создание воркера не бесплатно</h2>
+    <p>
+      Запуск воркера требует времени и памяти (поднять поток, загрузить скрипт). Поэтому
+      воркеры <strong>не создают на каждую мелкую задачу</strong> — выгода появляется на
+      действительно тяжёлой работе. Если задач много, держат
+      <strong>пул</strong> воркеров и переиспользуют их. И помните: файл воркера должен
+      быть с того же <strong>origin</strong>, что и страница.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Нет DOM/window:</strong> воркер только считает, интерфейс меняет
+        главный поток.</li>
+      <li><strong>Данные копируются</strong> при каждом сообщении; для больших буферов —
+        Transferable (передача без копии).</li>
+      <li><strong>Нельзя слать функции и DOM-узлы</strong> (<code>DataCloneError</code>);
+        объекты теряют методы.</li>
+      <li><strong>Старт воркера не бесплатен</strong> — не для мелких/частых задач;
+        переиспользуйте через пул.</li>
+      <li><strong>Только тот же origin</strong> для файла воркера.</li>
+    </ul>
+  </section>
+</article>

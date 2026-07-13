@@ -1,0 +1,104 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/storage">Браузерное хранилище</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Cookies</span>
+  </nav>
+
+  <h1 class="doc__title">Cookies</h1>
+  <p class="doc__lead">
+    <strong>Cookies</strong> — маленькие пары «ключ-значение», у которых есть одна
+    особенность: браузер <strong>сам прикладывает их к каждому запросу</strong> на тот же
+    сайт. Исторически именно так работает вход: сервер выдаёт cookie, а браузер потом
+    предъявляет её автоматически.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — пропуск на входе.</strong> Получили бейджик (cookie) и дальше
+    показываете его на каждом входе, не задумываясь. Охрана (сервер) по нему сразу
+    узнаёт вас. Именно поэтому cookies удобны для сессий — но и весят они мало, ведь
+    ездят туда-сюда постоянно.
+  </p>
+
+  <section class="doc__section">
+    <h2>Чтение и запись</h2>
+    <p>
+      API у cookies непривычный — всё через одно свойство <code>document.cookie</code>.
+      Запись присваиванием добавляет <strong>одну</strong> пару (не стирая остальные), а
+      чтение возвращает <strong>все</strong> cookie одной строкой, уже без атрибутов:
+    </p>
+    <app-code-block [code]="readWriteExample" lang="javascript" />
+    <p class="note">
+      Из-за неудобного формата на практике часто пишут маленькие функции-обёртки
+      (<code>getCookie</code>/<code>setCookie</code>) или берут готовую библиотеку.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Атрибуты</h2>
+    <p>
+      У cookie есть атрибуты — их дописывают через <code>;</code> в той же строке записи.
+      Они задают срок жизни, область действия и безопасность:
+    </p>
+    <app-code-block [code]="attributesExample" lang="javascript" />
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Атрибут</th>
+            <th>Зачем</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>max-age</code> / <code>expires</code></td>
+            <td>срок жизни; без него — до закрытия браузера</td>
+          </tr>
+          <tr>
+            <td><code>path</code> / <code>domain</code></td>
+            <td>на каких путях и поддоменах cookie доступна</td>
+          </tr>
+          <tr>
+            <td><code>Secure</code></td>
+            <td>отправлять только по HTTPS</td>
+          </tr>
+          <tr>
+            <td><code>HttpOnly</code></td>
+            <td>недоступна из JavaScript; ставится сервером — защита от кражи через XSS</td>
+          </tr>
+          <tr>
+            <td><code>SameSite</code></td>
+            <td>не отправлять на сторонние сайты — защита от CSRF</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      <code>HttpOnly</code>-cookie из <code>document.cookie</code> <strong>не видна</strong>
+      — это специально: так токен сессии не украдёт вредоносный скрипт. Поэтому важные
+      cookie обычно выставляет сервер, а не JavaScript.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Удаление</h2>
+    <p>Отдельного метода нет — cookie удаляют, задав ей уже истёкший срок:</p>
+    <app-code-block [code]="deleteExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Когда использовать cookies</h2>
+    <p>
+      Главное и единственное веское отличие cookies — они <strong>автоматически уходят
+      на сервер</strong>. Значит, их берут, когда данные нужны именно серверу: сессии,
+      аутентификация (см. <a routerLink="/javascript/rest-api/auth">REST API:
+      аутентификация</a>).
+    </p>
+    <p class="note">
+      Для <strong>клиентских</strong> данных (настройки, черновики) cookies —
+      неудачный выбор: они малы (~4 КБ) и грузят <em>каждый</em> запрос лишними байтами.
+      Тут лучше <a routerLink="/javascript/storage/local-session"><code>localStorage</code></a>.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,66 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/web-workers">Web Workers</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Практика</span>
+  </nav>
+
+  <h1 class="doc__title">Web Workers на практике</h1>
+  <p class="doc__lead">
+    Воркеры берут ради одного: тяжёлая работа не должна морозить интерфейс. Соберём
+    удобные приёмы — как аккуратно вызвать воркер и как обойтись без отдельного файла.
+  </p>
+
+  <section class="doc__section">
+    <h2>Обернуть в промис</h2>
+    <p>
+      Сырые <code>postMessage</code> + <code>onmessage</code> для разовой задачи неудобны.
+      Обернём вызов в <a routerLink="/javascript/promises/basics">промис</a> — и результат
+      можно ждать через <a routerLink="/javascript/promises/async-await">await</a>, как
+      обычную асинхронную функцию:
+    </p>
+    <app-code-block [code]="promiseExample" lang="javascript" />
+    <p class="note">
+      Пока воркер считает, главный поток свободен: страница отзывчива, анимации идут,
+      кнопки нажимаются.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Воркер без отдельного файла (Blob)</h2>
+    <p>
+      Обычно воркер — это отдельный <code>.js</code>-файл. Но небольшой воркер можно
+      создать <strong>прямо из строки</strong> кода: заворачиваем её в <code>Blob</code>,
+      делаем на него ссылку через <code>URL.createObjectURL</code> и передаём в
+      <code>Worker</code>:
+    </p>
+    <app-code-block [code]="inlineExample" lang="javascript" />
+    <p class="note">
+      Приём удобен для маленьких воркеров и демо. Для больших воркеров всё же берут
+      отдельный файл — его проще читать, отлаживать и переиспользовать.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Когда воркеры оправданы</h2>
+    <ul class="rules">
+      <li><strong>Тяжёлые вычисления:</strong> сортировка и разбор больших массивов,
+        сложная математика, шифрование;</li>
+      <li><strong>Обработка медиа:</strong> изображения, аудио, видео;</li>
+      <li><strong>Парсинг больших данных</strong> (например, огромный CSV или JSON).</li>
+    </ul>
+    <p>
+      А вот для сетевых запросов воркер обычно <strong>не нужен</strong>:
+      <a routerLink="/javascript/rest-api/fetch"><code>fetch</code></a> и так
+      асинхронный и не блокирует поток. Если задач много, воркеры не создают на каждую, а
+      держат <strong>пул</strong> из нескольких и переиспользуют.
+    </p>
+    <p class="note">
+      <strong>Осторожно:</strong> у воркеров есть цена и ограничения (нет DOM, данные
+      копируются, старт не бесплатен). Разбираем на
+      <a routerLink="/javascript/web-workers/pitfalls">последней странице</a>.
+    </p>
+  </section>
+</article>

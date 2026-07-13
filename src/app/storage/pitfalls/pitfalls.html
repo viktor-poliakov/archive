@@ -1,0 +1,85 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/storage">Браузерное хранилище</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Хранилище: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Браузерное хранилище выглядит просто, но именно тут легко получить тихий баг или
+    брешь в безопасности. Соберём то, обо что спотыкаются чаще всего.
+  </p>
+
+  <section class="doc__section">
+    <h2>Только строки</h2>
+    <p>
+      Web Storage и cookies хранят <strong>исключительно строки</strong>. Число молча
+      станет строкой, и арифметика превратится в склейку; объект без
+      <a routerLink="/javascript/json/stringify">JSON</a> — в бесполезное
+      <code>'[object Object]'</code>:
+    </p>
+    <app-code-block [code]="stringsOnlyExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Лимит места</h2>
+    <p>
+      Web Storage невелик — обычно <strong>около 5–10 МБ</strong> на сайт. Если
+      попытаться записать больше, браузер бросает исключение
+      <code>QuotaExceededError</code>, поэтому запись потенциально больших данных стоит
+      оборачивать в <a routerLink="/javascript/errors/try-catch">try / catch</a>:
+    </p>
+    <app-code-block [code]="quotaExample" lang="javascript" />
+    <p class="note">
+      Нужно хранить действительно много — это сигнал перейти на
+      <a routerLink="/javascript/storage/indexeddb">IndexedDB</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Web Storage синхронный</h2>
+    <p>
+      <code>localStorage</code> и <code>sessionStorage</code> работают
+      <strong>синхронно</strong> — каждая операция блокирует главный поток, пока не
+      завершится. Для мелочи это незаметно, но большие объёмы данных подвесят интерфейс.
+      Тяжёлые данные — снова повод взять асинхронный
+      <a routerLink="/javascript/storage/indexeddb">IndexedDB</a> (см. также
+      <a routerLink="/javascript/event-loop/basics">Event Loop</a> — почему блокировка
+      потока «замораживает» страницу).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Безопасность</h2>
+    <p>
+      Всё в <code>localStorage</code> доступно <strong>любому</strong> скрипту на
+      странице. Если на сайт попадёт чужой код (атака XSS), он прочитает оттуда всё —
+      включая токены. Поэтому <strong>секреты в <code>localStorage</code> не хранят</strong>:
+    </p>
+    <app-code-block [code]="securityExample" lang="javascript" />
+    <p class="note">
+      Токен сессии надёжнее держать в <code>HttpOnly</code>-cookie (её JavaScript не
+      видит) — см. <a routerLink="/javascript/storage/cookies">Cookies</a> и
+      <a routerLink="/javascript/rest-api/auth">REST API: аутентификация</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Только строки:</strong> числа приводятся к строке, объекты — через
+        <code>JSON.stringify</code>/<code>JSON.parse</code>.</li>
+      <li><strong>Лимит ~5–10 МБ</strong> у Web Storage; переполнение →
+        <code>QuotaExceededError</code>.</li>
+      <li><strong>Web Storage синхронный</strong> — большие операции подвешивают UI;
+        для объёмов берите IndexedDB.</li>
+      <li><strong>Не храните секреты в <code>localStorage</code></strong> — его читает
+        любой скрипт (XSS); токены — в <code>HttpOnly</code>-cookie.</li>
+      <li><strong>Всё изолировано по сайту:</strong> Web Storage и IndexedDB — по origin
+        (протокол + домен + порт), cookies — по домену и пути.</li>
+    </ul>
+  </section>
+</article>

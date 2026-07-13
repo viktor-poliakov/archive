@@ -1,0 +1,94 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/proxy-reflect">Proxy и Reflect</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Ловушки</span>
+  </nav>
+
+  <h1 class="doc__title">Ловушки (traps)</h1>
+  <p class="doc__lead">
+    <a routerLink="/javascript/proxy-reflect/basics"><code>get</code> и <code>set</code></a>
+    — самые частые, но ловушек больше: почти на каждую операцию языка есть своя. Разберём
+    ключевые — от оператора <code>in</code> до <code>new</code>.
+  </p>
+
+  <section class="doc__section">
+    <h2><code>has</code> — оператор <code>in</code></h2>
+    <p>
+      <code>has</code> срабатывает на проверке <code>prop in obj</code>. Например, можно
+      сделать «умный» объект-диапазон, который отвечает, попадает ли число в интервал:
+    </p>
+    <app-code-block [code]="hasExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>deleteProperty</code> — оператор <code>delete</code></h2>
+    <p>
+      Перехватывает удаление свойства. Как и <code>set</code>, ловушка должна вернуть
+      <code>true</code> при успехе (иначе <code>delete</code> в строгом режиме бросит
+      ошибку):
+    </p>
+    <app-code-block [code]="deletePropertyExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>ownKeys</code> — перечисление ключей</h2>
+    <p>
+      Срабатывает, когда кто-то запрашивает список ключей: <code>Object.keys</code>,
+      <code>for...in</code>, <code>Object.getOwnPropertyNames</code>. Удобно, чтобы
+      спрятать служебные поля:
+    </p>
+    <app-code-block [code]="ownKeysExample" lang="javascript" />
+    <p class="note">
+      У <code>ownKeys</code> есть ограничения (нельзя скрыть неудаляемое свойство) — об
+      этих «инвариантах» в <a routerLink="/javascript/proxy-reflect/pitfalls">подводных
+      камнях</a>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2><code>apply</code> и <code>construct</code> — функции и классы</h2>
+    <p>
+      Если обернуть <strong>функцию</strong>, ловушка <code>apply</code> перехватит её
+      <strong>вызов</strong>:
+    </p>
+    <app-code-block [code]="applyExample" lang="javascript" />
+    <p>
+      А если обернуть <strong>класс</strong> (или функцию-конструктор), ловушка
+      <code>construct</code> перехватит <code>new</code>:
+    </p>
+    <app-code-block [code]="constructExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Основные ловушки</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Ловушка</th>
+            <th>Что перехватывает</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>get</code></td><td>чтение <code>obj.prop</code></td></tr>
+          <tr><td><code>set</code></td><td>запись <code>obj.prop = value</code></td></tr>
+          <tr><td><code>has</code></td><td><code>prop in obj</code></td></tr>
+          <tr><td><code>deleteProperty</code></td><td><code>delete obj.prop</code></td></tr>
+          <tr><td><code>ownKeys</code></td><td><code>Object.keys</code>, <code>for...in</code>…</td></tr>
+          <tr><td><code>apply</code></td><td>вызов функции <code>fn(...)</code></td></tr>
+          <tr><td><code>construct</code></td><td><code>new Fn(...)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Всего ловушек около <strong>13</strong> — по одной на каждую внутреннюю операцию
+      объекта (ещё есть <code>getPrototypeOf</code>, <code>defineProperty</code>,
+      <code>getOwnPropertyDescriptor</code> и другие). Их удобно реализовывать в паре с
+      <a routerLink="/javascript/proxy-reflect/reflect">Reflect</a> — он даёт «поведение
+      по умолчанию» для каждой.
+    </p>
+  </section>
+</article>

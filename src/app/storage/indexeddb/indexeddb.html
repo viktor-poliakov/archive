@@ -1,0 +1,91 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/storage">Браузерное хранилище</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">IndexedDB</span>
+  </nav>
+
+  <h1 class="doc__title">IndexedDB</h1>
+  <p class="doc__lead">
+    <strong>IndexedDB</strong> — это полноценная база данных прямо в браузере. Её берут,
+    когда <code>localStorage</code> уже мал: нужно хранить <strong>много</strong> данных,
+    целые <strong>объекты</strong> (а не строки) и работать с ними
+    <strong>асинхронно</strong>, не подвешивая страницу.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — архив с картотекой.</strong> Если <code>localStorage</code> —
+    ящик стола, то IndexedDB — целый архив: внутри базы есть «шкафы»
+    (<strong>хранилища объектов</strong>), в них лежат карточки-записи, а работа идёт
+    строго по регламенту — через <strong>транзакции</strong>.
+  </p>
+
+  <section class="doc__section">
+    <h2>Когда нужна</h2>
+    <ul class="rules">
+      <li>данных <strong>много</strong> — десятки мегабайт и больше;</li>
+      <li>хранить нужно <strong>объекты и файлы</strong>, искать по ним;</li>
+      <li>приложение должно работать <strong>офлайн</strong> (кэш, черновики);</li>
+      <li>для простой пары «ключ-значение» она избыточна — берите
+        <a routerLink="/javascript/storage/local-session"><code>localStorage</code></a>.</li>
+    </ul>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 520 170" width="100%" role="img"
+        aria-label="База данных содержит хранилище объектов users, в нём записи с ключом id">
+        <rect x="16" y="24" width="180" height="120" rx="10" fill="none" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="106" y="46" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">База 'app'</text>
+
+        <rect x="36" y="60" width="140" height="70" rx="8" fill="none" stroke="var(--border)" />
+        <text x="106" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">store 'users'</text>
+        <rect x="52" y="90" width="108" height="16" rx="3" fill="var(--surface)" stroke="var(--border)" />
+        <rect x="52" y="110" width="108" height="16" rx="3" fill="var(--surface)" stroke="var(--border)" />
+
+        <text x="230" y="70" fill="var(--muted)" font-size="12">Внутри базы — хранилища</text>
+        <text x="230" y="90" fill="var(--muted)" font-size="12">объектов (как таблицы),</text>
+        <text x="230" y="110" fill="var(--muted)" font-size="12">в них — записи-объекты</text>
+        <text x="230" y="130" fill="var(--muted)" font-family="monospace" font-size="11">&#123; id: 1, name: 'Anna' &#125;</text>
+      </svg>
+      <figcaption>
+        База → хранилища объектов → записи. У каждого хранилища есть ключ (здесь — поле
+        <code>id</code>).
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Открыть базу и создать хранилище</h2>
+    <p>
+      База имеет имя и номер версии. Хранилища объектов создают
+      <strong>только</strong> в обработчике <code>onupgradeneeded</code> — он срабатывает
+      при первом открытии и когда версия выросла:
+    </p>
+    <app-code-block [code]="openExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Запись и чтение</h2>
+    <p>
+      Любая работа с данными идёт внутри <strong>транзакции</strong>: указываем
+      хранилище и режим (<code>readonly</code> или <code>readwrite</code>). Результат
+      приходит <strong>асинхронно</strong> — в обработчике <code>onsuccess</code>:
+    </p>
+    <app-code-block [code]="useExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>На практике — обёртки</h2>
+    <p>
+      «Сырой» API IndexedDB многословный и весь на событиях. Поэтому в реальных проектах
+      обычно берут небольшую обёртку (популярна <code>idb</code>), которая превращает
+      события в <a routerLink="/javascript/promises/async-await">промисы</a> — и код
+      становится линейным и читаемым:
+    </p>
+    <app-code-block [code]="wrapperExample" lang="javascript" />
+    <p class="note">
+      Начинать знакомство полезно с «сырого» API — чтобы понимать, что происходит внутри.
+      А в бою обёртка экономит силы и уменьшает число ошибок.
+    </p>
+  </section>
+</article>

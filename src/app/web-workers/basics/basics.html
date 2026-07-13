@@ -1,0 +1,100 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/web-workers">Web Workers</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Основы</span>
+  </nav>
+
+  <h1 class="doc__title">Web Workers — основы</h1>
+  <p class="doc__lead">
+    JavaScript в браузере <strong>однопоточный</strong>: один и тот же поток выполняет ваш
+    код, отрисовывает страницу и реагирует на клики. Если запустить тяжёлую задачу, поток
+    занят ею — и страница <strong>замирает</strong>. <strong>Web Worker</strong> — это
+    отдельный фоновый поток: тяжёлую работу выносят туда, и интерфейс остаётся отзывчивым.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — продавец и помощник на складе.</strong> Вы за стойкой (главный
+    поток) обслуживаете клиентов. Если сами уйдёте на склад пересчитывать товар (тяжёлая
+    задача), очередь встанет. Воркер — помощник: вы передаёте ему задание запиской,
+    продолжаете работать с клиентами, а он потом приносит готовый результат.
+  </p>
+
+  <section class="doc__section">
+    <h2>Проблема: тяжёлая задача морозит интерфейс</h2>
+    <p>
+      Пока в главном потоке крутится долгий цикл, браузер не может ни перерисовать
+      страницу, ни обработать клик — всё «висит» до конца вычисления:
+    </p>
+    <app-code-block [code]="blockingExample" lang="javascript" />
+    <p class="note">
+      Почему именно так — потому что отрисовка и обработчики ждут своей очереди в том же
+      потоке (см. <a routerLink="/javascript/event-loop/basics">Event Loop</a>). Долгая
+      синхронная работа не даёт очереди двигаться.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Решение: вынести работу в воркер</h2>
+    <p>
+      Воркер — это <strong>отдельный JS-файл</strong>, который браузер запускает в своём
+      потоке. Главный поток и воркер не делят переменные — они
+      <strong>обмениваются сообщениями</strong>. В главном потоке создаём воркер и шлём
+      ему задание:
+    </p>
+    <app-code-block [code]="createExample" lang="javascript" />
+    <p>А в файле воркера принимаем задание, считаем и отправляем результат обратно:</p>
+    <app-code-block [code]="workerFileExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 200" width="100%" role="img"
+        aria-label="Главный поток и воркер обмениваются сообщениями через postMessage, работая параллельно">
+        <defs>
+          <marker id="ww-b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="16" y="30" width="230" height="140" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="131" y="52" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="700">Главный поток</text>
+        <text x="131" y="74" text-anchor="middle" fill="var(--muted)" font-size="11">рисует UI, ловит клики</text>
+        <text x="131" y="94" text-anchor="middle" fill="var(--muted)" font-size="11">— и не блокируется</text>
+
+        <rect x="314" y="30" width="230" height="140" rx="10" fill="var(--surface)" stroke="var(--border)" />
+        <text x="429" y="52" text-anchor="middle" fill="var(--fg)" font-size="12.5" font-weight="700">Воркер</text>
+        <text x="429" y="74" text-anchor="middle" fill="var(--muted)" font-size="11">считает в фоне</text>
+        <text x="429" y="94" text-anchor="middle" fill="var(--muted)" font-size="11">нет доступа к DOM</text>
+
+        <line x1="248" y1="120" x2="312" y2="120" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ww-b-arrow)" />
+        <text x="280" y="112" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="9.5">postMessage</text>
+
+        <line x1="312" y1="146" x2="248" y2="146" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ww-b-arrow)" />
+        <text x="280" y="163" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="9.5">onmessage</text>
+      </svg>
+      <figcaption>
+        Два потока работают <strong>параллельно</strong> и общаются только сообщениями:
+        задание туда, результат обратно.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>У воркера нет DOM</h2>
+    <p>
+      Важное ограничение: воркер живёт отдельно и <strong>не видит страницу</strong> —
+      ему недоступны <code>document</code>, <code>window</code> и любые
+      <a routerLink="/javascript/dom/basics">операции с DOM</a>. Зато доступны
+      <code>fetch</code>, таймеры и
+      <a routerLink="/javascript/storage/indexeddb">IndexedDB</a>. Логика простая: воркер
+      <strong>считает</strong>, а меняет страницу по его результату уже
+      <strong>главный поток</strong>.
+    </p>
+    <p class="note">
+      Дальше разберём подробно, как устроен
+      <a routerLink="/javascript/web-workers/messaging">обмен сообщениями</a>, соберём
+      <a routerLink="/javascript/web-workers/practical">практический пример</a> и
+      посмотрим <a routerLink="/javascript/web-workers/types">виды воркеров</a>.
+    </p>
+  </section>
+</article>

@@ -1,0 +1,99 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/storage">Браузерное хранилище</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">localStorage и sessionStorage</span>
+  </nav>
+
+  <h1 class="doc__title">localStorage и sessionStorage</h1>
+  <p class="doc__lead">
+    Это <strong>Web Storage</strong> — самое простое хранилище: пары «ключ-значение», обе
+    части — строки. Есть два близнеца с <strong>одинаковым API</strong>:
+    <code>localStorage</code> хранит данные без срока, а <code>sessionStorage</code> —
+    только пока открыта вкладка.
+  </p>
+
+  <section class="doc__section">
+    <h2>Основные операции</h2>
+    <p>
+      Весь набор — четыре метода: положить, прочитать, удалить одну пару и очистить всё.
+      Если ключа нет, <code>getItem</code> вернёт <code>null</code>:
+    </p>
+    <app-code-block [code]="crudExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Только строки — объекты через JSON</h2>
+    <p>
+      Главное ограничение: Web Storage хранит <strong>только строки</strong>. Число
+      молча превратится в строку (<code>42</code> → <code>'42'</code>), а объект без
+      подготовки — в бесполезное <code>'[object Object]'</code>. Поэтому объекты
+      сохраняют через <a routerLink="/javascript/json/stringify">JSON</a>:
+    </p>
+    <app-code-block [code]="objectExample" lang="javascript" />
+    <p class="note">
+      При <a routerLink="/javascript/json/parse">разборе</a> оборачивайте
+      <code>JSON.parse</code> в <a routerLink="/javascript/errors/try-catch">try / catch</a>:
+      в хранилище может лежать испорченная строка, и разбор бросит ошибку.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Сколько всего и перебор</h2>
+    <p>
+      <code>length</code> говорит, сколько пар хранится, а <code>key(i)</code> даёт ключ
+      по индексу — этого хватает, чтобы перебрать всё хранилище:
+    </p>
+    <app-code-block [code]="iterateExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>localStorage</code> или <code>sessionStorage</code>?</h2>
+    <p>
+      API идентичный — различие только в <strong>времени жизни</strong> и
+      <strong>области видимости</strong>:
+    </p>
+    <app-code-block [code]="sessionExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 540 210" width="100%" role="img"
+        aria-label="Две вкладки одного сайта делят общий localStorage, но у каждой свой sessionStorage">
+        <rect x="20" y="24" width="230" height="150" rx="10" fill="none" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="135" y="44" text-anchor="middle" fill="var(--muted)" font-size="11.5">Вкладка 1</text>
+        <rect x="290" y="24" width="230" height="150" rx="10" fill="none" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="405" y="44" text-anchor="middle" fill="var(--muted)" font-size="11.5">Вкладка 2</text>
+
+        <rect x="40" y="58" width="190" height="40" rx="8" fill="var(--surface)" stroke="var(--border)" />
+        <text x="135" y="83" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">sessionStorage №1</text>
+        <rect x="310" y="58" width="190" height="40" rx="8" fill="var(--surface)" stroke="var(--border)" />
+        <text x="405" y="83" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">sessionStorage №2</text>
+
+        <rect x="120" y="120" width="300" height="44" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="270" y="140" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">localStorage (общий)</text>
+        <text x="270" y="156" text-anchor="middle" fill="var(--muted)" font-size="10">один на обе вкладки сайта</text>
+      </svg>
+      <figcaption>
+        <code>localStorage</code> общий для всех вкладок сайта и живёт постоянно;
+        <code>sessionStorage</code> — отдельный для каждой вкладки и исчезает с её
+        закрытием.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Событие <code>storage</code> — синхронизация вкладок</h2>
+    <p>
+      Когда в одной вкладке меняется <code>localStorage</code>, в <strong>других</strong>
+      вкладках того же сайта срабатывает событие <code>storage</code>. Так, например,
+      выход из аккаунта в одной вкладке можно мгновенно применить во всех:
+    </p>
+    <app-code-block [code]="storageEventExample" lang="javascript" />
+    <p class="note">
+      Важная деталь: событие приходит в <strong>другие</strong> вкладки, но не в ту, где
+      сделано изменение. Про события в целом — раздел
+      <a routerLink="/javascript/events/basics">События</a>.
+    </p>
+  </section>
+</article>

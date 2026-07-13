@@ -1,0 +1,136 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/storage">Браузерное хранилище</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Обзор и выбор</span>
+  </nav>
+
+  <h1 class="doc__title">Браузерное хранилище — обзор</h1>
+  <p class="doc__lead">
+    <strong>Браузерное хранилище</strong> — это способы сохранить данные прямо
+    <strong>на устройстве пользователя</strong>, чтобы они не пропали после перезагрузки
+    или закрытия вкладки. Так хранят тему оформления, черновик формы, корзину товаров,
+    токен входа, локальный кэш.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — ящик стола против склада.</strong> Сервер — как склад в другом
+    городе: там надёжно и много места, но за каждой вещью нужно ехать (сетевой запрос).
+    Браузерное хранилище — ящик стола прямо на рабочем месте: положил и мгновенно взял,
+    без дороги. Правда, ящик маленький и у каждого сайта свой.
+  </p>
+
+  <section class="doc__section">
+    <h2>Простейший пример</h2>
+    <p>
+      Самое ходовое хранилище — <code>localStorage</code>. Записали значение по ключу —
+      и оно останется на месте, пока его не удалят:
+    </p>
+    <app-code-block [code]="quickExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Четыре варианта</h2>
+    <p>В браузере есть несколько хранилищ, каждое под свою задачу:</p>
+    <ul class="rules">
+      <li><strong><code>localStorage</code></strong> — простые пары «ключ-значение»,
+        хранятся <em>без срока</em>. Для настроек и мелких данных.</li>
+      <li><strong><code>sessionStorage</code></strong> — то же самое, но живёт только
+        <em>пока открыта вкладка</em>. Для временного состояния.</li>
+      <li><strong>Cookies</strong> — маленькие данные, которые <em>автоматически
+        уходят на сервер</em> с каждым запросом. Исторически — для входа и сессий.</li>
+      <li><strong>IndexedDB</strong> — полноценная <em>база данных</em> в браузере:
+        много места, структурированные данные, асинхронный доступ.</li>
+    </ul>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 540 210" width="100%" role="img"
+        aria-label="Внутри браузера четыре хранилища: localStorage, sessionStorage, cookies, IndexedDB">
+        <rect x="14" y="14" width="512" height="182" rx="12" fill="none" stroke="var(--muted)" stroke-dasharray="5 4" />
+        <text x="30" y="36" fill="var(--muted)" font-size="12">Браузер (устройство пользователя)</text>
+
+        <rect x="34" y="58" width="230" height="52" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="149" y="80" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12.5">localStorage</text>
+        <text x="149" y="98" text-anchor="middle" fill="var(--muted)" font-size="10.5">строки, без срока</text>
+
+        <rect x="276" y="58" width="230" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="391" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">sessionStorage</text>
+        <text x="391" y="98" text-anchor="middle" fill="var(--muted)" font-size="10.5">строки, до закрытия вкладки</text>
+
+        <rect x="34" y="122" width="230" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="149" y="144" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">cookies</text>
+        <text x="149" y="162" text-anchor="middle" fill="var(--muted)" font-size="10.5">малы, уходят на сервер</text>
+
+        <rect x="276" y="122" width="230" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="391" y="144" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">IndexedDB</text>
+        <text x="391" y="162" text-anchor="middle" fill="var(--muted)" font-size="10.5">много места, объекты, async</text>
+      </svg>
+      <figcaption>
+        Все четыре живут в браузере и привязаны к сайту. Наружу, на сервер, сами по себе
+        уходят только cookies.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Что выбрать</h2>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Хранилище</th>
+            <th>Объём</th>
+            <th>Время жизни</th>
+            <th>Уходит на сервер</th>
+            <th>Данные</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>localStorage</code></td>
+            <td>~5–10 МБ</td>
+            <td>до удаления</td>
+            <td class="no">нет</td>
+            <td>строки</td>
+          </tr>
+          <tr>
+            <td><code>sessionStorage</code></td>
+            <td>~5–10 МБ</td>
+            <td>до закрытия вкладки</td>
+            <td class="no">нет</td>
+            <td>строки</td>
+          </tr>
+          <tr>
+            <td>cookies</td>
+            <td class="no">~4 КБ</td>
+            <td>задаётся вручную</td>
+            <td class="yes">да, всегда</td>
+            <td>строки</td>
+          </tr>
+          <tr>
+            <td>IndexedDB</td>
+            <td class="yes">сотни МБ и больше</td>
+            <td>до удаления</td>
+            <td class="no">нет</td>
+            <td>объекты, файлы</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="rules">
+      <li>Просто сохранить настройку или небольшой объект → <a routerLink="/javascript/storage/local-session"><code>localStorage</code></a>.</li>
+      <li>Данные только на время текущей вкладки → <a routerLink="/javascript/storage/local-session"><code>sessionStorage</code></a>.</li>
+      <li>Нужно, чтобы сервер видел данные с каждым запросом → <a routerLink="/javascript/storage/cookies">cookies</a>.</li>
+      <li>Много данных или сложные структуры → <a routerLink="/javascript/storage/indexeddb">IndexedDB</a>.</li>
+    </ul>
+    <p class="note">
+      <code>localStorage</code>, <code>sessionStorage</code> и IndexedDB привязаны к
+      <strong>origin</strong> (протокол + домен + порт): данные одного сайта недоступны
+      другому. Cookies — исключение: они видны по домену (и пути) независимо от порта, а
+      без атрибута <code>Secure</code> — и независимо от протокола; поэтому и уходят на
+      сервер. Общие грабли — в
+      <a routerLink="/javascript/storage/pitfalls">подводных камнях</a>.
+    </p>
+  </section>
+</article>

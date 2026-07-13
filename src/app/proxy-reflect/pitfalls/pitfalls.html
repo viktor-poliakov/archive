@@ -1,0 +1,91 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/proxy-reflect">Proxy и Reflect</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Нюансы и подводные камни</span>
+  </nav>
+
+  <h1 class="doc__title">Proxy: нюансы и подводные камни</h1>
+  <p class="doc__lead">
+    Proxy — мощный инструмент, но у него есть цена и строгие правила. Соберём главное, о
+    чём стоит помнить, прежде чем оборачивать всё подряд.
+  </p>
+
+  <section class="doc__section">
+    <h2>Прокси — отдельный объект</h2>
+    <p>
+      Прокси <strong>не равен</strong> исходному объекту: это разные ссылки. Если
+      где-то сравнивают объекты через <code>===</code> или хранят в
+      <a routerLink="/javascript/collections/map-set"><code>Set</code>/<code>Map</code></a>,
+      прокси и оригинал будут восприниматься как два разных значения:
+    </p>
+    <app-code-block [code]="identityExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2><code>set</code> и <code>deleteProperty</code> обязаны вернуть <code>true</code></h2>
+    <p>
+      Эти ловушки должны сообщить, удалась ли операция. Если забыть вернуть
+      <code>true</code>, в строгом режиме (а модули всегда строгие) присваивание
+      бросит <code>TypeError</code>:
+    </p>
+    <app-code-block [code]="setReturnExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Инварианты: нельзя врать про объект</h2>
+    <p>
+      Ловушки не всесильны. Язык защищает свои <strong>инварианты</strong>: например,
+      если у объекта есть <strong>незаписываемое и неудаляемое</strong> свойство, ловушка
+      <code>get</code> не имеет права вернуть для него другое значение — движок бросит
+      <code>TypeError</code>:
+    </p>
+    <app-code-block [code]="invariantExample" lang="javascript" />
+    <p class="note">
+      Смысл прост: прокси может менять поведение, но не может <em>лгать</em> о том, что
+      язык гарантирует неизменным. Те же ограничения есть у <code>ownKeys</code> и других
+      ловушек.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Приватные поля класса</h2>
+    <p>
+      Приватные поля (<code>#field</code>, см.
+      <a routerLink="/javascript/classes/static-private">Классы</a>) привязаны к
+      <strong>конкретному</strong> экземпляру. Прокси — другой объект, поэтому вызов
+      метода, который читает приватное поле, через прокси упадёт:
+    </p>
+    <app-code-block [code]="privateFieldsExample" lang="javascript" />
+    <p class="note">
+      Обходной путь — оборачивать не сам объект, а связывать методы с оригиналом. Но
+      проще помнить: <strong>прокси и приватные поля плохо дружат</strong>.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Производительность</h2>
+    <p>
+      Каждая операция через прокси проходит через дополнительный слой перенаправления (а
+      если для неё задана ловушка — ещё и вызывает её функцию), поэтому прокси
+      <strong>медленнее</strong> прямого доступа к объекту. Для разовых действий разница
+      незаметна, но в «горячем» коде (миллионы обращений в цикле) прокси лучше не
+      ставить.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong>Прокси ≠ оригинал</strong> при сравнении по ссылке.</li>
+      <li><strong><code>set</code>/<code>deleteProperty</code> должны вернуть
+        <code>true</code></strong>, иначе <code>TypeError</code>.</li>
+      <li><strong>Инварианты:</strong> ловушка не может противоречить
+        незаписываемым/неудаляемым свойствам.</li>
+      <li><strong>Приватные поля (<code>#</code>)</strong> не работают через прокси.</li>
+      <li><strong>Прокси медленнее</strong> прямого доступа — не для «горячих» путей.</li>
+    </ul>
+  </section>
+</article>

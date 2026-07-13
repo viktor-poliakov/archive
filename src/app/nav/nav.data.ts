@@ -199,6 +199,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'proxy-reflect',
+        label: 'Proxy и Reflect',
+        children: [
+          { id: 'basics', label: 'Основы Proxy' },
+          { id: 'traps', label: 'Ловушки' },
+          { id: 'reflect', label: 'Reflect' },
+          { id: 'practical', label: 'Практика' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'iterators',
         label: 'Итераторы и генераторы',
         children: [
@@ -247,6 +258,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'web-workers',
+        label: 'Web Workers',
+        children: [
+          { id: 'basics', label: 'Основы' },
+          { id: 'messaging', label: 'Обмен сообщениями' },
+          { id: 'practical', label: 'Практика' },
+          { id: 'types', label: 'Виды воркеров' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
         id: 'dom',
         label: 'DOM',
         children: [
@@ -267,6 +289,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'target', label: 'target и currentTarget' },
           { id: 'delegation', label: 'Делегирование' },
           { id: 'custom-events', label: 'Свои события' },
+          { id: 'pitfalls', label: 'Нюансы и подводные камни' },
+        ],
+      },
+      {
+        id: 'storage',
+        label: 'Браузерное хранилище',
+        children: [
+          { id: 'basics', label: 'Обзор и выбор' },
+          { id: 'local-session', label: 'localStorage и sessionStorage' },
+          { id: 'cookies', label: 'Cookies' },
+          { id: 'indexeddb', label: 'IndexedDB' },
           { id: 'pitfalls', label: 'Нюансы и подводные камни' },
         ],
       },

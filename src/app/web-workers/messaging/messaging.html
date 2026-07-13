@@ -1,0 +1,98 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/web-workers">Web Workers</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">Обмен сообщениями</span>
+  </nav>
+
+  <h1 class="doc__title">Обмен сообщениями</h1>
+  <p class="doc__lead">
+    Главный поток и воркер <strong>не делят память</strong> — у них нет общих переменных.
+    Всё общение идёт через сообщения: <code>postMessage</code> отправляет,
+    <code>onmessage</code> принимает. И самое важное — <strong>данные копируются</strong>,
+    а не передаются по ссылке.
+  </p>
+
+  <section class="doc__section">
+    <h2>Сообщения в обе стороны</h2>
+    <p>
+      И у главного потока, и у воркера есть одинаковая пара: <code>postMessage</code> для
+      отправки и <code>onmessage</code> для приёма. Полученные данные лежат в
+      <code>event.data</code>. Слать можно не только строки, но и объекты, массивы и
+      прочие структуры:
+    </p>
+    <app-code-block [code]="mainExample" lang="javascript" />
+    <app-code-block [code]="workerExample" lang="javascript" />
+    <p class="note">
+      Частый приём — класть в сообщение поле <code>type</code>, чтобы воркер понимал, что
+      именно от него хотят (как в примере: <code>'sum'</code>). Так один воркер может
+      обрабатывать разные задачи.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Данные копируются (структурное клонирование)</h2>
+    <p>
+      <code>postMessage</code> не передаёт объект по ссылке, а делает его
+      <strong>глубокую копию</strong> (алгоритм «структурного клонирования» — тот же, что
+      у <a routerLink="/javascript/json/practical"><code>structuredClone</code></a>).
+      Поэтому изменения оригинала после отправки воркера уже не касаются:
+    </p>
+    <app-code-block [code]="cloneExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 540 150" width="100%" role="img"
+        aria-label="postMessage создаёт независимую копию объекта в воркере">
+        <defs>
+          <marker id="ww-m-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="52" width="170" height="46" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+        <text x="105" y="72" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11.5">data (оригинал)</text>
+        <text x="105" y="90" text-anchor="middle" fill="var(--muted)" font-size="10.5">главный поток</text>
+
+        <line x1="192" y1="75" x2="346" y2="75" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ww-m-arrow)" />
+        <text x="269" y="66" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="10">postMessage → копия</text>
+
+        <rect x="350" y="52" width="170" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" />
+        <text x="435" y="72" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11.5">копия data</text>
+        <text x="435" y="90" text-anchor="middle" fill="var(--muted)" font-size="10.5">воркер (независимая)</text>
+
+        <text x="270" y="130" text-anchor="middle" fill="var(--muted)" font-size="11">Два отдельных объекта — менять один, не задев другой</text>
+      </svg>
+      <figcaption>
+        Воркер получает <strong>независимую копию</strong>. Изменения по одну сторону не
+        видны по другую — общей памяти нет.
+      </figcaption>
+    </figure>
+    <p>
+      Клонировать можно объекты, массивы, <code>Map</code>, <code>Set</code>,
+      <code>Date</code>, <code>ArrayBuffer</code> и многое другое. А вот функции и
+      <a routerLink="/javascript/dom/basics">DOM-узлы</a> отправить нельзя — будет ошибка
+      (об этом в <a routerLink="/javascript/web-workers/pitfalls">подводных камнях</a>).
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Остановка воркера</h2>
+    <p>
+      Воркер живёт, пока его не остановят. Из главного потока — методом
+      <code>terminate</code>; сам воркер может завершиться через <code>self.close()</code>.
+      Не забывайте останавливать ненужные воркеры — каждый расходует память:
+    </p>
+    <app-code-block [code]="terminateExample" lang="javascript" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Обработка ошибок</h2>
+    <p>
+      Если внутри воркера возникнет ошибка, поймать её можно в главном потоке через
+      <code>onerror</code>:
+    </p>
+    <app-code-block [code]="errorExample" lang="javascript" />
+  </section>
+</article>
