@@ -71,10 +71,16 @@
     <h2>Клонирование: <code>cloneNode</code></h2>
     <p>
       <code>cloneNode</code> делает копию элемента. Без аргумента — «пустую» (только сам
-      элемент), с <code>true</code> — <strong>глубокую</strong>, со всем вложенным
-      содержимым. Частый приём: держать в разметке скрытый шаблон и клонировать его:
+      элемент, без содержимого), с <code>true</code> — <strong>глубокую</strong>, со всем
+      вложенным. Разница видна сразу:
     </p>
     <app-code-block [code]="cloneExample" lang="javascript" />
+    <p>
+      Отсюда частый практический приём: держать в разметке <strong>скрытый шаблон</strong>
+      и глубоко клонировать его под каждый элемент списка — вместо того чтобы собирать
+      разметку из строк:
+    </p>
+    <app-code-block [code]="cloneTemplateExample" lang="javascript" />
   </section>
 
   <section class="doc__section">

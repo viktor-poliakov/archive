@@ -31,11 +31,26 @@ const form = document.getElementById('login'); // элемент с id="login"
 const menu = document.querySelector('#menu');
 const links = menu.querySelectorAll('a'); // только ссылки внутри #menu`;
 
-  protected readonly navExample = `const item = document.querySelector('.item');
+  protected readonly navMarkupExample = `<nav class="list">
+  <ul>
+    <li class="item">
+      <a href="/home">Home</a>
+      <span class="badge">new</span>
+    </li>
+    <li class="item">
+      <a href="/blog">Blog</a>
+    </li>
+  </ul>
+</nav>`;
 
-item.parentElement;      // родитель-элемент
-item.children;           // дети-элементы (HTMLCollection)
-item.firstElementChild;  // первый ребёнок-элемент
-item.nextElementSibling; // следующий сосед-элемент
-item.closest('.list');   // ближайший подходящий предок (или сам элемент)`;
+  protected readonly navExample = `// берём ПЕРВЫЙ <li class="item"> из разметки выше
+const item = document.querySelector('.item');
+
+item.parentElement;    // <ul> — прямой родитель
+item.children;         // коллекция из двух элементов: [<a>, <span>]
+item.children.length;  // 2
+item.firstElementChild;             // <a href="/home"> — первый ребёнок-элемент
+item.firstElementChild.textContent; // 'Home'
+item.nextElementSibling; // второй <li> (со ссылкой Blog) — следующий сосед
+item.closest('.list');   // <nav class="list"> — поднялись вверх, мимо <ul>`;
 }

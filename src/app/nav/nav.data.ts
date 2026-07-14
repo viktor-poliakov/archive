@@ -277,6 +277,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
           { id: 'content', label: 'Текст и разметка' },
           { id: 'attributes', label: 'Атрибуты, классы, стили' },
           { id: 'create', label: 'Создание и удаление узлов' },
+          { id: 'template', label: 'template' },
           { id: 'pitfalls', label: 'Нюансы и подводные камни' },
         ],
       },

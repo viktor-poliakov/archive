@@ -90,11 +90,48 @@
     <p>
       Важное различие. <strong>Узел (node)</strong> — это любой «кусочек» дерева: не
       только теги, но и текст между ними, и комментарии. <strong>Элемент
-      (element)</strong> — это узел-тег (<code>&lt;p&gt;</code>, <code>&lt;div&gt;</code>).
-      Отсюда две разные коллекции детей: <code>childNodes</code> (все узлы) и
-      <code>children</code> (только элементы):
+      (element)</strong> — это узел-тег (<code>&lt;p&gt;</code>, <code>&lt;div&gt;</code>,
+      <code>&lt;b&gt;</code>). Отсюда две разные коллекции детей: <code>childNodes</code>
+      (все узлы) и <code>children</code> (только элементы).
+    </p>
+    <p>
+      Какого именно вида узел, подсказывает свойство <code>nodeType</code> — это просто
+      <strong>число-код</strong>: <code>1</code> — элемент (тег), <code>3</code> — текст,
+      <code>8</code> — комментарий. У этих чисел есть и понятные имена-константы (например,
+      <code>Node.ELEMENT_NODE</code> — это и есть <code>1</code>, а
+      <code>Node.TEXT_NODE</code> — <code>3</code>), чтобы в коде не держать цифры в
+      голове:
     </p>
     <app-code-block [code]="nodeTypesExample" lang="javascript" />
+
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th><code>nodeType</code></th>
+            <th>Вид узла</th>
+            <th>Имя-константа</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>1</code></td>
+            <td>элемент (тег: <code>&lt;p&gt;</code>, <code>&lt;b&gt;</code>…)</td>
+            <td><code>Node.ELEMENT_NODE</code></td>
+          </tr>
+          <tr>
+            <td><code>3</code></td>
+            <td>текст</td>
+            <td><code>Node.TEXT_NODE</code></td>
+          </tr>
+          <tr>
+            <td><code>8</code></td>
+            <td>комментарий (<code>&lt;!-- … --&gt;</code>)</td>
+            <td><code>Node.COMMENT_NODE</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <p class="note">
       На практике почти всегда работают с <strong>элементами</strong> и свойством
       <code>children</code>. Про «лишние» текстовые узлы из пробелов между тегами —

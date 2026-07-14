@@ -34,11 +34,23 @@ h1.parentElement; // элемент-родитель`;
   protected readonly nodeTypesExample = `// Разметка на странице: <p>Hello <b>world</b></p>
 const p = document.querySelector('p');
 
-// childNodes — ВСЕ дочерние узлы, включая текстовые
-p.childNodes.length;      // 2: текст 'Hello ' и элемент <b>
-p.childNodes[0].nodeType; // 3 — текстовый узел (Node.TEXT_NODE)
-p.childNodes[1].nodeType; // 1 — узел-элемент (Node.ELEMENT_NODE)
+p.childNodes.length; // 2: текстовый узел 'Hello ' и элемент <b>
 
-// children — только дочерние ЭЛЕМЕНТЫ
-p.children.length;        // 1 — среди детей лишь один элемент, <b>`;
+// nodeType — это ЧИСЛО-код вида узла: 1 — элемент, 3 — текст, 8 — комментарий
+const text = p.childNodes[0]; // первый ребёнок — текст 'Hello '
+text.nodeType;    // 3  (текстовый узел)
+text.textContent; // 'Hello '
+
+const bold = p.childNodes[1]; // второй ребёнок — элемент, то есть тег <b>
+bold.nodeType;    // 1  (узел-элемент)
+bold.tagName;     // 'B'
+bold.textContent; // 'world'
+
+// Node.ELEMENT_NODE и Node.TEXT_NODE — просто ИМЕНА для этих чисел:
+Node.ELEMENT_NODE; // 1
+Node.TEXT_NODE;    // 3
+
+// children — только ЭЛЕМЕНТЫ, поэтому там лишь <b>:
+p.children.length; // 1
+p.children[0];     // <b> — тот же элемент, что и bold`;
 }

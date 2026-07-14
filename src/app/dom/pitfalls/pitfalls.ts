@@ -40,15 +40,21 @@ document.querySelector('ul').append(document.createElement('li'));
 live.length;     // 4 — обновилась сама!
 snapshot.length; // 3 — снимок не меняется`;
 
-  protected readonly liveLoopExample = `// живую коллекцию опасно перебирать по индексу, удаляя элементы
-const items = document.getElementsByClassName('item'); // живая
+  protected readonly liveLoopExample = `// на странице 4 элемента с class="item": A, B, C, D
+const items = document.getElementsByClassName('item'); // живая коллекция
 
 for (let i = 0; i < items.length; i++) {
-  items[i].remove(); // после remove коллекция короче → часть пропускается!
+  items[i].remove();
 }
 
-// надёжно: снять статический снимок через querySelectorAll
-document.querySelectorAll('.item').forEach((el) => el.remove());`;
+// почему пропускает — по шагам (после каждого remove коллекция сдвигается):
+// i=0: items[0] = A → удалили. Осталось [B, C, D], B сдвинулся на индекс 0
+// i=1: items[1] = C → удалили. B (теперь на индексе 0) ПЕРЕПРЫГНУЛИ. Осталось [B, D]
+// i=2: длина уже 2, условие 2 < 2 ложно → цикл остановился
+// ИТОГ: удалены A и C, а B и D остались — половина пропущена!
+
+// надёжно: снять статический снимок — он не меняется во время перебора
+document.querySelectorAll('.item').forEach((el) => el.remove()); // удалит ВСЕ`;
 
   protected readonly reflowExample = `const list = document.querySelector('ul');
 

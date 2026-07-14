@@ -1,0 +1,149 @@
+<article class="doc" style="--accent: #f1fa8c">
+  <nav class="breadcrumbs">
+    <span class="breadcrumbs__root">JavaScript</span>
+    <span class="breadcrumbs__sep">/</span>
+    <a routerLink="/javascript/dom">DOM</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="breadcrumbs__current">template</span>
+  </nav>
+
+  <h1 class="doc__title">&lt;template&gt;</h1>
+  <p class="doc__lead">
+    <code>&lt;template&gt;</code> — это «заготовка» разметки: кусок HTML, который браузер
+    разбирает, но <strong>не показывает</strong> на странице. Он лежит наготове, а вы
+    <strong>клонируете</strong> его столько раз, сколько нужно, — например, под каждый
+    элемент списка.
+  </p>
+  <p class="doc__lead">
+    <strong>Аналогия — формочка для печенья.</strong> Сама формочка — не печенье, её не
+    едят. Но по ней штампуют одинаковые печенья сколько угодно.
+    <code>&lt;template&gt;</code> — такая формочка для разметки: один образец, много
+    готовых копий.
+  </p>
+
+  <section class="doc__section">
+    <h2>Что такое <code>&lt;template&gt;</code></h2>
+    <p>
+      Внутрь <code>&lt;template&gt;</code> кладут любую разметку. Браузер её проверяет и
+      запоминает, но держит <strong>«выключенной»</strong>: она не видна, картинки не
+      грузятся, скрипты не выполняются, в раскладку страницы она не входит. Это просто
+      образец, ждущий, когда его используют:
+    </p>
+    <app-code-block [code]="markupExample" lang="html" />
+  </section>
+
+  <section class="doc__section">
+    <h2>Содержимое лежит в <code>.content</code></h2>
+    <p>
+      Разметка шаблона доступна не как обычные дети элемента, а через свойство
+      <code>.content</code> — это
+      <a routerLink="/javascript/dom/create"><code>DocumentFragment</code></a> (лёгкий
+      невидимый контейнер). Поэтому искать и клонировать нужно именно в
+      <code>.content</code>:
+    </p>
+    <app-code-block [code]="contentExample" lang="javascript" />
+    <p class="note">
+      Обратите внимание: <code>document.querySelector('.user')</code> возвращает
+      <code>null</code> — содержимое шаблона <strong>не в «живой» странице</strong>, пока
+      его туда не вставили. В этом и смысл: шаблон инертен.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Как использовать: клонировать и заполнить</h2>
+    <p>
+      Рабочий цикл — три шага: <strong>клонируем</strong> содержимое шаблона,
+      <strong>заполняем</strong> данными (через <code>textContent</code>) и
+      <strong>вставляем</strong> в страницу. Отрисуем список пользователей из массива:
+    </p>
+    <app-code-block [code]="renderExample" lang="javascript" />
+
+    <figure class="diagram">
+      <svg viewBox="0 0 560 120" width="100%" role="img"
+        aria-label="Из шаблона: клонируем содержимое, заполняем данными, вставляем в страницу">
+        <defs>
+          <marker id="dom-t-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+        <rect x="10" y="36" width="140" height="52" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+        <text x="80" y="60" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">&lt;template&gt;</text>
+        <text x="80" y="78" text-anchor="middle" fill="var(--muted)" font-size="10">инертный, невидимый</text>
+
+        <line x1="152" y1="62" x2="206" y2="62" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#dom-t-arrow)" />
+        <text x="179" y="53" text-anchor="middle" fill="var(--muted)" font-size="9">cloneNode(true)</text>
+
+        <rect x="210" y="36" width="132" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" />
+        <text x="276" y="60" text-anchor="middle" fill="var(--fg)" font-size="11">клон-фрагмент</text>
+        <text x="276" y="78" text-anchor="middle" fill="var(--muted)" font-size="10">заполняем textContent</text>
+
+        <line x1="344" y1="62" x2="398" y2="62" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#dom-t-arrow)" />
+        <text x="371" y="53" text-anchor="middle" fill="var(--muted)" font-size="9">append</text>
+
+        <rect x="402" y="36" width="148" height="52" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+        <text x="476" y="60" text-anchor="middle" fill="var(--green)" font-size="11">строка в списке</text>
+        <text x="476" y="78" text-anchor="middle" fill="var(--muted)" font-size="10">видна на странице</text>
+      </svg>
+      <figcaption>
+        Шаблон остаётся нетронутым — из него делают копии. Один образец → сколько угодно
+        готовых элементов.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="doc__section">
+    <h2>Чем это лучше строки с <code>innerHTML</code></h2>
+    <p>
+      Тот же список можно собрать, склеивая HTML из строк и присваивая
+      <code>innerHTML</code>. Но у шаблона есть заметные плюсы:
+    </p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th>Строка + <code>innerHTML</code></th>
+            <th><code>&lt;template&gt;</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Разметка</td>
+            <td>склеиваем из строк</td>
+            <td class="yes">пишем как обычный HTML</td>
+          </tr>
+          <tr>
+            <td>Данные</td>
+            <td class="no">подставляем в строку (риск XSS)</td>
+            <td class="yes">через <code>textContent</code> (безопасно)</td>
+          </tr>
+          <tr>
+            <td>Разбор HTML</td>
+            <td>заново при каждой вставке</td>
+            <td class="yes">один раз, заранее</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Главное — безопасность: данные попадают в разметку через <code>textContent</code>, а
+      не подстановкой в строку, поэтому
+      <a routerLink="/javascript/dom/pitfalls">XSS</a> здесь не грозит. Плюс разметку
+      браузер разбирает один раз, а не заново на каждый элемент.
+    </p>
+  </section>
+
+  <section class="doc__section">
+    <h2>Кратко</h2>
+    <ul class="rules">
+      <li><strong><code>&lt;template&gt;</code></strong> — разметка-заготовка: разобрана,
+        но не показана и не активна.</li>
+      <li><strong>Содержимое — в <code>.content</code></strong> (это
+        <code>DocumentFragment</code>), а не в обычных детях элемента.</li>
+      <li><strong>Как применять:</strong> <code>content.cloneNode(true)</code> → заполнить
+        <code>textContent</code> → вставить в страницу.</li>
+      <li><strong>Безопаснее строк:</strong> данные идут через <code>textContent</code>,
+        без риска XSS.</li>
+    </ul>
+  </section>
+</article>
