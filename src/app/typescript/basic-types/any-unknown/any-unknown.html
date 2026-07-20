@@ -1,0 +1,231 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">any и unknown</span></nav>
+
+<h1 class="doc__title">any и unknown</h1>
+<p class="doc__lead">Иногда тип значения заранее неизвестен: пришли данные с сервера, значение прилетело из нетипизированной библиотеки, отработал <code>JSON.parse</code>. Для таких случаев в TypeScript есть два «универсальных» типа — <code>any</code> и <code>unknown</code>. Оба принимают в себя что угодно, но ведут себя противоположно: <code>any</code> отключает проверки и развязывает руки, <code>unknown</code> — наоборот, заставляет сначала убедиться, что за значение вам досталось. Разберём оба и поймём, почему по умолчанию выбирают <code>unknown</code>.</p>
+
+<section class="doc__section">
+  <h2>any — режим «делай что хочешь»</h2>
+  <p>Тип <code>any</code> означает «я не знаю (или не хочу указывать) тип, отключи проверку». С переменной <code>any</code> разрешено вообще всё: присваивать любое значение, обращаться к любым свойствам, вызывать её как функцию, передавать куда угодно. Компилятор просто отходит в сторону.</p>
+  <app-code-block [code]="anyBasicsExample" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> <code>any</code> — это как поставить подпись на пустом бланке. Вы доверяете содержимому, не читая его: вдруг там всё в порядке. Пока данные и правда те, что вы ждёте, — работает. Но никакой защиты у вас нет.</p>
+  <p>Проблема в том, что проверка не исчезает — она просто <strong>переносится в рантайм</strong>. Всё, что TypeScript обычно ловит на этапе сборки, теперь всплывёт только во время выполнения — у пользователя:</p>
+  <app-code-block [code]="anyRuntimeErrorExample" lang="typescript" />
+  <p>По сути <code>any</code> возвращает вас в обычный нетипизированный JavaScript. Отсюда правило: <strong><code>any</code> — это не «любой тип», а «выключить TypeScript в этом месте»</strong>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>any «заражает» соседей</h2>
+  <p>Опасность <code>any</code> не ограничивается одной переменной. Тип растекается: <strong>всё, что вычислено из значения <code>any</code>, тоже становится <code>any</code></strong>. Достаточно одной такой переменной, чтобы проверки молча отключились в целой цепочке кода.</p>
+  <app-code-block [code]="anyContagionExample" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 650 170" width="100%" role="img" aria-label="any передаётся по цепочке вычислений">
+      <defs>
+        <marker id="au-c" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--red)" />
+        </marker>
+      </defs>
+      <text x="14" y="30" fill="var(--fg)" font-size="13" font-weight="700">Одно значение any «заражает» всю цепочку</text>
+
+      <rect x="14" y="64" width="128" height="56" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="78" y="88" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">raw</text>
+      <text x="78" y="107" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12" font-weight="700">any</text>
+
+      <line x1="142" y1="92" x2="176" y2="92" stroke="var(--red)" stroke-width="1.8" marker-end="url(#au-c)" />
+
+      <rect x="178" y="64" width="128" height="56" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="242" y="88" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">raw.port</text>
+      <text x="242" y="107" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12" font-weight="700">any</text>
+
+      <line x1="306" y1="92" x2="340" y2="92" stroke="var(--red)" stroke-width="1.8" marker-end="url(#au-c)" />
+
+      <rect x="342" y="64" width="128" height="56" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="406" y="88" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">port * 2</text>
+      <text x="406" y="107" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12" font-weight="700">any</text>
+
+      <line x1="470" y1="92" x2="504" y2="92" stroke="var(--red)" stroke-width="1.8" marker-end="url(#au-c)" />
+
+      <rect x="506" y="64" width="128" height="56" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="570" y="88" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">дальше…</text>
+      <text x="570" y="107" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12" font-weight="700">any</text>
+    </svg>
+    <figcaption>Всё, что вычислено из значения <code>any</code>, тоже получает тип <code>any</code> — проверки отключаются по цепочке.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>unknown — безопасная «вершина»</h2>
+  <p>Тип <code>unknown</code> тоже принимает в себя абсолютно любое значение — в этом он неотличим от <code>any</code>:</p>
+  <app-code-block [code]="unknownAssignExample" lang="typescript" />
+  <p>Но на этом сходство заканчивается. С переменной <code>unknown</code> <strong>нельзя ничего делать напрямую</strong>: ни обратиться к свойству, ни вызвать, ни присвоить в переменную конкретного типа. Компилятор блокирует любое использование, пока вы не докажете ему настоящий тип значения:</p>
+  <app-code-block [code]="unknownUseErrorExample" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> <code>unknown</code> — это запечатанная коробка с неизвестным содержимым. Держать её и передавать другому можно свободно. Но прежде чем <em>использовать</em> то, что внутри, коробку надо вскрыть и убедиться, что там именно то, что вы думаете. Никаких действий вслепую.</p>
+  <p><code>unknown</code> называют «верхним» типом (top type): в него укладывается любое значение, поэтому он «сверху» над всеми. При этом сам он вниз, в конкретные типы, без проверки не проходит — в отличие от <code>any</code>, который совместим в обе стороны:</p>
+  <app-code-block [code]="topTypeExample" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Путь значения через unknown с проверкой и через any без проверки">
+      <defs>
+        <marker id="au-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+        </marker>
+        <marker id="au-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--red)" />
+        </marker>
+      </defs>
+
+      <text x="16" y="34" fill="var(--green)" font-size="13" font-weight="700">unknown — сначала проверь, потом используй</text>
+      <rect x="16" y="50" width="104" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" />
+      <text x="68" y="78" text-anchor="middle" fill="var(--fg)" font-size="12">значение</text>
+      <line x1="120" y1="73" x2="162" y2="73" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#au-a)" />
+      <rect x="166" y="50" width="104" height="46" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="218" y="78" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">unknown</text>
+      <line x1="270" y1="73" x2="312" y2="73" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#au-a)" />
+      <rect x="316" y="46" width="160" height="54" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="396" y="70" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="700">проверка типа</text>
+      <text x="396" y="88" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">typeof / instanceof</text>
+      <line x1="476" y1="73" x2="518" y2="73" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#au-a)" />
+      <rect x="522" y="50" width="122" height="46" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="583" y="78" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="700">безопасно</text>
+
+      <text x="16" y="188" fill="var(--red)" font-size="13" font-weight="700">any — проверок нет, риск уходит в рантайм</text>
+      <rect x="16" y="204" width="104" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" />
+      <text x="68" y="232" text-anchor="middle" fill="var(--fg)" font-size="12">значение</text>
+      <line x1="120" y1="227" x2="162" y2="227" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#au-a)" />
+      <rect x="166" y="204" width="104" height="46" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="218" y="232" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">any</text>
+      <line x1="270" y1="227" x2="470" y2="227" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#au-r)" />
+      <text x="370" y="218" text-anchor="middle" fill="var(--muted)" font-size="11">проверка пропущена</text>
+      <rect x="474" y="204" width="170" height="46" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="559" y="232" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="700">TypeError в рантайме</text>
+    </svg>
+    <figcaption>С <code>unknown</code> между значением и его использованием стоит обязательная проверка типа. С <code>any</code> проверки нет — ошибка всплывает уже во время выполнения.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>any vs unknown: что где разрешено</h2>
+  <p>Оба типа принимают любое значение. Разница — в том, что компилятор позволяет делать <em>дальше</em>. Наглядно (зелёное — «да», красное — «нет»):</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Можно ли…</th>
+          <th><code>any</code></th>
+          <th><code>unknown</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>присвоить в переменную любое значение</td>
+          <td class="yes">да</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td>сразу обратиться к свойству / вызвать, без проверки</td>
+          <td class="yes">да</td>
+          <td class="no">нет</td>
+        </tr>
+        <tr>
+          <td>присвоить напрямую в переменную конкретного типа</td>
+          <td class="yes">да</td>
+          <td class="no">нет</td>
+        </tr>
+        <tr>
+          <td>компилятор ловит ошибки операций на этапе сборки</td>
+          <td class="no">нет</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td>обязательно сузить тип перед использованием</td>
+          <td class="no">нет</td>
+          <td class="yes">да</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 260" width="100%" role="img" aria-label="Аналогия: any как подпись на пустом бланке, unknown как запечатанная коробка">
+      <text x="160" y="30" text-anchor="middle" fill="var(--red)" font-size="14" font-weight="700">any</text>
+      <text x="480" y="30" text-anchor="middle" fill="var(--green)" font-size="14" font-weight="700">unknown</text>
+
+      <rect x="70" y="50" width="180" height="150" rx="8" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <line x1="94" y1="82" x2="226" y2="82" stroke="var(--border)" stroke-width="2" />
+      <line x1="94" y1="104" x2="226" y2="104" stroke="var(--border)" stroke-width="2" />
+      <line x1="94" y1="126" x2="200" y2="126" stroke="var(--border)" stroke-width="2" />
+      <text x="94" y="168" fill="var(--muted)" font-size="11">подпись:</text>
+      <path d="M96 184 q10 -14 20 0 t20 0 t18 -4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" />
+      <text x="160" y="226" text-anchor="middle" fill="var(--muted)" font-size="11">подписал не читая —</text>
+      <text x="160" y="242" text-anchor="middle" fill="var(--muted)" font-size="11">доверяешь вслепую</text>
+
+      <rect x="390" y="66" width="180" height="120" rx="6" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <line x1="480" y1="66" x2="480" y2="186" stroke="var(--border)" stroke-width="2" />
+      <rect x="450" y="58" width="60" height="20" rx="3" fill="var(--bg)" stroke="var(--muted)" />
+      <text x="480" y="72" text-anchor="middle" fill="var(--muted)" font-size="10">печать</text>
+      <rect x="466" y="120" width="28" height="22" rx="3" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <path d="M472 120 v-6 a8 8 0 0 1 16 0 v6" fill="none" stroke="var(--green)" stroke-width="2" />
+      <text x="480" y="214" text-anchor="middle" fill="var(--muted)" font-size="11">откроешь, только когда</text>
+      <text x="480" y="230" text-anchor="middle" fill="var(--muted)" font-size="11">убедишься, что внутри</text>
+    </svg>
+    <figcaption><strong>any</strong> — подпись на пустом бланке: доверие без проверки. <strong>unknown</strong> — запечатанная коробка: надо вскрыть и убедиться, прежде чем пользоваться.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Как «открыть» unknown: сужение типа</h2>
+  <p>Чтобы воспользоваться значением <code>unknown</code>, нужно <strong>сузить</strong> его тип — доказать компилятору, что именно в нём лежит. Делается это обычными проверками из JavaScript, а TypeScript умеет их «понимать»: внутри ветки <code>if</code> он автоматически уточняет тип.</p>
+
+  <h3 class="doc__subtitle">Проверка через <code>typeof</code></h3>
+  <p>Подходит для примитивов — строк, чисел, булевых значений:</p>
+  <app-code-block [code]="narrowTypeofExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Проверка через <code>instanceof</code> и другие</h3>
+  <p>Для объектов, массивов и экземпляров классов удобны <code>instanceof</code> и <code>Array.isArray</code>:</p>
+  <app-code-block [code]="narrowInstanceofExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Реальный случай: ошибка в <code>catch</code></h3>
+  <p>Начиная с TypeScript 4.4 при включённом <code>strict</code> переменная в <code>catch</code> имеет тип <code>unknown</code>, а не <code>any</code>. Это правильно: в JavaScript бросить (<code>throw</code>) можно что угодно — строку, число, объект, — поэтому сначала нужно проверить, что это вообще ошибка:</p>
+  <app-code-block [code]="catchErrorExample" lang="typescript" />
+  <p class="note">Про подробное описание форм объектов и сравнения-«стражи» — в разделе <a routerLink="/typescript/basic-types/subtypes-supertypes">«Подтипы и супертипы»</a>. Здесь важно запомнить принцип: <strong>проверил → сузил → используешь</strong>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Скрытая ловушка: JSON.parse</h2>
+  <p>Классический источник <code>any</code> в проекте — встроенный <code>JSON.parse</code>. Он возвращает <code>any</code>, поэтому любые опечатки в полях уходят в рантайм незамеченными. Хороший приём — сразу присвоить результат переменной <code>unknown</code> и проверить форму:</p>
+  <app-code-block [code]="jsonParseAnyExample" lang="typescript" />
+  <p>Так вы своими руками ставите «пропускной пункт» там, где TypeScript по историческим причинам оставил дыру. Это ровно та ситуация, где <code>unknown</code> спасает от целого класса багов.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Флаг noImplicitAny</h2>
+  <p><code>any</code> появляется не только когда вы пишете его руками. Если у параметра или переменной не удаётся вывести тип, TypeScript может подставить <code>any</code> <strong>неявно</strong> — молча. Флаг <code>noImplicitAny</code> запрещает это: любое «случайное» <code>any</code> становится ошибкой сборки, и вы обязаны указать тип явно.</p>
+  <app-code-block [code]="noImplicitAnyExample" lang="typescript" />
+  <p>Флаг входит в набор <code>strict</code>, поэтому в новых проектах он обычно уже включён:</p>
+  <app-code-block [code]="tsconfigExample" lang="json" />
+  <p class="note">Держите <code>noImplicitAny</code> включённым. Он превращает <code>any</code> из «того, что случается само» в осознанное решение, которое видно в коде.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда any всё-таки оправдан</h2>
+  <p><code>any</code> — не «зло», а инструмент с узким применением. Есть ситуации, где он уместен:</p>
+  <ul class="rules">
+    <li><strong>Быстрая миграция с JavaScript.</strong> Когда переводите большой JS-проект на TypeScript файл за файлом, <code>any</code> позволяет временно заглушить ошибки и не переписывать всё сразу.</li>
+    <li><strong>Нетипизированная библиотека.</strong> Если у пакета нет описаний типов (<code>.d.ts</code>), проще временно объявить его как <code>any</code>, чем описывать типы целиком.</li>
+    <li><strong>Прототип «на выброс».</strong> Когда важна скорость, а код всё равно скоро перепишут.</li>
+  </ul>
+  <app-code-block [code]="whenAnyOkExample" lang="typescript" />
+  <p>Во всех этих случаях <code>any</code> — <em>осознанное, точечное</em> исключение, а не стиль жизни. По умолчанию, когда тип заранее неизвестен, берите <code>unknown</code>: он ничего не ломает, но заставляет проверить значение перед использованием.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong><code>any</code></strong> — «выключить TypeScript в этом месте»: разрешено всё, проверки нет, ошибки уходят в рантайм.</li>
+    <li><strong><code>any</code> заражает</strong> — всё, что из него вычислено, тоже становится <code>any</code>.</li>
+    <li><strong><code>unknown</code></strong> — безопасная «вершина»: принимает любое значение, но использовать его нельзя, пока не сузишь тип.</li>
+    <li><strong>Сужение</strong> — через <code>typeof</code>, <code>instanceof</code>, <code>Array.isArray</code> и сравнения; только после проверки значение доступно.</li>
+    <li><strong>По умолчанию — <code>unknown</code>.</strong> <code>any</code> оставляйте для миграции и нетипизированных библиотек.</li>
+    <li><strong>Включайте <code>noImplicitAny</code></strong> (он входит в <code>strict</code>), чтобы <code>any</code> не появлялся сам собой.</li>
+  </ul>
+  <p>Дальше логично посмотреть, как значения соотносятся друг с другом по «широте», в разделе <a routerLink="/typescript/basic-types/subtypes-supertypes">«Подтипы и супертипы»</a>, и как TypeScript определяет типы без аннотаций — в <a routerLink="/typescript/basic-types/inference">«Выводе типов»</a>.</p>
+</section>
+</article>

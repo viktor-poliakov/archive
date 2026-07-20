@@ -1,0 +1,217 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Массивы и кортежи</span></nav>
+
+<h1 class="doc__title">Массивы и кортежи</h1>
+<p class="doc__lead">Массивы и кортежи — два способа хранить <strong>несколько значений в одной переменной</strong>. Разница между ними — в дисциплине: массив держит сколько угодно значений <em>одного</em> типа, а кортеж — строго заданное число значений, у каждого из которых свой тип на своей позиции.</p>
+<p class="doc__lead">Новичок часто путает их или пишет <code>any[]</code> там, где TypeScript мог бы поймать ошибку. Разберём оба типа подробно: синтаксис, типичные ошибки и реальные сценарии — от пары «ключ-значение» до возврата нескольких значений из функции, как в React-хуке <code>useState</code>.</p>
+
+<section class="doc__section">
+  <h2>Главная идея: массив против кортежа</h2>
+  <p>Прежде чем углубляться в синтаксис, поймём разницу на картинке. <strong>Массив</strong> — это ряд одинаковых ячеек: все они одного типа, а сколько их — не важно, ряд можно удлинять и укорачивать. <strong>Кортеж</strong> — это несколько разных по назначению ячеек: их ровно столько, сколько объявлено, и каждая ждёт свой тип.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 600 250" width="100%" role="img" aria-label="Массив состоит из одинаковых растяжимых ячеек одного типа, кортеж — из фиксированного числа позиций с разными типами">
+      <text x="30" y="20" fill="var(--fg)" font-size="13" font-weight="700">МАССИВ — ячейки одного типа, длина любая</text>
+
+      <rect x="30" y="40" width="64" height="46" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="62" y="69" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">number</text>
+      <rect x="104" y="40" width="64" height="46" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="136" y="69" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">number</text>
+      <rect x="178" y="40" width="64" height="46" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="210" y="69" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">number</text>
+      <rect x="252" y="40" width="64" height="46" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="284" y="69" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">number</text>
+      <rect x="326" y="40" width="64" height="46" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="5 4" />
+      <text x="358" y="70" text-anchor="middle" fill="var(--muted)" font-size="18">…</text>
+
+      <text x="62" y="104" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">0</text>
+      <text x="136" y="104" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">1</text>
+      <text x="210" y="104" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">2</text>
+      <text x="284" y="104" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">3</text>
+      <text x="460" y="70" fill="var(--muted)" font-size="12">длина любая, растёт →</text>
+
+      <text x="30" y="150" fill="var(--fg)" font-size="13" font-weight="700">КОРТЕЖ — свой тип на каждой позиции, длина фиксирована</text>
+
+      <rect x="30" y="168" width="104" height="46" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="82" y="197" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">string</text>
+      <rect x="144" y="168" width="104" height="46" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="196" y="197" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">number</text>
+      <rect x="258" y="168" width="104" height="46" rx="8" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="310" y="197" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">boolean</text>
+
+      <text x="82" y="232" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">0</text>
+      <text x="196" y="232" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">1</text>
+      <text x="310" y="232" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">2</text>
+      <text x="392" y="196" fill="var(--muted)" font-size="12">ровно 3 — не больше, не меньше</text>
+    </svg>
+    <figcaption>Массив — растяжимый ряд одинаковых ячеек. Кортеж — фиксированный набор позиций, у каждой свой тип и своё назначение.</figcaption>
+  </figure>
+
+  <p class="note"><strong>Аналогия.</strong> <strong>Массив — это железнодорожный состав из одинаковых вагонов.</strong> Все вагоны на одно лицо, а сколько их прицепить — дело десятое: можно два, можно двадцать. <strong>Кортеж — это конкретные пронумерованные места с назначением:</strong> место 1 — водитель, место 2 — штурман, место 3 — механик. Мест ровно столько, сколько предусмотрено, и на каждом сидит «свой» человек — водителя на место штурмана не пересадишь.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 600 250" width="100%" role="img" aria-label="Массив как состав из одинаковых вагонов, кортеж как пронумерованные места с назначением">
+      <text x="30" y="22" fill="var(--fg)" font-size="13" font-weight="700">Массив = состав из одинаковых вагонов</text>
+
+      <rect x="30" y="42" width="86" height="42" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="73" y="68" text-anchor="middle" fill="var(--fg)" font-size="12">вагон</text>
+      <circle cx="52" cy="92" r="6" fill="none" stroke="var(--muted)" stroke-width="1.6" />
+      <circle cx="94" cy="92" r="6" fill="none" stroke="var(--muted)" stroke-width="1.6" />
+
+      <rect x="130" y="42" width="86" height="42" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="173" y="68" text-anchor="middle" fill="var(--fg)" font-size="12">вагон</text>
+      <circle cx="152" cy="92" r="6" fill="none" stroke="var(--muted)" stroke-width="1.6" />
+      <circle cx="194" cy="92" r="6" fill="none" stroke="var(--muted)" stroke-width="1.6" />
+
+      <rect x="230" y="42" width="86" height="42" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="273" y="68" text-anchor="middle" fill="var(--fg)" font-size="12">вагон</text>
+      <circle cx="252" cy="92" r="6" fill="none" stroke="var(--muted)" stroke-width="1.6" />
+      <circle cx="294" cy="92" r="6" fill="none" stroke="var(--muted)" stroke-width="1.6" />
+
+      <rect x="330" y="42" width="86" height="42" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="5 4" />
+      <text x="373" y="68" text-anchor="middle" fill="var(--muted)" font-size="12">+ ещё</text>
+
+      <text x="30" y="150" fill="var(--fg)" font-size="13" font-weight="700">Кортеж = пронумерованные места с назначением</text>
+
+      <rect x="30" y="168" width="168" height="52" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="114" y="190" text-anchor="middle" fill="var(--muted)" font-size="11">место 0</text>
+      <text x="114" y="208" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">имя: string</text>
+
+      <rect x="214" y="168" width="168" height="52" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="298" y="190" text-anchor="middle" fill="var(--muted)" font-size="11">место 1</text>
+      <text x="298" y="208" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">возраст: number</text>
+
+      <rect x="398" y="168" width="168" height="52" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="482" y="190" text-anchor="middle" fill="var(--muted)" font-size="11">место 2</text>
+      <text x="482" y="208" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">активен: boolean</text>
+    </svg>
+    <figcaption>Вагоны взаимозаменяемы и их можно докидывать (массив). Места закреплены за конкретными ролями и их ровно столько, сколько задумано (кортеж).</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>&nbsp;</th>
+          <th>Массив</th>
+          <th>Кортеж</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Длина</td>
+          <td>любая, растёт и убывает</td>
+          <td>фиксированная (кроме rest)</td>
+        </tr>
+        <tr>
+          <td>Типы элементов</td>
+          <td>все одинаковые (или объединение)</td>
+          <td>свой тип на каждой позиции</td>
+        </tr>
+        <tr>
+          <td>Что значит позиция</td>
+          <td>просто порядок в списке</td>
+          <td>конкретное поле с назначением</td>
+        </tr>
+        <tr>
+          <td>Синтаксис</td>
+          <td><code>number[]</code> / <code>Array&lt;number&gt;</code></td>
+          <td><code>[string, number]</code></td>
+        </tr>
+        <tr>
+          <td>Когда брать</td>
+          <td>список однородных данных</td>
+          <td>склейка разных значений в одно</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Массив: number[] и Array&lt;number&gt;</h2>
+  <p>Тип массива записывается двумя равноправными способами. Первый, короткий и самый частый, — <strong>имя типа плюс квадратные скобки</strong>: <code>number[]</code> читается как «массив чисел». Второй — через <strong>дженерик</strong> <code>Array&lt;число&gt;</code>: <code>Array&lt;number&gt;</code>. Это одно и то же, выбирайте по вкусу; в реальных проектах чаще пишут <code>number[]</code>.</p>
+  <app-code-block [code]="arrayDeclare" lang="typescript" />
+  <p>Ключевое свойство массива: элементов может быть <strong>сколько угодно</strong> (ноль, один, тысяча), но <strong>все они одного типа</strong>. Тип как бы говорит: «внутрь можно класть только числа — а сколько именно, решай сам». Попытка положить значение другого типа — ошибка ещё на этапе компиляции, до запуска кода.</p>
+  <app-code-block [code]="arrayUsage" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> <code>number[]</code> — это ящик с наклейкой «только гвозди». Сколько гвоздей насыпать — ваше дело, но шуруп туда класть нельзя: наклейка запрещает. TypeScript — это кладовщик, который проверяет наклейку при каждой попытке что-то положить.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Массив из нескольких типов: (string | number)[]</h2>
+  <p>А если в списке должны лежать значения <em>разных</em> типов вперемешку? Тогда в качестве «типа элемента» берут <strong>объединение</strong> (union) — несколько типов через <code>|</code>. Запись <code>(string | number)[]</code> означает «массив, каждый элемент которого — либо строка, либо число».</p>
+  <app-code-block [code]="unionArray" lang="typescript" />
+  <p class="note"><strong>Внимание — самая частая ошибка.</strong> Скобки здесь несут смысл. <code>(string | number)[]</code> — это <em>массив</em> из строк и чисел. А <code>string | number[]</code> без скобок — это «либо одна строка, либо массив чисел». TypeScript читает <code>[]</code> как относящееся только к ближайшему <code>number</code>. Если сомневаетесь — ставьте скобки.</p>
+  <ul class="rules">
+    <li><code>(string | number)[]</code> — массив, где вперемешку строки и числа.</li>
+    <li><code>string | number[]</code> — <strong>либо</strong> строка, <strong>либо</strong> массив чисел (это не массив строк!).</li>
+    <li><code>string[] | number[]</code> — либо массив только строк, либо массив только чисел.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>readonly-массивы: только для чтения</h2>
+  <p>Обычный массив можно менять: добавлять, удалять, перезаписывать элементы. Иногда это опасно — например, вы передали массив в функцию и не хотите, чтобы она его испортила. Тогда объявляют <strong>массив только для чтения</strong>: <code>readonly number[]</code> или, что то же самое, <code>ReadonlyArray&lt;number&gt;</code>.</p>
+  <app-code-block [code]="readonlyArray" lang="typescript" />
+  <p>У такого типа <strong>исчезают все мутирующие методы</strong> (<code>push</code>, <code>pop</code>, <code>splice</code>, <code>sort</code>) и запрещена запись по индексу. Читать — <code>arr[0]</code>, <code>arr.length</code>, перебор в цикле — можно свободно. Это отличный способ задокументировать намерение «я эти данные только читаю» и заставить компилятор следить за этим за вас.</p>
+  <app-code-block [code]="readonlyWhy" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> <code>readonly number[]</code> — это музейная витрина. Экспонаты видно прекрасно, пересчитать можно, а вот взять руками или переставить — стекло не даст. Немутирующие методы (<code>map</code>, <code>filter</code>, <code>toSorted</code>) при этом работают: они не трогают витрину, а делают <em>новую копию</em> снаружи.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Кортеж: [string, number]</h2>
+  <p><strong>Кортеж</strong> (tuple) — это массив с <strong>заранее известной длиной</strong>, где на каждой позиции свой тип. Пишется в квадратных скобках через запятую: <code>[string, number]</code> — «ровно два элемента: сначала строка, потом число». Порядок фиксирован: строка обязана быть первой, число — вторым.</p>
+  <app-code-block [code]="tupleBasic" lang="typescript" />
+  <p>TypeScript помнит тип каждой позиции. Обращение <code>user[0]</code> даёт <code>string</code>, а <code>user[1]</code> — <code>number</code>: приводить их к общему типу не нужно, компилятор всё знает точно. Зато он же строго следит за длиной и порядком:</p>
+  <app-code-block [code]="tupleErrors" lang="typescript" />
+  <p class="note"><strong>Когда это нужно.</strong> Кортеж хорош, когда несколько значений разного смысла всегда ходят вместе и их порядок устоялся: координата <code>[x, y]</code>, пара «ключ-значение», RGB-цвет <code>[255, 0, 128]</code>. Если же смысл позиций легко забыть, часто удобнее объект с именованными полями — но об именах у кортежа ниже.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Именованные элементы кортежа</h2>
+  <p>Голый <code>[string, number]</code> не подсказывает, <em>что</em> за строка и <em>что</em> за число. Чтобы код читался яснее, позициям дают <strong>имена</strong>: <code>[name: string, age: number]</code>. На поведение кода это никак не влияет — имена нужны исключительно для читаемости и подсказок редактора.</p>
+  <app-code-block [code]="namedTuple" lang="typescript" />
+  <p>Имена особенно ценны, когда кортеж описывает <strong>параметры функции</strong> (через <code>...rest</code>): в подсказках IDE аргументы будут подписаны осмысленно, а не безликими <code>arg_0</code>, <code>arg_1</code>. Это дешёвая документация прямо в типе.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Опциональные ? и rest-элементы</h2>
+  <p>Длина кортежа не обязана быть жёстко зафиксированной до последнего элемента. Есть два инструмента гибкости.</p>
+
+  <h3 class="doc__subtitle">Опциональные элементы: ?</h3>
+  <p>Знак <code>?</code> после типа делает <strong>хвостовой</strong> элемент необязательным. <code>[number, number, number?]</code> — это «два числа обязательно, третье по желанию». Тип необязательного элемента автоматически включает <code>undefined</code>, ведь его может и не быть.</p>
+  <app-code-block [code]="optionalTuple" lang="typescript" />
+
+  <h3 class="doc__subtitle">rest-элементы: ...</h3>
+  <p>Оператор <code>...</code> позволяет закрепить <strong>первые позиции</strong>, а дальше принять сколько угодно значений одного типа. <code>[string, ...number[]]</code> — «сначала одна строка-метка, затем ноль или больше чисел». Это соединяет строгость кортежа (первая позиция точно строка) с растяжимостью массива (чисел может быть любое количество).</p>
+  <app-code-block [code]="restTuple" lang="typescript" />
+  <p class="note"><strong>Правило хвоста.</strong> И <code>?</code>, и <code>...</code> относятся к концу кортежа: обязательный элемент нельзя поставить после необязательного, а после rest-элемента обычно уже ничего не идёт. Логика простая — TypeScript должен однозначно понимать, какая позиция какому типу соответствует.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: где это встречается каждый день</h2>
+
+  <h3 class="doc__subtitle">Пара «ключ-значение»</h3>
+  <p>Кортеж из двух элементов — естественная форма для пары «ключ → значение». На таких парах построены <code>Object.entries</code> (он возвращает массив кортежей <code>[string, значение]</code>) и конструктор <code>Map</code>.</p>
+  <app-code-block [code]="keyValuePractice" lang="typescript" />
+
+  <h3 class="doc__subtitle">Возврат нескольких значений из функции (как useState)</h3>
+  <p>Функция умеет вернуть только одно значение — но если это кортеж, внутри него можно «упаковать» несколько разнотипных результатов. Ровно так работает хук <code>useState</code> в React: он возвращает <code>[значение, функцию-сеттер]</code>, а вы деструктурируете их по позициям и даёте <strong>свои</strong> имена.</p>
+  <app-code-block [code]="useStatePractice" lang="typescript" />
+  <p class="note"><strong>Почему кортеж, а не объект.</strong> Кортеж хорош тем, что имена вы придумываете на месте: <code>const [count, setCount]</code> и <code>const [name, setName]</code> из одной и той же функции. С объектом пришлось бы каждый раз переименовывать поля. Поэтому «пара с деструктуризацией по позициям» — идиома для функций вроде <code>useState</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Массив</strong> — любое число элементов <em>одного</em> типа: <code>number[]</code> или эквивалент <code>Array&lt;number&gt;</code>.</li>
+    <li><strong>Несколько типов</strong> в массиве — через объединение в скобках: <code>(string | number)[]</code>. Скобки обязательны: <code>string | number[]</code> — совсем другой тип.</li>
+    <li><strong>readonly-массив</strong> (<code>readonly number[]</code> / <code>ReadonlyArray&lt;number&gt;</code>) запрещает мутации: ни <code>push</code>, ни запись по индексу.</li>
+    <li><strong>Кортеж</strong> <code>[string, number]</code> — фиксированные длина и типы по позициям; порядок важен.</li>
+    <li><strong>Имена</strong> элементов (<code>[name: string, age: number]</code>) улучшают читаемость, не меняя поведения.</li>
+    <li><strong>?</strong> делает хвостовые элементы необязательными, <strong>...</strong> добавляет растяжимый хвост: <code>[string, ...number[]]</code>.</li>
+    <li>Кортежи — это пары «ключ-значение» и возврат нескольких значений из функции (как <code>useState</code>).</li>
+  </ul>
+  <p>Дальше — <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>, а если хочется вернуться к одиночным значениям — загляните в <a routerLink="/typescript/basic-types/primitives">Примитивы</a>. Как TypeScript сам угадывает типы массивов и кортежей, разбирается в разделе <a routerLink="/typescript/basic-types/inference">Вывод типов</a>.</p>
+</section>
+</article>

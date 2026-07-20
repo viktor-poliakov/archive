@@ -1,0 +1,320 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Литеральные типы</span></nav>
+
+<h1 class="doc__title">Литеральные типы</h1>
+<p class="doc__lead">
+  Обычно тип — это <strong>множество значений</strong>: <code>string</code> — все строки на свете,
+  <code>number</code> — все числа. <strong>Литеральный тип</strong> сужает это множество до
+  <strong>одного конкретного значения</strong>: не «какая-то строка», а именно <code>'red'</code>;
+  не «какое-то число», а именно <code>42</code>. Само значение играет роль типа.
+</p>
+<p class="doc__lead">
+  <strong>Аналогия — светофор.</strong> Тип <code>string</code> — это «любой цвет, какой захотите».
+  А литеральный тип <code>'red'</code> — это «ровно красный, и никакой другой». Для светофора
+  вторая формулировка куда безопаснее: она физически не даёт зажечь «фиолетовый».
+</p>
+
+<section class="doc__section">
+  <h2>Что такое литеральный тип</h2>
+  <p>
+    Литеральный тип записывается точно так же, как само значение: строка в кавычках, число или
+    <code>true</code>/<code>false</code>. Переменной с таким типом можно присвоить
+    <strong>только это значение</strong> — любое другое TypeScript отвергнет ещё на этапе
+    компиляции, не дожидаясь запуска программы.
+  </p>
+  <app-code-block [code]="whatIsLiteral" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 560 250" width="100%" role="img"
+      aria-label="Литерал 'red' — одна точка внутри множества всех строк string">
+      <text x="28" y="30" fill="var(--fg)" font-size="13" font-weight="600">string — это ВСЕ возможные строки сразу</text>
+      <rect x="24" y="46" width="512" height="184" rx="18" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="44" y="72" fill="var(--muted)" font-family="monospace" font-size="12">string</text>
+
+      <circle cx="150" cy="120" r="5" fill="var(--muted)" />
+      <text x="162" y="124" fill="var(--muted)" font-family="monospace" font-size="11">'blue'</text>
+
+      <circle cx="300" cy="98" r="5" fill="var(--muted)" />
+      <text x="312" y="102" fill="var(--muted)" font-family="monospace" font-size="11">'hello'</text>
+
+      <circle cx="430" cy="150" r="5" fill="var(--muted)" />
+      <text x="442" y="154" fill="var(--muted)" font-family="monospace" font-size="11">'ok'</text>
+
+      <circle cx="180" cy="195" r="5" fill="var(--muted)" />
+      <text x="192" y="199" fill="var(--muted)" font-family="monospace" font-size="11">'…'</text>
+
+      <circle cx="330" cy="165" r="9" fill="var(--accent)" />
+      <text x="348" y="170" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">'red'</text>
+    </svg>
+    <figcaption>
+      Литерал <code>'red'</code> — это <strong>одна точка</strong> внутри огромного множества всех
+      строк. Тип <code>'red'</code> разрешает только её, а тип <code>string</code> — любую точку этого поля.
+    </figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Главный смысл — в объединении</h2>
+  <p>
+    Один литерал сам по себе нужен редко. Настоящая польза появляется, когда мы соединяем
+    несколько литералов через <code>|</code> и получаем <strong>конечный список</strong>
+    допустимых значений. Это надёжнее, чем <code>string</code>: набор вариантов зафиксирован, и
+    ничего лишнего в переменную уже не попадёт.
+  </p>
+  <app-code-block [code]="unionDirection" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 560 210" width="100%" role="img"
+      aria-label="Тип Direction допускает только четыре значения, всё остальное отвергается">
+      <text x="28" y="28" fill="var(--fg)" font-size="13" font-weight="600">Direction — конечный список допустимых значений</text>
+
+      <rect x="24" y="44" width="360" height="140" rx="16" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="44" y="68" fill="var(--accent)" font-family="monospace" font-size="12">Direction</text>
+
+      <rect x="44" y="86" width="110" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="99" y="108" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'left'</text>
+
+      <rect x="168" y="86" width="110" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="223" y="108" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'right'</text>
+
+      <rect x="44" y="132" width="110" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="99" y="154" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'up'</text>
+
+      <rect x="168" y="132" width="110" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="223" y="154" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'down'</text>
+
+      <rect x="420" y="104" width="116" height="34" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="5 4" />
+      <text x="478" y="126" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">'north'</text>
+      <text x="478" y="88" text-anchor="middle" fill="var(--muted)" font-size="11">вне списка</text>
+      <text x="478" y="166" text-anchor="middle" fill="var(--red)" font-size="15" font-weight="700">не пройдёт</text>
+    </svg>
+    <figcaption>
+      Значение из списка проходит, любое другое (<code>'north'</code>, опечатка) — отвергается.
+    </figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Зачем это нужно.</strong> С обычным <code>string</code> опечатку никто не поймает:
+    <code>'rihgt'</code> — тоже валидная строка. С литеральным объединением редактор подсветит
+    ошибку сразу и вдобавок подскажет автодополнением все допустимые варианты.
+  </p>
+  <app-code-block [code]="unionError" lang="typescript" />
+
+  <h3 class="doc__subtitle">Литералы можно смешивать с примитивами</h3>
+  <p>
+    В одном объединении литералы и примитивы прекрасно уживаются. Классический пример — CSS-ширина:
+    это <strong>любое число</strong> или одно ключевое слово <code>'auto'</code>. Так мы разрешаем
+    целый примитив <code>number</code> и добавляем к нему единственную допустимую строку.
+  </p>
+  <app-code-block [code]="mixWithPrimitive" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Расширение типа (widening): <code>let</code> против <code>const</code></h2>
+  <p>
+    Когда вы объявляете переменную без явной аннотации, TypeScript сам решает, какой тип вывести —
+    и это решение зависит от того, <code>let</code> это или <code>const</code>:
+  </p>
+  <ul class="rules">
+    <li><code>const s = 'red'</code> — значение <strong>никогда не изменится</strong>, поэтому TS
+      сохраняет узкий литеральный тип <code>'red'</code>.</li>
+    <li><code>let s = 'red'</code> — значение <strong>можно переприсвоить</strong>, поэтому TS
+      <strong>расширяет</strong> (widening) тип до примитива <code>string</code>.</li>
+  </ul>
+  <app-code-block [code]="wideningLetConst" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 560 210" width="100%" role="img"
+      aria-label="const сохраняет литеральный тип, let расширяет его до примитива">
+      <rect x="24" y="34" width="212" height="54" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="130" y="60" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">const s = 'red'</text>
+      <text x="130" y="78" text-anchor="middle" fill="var(--muted)" font-size="11">значение неизменно</text>
+
+      <text x="266" y="68" fill="var(--muted)" font-size="20">&#8594;</text>
+
+      <rect x="316" y="34" width="212" height="54" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="422" y="66" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13" font-weight="700">тип 'red'</text>
+
+      <rect x="24" y="124" width="212" height="54" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="130" y="150" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">let s = 'red'</text>
+      <text x="130" y="168" text-anchor="middle" fill="var(--muted)" font-size="11">можно переприсвоить</text>
+
+      <text x="266" y="158" fill="var(--muted)" font-size="20">&#8594;</text>
+
+      <rect x="316" y="124" width="212" height="54" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="422" y="156" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">тип string</text>
+    </svg>
+    <figcaption>
+      <code>const</code> «замораживает» значение — тип остаётся литеральным.
+      <code>let</code> оставляет дверь для новых значений открытой — тип расширяется до примитива.
+    </figcaption>
+  </figure>
+
+  <h3 class="doc__subtitle">Почему TS так делает</h3>
+  <p>
+    Логика простая: <code>let</code> заведён именно для того, чтобы значение потом менять. Если бы
+    <code>let s = 'red'</code> имел тип <code>'red'</code>, то первая же попытка присвоить
+    <code>'green'</code> стала бы ошибкой — работать с такой переменной было бы невозможно.
+    Поэтому TS заранее берёт тип пошире.
+  </p>
+  <app-code-block [code]="wideningWhy" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr><th>Объявление</th><th>Выведенный тип</th><th>Можно переприсвоить?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>const c = 'red'</code></td><td><code>'red'</code> (литерал)</td><td class="no">нет</td></tr>
+        <tr><td><code>let l = 'red'</code></td><td><code>string</code> (примитив)</td><td class="yes">да</td></tr>
+        <tr><td><code>const n = 42</code></td><td><code>42</code> (литерал)</td><td class="no">нет</td></tr>
+        <tr><td><code>let m = 42</code></td><td><code>number</code> (примитив)</td><td class="yes">да</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Заморозка через <code>as const</code></h2>
+  <p>
+    С объектами и массивами возникает та же история, что и с <code>let</code>: их содержимое можно
+    менять, поэтому TS выводит <strong>широкие</strong> типы (<code>number</code>,
+    <code>string[]</code>). Чтобы поля стали <strong>литеральными</strong> и вдобавок
+    <code>readonly</code>, к значению добавляют <code>as const</code>.
+  </p>
+  <p class="note">
+    <strong>Аналогия — музейная витрина.</strong> Обычный объект — это вещь на столе: её можно
+    переставить и заменить. <code>as const</code> ставит вещь под стекло: смотреть можно, а трогать
+    и подменять — нет. Именно поэтому все поля становятся <code>readonly</code>, а их типы
+    «схлопываются» до точных значений.
+  </p>
+  <app-code-block [code]="asConstObject" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 560 216" width="100%" role="img"
+      aria-label="as const превращает широкие типы полей в литеральные и readonly">
+      <rect x="24" y="40" width="220" height="120" rx="14" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="134" y="34" text-anchor="middle" fill="var(--muted)" font-size="12">обычный объект</text>
+      <text x="44" y="74" fill="var(--fg)" font-family="monospace" font-size="12">поле x: number</text>
+      <text x="44" y="98" fill="var(--fg)" font-family="monospace" font-size="12">поле y: number</text>
+      <text x="44" y="132" fill="var(--green)" font-size="12">можно менять ✎</text>
+
+      <text x="270" y="106" fill="var(--muted)" font-size="20">&#8594;</text>
+      <text x="290" y="88" fill="var(--muted)" font-size="11">as const</text>
+
+      <rect x="316" y="40" width="220" height="120" rx="14" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="426" y="34" text-anchor="middle" fill="var(--accent)" font-size="12">после as const</text>
+      <text x="336" y="74" fill="var(--fg)" font-family="monospace" font-size="12">поле x: 10 (readonly)</text>
+      <text x="336" y="98" fill="var(--fg)" font-family="monospace" font-size="12">поле y: 20 (readonly)</text>
+      <text x="336" y="132" fill="var(--red)" font-size="12">под стеклом — не тронуть</text>
+    </svg>
+    <figcaption>
+      Без <code>as const</code> поля широкие и изменяемые. С ним они становятся точными литералами
+      и получают <code>readonly</code>.
+    </figcaption>
+  </figure>
+
+  <p>
+    С массивами <code>as const</code> ещё полезнее: он превращает массив в
+    <strong>readonly-кортеж</strong> из литералов, из которого затем удобно вывести объединение
+    одной строкой.
+  </p>
+  <app-code-block [code]="asConstArray" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Где это применяют на практике</h2>
+
+  <h3 class="doc__subtitle">Статусы приложения</h3>
+  <p>
+    Экран данных почти всегда находится в одном из нескольких состояний. Литеральное объединение
+    описывает их точно, а <code>switch</code> с явным типом результата заставляет обработать каждое:
+    если пропустить случай, TypeScript пожалуется, что функция не всегда что-то возвращает.
+  </p>
+  <app-code-block [code]="statusExample" lang="typescript" />
+  <p>
+    А чтобы TS сам напоминал про забытые ветки, когда список статусов вырастет, добавляют
+    «страховку на исчерпание» через тип <code>never</code>. Пока обработаны все варианты,
+    в <code>default</code> попасть нельзя, и присваивание в <code>never</code> проходит. Стоит
+    добавить в объединение новый статус и забыть про него — эта строка загорится ошибкой.
+  </p>
+  <app-code-block [code]="exhaustiveNever" lang="typescript" />
+
+  <h3 class="doc__subtitle">Варианты и размеры компонента</h3>
+  <p>
+    В UI-компонентах — кнопках, бейджах, инпутах — набор допустимых вариантов конечен. Литеральные
+    типы не дадут передать несуществующий <code>variant</code> или <code>size</code> и подскажут
+    правильные значения прямо в редакторе.
+  </p>
+  <app-code-block [code]="buttonExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Наборы кодов и методов</h3>
+  <p>
+    HTTP-методы, коды ответа, разрешённые действия — всё это фиксированные списки. И строковые, и
+    числовые литералы одинаково хорошо для этого подходят.
+  </p>
+  <app-code-block [code]="codesExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Связь с подтипами</h2>
+  <p>
+    Литеральный тип — это всегда <strong>подтип своего примитива</strong>: <code>'red'</code> — подтип
+    <code>string</code>, <code>42</code> — подтип <code>number</code>, <code>true</code> — подтип
+    <code>boolean</code>. Отсюда правило совместимости: значение с литеральным типом свободно кладётся
+    туда, где ждут примитив, но не наоборот.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 560 230" width="100%" role="img"
+      aria-label="Литерал 'red' — подмножество внутри string: подтип кладётся в супертип, обратно нельзя">
+      <ellipse cx="200" cy="120" rx="170" ry="92" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="200" y="52" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">string (супертип)</text>
+
+      <circle cx="200" cy="132" r="52" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
+      <text x="200" y="130" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">'red'</text>
+      <text x="200" y="150" text-anchor="middle" fill="var(--muted)" font-size="10.5">подтип</text>
+
+      <text x="398" y="100" fill="var(--green)" font-size="20">&#8594;</text>
+      <text x="424" y="96" fill="var(--green)" font-size="12">'red' → string: можно</text>
+      <text x="424" y="114" fill="var(--muted)" font-size="11">«красный» — это «какой-то цвет»</text>
+
+      <text x="398" y="158" fill="var(--red)" font-size="20">&#8592;</text>
+      <text x="424" y="154" fill="var(--red)" font-size="12">string → 'red': нельзя</text>
+      <text x="424" y="172" fill="var(--muted)" font-size="11">«какой-то цвет» ≠ именно «красный»</text>
+    </svg>
+    <figcaption>
+      Множество <code>'red'</code> целиком лежит внутри <code>string</code>. Поэтому литерал можно
+      подставить туда, где ждут строку, но произвольную строку нельзя сузить обратно до <code>'red'</code>.
+    </figcaption>
+  </figure>
+
+  <app-code-block [code]="subtypeExample" lang="typescript" />
+  <p class="note">
+    Почему «красный кладётся в цвет, а цвет в красный — нет», подробно разбираем в разделе
+    <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li>Литеральный тип — это <strong>конкретное значение</strong> (<code>'red'</code>, <code>42</code>,
+      <code>true</code>) в роли типа.</li>
+    <li>Сила раскрывается в объединении: <code>'left' | 'right'</code> — надёжный конечный список,
+      безопаснее чем <code>string</code>.</li>
+    <li>Литералы можно смешивать с примитивами: <code>number | 'auto'</code>.</li>
+    <li><code>const</code> сохраняет литеральный тип, <code>let</code> расширяет его до примитива
+      (widening) — потому что <code>let</code> допускает переприсвоение.</li>
+    <li><code>as const</code> замораживает объект/массив: поля становятся литеральными и
+      <code>readonly</code>.</li>
+    <li>Литерал — это подтип своего примитива.</li>
+  </ul>
+  <p>
+    Дальше логично посмотреть, как TypeScript <a routerLink="/typescript/basic-types/inference">выводит
+    типы</a> сам, и с какими <a routerLink="/typescript/basic-types/pitfalls">нюансами</a> здесь можно
+    столкнуться. Вернуться к обзору можно на странице
+    <a routerLink="/typescript/basic-types">Базовые типы</a>.
+  </p>
+</section>
+</article>

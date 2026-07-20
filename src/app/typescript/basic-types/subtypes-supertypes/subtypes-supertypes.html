@@ -1,0 +1,173 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Подтипы и супертипы</span></nav>
+
+<h1 class="doc__title">Подтипы и супертипы</h1>
+<p class="doc__lead">Подтипы и супертипы — это про то, <strong>какое значение куда можно подставить</strong>. Если ухватить одну простую идею — «тип это множество значений» — вся система типов TypeScript станет предсказуемой: вы заранее будете понимать, где присваивание пройдёт, а где компилятор поставит красную волнистую линию.</p>
+
+<section class="doc__section">
+  <h2>Главная идея: тип — это множество значений</h2>
+  <p>Мы привыкли думать про тип как про «ярлык»: тут строка, тут число. Но гораздо полезнее представлять тип как <strong>множество</strong> — набор всех значений, которые в этот тип «помещаются».</p>
+  <ul class="rules">
+    <li><code>number</code> — множество всех чисел: <code>0</code>, <code>1</code>, <code>-7</code>, <code>3.14</code>, …</li>
+    <li><code>boolean</code> — множество ровно из двух значений: <code>true</code> и <code>false</code>.</li>
+    <li><code>'red'</code> (литеральный тип) — множество из <em>одного</em> значения: только строка <code>'red'</code>.</li>
+    <li><code>string | number</code> — объединение множеств: все строки <em>плюс</em> все числа.</li>
+  </ul>
+  <p class="note"><strong>Аналогия.</strong> Тип — это <em>коробка с этикеткой</em>, а на этикетке написано, что именно в неё разрешено класть. В коробку «число» влезает любое число, в коробку «<code>'red'</code>» — только слово <code>red</code> и ничего больше. Чем строже этикетка, тем меньше вещей поместится.</p>
+  <p>Как только тип — это множество, слова «подтип» и «супертип» перестают быть страшными терминами. Это просто «поменьше множество» и «побольше множество».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что значит «A — подтип B»</h2>
+  <p>Определение простое: <strong>тип <code>A</code> — подтип типа <code>B</code>, если любое значение типа <code>A</code> можно без опаски подставить туда, где ждут <code>B</code></strong>. Говорят ещё, что «<code>A</code> присваивается <code>B</code>» (по-английски — <em>assignable</em>, отсюда и текст ошибок компилятора со словом <code>assignable</code>).</p>
+  <p>В терминах множеств это значит: <strong>подтип — это подмножество</strong> (более узкое, конкретное), а <strong>супертип — надмножество</strong> (более широкое, общее). Всё множество <code>A</code> целиком лежит внутри множества <code>B</code>.</p>
+  <app-code-block [code]="subtypeBasic" lang="typescript" />
+  <p>Почему это безопасно? Функция или переменная типа <code>Animal</code> умеет пользоваться только свойством <code>name</code>. У <code>Dog</code> оно тоже есть — значит, любая работа с <code>Animal</code> на объекте-собаке пройдёт гладко. Лишнее свойство <code>breed</code> никому не мешает.</p>
+  <p class="note"><strong>Аналогия: биологическая таксономия.</strong> «Такса» — подтип «собаки», «собака» — подтип «животного». Где нужна «собака» — такса подойдёт всегда (она и есть собака). А наоборот нет: там, где нужна именно «такса», произвольная собака не годится — вдруг это овчарка. Другая житейская картинка — <em>матрёшки</em>: маленькая целиком помещается в большую, но большая в маленькую — нет.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Иерархия типов: от <code>never</code> до <code>unknown</code></h2>
+  <p>Все типы выстраиваются в иерархию «уже ↔ шире». Наверху — самый широкий тип <code>unknown</code> (в него влезает вообще всё), внизу — самый узкий <code>never</code> (пустое множество, в нём нет ни одного значения).</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 600 360" width="100%" role="img" aria-label="Вертикальная иерархия типов: never внизу, unknown наверху">
+      <text x="300" y="20" text-anchor="middle" fill="var(--muted)" font-size="12">шире — супертип (больше значений)</text>
+      <line x1="30" y1="40" x2="30" y2="300" stroke="var(--border)" stroke-width="1.4" />
+      <path d="M30 40 l-5 10 h10 z" fill="var(--muted)" />
+      <path d="M30 300 l-5 -10 h10 z" fill="var(--muted)" />
+
+      <rect x="70" y="36" width="470" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="305" y="65" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">unknown — вершина (top)</text>
+
+      <rect x="130" y="106" width="350" height="48" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="305" y="135" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string · number · boolean</text>
+
+      <rect x="190" y="176" width="230" height="48" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="305" y="205" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">"red" · 42 · true</text>
+
+      <rect x="235" y="246" width="140" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="305" y="275" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">never — низ (bottom)</text>
+
+      <text x="300" y="330" text-anchor="middle" fill="var(--muted)" font-size="12">уже — подтип (меньше значений)</text>
+    </svg>
+    <figcaption>Чем ниже тип, тем уже множество его значений. Литерал <code>"red"</code> — подтип <code>string</code>, тот — подтип <code>unknown</code>. Ширина плашки намекает на размер множества.</figcaption>
+  </figure>
+  <p>Двигаться по этой лестнице снизу вверх (от подтипа к супертипу) присваивание разрешает всегда:</p>
+  <app-code-block [code]="hierarchyChain" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Направление присваивания: вверх можно, вниз нельзя</h2>
+  <p>Это самое частое место, где новичок спотыкается. Правило одно:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Присваивание</th>
+          <th>Что происходит</th>
+          <th>Разрешено?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>подтип → супертип</td>
+          <td>кладём узкое в широкое (расширение)</td>
+          <td class="yes">✅ всегда безопасно</td>
+        </tr>
+        <tr>
+          <td>супертип → подтип</td>
+          <td>кладём широкое в узкое (сужение)</td>
+          <td class="no">❌ нужна проверка</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Почему вниз нельзя? Потому что в супертипе <em>могут</em> лежать значения, которых нет в подтипе — и компилятор не может гарантировать, что конкретно сейчас там подходящее значение:</p>
+  <app-code-block [code]="assignDirectionError" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> «Где нужен фрукт — яблоко сойдёт» (подтип → супертип). Но «где нужно яблоко — не всякий фрукт подойдёт»: вдруг вам протянут банан (супертип → подтип). Чтобы двигаться вниз, значение надо сначала <strong>проверить</strong> — убедиться, что это правда яблоко.</p>
+  <p>Такая проверка называется <strong>сужением типа</strong>. После неё TypeScript уже разрешает работать со значением как с подтипом:</p>
+  <app-code-block [code]="narrowingExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">То же самое — с аргументами функций</h3>
+  <p>Передача аргумента — это обычное присваивание: значение «кладётся» в параметр. Поэтому и правило то же самое. Если параметр функции — <strong>супертип</strong>, в него можно передать любой подтип. А если параметр — <strong>подтип</strong>, супертип туда уже не влезет.</p>
+  <app-code-block [code]="functionSupertypeParam" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Вложенные множества: круги Эйлера</h2>
+  <p>Ту же иерархию удобно нарисовать не лесенкой, а вложенными кругами. Круг внутри — это подмножество, то есть подтип. Внешний круг — надмножество, супертип.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 520 360" width="100%" role="img" aria-label="Круги Эйлера: red внутри string, string и number внутри unknown">
+      <circle cx="260" cy="185" r="160" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="260" y="45" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">unknown</text>
+
+      <circle cx="195" cy="200" r="82" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="185" y="148" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+
+      <circle cx="180" cy="220" r="35" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="180" y="225" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">"red"</text>
+
+      <circle cx="355" cy="200" r="58" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="355" y="205" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">number</text>
+    </svg>
+    <figcaption>Значений типа <code>"red"</code> меньше всего (маленький круг внутри), <code>string</code> и <code>number</code> шире, а <code>unknown</code> охватывает всё. Вложенность = отношение «подтип → супертип».</figcaption>
+  </figure>
+  <p>Из этой картинки сразу видны два практических правила. <strong>Литерал — подтип своего примитива</strong>: <code>'red'</code> целиком лежит внутри <code>string</code>. Подробнее о литеральных типах — на странице <a routerLink="/typescript/basic-types/literal-types">Литеральные типы</a>.</p>
+  <app-code-block [code]="literalSubtype" lang="typescript" />
+  <p>И зеркальное правило: <strong>объединение — супертип каждого своего члена</strong>. Тип <code>string</code> — подтип <code>string | number</code>, потому что множество строк — часть множества «строки или числа».</p>
+  <app-code-block [code]="unionSupertype" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Вершина и низ: <code>unknown</code> и <code>never</code></h2>
+  <p><code>unknown</code> — это <strong>top type</strong>, супертип абсолютно всех типов. В переменную <code>unknown</code> можно положить что угодно, но <em>достать</em> оттуда конкретный тип без проверки нельзя — иначе терялась бы вся безопасность.</p>
+  <app-code-block [code]="unknownTop" lang="typescript" />
+  <p><code>never</code> — противоположность, <strong>bottom type</strong>, подтип всех типов сразу. Это пустое множество: значения типа <code>never</code> не существует. Именно поэтому его «можно» присвоить куда угодно — присваивать-то на деле нечего, и правило нарушить невозможно.</p>
+  <app-code-block [code]="neverBottom" lang="typescript" />
+  <p>Эта пара красиво ведёт себя и в объединениях — прямо как операции над множествами. <code>never</code> (пустое множество) в объединении просто <em>исчезает</em>, а <code>unknown</code> (множество «всё») — наоборот, <em>поглощает</em> остальных:</p>
+  <app-code-block [code]="neverInUnion" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> <code>unknown</code> — как ящик с надписью «здесь что-то есть»: положить можно любую вещь, но прежде чем пользоваться — надо заглянуть и убедиться, что именно. <code>never</code> — как ящик с надписью «сюда ничего нельзя положить»: он всегда пуст. Про эту пару типов есть отдельные страницы — <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a> и <a routerLink="/typescript/basic-types/void-never">void и never</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Структурная типизация: больше свойств — значит подтип</h2>
+  <p>TypeScript сравнивает типы объектов не по имени, а по <strong>форме</strong> — это называют «утиной» типизацией: «если нечто крякает как утка, то это утка». И здесь прячется контринтуитивный момент.</p>
+  <p>Объект с <strong>бо́льшим</strong> числом свойств — это <strong>подтип</strong> объекта с меньшим (при совпадающих типах общих свойств). То есть <code>&#123; name: string; age: number &#125;</code> — подтип <code>&#123; name: string &#125;</code>.</p>
+  <app-code-block [code]="structuralSubtype" lang="typescript" />
+  <p>Почему «больше свойств» = «уже множество»? Потому что каждое требование <em>отсекает</em> часть объектов. Условию «есть <code>name</code>» удовлетворяет уйма объектов. А условию «есть <code>name</code> <em>и</em> <code>age</code>» — уже меньше: те, у кого нет <code>age</code>, отпадают. Больше требований → меньше подходящих значений → более узкое множество → подтип.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 520 320" width="100%" role="img" aria-label="Тип с двумя свойствами лежит внутри типа с одним свойством">
+      <circle cx="260" cy="165" r="140" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="260" y="48" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">&#123; name &#125;</text>
+      <text x="260" y="70" text-anchor="middle" fill="var(--muted)" font-size="11">одно требование — множество ШИРЕ</text>
+
+      <circle cx="260" cy="195" r="78" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="260" y="192" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">&#123; name; age &#125;</text>
+      <text x="260" y="214" text-anchor="middle" fill="var(--muted)" font-size="11">два требования — УЖЕ</text>
+    </svg>
+    <figcaption>Больше свойств — строже требования — меньше подходящих объектов. Поэтому «богатый» тип <code>&#123; name; age &#125;</code> сидит <em>внутри</em> «бедного» <code>&#123; name &#125;</code> и является его подтипом.</figcaption>
+  </figure>
+  <p>На практике это и объясняет, почему функции, ждущей <code>&#123; name: string &#125;</code>, спокойно передают объект с лишними полями:</p>
+  <app-code-block [code]="structuralFunctionArg" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Подвох: лишние поля и объектные литералы</h2>
+  <p>Есть важное исключение из предыдущего примера. Передать объект с лишними полями <strong>через переменную</strong> — можно. А вот записать такой объект <strong>литералом прямо в вызове</strong> — TypeScript не даст: включается <em>excess property check</em> (проверка на лишние свойства).</p>
+  <app-code-block [code]="excessPropertyCheck" lang="typescript" />
+  <p>Логика такая: если вы прямо тут же создаёте объект и пишете в нём поле <code>z</code>, которого нет в целевом типе, — скорее всего это опечатка или недоразумение, и TypeScript вас предупреждает. А когда объект уже лежит в переменной, действует обычное структурное правило (подтип с лишними полями подходит). Подробный разбор этого и других сюрпризов — на странице <a routerLink="/typescript/basic-types/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Тип — это множество значений.</strong> Подтип — подмножество (уже), супертип — надмножество (шире).</li>
+    <li><code>A</code> — подтип <code>B</code>, если значение <code>A</code> можно подставить всюду, где ждут <code>B</code>.</li>
+    <li><strong>Подтип → супертип</strong> присваивается свободно; <strong>супертип → подтип</strong> — только после проверки (сужения). Тот же принцип — и при передаче аргументов в функцию.</li>
+    <li>Иерархия: <code>never</code> ⊂ литералы ⊂ примитивы ⊂ <code>unknown</code>. <code>never</code> — низ (подтип всех), <code>unknown</code> — вершина (супертип всех).</li>
+    <li>Литерал — подтип своего примитива; объединение — супертип каждого своего члена.</li>
+    <li>Структурная типизация: <strong>больше свойств = подтип</strong>. У объектных литералов дополнительно срабатывает excess property check.</li>
+  </ul>
+  <p class="note">Дальше логично разобрать <a routerLink="/typescript/basic-types/inference">Вывод типов</a> — как TypeScript сам определяет, литерал перед ним или широкий примитив, — и вернуться к разделу <a routerLink="/typescript/basic-types">Базовые типы</a> за общей картиной.</p>
+</section>
+</article>

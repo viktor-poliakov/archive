@@ -1,0 +1,300 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">void и never</span></nav>
+
+<h1 class="doc__title">void и never</h1>
+<p class="doc__lead">
+  Это два «крайних» типа TypeScript, связанных с возвратом из функций. <code>void</code> —
+  «функция отработала, но осмысленного значения не вернула». <code>never</code> — «функция
+  вообще не вернёт управление» или «такого значения просто не бывает». Их часто путают,
+  хотя они противоположны: у <code>void</code> одно допустимое значение, а у
+  <code>never</code> — ни одного.
+</p>
+<p class="doc__lead">
+  <strong>Короткая аналогия.</strong> <code>void</code> — это работник, который сделал дело
+  и <em>молча ушёл</em>: он вернулся, но отчёта не принёс. <code>never</code> — это
+  <em>дорога, которая никуда не ведёт</em>: пойти по ней нельзя, конца у неё нет.
+</p>
+
+<section class="doc__section">
+  <h2>void: функция без осмысленного результата</h2>
+  <p>
+    Тип <code>void</code> ставят функции, которая работает ради <strong>побочного
+    эффекта</strong>, а не ради значения: пишет в консоль, меняет DOM, отправляет запрос,
+    обрабатывает событие. Возвращать ей нечего, поэтому её результат — <code>void</code>.
+  </p>
+  <app-code-block [code]="voidBasicExample" lang="typescript" />
+  <p>
+    Почти каждый обработчик события и колбэк, который «просто что-то делает», имеет тип
+    возврата <code>void</code>. Вы встречаете его постоянно: <code>addEventListener</code>,
+    <code>forEach</code>, <code>setTimeout</code> — все ждут функцию, возвращающую
+    <code>void</code>.
+  </p>
+  <p class="note">
+    <strong>Аналогия.</strong> Вы просите коллегу «выключи свет в переговорке». Он идёт,
+    выключает и возвращается. Спрашивать у него «ну и что ты принёс?» бессмысленно — задача
+    была не про результат, а про действие. Вот это «вернулся с пустыми руками» и есть
+    <code>void</code>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>void против undefined</h2>
+  <p>
+    Новички думают, что <code>void</code> и <code>undefined</code> — одно и то же. Значение
+    у них правда совпадает (функция без <code>return</code> отдаёт <code>undefined</code>),
+    но <strong>смысл разный</strong>:
+  </p>
+  <ul class="rules">
+    <li><code>void</code> — «на моё возвращаемое значение <strong>не смотри</strong>, оно
+      неважно». Можно вообще не писать <code>return</code>.</li>
+    <li><code>undefined</code> — «я <strong>обязан вернуть</strong> значение, и это значение
+      именно <code>undefined</code>». <code>return</code> обязателен.</li>
+  </ul>
+  <app-code-block [code]="voidVsUndefinedExample" lang="typescript" />
+  <p class="note">
+    <strong>Правило на практике.</strong> Для функций почти всегда пишут <code>void</code>,
+    а <code>undefined</code> как тип возврата — редкость. Разницу проще запомнить так:
+    <code>void</code> — про <em>намерение</em> («результата нет»), <code>undefined</code> —
+    про <em>конкретное значение</em>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Почему колбэк с типом void принимает функцию, что-то возвращающую</h2>
+  <p>
+    Самый неочевидный момент. Если тип колбэка объявлен как «верни <code>void</code>», в
+    него разрешено передать функцию, которая на самом деле <strong>что-то возвращает</strong>.
+    Это не баг, а специальное правило TypeScript.
+  </p>
+  <app-code-block [code]="voidCallbackExample" lang="typescript" />
+  <p>
+    Зачем так сделано? Без этого правила нельзя было бы написать привычное
+    <code>arr.forEach(x =&gt; list.push(x))</code>: ведь <code>push</code> возвращает число,
+    а <code>forEach</code> хочет <code>void</code>. Тип возврата <code>void</code> означает
+    ровно «мне всё равно, что ты вернёшь — я это <strong>проигнорирую</strong>». Поэтому
+    подойдёт функция с любым результатом.
+  </p>
+  <p class="note">
+    <strong>Аналогия.</strong> Вы говорите курьеру: «просто оставь посылку у двери, сдачу не
+    нужна». Если курьер всё-таки протянет сдачу — ничего страшного, вы её не берёте. Тип
+    <code>void</code> — это то самое «сдачу не нужно»: вернуть могут что угодно, но брать вы
+    не обязаны.
+  </p>
+  <p>
+    Обратная сторона: снаружи результат такой функции всё равно считается <code>void</code>,
+    и использовать его нельзя.
+  </p>
+  <app-code-block [code]="voidCallbackWrongExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>never: тип без единого значения</h2>
+  <p>
+    <code>never</code> — это тип, в котором <strong>нет ни одного возможного значения</strong>.
+    Переменной типа <code>never</code> нельзя ничего присвоить — просто нечего. Такой тип
+    получают функции, которые <strong>никогда не возвращают управление</strong>: они либо
+    всегда бросают исключение, либо крутятся в бесконечном цикле.
+  </p>
+  <app-code-block [code]="neverThrowExample" lang="typescript" />
+  <app-code-block [code]="neverInfiniteExample" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 600 210" width="100%" role="img" aria-label="void — функция вернулась без значения; never — функция никогда не возвращается">
+      <defs>
+        <marker id="vn-arrow-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--green)" />
+        </marker>
+      </defs>
+      <line x1="300" y1="18" x2="300" y2="196" stroke="var(--border)" stroke-dasharray="4 5" />
+
+      <text x="150" y="36" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="18" font-weight="700">void</text>
+      <rect x="58" y="66" width="104" height="54" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="110" y="98" text-anchor="middle" fill="var(--fg)" font-size="12">функция</text>
+      <path d="M164 93 L244 93" fill="none" stroke="var(--green)" stroke-width="1.8" marker-end="url(#vn-arrow-g)" />
+      <text x="150" y="146" text-anchor="middle" fill="var(--muted)" font-size="11.5">вернулась, но</text>
+      <text x="150" y="162" text-anchor="middle" fill="var(--muted)" font-size="11.5">без значения</text>
+      <text x="150" y="190" text-anchor="middle" fill="var(--fg)" font-size="11" font-style="italic">сделал дело — молча ушёл</text>
+
+      <text x="450" y="36" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="18" font-weight="700">never</text>
+      <rect x="358" y="66" width="104" height="54" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="410" y="98" text-anchor="middle" fill="var(--fg)" font-size="12">функция</text>
+      <path d="M464 93 L536 93" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="5 4" />
+      <line x1="540" y1="84" x2="558" y2="102" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round" />
+      <line x1="558" y1="84" x2="540" y2="102" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round" />
+      <text x="450" y="146" text-anchor="middle" fill="var(--muted)" font-size="11.5">не вернётся</text>
+      <text x="450" y="162" text-anchor="middle" fill="var(--muted)" font-size="11.5">никогда</text>
+      <text x="450" y="190" text-anchor="middle" fill="var(--fg)" font-size="11" font-style="italic">дорога в никуда</text>
+    </svg>
+    <figcaption>
+      <code>void</code>-функция доходит до конца и возвращается (просто без значения).
+      <code>never</code>-функция до конца не доходит вовсе.
+    </figcaption>
+  </figure>
+  <p class="note">
+    <strong>Ключевое отличие от void.</strong> <code>void</code>-функция завершается —
+    просто ничего не принесла. <code>never</code>-функция <em>не завершается</em>: выполнение
+    после её вызова не продолжится. Именно поэтому после вызова <code>fail(...)</code> можно
+    не писать <code>return</code> — компилятор знает, что дальше кода уже не будет.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>never в «невозможных» ветках</h2>
+  <p>
+    Второй способ встретить <code>never</code> — не объявлять его руками, а получить от
+    компилятора при <strong>сужении типов</strong>. Когда TypeScript исключил все возможные
+    варианты, у переменной не остаётся ни одного типа — и он становится <code>never</code>.
+  </p>
+  <app-code-block [code]="neverNarrowingExample" lang="typescript" />
+  <p>
+    В блоке <code>else</code> значение уже не может быть ни строкой, ни числом — других
+    вариантов у типа <code>string | number</code> нет. TypeScript отмечает такую ветку как
+    <code>never</code>: «сюда исполнение не придёт». Это и есть основа приёма, который
+    разберём дальше.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Практический приём: проверка полноты switch (exhaustiveness)</h2>
+  <p>
+    Представьте объединение вариантов (например, фигуры) и <code>switch</code>, который
+    обрабатывает каждый. Хочется гарантии: <strong>если завтра добавят новый вариант, а
+    обработать его забудут — сборка должна упасть</strong>. Ровно это и даёт <code>never</code>.
+  </p>
+  <p>
+    Фокус в ветке <code>default</code>: после того как разобраны все <code>case</code>, в
+    <code>default</code> значение приходит с типом <code>never</code>. Присваиваем его в
+    переменную типа <code>never</code> — пока вариантов не осталось, всё сходится.
+  </p>
+  <app-code-block [code]="exhaustiveGoodExample" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Каждый case убирает один вариант; в default остаётся never">
+      <defs>
+        <marker id="exh-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)" />
+        </marker>
+      </defs>
+      <rect x="150" y="16" width="260" height="40" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="280" y="41" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"circle" | "square"</text>
+
+      <path d="M280 56 L280 82" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#exh-arrow)" />
+      <rect x="110" y="84" width="340" height="38" rx="9" fill="var(--bg)" stroke="var(--border)" />
+      <text x="130" y="108" fill="var(--fg)" font-family="monospace" font-size="12.5">case "circle": — убрали circle</text>
+
+      <path d="M280 122 L280 148" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#exh-arrow)" />
+      <rect x="110" y="150" width="340" height="38" rx="9" fill="var(--bg)" stroke="var(--border)" />
+      <text x="130" y="174" fill="var(--fg)" font-family="monospace" font-size="12.5">case "square": — убрали square</text>
+
+      <path d="M280 188 L280 214" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#exh-arrow)" />
+      <rect x="110" y="216" width="340" height="60" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.9" />
+      <text x="280" y="240" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13.5" font-weight="700">default: осталось never</text>
+      <text x="280" y="260" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11.5">const _: never = shape — всё разобрано</text>
+    </svg>
+    <figcaption>
+      Каждый <code>case</code> «вычитает» один вариант. Когда закончились все — в
+      <code>default</code> остаётся пустой тип <code>never</code>.
+    </figcaption>
+  </figure>
+  <p>
+    А теперь добавим третий вариант <code>triangle</code> и «забудем» его обработать. Остаток
+    в <code>default</code> перестаёт быть пустым — там оседает
+    <code>&#123; kind: "triangle" &#125;</code>, и присвоить его в <code>never</code> уже
+    нельзя. Сборка падает — то, что нам и нужно.
+  </p>
+  <app-code-block [code]="exhaustiveBrokenExample" lang="typescript" />
+  <p class="note">
+    <strong>Аналогия.</strong> Это как контрольный список на выходе из дома: «плита,
+    утюг, окна». Если каждый пункт вычеркнут — список пуст, можно уходить. Стоит добавить в
+    список «кот», но не проверить его — список уже не пуст, и «уйти» не получится. Пустой
+    список — это <code>never</code>, а непустой ловит компилятор.
+  </p>
+  <p>Чтобы не писать проверку в каждом <code>switch</code>, её выносят в функцию-помощник:</p>
+  <app-code-block [code]="assertNeverExample" lang="typescript" />
+  <p>
+    Приём работает не только со строковыми литералами, но и с любым размеченным объединением.
+    Подробнее про такие типы — в разделе о
+    <a routerLink="/typescript/basic-types/literal-types">литеральных типах</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>never в операциях над типами</h2>
+  <p>
+    Раз у <code>never</code> нет значений, он ведёт себя как «нейтральный ноль» в
+    объединениях: добавление <code>never</code> в <code>|</code> ничего не меняет. Отсюда и
+    берётся пустой остаток в exhaustiveness-проверке.
+  </p>
+  <app-code-block [code]="neverInUnionExample" lang="typescript" />
+  <p class="note">
+    Ещё одно свойство: <code>never</code> — <strong>подтип любого типа</strong>. Его можно
+    присвоить куда угодно (<code>const n: string = valueOfNever</code>), но <em>ему</em>
+    нельзя присвоить ничего. Именно поэтому <code>assertNever</code> с типом возврата
+    <code>never</code> удобно подставлять в любую ветку — он совместим с любым ожидаемым
+    результатом. Подробнее о направлении присваивания — в
+    <a routerLink="/typescript/basic-types/subtypes-supertypes">подтипах и супертипах</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Итог: void и never рядом</h2>
+  <p>Соберём различия в одну таблицу, чтобы больше их не путать.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>&nbsp;</th>
+          <th>void</th>
+          <th>never</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Сколько значений у типа</td>
+          <td>одно — <code>undefined</code></td>
+          <td class="no">ноль, ни одного</td>
+        </tr>
+        <tr>
+          <td>Функция завершается?</td>
+          <td class="yes">да, но без результата</td>
+          <td class="no">нет, никогда не возвращает управление</td>
+        </tr>
+        <tr>
+          <td>Типичный пример</td>
+          <td><code>console.log</code>, обработчик события</td>
+          <td><code>throw</code>, бесконечный цикл</td>
+        </tr>
+        <tr>
+          <td>В объединении <code>T | ...</code></td>
+          <td>обычный член объединения</td>
+          <td class="yes">исчезает: <code>T | never = T</code></td>
+        </tr>
+        <tr>
+          <td>Присваивание</td>
+          <td>принимает <code>undefined</code></td>
+          <td class="no">ему нельзя присвоить ничего; сам присваивается любому типу</td>
+        </tr>
+        <tr>
+          <td>Аналогия</td>
+          <td>работник сделал дело и молча ушёл</td>
+          <td>дорога в никуда, «такого не бывает»</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="rules">
+    <li>Ставьте <code>void</code> функциям ради побочного эффекта — а чаще просто доверьте
+      вывод компилятору.</li>
+    <li>Помните правило колбэков: тип «верни <code>void</code>» принимает функцию с любым
+      результатом, но снаружи результат считается <code>void</code>.</li>
+    <li><code>never</code> редко пишут руками — обычно его возвращают функции-«кидалки» и
+      получают в exhaustiveness-проверке.</li>
+    <li>Приём с <code>const _: never = value</code> в <code>default</code> — дешёвая
+      страховка: забыли новый вариант — сборка падает.</li>
+  </ul>
+  <p class="note">
+    Дальше по разделу: <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>
+    (другие «особые» типы), <a routerLink="/typescript/basic-types/inference">вывод типов</a>
+    (почему аннотации часто лишние) и
+    <a routerLink="/typescript/basic-types/pitfalls">нюансы и подводные камни</a>.
+  </p>
+</section>
+</article>

@@ -1,0 +1,276 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Вывод типов</span></nav>
+
+<h1 class="doc__title">Вывод типов</h1>
+<p class="doc__lead">
+  Аннотации типов в TypeScript нужны не везде. Очень часто компилятор
+  <strong>сам догадывается</strong> о типе по значению — это и есть вывод типов
+  (type inference). Разберём, как именно он рассуждает, чем отличается вывод для
+  <code>let</code> и <code>const</code>, и где полагаться на автопилот не стоит.
+</p>
+
+<section class="doc__section">
+  <h2>Что такое вывод типов</h2>
+  <p>
+    Когда вы присваиваете переменной значение, TypeScript смотрит на это значение
+    и записывает тип за вас. Отдельно указывать <code>: number</code> или
+    <code>: string</code> не нужно — тип уже известен из того, что лежит справа.
+  </p>
+  <app-code-block [code]="basicInference" lang="typescript" />
+  <p>
+    Важно понять: вывод типа — это <strong>не «без типов»</strong>. Тип есть, он
+    строгий, просто написан не вашими руками, а компилятором. Всё, что запрещено
+    для явно указанного <code>number</code>, запрещено и для выведенного.
+  </p>
+  <p class="note">
+    <strong>Аналогия.</strong> TypeScript — как внимательный ассистент. Вы кладёте
+    на стол число — он молча подписывает папку «числа», кладёте строку — «строки».
+    Пока вы работаете с очевидными значениями, подписывать папки вручную незачем.
+    Но там, где начинаются <em>границы и договорённости</em> (что функция принимает
+    и отдаёт наружу), подпись лучше поставить самому — об этом в конце урока.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2><code>let</code> и <code>const</code>: расширение типа</h2>
+  <p>
+    Один и тот же <code>3</code> выводится по-разному в зависимости от того, как
+    объявлена переменная. Причина — можно ли её потом переприсвоить.
+  </p>
+  <app-code-block [code]="letVsConst" lang="typescript" />
+  <p>
+    Для <code>let</code> TypeScript рассуждает так: «значение может смениться на
+    другое число, поэтому фиксировать ровно <code>3</code> нельзя — возьму весь
+    тип <code>number</code>». Это называется <strong>расширением</strong>
+    (widening): литерал расширяется до примитива. Для <code>const</code>
+    переприсвоения не будет никогда, значит можно оставить самый точный тип —
+    <strong>литеральный</strong> (ровно <code>3</code>).
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="let расширяет литерал до примитива number, const сохраняет узкий литеральный тип">
+      <defs>
+        <marker id="inf-arrow-1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+
+      <rect x="30" y="34" width="180" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="120" y="60" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">let x = 3</text>
+      <text x="120" y="77" text-anchor="middle" fill="var(--muted)" font-size="10.5">можно переприсвоить</text>
+
+      <line x1="120" y1="86" x2="120" y2="140" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#inf-arrow-1)" />
+      <text x="132" y="118" fill="var(--muted)" font-size="11">широкий тип</text>
+
+      <rect x="20" y="140" width="200" height="72" rx="10" fill="var(--surface)" stroke="var(--border)" />
+      <text x="120" y="174" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="18">number</text>
+      <text x="120" y="196" text-anchor="middle" fill="var(--muted)" font-size="10.5">любое число, не только 3</text>
+
+      <line x1="310" y1="24" x2="310" y2="224" stroke="var(--border)" stroke-dasharray="4 4" />
+
+      <rect x="410" y="34" width="180" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="500" y="60" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">const y = 3</text>
+      <text x="500" y="77" text-anchor="middle" fill="var(--muted)" font-size="10.5">менять нельзя</text>
+
+      <line x1="500" y1="86" x2="500" y2="140" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#inf-arrow-1)" />
+      <text x="512" y="118" fill="var(--muted)" font-size="11">узкий тип</text>
+
+      <rect x="450" y="140" width="100" height="72" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="500" y="176" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="20">3</text>
+      <text x="500" y="198" text-anchor="middle" fill="var(--muted)" font-size="10.5">ровно тройка</text>
+    </svg>
+    <figcaption>
+      <code>let</code> расширяет литерал до примитива (<code>3</code> → <code>number</code>);
+      <code>const</code> сохраняет узкий литеральный тип (<code>3</code>).
+    </figcaption>
+  </figure>
+
+  <p>
+    Разница не косметическая — она видна там, где ожидается <strong>литеральный
+    тип</strong> (например, объединение конкретных строк):
+  </p>
+  <app-code-block [code]="wideningContract" lang="typescript" />
+  <p class="note">
+    <strong>Аналогия.</strong> <code>const</code> — как гравировка на металле:
+    значение и его тип зафиксированы навсегда, можно доверять точной надписи
+    «<code>3</code>». <code>let</code> — как ценник на грифельной доске: сегодня
+    <code>3</code>, завтра <code>10</code>. Раз надпись меняется, магазин обещает
+    лишь общее «здесь будет число» (<code>number</code>).
+  </p>
+
+  <h3 class="doc__subtitle">Объекты и массивы расширяются всегда</h3>
+  <p>
+    Внутри объекта свойства можно менять, даже если сам объект объявлен через
+    <code>const</code>. Поэтому их типы тоже расширяются до примитивов. Чтобы
+    получить точные литеральные типы, значение «замораживают» через
+    <code>as const</code>.
+  </p>
+  <app-code-block [code]="objectWidening" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Вывод типа возврата функции</h2>
+  <p>
+    Тип, который функция возвращает, TypeScript вычисляет по её
+    <code>return</code>. Отдельно писать его не обязательно — компилятор
+    «прогоняет» тело и складывает результат. Если <code>return</code> несколько и
+    они разного типа, получится их объединение (union).
+  </p>
+  <app-code-block [code]="returnInference" lang="typescript" />
+  <p>
+    Это удобно для маленьких внутренних функций. Но у <em>параметров</em> вывода
+    обычно нет: у них нет значения, из которого можно было бы догадаться о типе, —
+    поэтому параметры почти всегда аннотируют вручную (см. последнюю секцию).
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Контекстная типизация</h2>
+  <p>
+    Иногда тип берётся не из значения справа, а из <strong>контекста</strong>, куда
+    выражение попадает. Самый частый случай — колбэк. В
+    <code>nums.map((n) =&gt; ...)</code> вы не пишете тип <code>n</code>, но TS уже
+    знает: <code>nums</code> — это <code>number[]</code>, метод <code>map</code>
+    передаёт в колбэк элемент массива, значит <code>n</code> — это
+    <code>number</code>.
+  </p>
+  <app-code-block [code]="contextualArray" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 150" width="100%" role="img" aria-label="Тип параметра колбэка n выводится из типа массива number скобки скобки">
+      <defs>
+        <marker id="inf-arrow-2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+
+      <rect x="20" y="50" width="170" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="105" y="81" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">nums: number[]</text>
+
+      <line x1="190" y1="76" x2="248" y2="76" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#inf-arrow-2)" />
+      <text x="219" y="66" text-anchor="middle" fill="var(--muted)" font-size="10">контекст</text>
+
+      <rect x="252" y="50" width="200" height="52" rx="10" fill="var(--surface)" stroke="var(--border)" />
+      <text x="352" y="81" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12.5">.map((n) =&gt; n * 2)</text>
+
+      <line x1="452" y1="76" x2="510" y2="76" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#inf-arrow-2)" />
+
+      <rect x="514" y="50" width="110" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="569" y="81" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">n: number</text>
+    </svg>
+    <figcaption>
+      Тип элемента массива «протекает» в параметр колбэка — писать
+      <code>n: number</code> руками не нужно.
+    </figcaption>
+  </figure>
+
+  <p>
+    Так же работают обработчики событий в DOM. По имени события TypeScript
+    подставляет правильный тип объекта события:
+  </p>
+  <app-code-block [code]="contextualEvent" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Лучший общий тип массива</h2>
+  <p>
+    Когда вы пишете массив из разных значений, TypeScript не сдаётся, а ищет
+    <strong>лучший общий тип</strong> — самый узкий тип, под который подходят все
+    элементы. Для <code>[1, 2, 3]</code> это <code>number[]</code>, а для
+    <code>[1, "a"]</code> — объединение <code>(string | number)[]</code>.
+  </p>
+  <app-code-block [code]="bestCommonType" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 560 190" width="100%" role="img" aria-label="Элементы number и string объединяются в тип массива скобки string или number скобки скобки">
+      <defs>
+        <marker id="inf-arrow-3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+
+      <rect x="30" y="30" width="150" height="46" rx="9" fill="var(--surface)" stroke="var(--border)" />
+      <text x="105" y="52" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">1</text>
+      <text x="105" y="68" text-anchor="middle" fill="var(--muted)" font-size="10.5">number</text>
+
+      <rect x="30" y="112" width="150" height="46" rx="9" fill="var(--surface)" stroke="var(--border)" />
+      <text x="105" y="134" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'a'</text>
+      <text x="105" y="150" text-anchor="middle" fill="var(--muted)" font-size="10.5">string</text>
+
+      <line x1="180" y1="53" x2="330" y2="86" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#inf-arrow-3)" />
+      <line x1="180" y1="135" x2="330" y2="102" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#inf-arrow-3)" />
+
+      <rect x="336" y="66" width="196" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="434" y="99" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">(string | number)[]</text>
+    </svg>
+    <figcaption>
+      Массив <code>[1, "a"]</code>: типы элементов сливаются в объединение, а не
+      обрубаются до <code>any</code>.
+    </figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Когда типы всё-таки пишут руками</h2>
+  <p>
+    Вывод хорош для локальных значений, но у него есть слабые места. Есть три
+    ситуации, где явная аннотация обязательна или просто разумна.
+  </p>
+
+  <h3 class="doc__subtitle">1. Сигнатуры публичных функций — фиксируем контракт</h3>
+  <p>
+    Для функции, которой пользуются другие модули, аннотируйте и параметры, и
+    <strong>тип возврата</strong>. Тогда, если тело случайно начнёт возвращать не
+    то, ошибка укажет прямо на функцию, а не всплывёт где-то у вызывающего кода.
+  </p>
+  <app-code-block [code]="publicApiAnnotation" lang="typescript" />
+
+  <h3 class="doc__subtitle">2. Пустой массив — иначе получите <code>any[]</code></h3>
+  <p>
+    Если элементов нет, TypeScript нечего анализировать, и тип получается
+    <code>any[]</code> — проверки отключаются. Укажите тип элемента сразу.
+  </p>
+  <app-code-block [code]="emptyArrayPitfall" lang="typescript" />
+
+  <h3 class="doc__subtitle">3. Параметры без контекста — иначе неявный <code>any</code></h3>
+  <p>
+    У обычного параметра нет значения, из которого можно вывести тип. Под
+    <code>strict</code> это ошибка «implicit any». Аннотируйте параметр — а вот
+    возврат чаще всего можно доверить выводу.
+  </p>
+  <app-code-block [code]="implicitAnyParam" lang="typescript" />
+
+  <ul class="rules">
+    <li><strong>Публичные функции</strong> — аннотируйте параметры и тип возврата: это договор, который вы фиксируете явно.</li>
+    <li><strong>Пустые массивы и коллекции</strong> — задавайте тип элемента (<code>const a: string[] = []</code>), чтобы не свалиться в <code>any[]</code>.</li>
+    <li><strong>Параметры функций</strong> — почти всегда аннотируйте (кроме колбэков с контекстом и параметров со значением по умолчанию).</li>
+    <li><strong>Не аннотируйте очевидное</strong> — <code>const n = 5</code> лишняя подпись <code>: number</code> только шумит.</li>
+  </ul>
+  <p class="note">
+    <strong>Правило большого пальца.</strong> Внутри функции доверяйте выводу — он
+    делает код короче и не отстаёт от изменений. На <em>границах</em> модуля
+    (что входит и что выходит) подписывайте типы сами: там важна не краткость, а
+    стабильный, проверяемый контракт.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>TS сам выводит типы</strong> из значений — аннотации нужны не везде.</li>
+    <li><strong>Расширение:</strong> <code>let x = 3</code> → <code>number</code>, <code>const x = 3</code> → литерал <code>3</code>. Объекты и массивы расширяются даже под <code>const</code> (точность даёт <code>as const</code>).</li>
+    <li><strong>Возврат функции</strong> выводится по <code>return</code>; разные <code>return</code> дают объединение.</li>
+    <li><strong>Контекстная типизация:</strong> тип параметра колбэка (и объекта события) берётся из контекста вызова.</li>
+    <li><strong>Лучший общий тип:</strong> <code>[1, "a"]</code> → <code>(string | number)[]</code>.</li>
+    <li><strong>Аннотируйте явно:</strong> публичные сигнатуры, пустые массивы, параметры без контекста — чтобы ловить ошибки раньше и не получить <code>any</code>.</li>
+  </ul>
+  <p class="note">
+    Дальше по разделу: <a routerLink="/typescript/basic-types/literal-types">«Литеральные типы»</a>
+    (продолжение темы <code>const</code> и <code>as const</code>),
+    <a routerLink="/typescript/basic-types/any-unknown">«any и unknown»</a>
+    (чем опасен неявный <code>any</code>) и
+    <a routerLink="/typescript/basic-types/pitfalls">«Нюансы и подводные камни»</a>.
+    Начало раздела — <a routerLink="/typescript/basic-types/primitives">«Примитивы»</a>.
+  </p>
+</section>
+</article>

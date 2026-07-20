@@ -9,6 +9,25 @@ import { SectionPage } from './section-page/section-page';
 // each topic gets real content.
 const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
   javascript: () => import('./javascript/javascript').then((m) => m.JavascriptOverview),
+  typescript: () => import('./typescript/typescript').then((m) => m.TypescriptOverview),
+  'typescript/basic-types/primitives': () =>
+    import('./typescript/basic-types/primitives/primitives').then((m) => m.BasicTypesPrimitives),
+  'typescript/basic-types/arrays-tuples': () =>
+    import('./typescript/basic-types/arrays-tuples/arrays-tuples').then((m) => m.BasicTypesArraysTuples),
+  'typescript/basic-types/any-unknown': () =>
+    import('./typescript/basic-types/any-unknown/any-unknown').then((m) => m.BasicTypesAnyUnknown),
+  'typescript/basic-types/void-never': () =>
+    import('./typescript/basic-types/void-never/void-never').then((m) => m.BasicTypesVoidNever),
+  'typescript/basic-types/literal-types': () =>
+    import('./typescript/basic-types/literal-types/literal-types').then((m) => m.BasicTypesLiteralTypes),
+  'typescript/basic-types/subtypes-supertypes': () =>
+    import('./typescript/basic-types/subtypes-supertypes/subtypes-supertypes').then(
+      (m) => m.BasicTypesSubtypesSupertypes,
+    ),
+  'typescript/basic-types/inference': () =>
+    import('./typescript/basic-types/inference/inference').then((m) => m.BasicTypesInference),
+  'typescript/basic-types/pitfalls': () =>
+    import('./typescript/basic-types/pitfalls/pitfalls').then((m) => m.BasicTypesPitfalls),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

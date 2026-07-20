@@ -1,0 +1,189 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">Собрали в одном месте типичные грабли базовых типов. Почти все они об одном: типы в TypeScript — это <em>подсказки для компилятора</em>, а не броня в рантайме. Есть места, где проверка тихо отключается, — и именно там рождаются баги. Ниже каждый пункт: короткий пример «как ломается» и рядом «как правильно».</p>
+
+<section class="doc__section">
+  <h2>Главная аналогия: типы — это ремень безопасности</h2>
+  <p>Представьте, что типы — ремень безопасности в машине. Он не мешает ехать, но в момент аварии спасает. Проблема не в самом ремне, а в том, что его слишком легко <strong>отстегнуть</strong>. В TypeScript такими «застёжками» служат <code>any</code> и утверждение типа <code>as</code>: они говорят компилятору «расслабься, я знаю, что делаю». Пока всё хорошо — вы едете без ремня и не замечаете разницы. Но при первой же неожиданности прилетает ошибка в рантайме, где типы уже никого не защищают.</p>
+  <p>Держите в голове важную мысль: проверка типов живёт <strong>только на этапе компиляции</strong>. После сборки все аннотации стираются, и остаётся обычный JavaScript. Поэтому одни ловушки компилятор в принципе способен поймать (если его не «отстегнуть»), а другие — <code>NaN</code>, <code>Infinity</code>, сломанную длину кортежа — он не видит вовсе: это чистый рантайм, и защищать вас там должен уже ваш код.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 580 210" width="100%" role="img" aria-label="any пропускает значение без проверки, unknown требует проверку">
+      <defs>
+        <marker id="ts-arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--red)" /></marker>
+        <marker id="ts-arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--green)" /></marker>
+      </defs>
+      <text x="20" y="30" fill="var(--red)" font-size="13" font-weight="600">any — ремень отстёгнут</text>
+      <rect x="20" y="44" width="120" height="42" rx="8" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="80" y="70" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">значение</text>
+      <line x1="142" y1="65" x2="356" y2="65" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ts-arr-red)" />
+      <text x="249" y="56" text-anchor="middle" fill="var(--muted)" font-size="11">без проверки</text>
+      <rect x="362" y="44" width="196" height="42" rx="8" fill="var(--bg)" stroke="var(--red)" />
+      <text x="460" y="70" text-anchor="middle" fill="var(--red)" font-size="12">ошибка в рантайме</text>
+
+      <text x="20" y="132" fill="var(--green)" font-size="13" font-weight="600">unknown — ремень пристёгнут</text>
+      <rect x="20" y="146" width="120" height="42" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="80" y="172" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">значение</text>
+      <line x1="142" y1="167" x2="248" y2="167" stroke="var(--green)" stroke-width="1.6" marker-end="url(#ts-arr-green)" />
+      <rect x="254" y="149" width="104" height="36" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="306" y="172" text-anchor="middle" fill="var(--green)" font-size="11.5">проверка типа</text>
+      <line x1="360" y1="167" x2="462" y2="167" stroke="var(--green)" stroke-width="1.6" marker-end="url(#ts-arr-green)" />
+      <rect x="468" y="146" width="90" height="42" rx="8" fill="var(--bg)" stroke="var(--green)" />
+      <text x="513" y="172" text-anchor="middle" fill="var(--green)" font-size="12">безопасно</text>
+    </svg>
+    <figcaption>Одно и то же значение: через <code>any</code> оно долетает до кода без проверок, через <code>unknown</code> — только после явной проверки типа.</figcaption>
+  </figure>
+  <p class="note"><strong>Обозначения в примерах.</strong> <code>// ❌</code> — компилятор ругается уже на этой строке. <code>// ⚠️</code> — компилятор молчит, но код делает опасную вещь. <code>// 💥</code> — код собирается, но падает или выдаёт мусор в рантайме. <code>// ✅</code> — как правильно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>1. <code>any</code> тихо «заражает» всё вокруг</h2>
+  <p>Самая коварная ловушка. <code>any</code> означает «любой тип, проверок нет». И это свойство <strong>распространяется</strong>: стоит достать значение из <code>any</code>, как результат тоже становится <code>any</code>, потом ещё и ещё. Одна переменная способна незаметно «выключить» типизацию в целой ветке кода.</p>
+  <p>Аналогия: <code>any</code> — как капля чернил в стакане воды. Капнули в одном месте, а через минуту окрашена вся вода. Вы думаете, что типизация работает, а её давно нет.</p>
+  <app-code-block [code]="anyPropagation" lang="typescript" />
+  <p>Мало того, что <code>any</code> расползается по переменным — он ещё и <strong>беспрепятственно проходит внутрь типизированных функций</strong>. Значение типа <code>any</code> совместимо с любым параметром, поэтому компилятор молча пропустит мусор туда, где ждут строгий тип. Так одна нетипизированная точка (например, ответ от API) отравляет вполне аккуратный код вокруг:</p>
+  <app-code-block [code]="anyIntoTyped" lang="typescript" />
+  <h3 class="doc__subtitle">Как правильно: <code>unknown</code> вместо <code>any</code></h3>
+  <p><code>unknown</code> — это «честный any»: сюда тоже можно положить что угодно, но <strong>достать и использовать</strong> — только после проверки типа. Компилятор буквально заставляет вас доказать, с чем вы имеете дело. Обратите внимание: в примере ниже нам даже не понадобился <code>as</code> — тип сузился сам благодаря проверкам <code>typeof</code> и <code>in</code>.</p>
+  <app-code-block [code]="unknownInstead" lang="typescript" />
+  <p class="note"><strong>Совет.</strong> Если <code>any</code> появляется не потому что вы его написали, а «сам» — это опаснее всего. Такое бывает у нетипизированных параметров функций. Включите <code>noImplicitAny</code>, и компилятор перестанет молча подставлять <code>any</code>.</p>
+  <app-code-block [code]="noImplicitAny" lang="typescript" />
+  <app-code-block [code]="tsconfigStrict" lang="json" />
+  <p>Подробный разбор различий — на странице <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>2. <code>object</code>, <code>&#123;&#125;</code> и <code>Object</code> — три разных «почти ничего»</h2>
+  <p>Новичок видит их как синонимы «объект». На деле все три почти ничего не ограничивают, но по-разному. Особенно обманчив пустой <code>&#123;&#125;</code>: его читают как «пустой объект», а на самом деле он означает «что угодно, кроме <code>null</code> и <code>undefined</code>». Под него подходят и число, и строка, и массив.</p>
+  <app-code-block [code]="objectEmptyObject" lang="typescript" />
+  <p>Аналогия: тип <code>&#123;&#125;</code> — как объявление «ищу кого угодно старше нуля лет». Формально фильтр есть, но отсекает он лишь пару совсем невозможных случаев (<code>null</code> и <code>undefined</code>), а всех остальных пропускает.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr><th>Тип</th><th>Что подходит</th><th>Полезность</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&#123;&#125;</code></td><td>всё, кроме <code>null</code> / <code>undefined</code></td><td class="no">почти ничего не ограничивает</td></tr>
+        <tr><td><code>Object</code></td><td>практически то же, что <code>&#123;&#125;</code></td><td class="no">почти ничего не ограничивает</td></tr>
+        <tr><td><code>object</code></td><td>любой не-примитив (объект, массив, функция)</td><td class="no">слишком широко для реального кода</td></tr>
+        <tr><td><code>&#123; x: number &#125;</code></td><td>объект с полем <code>x: number</code></td><td class="yes">конкретно, компилятор знает поля</td></tr>
+        <tr><td><code>Record&lt;string, number&gt;</code></td><td>объект: строковые ключи → числа</td><td class="yes">когда ключи заранее неизвестны</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3 class="doc__subtitle">Как правильно: опишите форму</h3>
+  <p>Не пишите «просто объект». Опишите, какие поля вам реально нужны, или возьмите <code>Record</code>, если набор ключей заранее не фиксирован.</p>
+  <app-code-block [code]="objectProperShape" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>3. <code>number</code> — это ещё и <code>NaN</code>, и <code>Infinity</code></h2>
+  <p>Тип <code>number</code> обещает «число», но в JavaScript «число» включает два особых значения: <code>NaN</code> (не-число, результат кривой арифметики) и <code>Infinity</code> (бесконечность, например от деления на ноль). Аннотация <code>: number</code> их не отсекает — они законные жители этого типа.</p>
+  <app-code-block [code]="numberNaNInfinity" lang="typescript" />
+  <p>Аналогия: подписать коробку «фрукты» — не гарантия, что внутри не окажется гнилого яблока. Ярлык говорит про категорию, а не про качество каждого экземпляра.</p>
+  <h3 class="doc__subtitle">Как правильно: проверяйте вручную</h3>
+  <p>Там, где результат мог «испортиться» (деление, парсинг ввода, сумма пользовательских данных), проверяйте его через <code>Number.isFinite</code> — она отсекает сразу и <code>NaN</code>, и обе бесконечности.</p>
+  <app-code-block [code]="numberGuard" lang="typescript" />
+  <p>Больше про поведение чисел — на странице <a routerLink="/typescript/basic-types/primitives">Примитивы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>4. <code>null</code> и <code>undefined</code> без <code>strictNullChecks</code></h2>
+  <p>Это исторический подводный камень. Если строгий режим выключен, <code>null</code> и <code>undefined</code> незаметно входят <strong>в любой тип</strong>. Компилятор считает, что <code>null</code> — валидная <code>string</code>, и молчит. Ошибку вы увидите только в рантайме, когда вызовете метод у «ничего».</p>
+  <app-code-block [code]="strictNullOff" lang="typescript" />
+  <h3 class="doc__subtitle">Как правильно: включите строгий режим</h3>
+  <p>Со <code>strictNullChecks</code> (входит в <code>strict</code>) <code>null</code> и <code>undefined</code> перестают быть частью каждого типа. Хотите разрешить их — добавьте явно (<code>string | null</code>) и обработайте. Компилятор теперь не даст забыть про этот случай.</p>
+  <app-code-block [code]="strictNullOn" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> Без строгого режима пустое место (<code>null</code>) считается таким же «человеком», как все, и его пускают в любую дверь. Со строгим режимом на входе стоит охрана: «пустых» пропускают только туда, где это заранее разрешено.</p>
+</section>
+
+<section class="doc__section">
+  <h2>5. Структурная типизация и лишние свойства</h2>
+  <p>TypeScript сравнивает типы <strong>по форме</strong>, а не по имени: объект подходит под тип, если у него <em>есть всё нужное</em>. Лишние поля структурной проверке не мешают. Но тут же есть исключение, которое сбивает с толку: когда вы присваиваете <strong>объектный литерал напрямую</strong>, включается дополнительная строгая проверка на лишние свойства (excess property check).</p>
+  <app-code-block [code]="excessLiteral" lang="typescript" />
+  <p>А стоит положить тот же объект в промежуточную переменную — и лишнее свойство спокойно «просачивается»:</p>
+  <app-code-block [code]="excessViaVariable" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 580 210" width="100%" role="img" aria-label="Литерал проходит строгую проверку на лишнее, через переменную проверка обходится">
+      <defs>
+        <marker id="ts-arr-red2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--red)" /></marker>
+        <marker id="ts-arr-green2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--green)" /></marker>
+      </defs>
+      <text x="20" y="28" fill="var(--fg)" font-size="13" font-weight="600">Лишнее свойство z: два пути до типа Point</text>
+
+      <rect x="20" y="46" width="150" height="44" rx="8" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="95" y="68" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">&#123; x, y, z &#125;</text>
+      <text x="95" y="83" text-anchor="middle" fill="var(--muted)" font-size="10">литерал напрямую</text>
+      <line x1="172" y1="68" x2="300" y2="68" stroke="var(--red)" stroke-width="1.6" marker-end="url(#ts-arr-red2)" />
+      <rect x="306" y="48" width="128" height="40" rx="8" fill="var(--bg)" stroke="var(--red)" />
+      <text x="370" y="66" text-anchor="middle" fill="var(--red)" font-size="11">строгая проверка</text>
+      <text x="370" y="81" text-anchor="middle" fill="var(--red)" font-size="11">на лишнее</text>
+      <text x="470" y="74" fill="var(--red)" font-size="20" font-weight="700">✕ z</text>
+
+      <rect x="20" y="134" width="150" height="44" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="95" y="156" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">raw = &#123; x, y, z &#125;</text>
+      <text x="95" y="171" text-anchor="middle" fill="var(--muted)" font-size="10">через переменную</text>
+      <line x1="172" y1="156" x2="300" y2="156" stroke="var(--green)" stroke-width="1.6" marker-end="url(#ts-arr-green2)" />
+      <rect x="306" y="136" width="128" height="40" rx="8" fill="var(--bg)" stroke="var(--green)" />
+      <text x="370" y="154" text-anchor="middle" fill="var(--green)" font-size="11">есть x и y —</text>
+      <text x="370" y="169" text-anchor="middle" fill="var(--green)" font-size="11">форма подходит</text>
+      <text x="466" y="162" fill="var(--green)" font-size="18" font-weight="700">✓ z прошло</text>
+    </svg>
+    <figcaption>Проверка на лишние свойства срабатывает только для литерала «в лоб». Через переменную остаётся обычная структурная проверка — и лишнее поле проходит.</figcaption>
+  </figure>
+  <p>Это не баг, а осознанное решение: прямой литерал почти всегда опечатка (лишнее поле точно не используется), а переменная могла прийти откуда угодно. Подробнее про совместимость типов — на странице <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>6. <code>as</code> ничего не проверяет и не преобразует</h2>
+  <p>Утверждение типа <code>as</code> часто путают с приведением типа из других языков. Но <code>as</code> <strong>не выполняет никакого преобразования</strong> и <strong>не проверяет</strong> значение в рантайме. Это просто записка компилятору: «поверь, тут тип такой». Если вы соврали — компилятор поверит, а программа упадёт.</p>
+  <app-code-block [code]="asLie" lang="typescript" />
+  <p>Аналогия: <code>as</code> — это как переклеить ценник в магазине. Товар от этого не изменился, изменилась только надпись. На кассе (в рантайме) обман всплывёт.</p>
+  <p>У <code>as</code> есть лишь крохотная встроенная защита: два совсем несовместимых типа (например <code>string</code> и <code>number</code>) он напрямую утвердить не даст. Но и её легко обойти «двойным» утверждением через <code>unknown</code> — компилятор снова замолкает. Если увидели в коде конструкцию <code>as unknown as ...</code>, знайте: это осознанный обход всех проверок разом.</p>
+  <app-code-block [code]="asDoubleLie" lang="typescript" />
+  <h3 class="doc__subtitle">Как правильно: проверка вместо утверждения</h3>
+  <p>Там, где тип действительно неизвестен, используйте настоящую проверку (<code>typeof</code>, <code>instanceof</code>, проверку полей). Она и сузит тип для компилятора, и реально защитит в рантайме.</p>
+  <app-code-block [code]="asProper" lang="typescript" />
+  <p class="note"><strong>Когда <code>as</code> уместен.</strong> Изредка вы знаете о значении больше компилятора (например, точно знаете тип элемента из DOM). Тогда <code>as</code> допустим — но это ваша ответственность, а не проверка. Никогда не «затыкайте» им ошибку просто чтобы код собрался.</p>
+</section>
+
+<section class="doc__section">
+  <h2>7. Кортеж не защищён от <code>.push</code></h2>
+  <p>Кортеж (tuple) обещает фиксированную длину и типы по позициям: <code>[number, number]</code> — «ровно два числа». Но под капотом это обычный массив, поэтому мутирующие методы вроде <code>.push</code> компилятор <strong>не запрещает</strong> — и «длину 2» легко нарушить.</p>
+  <app-code-block [code]="tuplePush" lang="typescript" />
+  <p>Аналогия: кортеж — это как коробка для яиц на 2 ячейки. По дизайну в неё влезает два яйца, но никто не мешает силой засунуть третье сверху. Форма нарушена, а «контролёр» промолчал.</p>
+  <h3 class="doc__subtitle">Как правильно: <code>readonly</code></h3>
+  <p>Пометьте кортеж как <code>readonly</code>. Тогда мутирующие методы (<code>push</code>, <code>pop</code>, <code>splice</code>) исчезают из типа, и длину уже не сломать. Читать и разбирать через деструктуризацию по-прежнему можно.</p>
+  <app-code-block [code]="tupleReadonly" lang="typescript" />
+  <p>Больше про массивы и кортежи — на странице <a routerLink="/typescript/basic-types/arrays-tuples">Массивы и кортежи</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Шпаргалка: что «отстёгивает ремень», а что нет</h2>
+  <p>Вернёмся к аналогии. Одни приёмы отключают проверку типов (ремень отстёгнут), другие — наоборот, заставляют её работать. Держите под рукой:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr><th>Приём</th><th>Проверяет типы?</th><th>Что делать</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>any</code></td><td class="no">нет — «заражает» соседей</td><td>заменить на <code>unknown</code></td></tr>
+        <tr><td><code>value as T</code></td><td class="no">нет — просто верит на слово</td><td>заменить проверкой (<code>typeof</code>, <code>in</code>)</td></tr>
+        <tr><td><code>&#123;&#125;</code> / <code>Object</code></td><td class="no">почти нет — проходит всё</td><td>описать форму или <code>Record</code></td></tr>
+        <tr><td>изменяемый кортеж</td><td class="no">длину не защищает</td><td>добавить <code>readonly</code></td></tr>
+        <tr><td><code>unknown</code></td><td class="yes">да — требует проверки</td><td>сузить тип перед использованием</td></tr>
+        <tr><td>конкретная форма / <code>Record</code></td><td class="yes">да — знает поля</td><td>использовать по умолчанию</td></tr>
+        <tr><td><code>strictNullChecks</code></td><td class="yes">да — ловит <code>null</code></td><td>держать включённым</td></tr>
+        <tr><td><code>Number.isFinite</code></td><td class="yes">да — ловит <code>NaN</code>/<code>Infinity</code></td><td>проверять «хрупкие» вычисления</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="rules">
+    <li>Включите <code>strict</code> в <code>tsconfig.json</code> — половина ловушек исчезает сама.</li>
+    <li>Избегайте <code>any</code> и <code>as</code>; там, где тянет их использовать, почти всегда лучше <code>unknown</code> и проверка.</li>
+    <li>Помните: типы работают на этапе компиляции. <code>NaN</code>, <code>Infinity</code>, испорченный кортеж — это рантайм, его проверяйте кодом.</li>
+    <li>Смотрите также: <a routerLink="/typescript/basic-types/inference">Вывод типов</a> и обзор раздела <a routerLink="/typescript">TypeScript</a>.</li>
+  </ul>
+</section>
+</article>

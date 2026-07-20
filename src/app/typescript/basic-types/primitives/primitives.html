@@ -1,0 +1,261 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/basic-types">Базовые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Примитивы</span></nav>
+
+<h1 class="doc__title">Примитивы</h1>
+<p class="doc__lead">
+  Примитивы — это самые простые «кирпичики» данных: одно число, одна строка, одно
+  «да/нет». В TypeScript их <strong>семь</strong>, и у каждого есть имя типа, которое
+  можно поставить рядом с переменной. В этом уроке разберём, как ставить такие
+  <strong>аннотации типов</strong> и какие примитивы бывают.
+</p>
+
+<section class="doc__section">
+  <h2>Что такое аннотация типа</h2>
+  <p>
+    В обычном JavaScript переменная может хранить что угодно и в любой момент менять
+    «сорт» данных. TypeScript позволяет заранее <strong>пообещать</strong>, что именно
+    будет лежать в переменной. Это обещание и есть <strong>аннотация типа</strong> —
+    двоеточие и имя типа сразу после имени переменной: <code>: number</code>.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 230" width="100%" role="img" aria-label="Переменная как коробка, а тип как ярлык на ней">
+      <text x="310" y="28" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">переменная — коробка, тип — ярлык на ней</text>
+
+      <rect x="248" y="44" width="144" height="34" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="320" y="67" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="16" font-weight="700">: number</text>
+
+      <line x1="320" y1="78" x2="320" y2="92" stroke="var(--accent)" stroke-width="2" />
+
+      <rect x="220" y="92" width="200" height="114" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <text x="320" y="150" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="34" font-weight="700">42</text>
+      <text x="320" y="182" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">3.14   -7   0   NaN</text>
+
+      <text x="150" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">ярлык говорит,</text>
+      <text x="150" y="168" text-anchor="middle" fill="var(--muted)" font-size="12">что внутри числа</text>
+    </svg>
+    <figcaption>Ярлык <code>number</code> не меняет содержимое — он сообщает, что в коробке всегда числа.</figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Аналогия.</strong> Тип — как ярлык на коробке. Он не влияет на то, что уже
+    лежит внутри, но честно сообщает, <em>что</em> там должно быть. Написали ярлык
+    «числа» — и класть туда носки (строку) больше нельзя: TypeScript сразу заметит
+    несоответствие и подчеркнёт ошибку ещё до запуска программы.
+  </p>
+
+  <app-code-block [code]="annotationExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Анатомия строки с аннотацией</h3>
+  <p>Разберём привычную строку <code>let count: number = 0</code> по частям:</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 190" width="100%" role="img" aria-label="Разбор строки let count двоеточие number равно ноль">
+      <text x="110" y="70" fill="var(--muted)" font-family="monospace" font-size="24">let</text>
+      <text x="158" y="70" fill="var(--fg)" font-family="monospace" font-size="24" font-weight="700">count</text>
+      <text x="234" y="70" fill="var(--accent)" font-family="monospace" font-size="24" font-weight="700">: number</text>
+      <text x="360" y="70" fill="var(--fg)" font-family="monospace" font-size="24">= 0</text>
+
+      <line x1="190" y1="84" x2="190" y2="106" stroke="var(--muted)" stroke-width="1.6" />
+      <text x="190" y="124" text-anchor="middle" fill="var(--muted)" font-size="12">имя переменной</text>
+
+      <line x1="292" y1="84" x2="292" y2="140" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="292" y="158" text-anchor="middle" fill="var(--accent)" font-size="12">аннотация типа — что внутри</text>
+
+      <line x1="384" y1="84" x2="384" y2="106" stroke="var(--muted)" stroke-width="1.6" />
+      <text x="384" y="124" text-anchor="middle" fill="var(--muted)" font-size="12">значение</text>
+    </svg>
+    <figcaption>Аннотация — это только часть <code>: number</code>. Само значение и имя переменной — отдельные вещи.</figcaption>
+  </figure>
+
+  <h3 class="doc__subtitle">Аннотации у функций</h3>
+  <p>
+    У функции типы ставят в двух местах: у <strong>каждого параметра</strong> и у
+    <strong>возвращаемого значения</strong> (после круглых скобок). Так по одной
+    сигнатуре сразу видно, что функция принимает и что отдаёт.
+  </p>
+  <app-code-block [code]="functionAnnotationExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Семь примитивов</h2>
+  <p>
+    Примитив хранит <strong>одно простое значение</strong> и не имеет «внутренностей»,
+    которые можно менять по частям. В TypeScript таких типов семь. Вот их карта:
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 224" width="100%" role="img" aria-label="Карта семи примитивных типов TypeScript">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Семь примитивов TypeScript</text>
+
+      <rect x="26" y="56" width="130" height="64" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="91" y="86" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">number</text>
+      <text x="91" y="106" text-anchor="middle" fill="var(--muted)" font-size="10.5">целые и дробные</text>
+
+      <rect x="172" y="56" width="130" height="64" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="237" y="86" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">bigint</text>
+      <text x="237" y="106" text-anchor="middle" fill="var(--muted)" font-size="10.5">большие целые</text>
+
+      <rect x="318" y="56" width="130" height="64" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="383" y="86" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">string</text>
+      <text x="383" y="106" text-anchor="middle" fill="var(--muted)" font-size="10.5">текст</text>
+
+      <rect x="464" y="56" width="130" height="64" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="529" y="86" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">boolean</text>
+      <text x="529" y="106" text-anchor="middle" fill="var(--muted)" font-size="10.5">true / false</text>
+
+      <rect x="99" y="140" width="130" height="64" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="164" y="170" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">symbol</text>
+      <text x="164" y="190" text-anchor="middle" fill="var(--muted)" font-size="10.5">уникальный ключ</text>
+
+      <rect x="245" y="140" width="130" height="64" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="310" y="170" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">null</text>
+      <text x="310" y="190" text-anchor="middle" fill="var(--muted)" font-size="10.5">намеренно пусто</text>
+
+      <rect x="391" y="140" width="130" height="64" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="456" y="170" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">undefined</text>
+      <text x="456" y="190" text-anchor="middle" fill="var(--muted)" font-size="10.5">значение не задано</text>
+    </svg>
+    <figcaption>Семь примитивных типов. Всё остальное (объекты, массивы, функции) — уже не примитивы.</figcaption>
+  </figure>
+
+  <app-code-block [code]="sevenPrimitivesExample" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>number</code> — числа</h3>
+  <p>
+    Как и в JavaScript, здесь <strong>один</strong> числовой тип и для целых, и для
+    дробных — отдельного <code>int</code> нет. Важно: особые значения <code>NaN</code>
+    («не число») и <code>Infinity</code> («бесконечность») <strong>тоже входят</strong>
+    в <code>number</code>.
+  </p>
+  <app-code-block [code]="numberExample" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>bigint</code> — большие целые</h3>
+  <p>
+    Обычный <code>number</code> надёжно хранит целые примерно до 9×10¹⁵. Для больших
+    целых есть <code>bigint</code>: его литералы пишут с суффиксом <code>n</code>.
+    Смешивать <code>bigint</code> и <code>number</code> в одной арифметике нельзя —
+    придётся сначала привести один к другому.
+  </p>
+  <app-code-block [code]="bigintExample" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>string</code> — текст</h3>
+  <p>
+    Любой текст: одинарные, двойные или шаблонные кавычки <code>`...`</code>. Шаблонные
+    удобны для подстановки значений внутрь строки.
+  </p>
+  <app-code-block [code]="stringExample" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>boolean</code> — да/нет</h3>
+  <p>
+    Ровно два значения: <code>true</code> и <code>false</code>. Число <code>1</code>
+    «истинно» в условии <code>if</code>, но это <strong>не</strong> то же самое, что
+    значение <code>true</code>, — присвоить его в <code>boolean</code> нельзя.
+  </p>
+  <app-code-block [code]="booleanExample" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>symbol</code> — уникальный ключ</h3>
+  <p>
+    Каждый вызов <code>Symbol()</code> даёт <strong>новое уникальное</strong> значение,
+    даже если описание одинаковое. Символы используют как ключи свойств, которые
+    гарантированно не столкнутся с другими.
+  </p>
+  <app-code-block [code]="symbolExample" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>null</code> и <code>undefined</code> — пустота</h3>
+  <p>
+    Это два отдельных типа, у каждого <strong>ровно одно значение</strong>.
+    <code>undefined</code> — «значение ещё не присвоили», <code>null</code> — «мы
+    намеренно поставили пусто».
+  </p>
+  <app-code-block [code]="nullUndefinedExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Строчные имена, а не заглавные</h2>
+  <p>
+    Имена примитивных типов пишутся <strong>со строчной буквы</strong>:
+    <code>number</code>, <code>string</code>, <code>boolean</code>. Есть похожие имена с
+    <strong>заглавной</strong> — <code>Number</code>, <code>String</code>,
+    <code>Boolean</code>, — но это <strong>другое</strong>: типы объектов-обёрток. Как
+    тип переменной их использовать не нужно.
+  </p>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Примитив — пишем так</th>
+          <th>Обёртка — так НЕ пишем</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="yes"><code>number</code></td><td class="no"><code>Number</code></td></tr>
+        <tr><td class="yes"><code>string</code></td><td class="no"><code>String</code></td></tr>
+        <tr><td class="yes"><code>boolean</code></td><td class="no"><code>Boolean</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <app-code-block [code]="wrapperTypesExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Почему так.</strong> Заглавные <code>Number</code> и <code>String</code> —
+    это типы объектов-обёрток, тех самых, в которые движок на миг заворачивает примитив,
+    когда вы зовёте метод вроде <code>.toFixed()</code>. Обёртка «шире» примитива:
+    примитив в неё поместится, а вот обратно объект-обёртку в примитив уже нет. Плюс это
+    сбивает с толку читателя. Правило простое: <strong>всегда пишите строчные имена</strong>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2><code>null</code> и <code>undefined</code> при строгом режиме</h2>
+  <p>
+    В новых проектах включают флаг <code>strict</code> (а с ним —
+    <code>strictNullChecks</code>). В этом режиме <code>null</code> и
+    <code>undefined</code> — самостоятельные типы, которые <strong>не «прячутся»</strong>
+    внутри других. Нельзя незаметно положить <code>null</code> в переменную типа
+    <code>string</code>.
+  </p>
+  <app-code-block [code]="strictNullExample" lang="typescript" />
+  <p>
+    Если пустое значение допустимо, разрешите его <strong>явно</strong> через
+    объединение типов <code>string | null</code>. Тогда компилятор будет напоминать
+    проверять «а не пусто ли тут» перед использованием. Это одна из главных причин, ради
+    которых берут TypeScript: он не даёт забыть про пустые значения.
+  </p>
+  <p class="note">
+    <strong>Без strict</strong> проверка отключена, и <code>null</code> с
+    <code>undefined</code> тихо влезают куда угодно — как в обычном JavaScript. Именно
+    поэтому <code>strict</code> рекомендуют держать включённым с самого начала.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Тип часто можно не писать</h2>
+  <p>
+    Аннотация нужна не всегда. Если вы сразу присваиваете значение, TypeScript
+    <strong>сам выведет</strong> тип — по тому, что вы положили в переменную. Дублировать
+    очевидное вручную не нужно.
+  </p>
+  <app-code-block [code]="inferenceExample" lang="typescript" />
+  <p>
+    Явная аннотация полезна там, где значения при объявлении ещё нет, или когда хочется
+    задать тип шире выведенного (например, <code>string | null</code>). Подробно про то,
+    как именно работает вывод и когда на него полагаться, — на странице
+    <a routerLink="/typescript/basic-types/inference">«Вывод типов»</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Аннотация типа</strong> — <code>: тип</code> после имени: <code>let count: number = 0</code>. У функций аннотируют параметры и возврат: <code>function f(x: string): number</code>.</li>
+    <li><strong>Семь примитивов:</strong> <code>number</code>, <code>bigint</code>, <code>string</code>, <code>boolean</code>, <code>symbol</code>, <code>null</code>, <code>undefined</code>.</li>
+    <li><code>number</code> — и целые, и дробные; <code>NaN</code> и <code>Infinity</code> тоже входят в него.</li>
+    <li><strong>Имена строчные</strong> (<code>number</code>), а не заглавные (<code>Number</code> — это объект-обёртка, как тип не используем).</li>
+    <li><strong>При strict</strong> <code>null</code> и <code>undefined</code> не прячутся в других типах; чтобы разрешить пусто, пишите <code>string | null</code>.</li>
+    <li><strong>Тип часто можно не писать</strong> — TypeScript выведет сам (см. <a routerLink="/typescript/basic-types/inference">«Вывод типов»</a>).</li>
+  </ul>
+</section>
+</article>
