@@ -1,0 +1,227 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Интерфейсы</span></nav>
+
+<h1 class="doc__title">Интерфейсы</h1>
+<p class="doc__lead">
+  <strong>Интерфейс</strong> — это способ дать <strong>имя форме объекта</strong> и потом
+  переиспользовать её сколько угодно раз. Вместо того чтобы каждый раз расписывать, из
+  каких свойств состоит объект, вы один раз описываете образец под именем — и дальше просто
+  ссылаетесь на это имя. В этом уроке разберём, как объявлять интерфейсы, ставить их как
+  аннотации, писать методы, необязательные свойства и расширять один интерфейс другим.
+</p>
+
+<section class="doc__section">
+  <h2>Зачем нужны интерфейсы</h2>
+  <p>
+    На <a routerLink="/typescript/objects-interfaces/object-types">прошлой странице</a> мы
+    описывали форму объекта прямо на месте — <em>инлайново</em>:
+    <code>&#123; name: string; age: number &#125;</code>. Это удобно для одного раза, но как
+    только одна и та же форма нужна в нескольких местах, её приходится <strong>копировать</strong>.
+  </p>
+  <app-code-block [code]="repeatExample" lang="typescript" />
+  <p>
+    Проблема не в объёме букв, а в том, что форма <strong>размазана</strong> по коду. Захотели
+    добавить поле <code>email</code> — надо найти и поправить все копии. Забыли одну — получили
+    рассинхрон и странные ошибки. Интерфейс решает это: форма живёт в <strong>одном месте</strong>
+    под именем, а везде дальше стоит только имя.
+  </p>
+  <p class="note">
+    <strong>Аналогия.</strong> Интерфейс — как <strong>бланк</strong> или <strong>техпаспорт</strong>:
+    один утверждённый образец, по которому проверяют множество экземпляров. Бланк заявления в
+    учреждении один, а заполненных заявлений — тысячи, и каждое сверяют с этим единственным
+    образцом. Меняется правило — правят один бланк, а не каждую заполненную бумажку.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис объявления</h2>
+  <p>
+    Интерфейс объявляют ключевым словом <code>interface</code>, за ним имя и в фигурных скобках —
+    список свойств с их типами. Важная деталь: <strong>знака <code>=</code> здесь нет</strong>
+    (в этом отличие от <a routerLink="/typescript/objects-interfaces/type-aliases">псевдонима
+    <code>type</code></a>, где равно ставится).
+  </p>
+  <app-code-block [code]="syntaxExample" lang="typescript" />
+  <p>
+    Свойства внутри разделяют точкой с запятой или просто переносом строки — оба варианта
+    работают. Имя интерфейса по соглашению пишут с <strong>большой буквы</strong>:
+    <code>User</code>, <code>Product</code>, <code>OrderItem</code>.
+  </p>
+  <p class="note">
+    <strong>Важно.</strong> Интерфейс существует только на этапе проверки типов. В собранном
+    JavaScript от него не остаётся ни строчки — он не создаёт объектов и ничего не «весит» в
+    рантайме. Это чистое описание формы для компилятора.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Как ставить интерфейс: аннотация</h2>
+  <p>
+    Готовое имя интерфейса ставят там же, где обычную аннотацию типа — после двоеточия. Работает
+    и для переменных, и для параметров функций, и для типа возвращаемого значения.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Интерфейс как бланк-образец слева, а объект справа обязан ему соответствовать по форме">
+      <text x="310" y="24" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">интерфейс — образец формы, объект заполняет его</text>
+
+      <rect x="30" y="50" width="238" height="168" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="149" y="76" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">interface Book</text>
+      <line x1="50" y1="88" x2="248" y2="88" stroke="var(--border)" stroke-width="1.2" />
+      <text x="52" y="115" fill="var(--fg)" font-family="monospace" font-size="13">isbn: string</text>
+      <text x="52" y="144" fill="var(--fg)" font-family="monospace" font-size="13">title: string</text>
+      <text x="52" y="173" fill="var(--muted)" font-family="monospace" font-size="13">year?: number</text>
+      <text x="149" y="203" text-anchor="middle" fill="var(--muted)" font-size="11">образец формы — один на всех</text>
+
+      <line x1="276" y1="134" x2="346" y2="134" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrHead)" />
+      <text x="311" y="124" text-anchor="middle" fill="var(--accent)" font-size="11">соответствует</text>
+
+      <rect x="354" y="50" width="236" height="168" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="472" y="76" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13" font-weight="700">const ts: Book</text>
+      <line x1="374" y1="88" x2="570" y2="88" stroke="var(--border)" stroke-width="1.2" />
+      <text x="376" y="115" fill="var(--fg)" font-family="monospace" font-size="13">isbn: '978-1'</text>
+      <text x="376" y="144" fill="var(--fg)" font-family="monospace" font-size="13">title: 'TypeScript'</text>
+      <text x="376" y="173" fill="var(--fg)" font-family="monospace" font-size="13">year: 2012</text>
+      <text x="472" y="203" text-anchor="middle" fill="var(--muted)" font-size="11">заполненный объект</text>
+
+      <defs>
+        <marker id="arrHead" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0 0 L9 4.5 L0 9 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>Слева — интерфейс-образец, справа — объект, который обязан ему соответствовать. Компилятор сверяет объект с образцом по форме.</figcaption>
+  </figure>
+
+  <app-code-block [code]="asAnnotationExample" lang="typescript" />
+  <p>
+    Обратите внимание: имя <code>User</code> заменило всю форму
+    <code>&#123; name: string; age: number &#125;</code>. Читать код стало проще, а форму теперь
+    можно менять в одном месте. Подробнее про сами типы объектов — на странице
+    <a routerLink="/typescript/objects-interfaces/object-types">Типы объектов</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Методы в интерфейсе</h2>
+  <p>
+    Метод — это свойство, значением которого является функция. Записать его в интерфейсе можно
+    <strong>двумя способами</strong>, и они означают практически одно и то же.
+  </p>
+  <ul class="rules">
+    <li><strong>Свойство-функция:</strong> <code>log: (message: string) =&gt; void</code> — имя, двоеточие и тип-стрелка.</li>
+    <li><strong>Сокращённая запись метода:</strong> <code>warn(message: string): void</code> — имя со скобками, как объявление функции.</li>
+  </ul>
+  <app-code-block [code]="methodsExample" lang="typescript" />
+  <p class="note">
+    <strong>Почему так.</strong> Оба варианта задают метод, и на практике их часто используют как
+    взаимозаменяемые. Тонкая разница проявляется лишь в очень строгих режимах при проверке
+    совместимости параметров; для начала считайте их эквивалентными и выбирайте тот, что читается
+    приятнее.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Необязательные и <code>readonly</code> свойства</h2>
+  <p>
+    Не каждое свойство обязано присутствовать, и не каждое можно менять. Два коротких модификатора
+    закрывают эти случаи:
+  </p>
+  <ul class="rules">
+    <li><code>имя?: тип</code> — свойство <strong>необязательное</strong>, объект может его не иметь.</li>
+    <li><code>readonly имя: тип</code> — свойство <strong>только для чтения</strong>: задали при создании и больше не меняем.</li>
+  </ul>
+  <app-code-block [code]="optionalReadonlyExample" lang="typescript" />
+  <p>
+    Здесь мы касаемся темы лишь поверхностно. Подробный разбор — что считается «отсутствием»
+    свойства, как <code>readonly</code> взаимодействует с массивами и вложенными объектами — на
+    отдельной странице <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные
+    и readonly</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Расширение: <code>extends</code></h2>
+  <p>
+    Часто одна форма — это другая форма плюс несколько новых свойств. Чтобы не переписывать общее
+    заново, интерфейс можно <strong>расширить</strong> ключевым словом <code>extends</code>: он
+    унаследует все свойства родителя и добавит свои.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 210" width="100%" role="img" aria-label="Интерфейс Dog расширяет Animal: наследует свойство name и добавляет breed">
+      <rect x="34" y="55" width="200" height="96" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="134" y="82" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14" font-weight="700">interface Animal</text>
+      <line x1="54" y1="94" x2="214" y2="94" stroke="var(--border)" stroke-width="1.2" />
+      <text x="134" y="122" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">name: string</text>
+
+      <line x1="240" y1="103" x2="330" y2="103" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrHead2)" />
+      <text x="285" y="93" text-anchor="middle" fill="var(--accent)" font-size="11">extends</text>
+
+      <rect x="338" y="35" width="252" height="140" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="464" y="62" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">interface Dog</text>
+      <line x1="358" y1="74" x2="570" y2="74" stroke="var(--border)" stroke-width="1.2" />
+      <text x="360" y="101" fill="var(--muted)" font-family="monospace" font-size="13">name: string</text>
+      <text x="486" y="101" fill="var(--muted)" font-size="11">от Animal</text>
+      <text x="360" y="131" fill="var(--fg)" font-family="monospace" font-size="13">breed: string</text>
+      <text x="486" y="131" fill="var(--green)" font-size="11">своё</text>
+      <text x="464" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">итого: name + breed</text>
+
+      <defs>
+        <marker id="arrHead2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0 0 L9 4.5 L0 9 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+    </svg>
+    <figcaption><code>Dog</code> наследует <code>name</code> от <code>Animal</code> и добавляет собственное <code>breed</code>. Объект <code>Dog</code> обязан иметь оба свойства.</figcaption>
+  </figure>
+
+  <app-code-block [code]="extendsExample" lang="typescript" />
+  <p>
+    Наследовать можно и от нескольких интерфейсов сразу, и выстраивать целые цепочки. Все тонкости —
+    на странице <a routerLink="/typescript/objects-interfaces/extending">Расширение и наследование</a>.
+    А если форму объекта должен гарантировать класс, для этого есть
+    <a routerLink="/typescript/classes/implements">ключевое слово <code>implements</code></a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: от формы до ошибки</h2>
+  <p>
+    Соберём всё вместе. Опишем интерфейс <code>Book</code>, создадим по нему пару объектов и
+    передадим их в функцию, которая ждёт именно <code>Book</code>.
+  </p>
+  <app-code-block [code]="practiceExample" lang="typescript" />
+  <p>
+    А теперь посмотрим, что произойдёт, если объект <strong>не соответствует</strong> форме.
+    TypeScript ловит все три типичные ошибки ещё до запуска: нет обязательного свойства, неверный
+    тип свойства и лишнее поле в литерале.
+  </p>
+  <app-code-block [code]="mismatchExample" lang="typescript" />
+  <p>
+    Именно ради этого интерфейсы и нужны: форма описана один раз, и любое отклонение от неё
+    подсвечивается сразу. Сравнение <code>interface</code> и <code>type</code> — на странице
+    <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface или type</a>.
+  </p>
+  <p class="note">
+    <strong>Важно.</strong> Проверка на лишнее поле (<code>bad3</code>) срабатывает только для
+    объектных <em>литералов</em>, написанных прямо в присваивании. Если тот же объект сначала
+    положить в переменную, а потом присвоить — лишнее поле пройдёт. Это отдельный нюанс структурной
+    типизации, разобранный в теме <a routerLink="/typescript/objects-interfaces/pitfalls">Нюансы и
+    подводные камни</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Интерфейс</strong> даёт имя форме объекта, чтобы описать её один раз и переиспользовать: <code>interface User &#123; name: string; age: number &#125;</code>.</li>
+    <li>В объявлении <strong>нет знака <code>=</code></strong> (в отличие от <a routerLink="/typescript/objects-interfaces/type-aliases">type</a>); имя пишут с большой буквы.</li>
+    <li>Ставится как обычная аннотация: <code>let u: User = &#123;…&#125;</code>, <code>function greet(u: User)</code>.</li>
+    <li>Метод записывают двумя способами: свойством-функцией <code>log: () =&gt; void</code> или сокращённо <code>warn(): void</code>.</li>
+    <li><code>имя?</code> — необязательное свойство, <code>readonly имя</code> — только для чтения (подробнее — <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные и readonly</a>).</li>
+    <li><code>extends</code> расширяет один интерфейс другим — наследует свойства и добавляет новые (подробнее — <a routerLink="/typescript/objects-interfaces/extending">Расширение</a>).</li>
+    <li>Если объект не соответствует форме, TypeScript покажет ошибку ещё до запуска.</li>
+  </ul>
+</section>
+</article>

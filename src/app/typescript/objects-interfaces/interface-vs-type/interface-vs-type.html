@@ -1,0 +1,286 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">interface или type</span></nav>
+
+<h1 class="doc__title">interface или type</h1>
+<p class="doc__lead">
+  Это, наверное, самый частый вопрос новичка в TypeScript: описывать объект через
+  <code>interface</code> или через <code>type</code>? Хорошая новость — для обычной формы
+  объекта они <strong>почти взаимозаменяемы</strong>. Разница появляется в деталях: у
+  <code>type</code> шире набор возможностей, а у <code>interface</code> есть один
+  уникальный трюк. Разберём всё по полочкам и в конце дадим простое правило выбора.
+</p>
+
+<section class="doc__section">
+  <h2>Для формы объекта они почти близнецы</h2>
+  <p>
+    Если вам нужно просто описать «объект с такими-то полями», оба инструмента дадут
+    один и тот же результат. Синтаксис отличается мелочью: <code>interface</code> ставит
+    фигурные скобки сразу после имени, а <code>type</code> — это присваивание, поэтому у
+    него есть знак <code>=</code>.
+  </p>
+  <app-code-block [code]="sameShapeExample" lang="typescript" />
+  <p class="note">
+    <strong>Аналогия.</strong> Представьте два бланка анкеты на одного и того же человека:
+    один напечатан на бумаге A4, другой — на бумаге A5. Поля в анкете одинаковые, отличается
+    только «рамка» вокруг. Так и здесь: <code>interface UserI</code> и
+    <code>type UserT</code> описывают одного и того же пользователя, разной остаётся лишь
+    форма записи. Проверять объекты и подсказывать ошибки TypeScript будет абсолютно
+    одинаково.
+  </p>
+  <p>
+    Про формы объектов подробно — на страницах
+    <a routerLink="/typescript/objects-interfaces/interfaces">Интерфейсы</a> и
+    <a routerLink="/typescript/objects-interfaces/type-aliases">Псевдонимы типов type</a>.
+    Здесь мы сравниваем их между собой.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Таблица различий</h2>
+  <p>
+    Совпадают они в главном — в описании объектов. Расходятся в том, что каждый умеет
+    <em>помимо</em> этого. Вот полная картина:
+  </p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Возможность</th>
+          <th><code>interface</code></th>
+          <th><code>type</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Форма объекта</td>
+          <td class="yes">да — основное назначение</td>
+          <td class="yes">да — так же удобно</td>
+        </tr>
+        <tr>
+          <td>Объединения (union)</td>
+          <td class="no">нет</td>
+          <td class="yes">да — <code>'a' | 'b'</code></td>
+        </tr>
+        <tr>
+          <td>Псевдоним примитива / кортеж / функция</td>
+          <td class="no">нет</td>
+          <td class="yes">да — <code>type Id = number</code></td>
+        </tr>
+        <tr>
+          <td>Расширение</td>
+          <td class="yes">да — через <code>extends</code></td>
+          <td class="yes">да — через <code>&amp;</code></td>
+        </tr>
+        <tr>
+          <td>Слияние объявлений (declaration merging)</td>
+          <td class="yes">да — уникальная фишка</td>
+          <td class="no">нет — имя занять нельзя дважды</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Если коротко: <code>type</code> «умеет больше разных типов», а <code>interface</code>
+    выигрывает в одном специальном сценарии — слиянии объявлений. Ниже разберём каждую
+    строку с примерами.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 300" width="100%" role="img" aria-label="Две колонки: что умеет interface и что умеет type">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Что умеет каждый</text>
+
+      <rect x="26" y="46" width="278" height="232" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="165" y="74" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15" font-weight="700">interface</text>
+
+      <text x="52" y="108" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="72" y="108" fill="var(--fg)" font-size="12.5">форма объекта</text>
+      <text x="52" y="136" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="72" y="136" fill="var(--fg)" font-size="12.5">расширение через extends</text>
+      <text x="52" y="164" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="72" y="164" fill="var(--fg)" font-size="12.5">слияние объявлений</text>
+      <text x="52" y="200" fill="var(--red)" font-size="15" font-weight="700">✗</text>
+      <text x="72" y="200" fill="var(--muted)" font-size="12.5">union / примитив / кортеж</text>
+      <text x="52" y="228" fill="var(--red)" font-size="15" font-weight="700">✗</text>
+      <text x="72" y="228" fill="var(--muted)" font-size="12.5">вычисляемые типы</text>
+      <text x="72" y="258" fill="var(--accent)" font-size="11">силён в объектах и API</text>
+
+      <rect x="316" y="46" width="278" height="232" rx="12" fill="var(--surface)" stroke="var(--purple)" stroke-width="1.6" />
+      <text x="455" y="74" text-anchor="middle" fill="var(--purple)" font-family="monospace" font-size="15" font-weight="700">type</text>
+
+      <text x="342" y="108" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="362" y="108" fill="var(--fg)" font-size="12.5">форма объекта</text>
+      <text x="342" y="136" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="362" y="136" fill="var(--fg)" font-size="12.5">объединения (union)</text>
+      <text x="342" y="164" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="362" y="164" fill="var(--fg)" font-size="12.5">примитив / кортеж / функция</text>
+      <text x="342" y="192" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="362" y="192" fill="var(--fg)" font-size="12.5">вычисляемые типы</text>
+      <text x="342" y="220" fill="var(--green)" font-size="15" font-weight="700">✓</text>
+      <text x="362" y="220" fill="var(--fg)" font-size="12.5">пересечение через &amp;</text>
+      <text x="342" y="252" fill="var(--red)" font-size="15" font-weight="700">✗</text>
+      <text x="362" y="252" fill="var(--muted)" font-size="12.5">слияние объявлений</text>
+    </svg>
+    <figcaption>Наборы возможностей пересекаются в «форме объекта» и «расширении», но у каждого есть своё уникальное умение.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Что умеет только <code>type</code></h2>
+  <p>
+    <code>type</code> — это буквально «дать имя любому типу». Поэтому он справляется с тем,
+    что вообще не является объектом.
+  </p>
+
+  <h3 class="doc__subtitle">Объединения (union)</h3>
+  <p>
+    Самый частый повод взять именно <code>type</code> — перечислить набор допустимых
+    значений через <code>|</code>. Про них подробно на странице
+    <a routerLink="/typescript/unions-narrowing/union">Объединения (union)</a>.
+  </p>
+  <app-code-block [code]="unionOnlyTypeExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Псевдоним примитива, кортеж, функция</h3>
+  <p>
+    Хотите дать говорящее имя обычному числу, описать пару координат
+    (<a routerLink="/typescript/basic-types/primitives">примитивы</a> и кортежи) или тип
+    функции — это работа для <code>type</code>.
+  </p>
+  <app-code-block [code]="aliasOnlyTypeExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Вычисляемые типы</h3>
+  <p>
+    Более продвинутое: типы, которые «считаются» из других — mapped-типы (пройтись по
+    ключам), conditional-типы (ветвление) и шаблонные литеральные типы. Всё это только
+    через <code>type</code>. На старте их знать необязательно, но полезно понимать, что
+    именно тут <code>interface</code> бессилен.
+  </p>
+  <app-code-block [code]="computedOnlyTypeExample" lang="typescript" />
+  <p class="note">
+    <strong>Важно.</strong> Многие удобные утилиты вроде
+    <a routerLink="/typescript/utility-types/partial-required-readonly">Partial и Required</a>
+    или <a routerLink="/typescript/utility-types/record">Record</a> внутри устроены как раз
+    на таких вычисляемых типах — поэтому они и живут в мире <code>type</code>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Что умеет только <code>interface</code>: слияние объявлений</h2>
+  <p>
+    Здесь у <code>interface</code> козырь. С <code>type</code> имя типа можно занять
+    <strong>только один раз</strong> — второе объявление с тем же именем будет ошибкой:
+  </p>
+  <app-code-block [code]="typeNoMergeExample" lang="typescript" />
+  <p>
+    А вот два <code>interface</code> с одинаковым именем TypeScript <strong>молча
+    склеит</strong> в один. Это и называется <em>declaration merging</em> — слияние
+    объявлений.
+  </p>
+  <app-code-block [code]="interfaceMergeExample" lang="typescript" />
+  <p class="note">
+    <strong>Аналогия.</strong> <code>type</code> — как подпись на двери кабинета: табличку с
+    именем «Box» можно повесить лишь одну, вторая такая же — конфликт. А
+    <code>interface</code> — как общий список дел на холодильнике: каждый может дописать свою
+    строчку, и в итоге получается один общий список. Оба листка «Box» превращаются в единый.
+  </p>
+  <p>
+    Зачем это нужно на практике? Чтобы <strong>дополнить чужой тип</strong>, к исходникам
+    которого у вас нет доступа — например, добавить своё поле в глобальный
+    <code>Window</code> или расширить типы сторонней библиотеки.
+  </p>
+  <app-code-block [code]="augmentExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Расширение: <code>extends</code> против <code>&amp;</code></h2>
+  <p>
+    Расширять умеют оба, просто по-разному. У <code>interface</code> для этого есть
+    ключевое слово <code>extends</code> — выглядит как классическое наследование.
+  </p>
+  <app-code-block [code]="extendsInterfaceExample" lang="typescript" />
+  <p>
+    У <code>type</code> роль «наследования» играет пересечение <code>&amp;</code>
+    (intersection): оно складывает несколько типов-объектов в один, где обязательны все
+    поля сразу.
+  </p>
+  <app-code-block [code]="intersectionTypeExample" lang="typescript" />
+  <p>
+    Приятно, что их можно <strong>смешивать</strong>: <code>interface</code> способен
+    расширить объект, объявленный через <code>type</code>, и наоборот. Так что выбор одного
+    стиля не запирает вас в нём навсегда.
+  </p>
+  <app-code-block [code]="mixExample" lang="typescript" />
+  <p class="note">
+    <strong>Почему так.</strong> <code>extends</code> у интерфейсов даёт чуть более понятные
+    сообщения об ошибках (компилятор знает «родителя» по имени) и проверяет совместимость
+    полей строже. <code>&amp;</code> же — универсальнее, работает с любыми типами, но при
+    конфликте полей может тихо получиться <code>never</code>. Полный разбор — на странице
+    <a routerLink="/typescript/objects-interfaces/extending">Расширение и наследование</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Что же выбрать на практике</h2>
+  <p>
+    Строгого закона нет — оба варианта корректны, и во многих командах это просто вопрос
+    договорённости о стиле. Но есть разумное правило по умолчанию, которое избавит от
+    лишних раздумий.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Схема выбора между interface и type">
+      <rect x="180" y="24" width="260" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="310" y="52" text-anchor="middle" fill="var(--fg)" font-size="13">Что вы описываете?</text>
+
+      <line x1="250" y1="70" x2="150" y2="112" stroke="var(--muted)" stroke-width="1.6" />
+      <line x1="370" y1="70" x2="470" y2="112" stroke="var(--muted)" stroke-width="1.6" />
+
+      <rect x="30" y="112" width="240" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="150" y="138" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="600">форму объекта, публичный API</text>
+      <text x="150" y="158" text-anchor="middle" fill="var(--muted)" font-size="11.5">→ бери interface</text>
+
+      <rect x="350" y="112" width="240" height="60" rx="10" fill="var(--surface)" stroke="var(--purple)" stroke-width="1.8" />
+      <text x="470" y="132" text-anchor="middle" fill="var(--purple)" font-size="12.5" font-weight="600">union, псевдоним, кортеж,</text>
+      <text x="470" y="150" text-anchor="middle" fill="var(--purple)" font-size="12.5" font-weight="600">функцию, вычисляемый тип</text>
+      <text x="470" y="168" text-anchor="middle" fill="var(--muted)" font-size="11.5">→ только type</text>
+
+      <text x="310" y="212" text-anchor="middle" fill="var(--muted)" font-size="12">Сомневаетесь и это объект — берите interface: его всегда легко расширить.</text>
+    </svg>
+    <figcaption>Практический ориентир: объекты и API — <code>interface</code>; всё остальное — <code>type</code>.</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Задача</th>
+          <th>Удобнее</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Форма объекта, модель данных, публичный API</td><td class="yes"><code>interface</code></td></tr>
+        <tr><td>Объединение значений (<code>'a' | 'b'</code>)</td><td class="yes"><code>type</code></td></tr>
+        <tr><td>Имя для примитива, кортежа, функции</td><td class="yes"><code>type</code></td></tr>
+        <tr><td>Mapped / conditional / шаблонные типы</td><td class="yes"><code>type</code></td></tr>
+        <tr><td>Нужно дополнять тип из библиотеки (merging)</td><td class="yes"><code>interface</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    <strong>Важно.</strong> Это рекомендация, а не догма. Некоторые команды пишут вообще всё
+    через <code>type</code> ради единообразия — и это нормально. Главное — выбрать один стиль
+    и держаться его в рамках проекта.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Для формы объекта</strong> <code>interface</code> и <code>type</code> почти взаимозаменяемы — разница лишь в синтаксисе (<code>type</code> с <code>=</code>).</li>
+    <li><strong>Только <code>type</code></strong>: объединения (union), псевдонимы примитивов, кортежи, типы функций, вычисляемые типы (mapped / conditional / шаблонные).</li>
+    <li><strong>Только <code>interface</code></strong>: слияние объявлений (declaration merging) — два одноимённых интерфейса склеиваются; удобно дополнять чужие типы.</li>
+    <li><strong>Расширение</strong>: у <code>interface</code> — через <code>extends</code>, у <code>type</code> — через <code>&amp;</code>; их можно смешивать.</li>
+    <li><strong>Правило выбора</strong>: объекты и публичные API — <code>interface</code>; union, псевдонимы и сложные типы — <code>type</code>. Это стиль, а не жёсткий закон.</li>
+    <li>Дальше полезно посмотреть <a routerLink="/typescript/objects-interfaces/extending">Расширение и наследование</a> и <a routerLink="/typescript/objects-interfaces/pitfalls">Нюансы и подводные камни</a>.</li>
+  </ul>
+</section>
+</article>

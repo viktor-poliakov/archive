@@ -1,0 +1,287 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Расширение и наследование</span></nav>
+
+<h1 class="doc__title">Расширение и наследование</h1>
+<p class="doc__lead">
+  Большие типы почти никогда не пишут «с нуля» целиком. Их <strong>собирают из маленьких</strong>,
+  как конструктор: берут готовый тип и добавляют к нему пару своих полей. В этом уроке — два
+  инструмента для такой сборки: <code>interface extends</code> (расширение) и пересечение типов
+  через оператор <code>&amp;</code>. Оба избавляют от копипаста и делают код устойчивым к правкам.
+</p>
+
+<section class="doc__section">
+  <h2>Проблема: одни и те же поля снова и снова</h2>
+  <p>
+    Представим тип пользователя <code>User</code> и тип администратора <code>Admin</code>.
+    Админ — это по сути тот же пользователь, но с дополнительным полем <code>role</code>.
+    Если писать <code>Admin</code> целиком заново, придётся <strong>дословно повторить</strong>
+    все поля <code>User</code> — и это плохо кончится.
+  </p>
+
+  <app-code-block [code]="repetitionExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Аналогия.</strong> Это как бумажная анкета. Есть базовый бланк с общими графами
+    (имя, e-mail). Для админа не печатают новый бланк с нуля — берут тот же базовый и
+    <em>подкладывают доп. лист</em> с графой «роль». Меняется общая графа — правят один
+    базовый бланк, а не десяток его копий.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 200" width="100%" role="img" aria-label="Сложение типов: базовый User плюс добавка role равно полному Admin">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">базовый тип + добавка = полный тип</text>
+
+      <rect x="20" y="52" width="176" height="126" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="108" y="80" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15" font-weight="700">User</text>
+      <text x="108" y="108" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">id</text>
+      <text x="108" y="128" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">name</text>
+      <text x="108" y="148" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">email</text>
+
+      <text x="216" y="124" text-anchor="middle" fill="var(--fg)" font-size="30" font-weight="700">+</text>
+
+      <rect x="238" y="88" width="118" height="54" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="297" y="120" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13" font-weight="700">role</text>
+
+      <text x="378" y="124" text-anchor="middle" fill="var(--fg)" font-size="30" font-weight="700">=</text>
+
+      <rect x="404" y="44" width="196" height="142" rx="12" fill="var(--surface)" stroke="var(--purple)" stroke-width="2" />
+      <text x="502" y="72" text-anchor="middle" fill="var(--purple)" font-family="monospace" font-size="15" font-weight="700">Admin</text>
+      <text x="502" y="100" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">id</text>
+      <text x="502" y="120" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">name</text>
+      <text x="502" y="140" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">email</text>
+      <text x="502" y="162" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12" font-weight="700">role</text>
+    </svg>
+    <figcaption>Полный тип <code>Admin</code> = все поля базового <code>User</code> плюс собственное поле <code>role</code>. Именно это и делают <code>extends</code> и <code>&amp;</code>.</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Повторять поля вручную</th>
+          <th>Строить из кусочков (extends / &amp;)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="no">Копипаст всех полей в каждый новый тип</td>
+          <td class="yes">Поле описано один раз и переиспользуется</td>
+        </tr>
+        <tr>
+          <td class="no">Добавили поле — нужно править все копии</td>
+          <td class="yes">Добавили в базовый — попадёт во все наследники</td>
+        </tr>
+        <tr>
+          <td class="no">Копии со временем незаметно расходятся</td>
+          <td class="yes">Один источник правды, рассинхрона нет</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2><code>interface extends</code> — расширяем интерфейс</h2>
+  <p>
+    Ключевое слово <code>extends</code> ставится после имени интерфейса и указывает, от кого
+    «наследоваться». Наследник получает <strong>все поля родителя</strong> и добавляет свои.
+    Это прямой аналог наследования классов, только для описаний данных (форм объектов).
+  </p>
+
+  <app-code-block [code]="extendsBasicExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Почему так.</strong> Раз <code>Admin</code> содержит всё, что есть в <code>User</code>,
+    то он <em>годится всюду, где ждут</em> <code>User</code>. На языке системы типов
+    <code>Admin</code> — <strong>подтип</strong> <code>User</code>. Подробнее про «что куда
+    подставляется» — в уроке
+    <a routerLink="/typescript/basic-types/primitives">о базовых типах</a> и в разделе
+    <a routerLink="/typescript/unions-narrowing/union">объединений</a>.
+  </p>
+
+  <app-code-block [code]="extendsUsageExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Множественное расширение</h3>
+  <p>
+    Один интерфейс можно расширить сразу <strong>несколькими</strong> — перечислите их через
+    запятую. Так удобно собирать тип из независимых «черт»: у одной сущности есть
+    идентификатор, у другой — даты создания и правки, у третьей — и то, и другое.
+  </p>
+
+  <app-code-block [code]="multipleExtendsExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Важно.</strong> Если два родителя объявляют поле с <em>одинаковым</em> именем, но
+    <em>несовместимыми</em> типами, TypeScript сообщит об ошибке — расширить такие интерфейсы
+    сразу нельзя. При совпадающих типах конфликта нет.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Пересечение через <code>type</code> и оператор <code>&amp;</code></h2>
+  <p>
+    У псевдонимов <code>type</code> нет слова <code>extends</code>, зато есть оператор
+    <code>&amp;</code> — <strong>пересечение типов</strong>. Запись <code>A &amp; B</code>
+    означает «тип, у которого есть И всё из <code>A</code>, И всё из <code>B</code>». Для
+    объектов результат тот же, что у <code>extends</code>: получается тип со всеми полями сразу.
+  </p>
+
+  <app-code-block [code]="intersectionExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Аналогия.</strong> Пересечение — это как список требований к кандидату на работу.
+    «Знает TypeScript» <code>&amp;</code> «знает Angular» означает, что подходит только тот, кто
+    удовлетворяет <em>обоим</em> требованиям сразу. Чем больше условий соединяем через
+    <code>&amp;</code>, тем «богаче» должен быть объект — в нём должны быть все перечисленные поля.
+  </p>
+
+  <p>Как и <code>extends A, B</code>, пересечение легко связывается в цепочку из многих кусочков:</p>
+
+  <app-code-block [code]="intersectionMultiExample" lang="typescript" />
+
+  <p>
+    Когда что выбирать? Для объектов оба инструмента почти взаимозаменяемы. Короткая шпаргалка:
+  </p>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th><code>interface extends</code></th>
+          <th><code>type</code> с <code>&amp;</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Только для интерфейсов (форм объектов)</td>
+          <td>Пересекает любые типы, не только объекты</td>
+        </tr>
+        <tr>
+          <td>Конфликт полей — сразу ошибка на объявлении</td>
+          <td>Конфликт полей может дать тип <code>never</code> у поля</td>
+        </tr>
+        <tr>
+          <td>Привычно тем, кто пришёл из классов (ООП)</td>
+          <td>Гибче: годится для union, функций, кортежей</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Разницу между инструментами подробно разбираем на страницах
+    <a routerLink="/typescript/objects-interfaces/interfaces">Интерфейсы</a>,
+    <a routerLink="/typescript/objects-interfaces/type-aliases">Псевдонимы типов</a> и
+    <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface или type</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2><code>interface</code> и <code>type</code> прекрасно дружат</h2>
+  <p>
+    Их не нужно выбирать «на всю жизнь» — они свободно сочетаются. <code>interface</code> может
+    расширять <code>type</code>-псевдоним объекта, а <code>type</code> — пересекать
+    <code>interface</code>. Смешивайте так, как удобнее в конкретном месте.
+  </p>
+
+  <app-code-block [code]="mixingExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Важно.</strong> <code>interface</code> умеет расширять <code>type</code> только тогда,
+    когда тот описывает <em>объект</em> (или пересечение объектов). Расширить интерфейсом,
+    например, объединение <code>string | number</code> нельзя — расширять там попросту нечего.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Переопределение поля в наследнике</h2>
+  <p>
+    В наследнике можно <strong>уточнить</strong> тип унаследованного поля — но только до
+    <strong>совместимого</strong>, то есть до подтипа исходного. Сузить <code>string</code> до
+    конкретного литерала <code>'circle'</code> можно. А заменить <code>number</code> на
+    <code>string</code> — нельзя: это уже не уточнение, а несовместимая подмена.
+  </p>
+
+  <app-code-block [code]="overrideExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Почему так.</strong> Наследник обязан оставаться <em>полноценной заменой</em> родителя.
+    Если код рассчитывает, что <code>size</code> — число, а наследник вдруг положит туда строку,
+    такой объект уже не сможет притворяться родителем — контракт нарушен. Поэтому переопределять
+    поле допустимо лишь на более узкий, совместимый тип.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: цепочка и композиция</h2>
+  <p>
+    Соберём типичную иерархию из базы данных. Начинаем с крошечного <code>Entity</code>
+    (у всего есть <code>id</code>), затем наращиваем: <code>User</code> расширяет
+    <code>Entity</code>, а <code>Admin</code> расширяет <code>User</code>. Получается цепочка
+    наследования <code>Admin → User → Entity</code>.
+  </p>
+
+  <app-code-block [code]="practiceExample" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 200" width="100%" role="img" aria-label="Цепочка наследования: Admin наследует User, а User наследует Entity">
+      <defs>
+        <marker id="arrowExt" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L7,3 L0,6 Z" fill="var(--accent)" />
+        </marker>
+      </defs>
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">цепочка наследования — стрелка ведёт к родителю</text>
+
+      <rect x="22" y="66" width="170" height="98" rx="12" fill="var(--surface)" stroke="var(--purple)" stroke-width="2" />
+      <text x="107" y="96" text-anchor="middle" fill="var(--purple)" font-family="monospace" font-size="15" font-weight="700">Admin</text>
+      <text x="107" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">добавляет role</text>
+      <text x="107" y="142" text-anchor="middle" fill="var(--muted)" font-size="11">+ всё от User</text>
+
+      <line x1="192" y1="115" x2="236" y2="115" stroke="var(--accent)" stroke-width="2.2" marker-end="url(#arrowExt)" />
+      <text x="214" y="105" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="10">extends</text>
+
+      <rect x="238" y="66" width="170" height="98" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="323" y="96" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15" font-weight="700">User</text>
+      <text x="323" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">добавляет name, email</text>
+      <text x="323" y="142" text-anchor="middle" fill="var(--muted)" font-size="11">+ всё от Entity</text>
+
+      <line x1="408" y1="115" x2="452" y2="115" stroke="var(--accent)" stroke-width="2.2" marker-end="url(#arrowExt)" />
+      <text x="430" y="105" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="10">extends</text>
+
+      <rect x="454" y="66" width="144" height="98" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <text x="526" y="96" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15" font-weight="700">Entity</text>
+      <text x="526" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">базовый:</text>
+      <text x="526" y="142" text-anchor="middle" fill="var(--muted)" font-size="11">только id</text>
+    </svg>
+    <figcaption>Каждый наследник знает всё, что знает родитель, и добавляет своё. <code>Admin</code> в итоге содержит <code>id</code>, <code>name</code>, <code>email</code> и <code>role</code>.</figcaption>
+  </figure>
+
+  <p>
+    Второй подход — <strong>композиция</strong>: вместо длинной цепочки собирают тип из
+    независимых «примесей» через <code>&amp;</code>. Это как кубики LEGO: берём ровно те детали,
+    что нужны, и не тянем лишнего.
+  </p>
+
+  <app-code-block [code]="compositionExample" lang="typescript" />
+
+  <p>
+    Хотите глубже про необязательные и неизменяемые поля таких типов — загляните в
+    <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные и readonly</a>,
+    а про типы-словари с произвольными ключами — в
+    <a routerLink="/typescript/objects-interfaces/index-signatures">Индексные сигнатуры</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Не повторяйте поля вручную</strong> — стройте большие типы из маленьких.</li>
+    <li><code>interface Admin extends User &#123; role: string &#125;</code> — наследник получает все поля <code>User</code> плюс свои.</li>
+    <li><strong>Множественное расширение:</strong> <code>interface C extends A, B &#123; … &#125;</code> — собрать тип из нескольких сразу.</li>
+    <li><strong>Пересечение</strong> <code>type Admin = User &amp; &#123; role: string &#125;</code> даёт тот же результат другим инструментом; <code>&amp;</code> = «И то, И другое».</li>
+    <li><code>interface</code> и <code>type</code> дружат: interface может <code>extends</code> от type-объекта, а type — пересекать interface.</li>
+    <li><strong>Переопределять поле</strong> в наследнике можно только на <em>совместимый</em> (более узкий) тип; несовместимая замена — ошибка.</li>
+    <li>Наследник — подтип родителя: подходит всюду, где ждут родителя.</li>
+  </ul>
+</section>
+</article>

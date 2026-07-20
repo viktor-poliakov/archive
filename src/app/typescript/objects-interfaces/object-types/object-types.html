@@ -1,0 +1,243 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Типы объектов</span></nav>
+
+<h1 class="doc__title">Типы объектов</h1>
+<p class="doc__lead">
+  Объект в JavaScript — это набор именованных свойств: у него есть поля, а у каждого
+  поля — своё значение. Тип объекта в TypeScript просто <strong>описывает эту форму</strong>:
+  перечисляет, какие поля ожидаются и какого они типа. Самый прямой способ задать такую
+  форму — написать её <strong>инлайном</strong>, прямо в аннотации:
+  <code>let user: &#123; name: string; age: number &#125;</code>. С этого и начнём.
+</p>
+
+<section class="doc__section">
+  <h2>Что такое тип объекта</h2>
+  <p>
+    Представьте бумажный <strong>бланк-анкету</strong>: слева напечатаны подписи полей
+    («Имя», «Возраст»), а справа — пустые строки, куда вписывают данные. У каждого поля
+    свой смысл и свой «сорт» данных: в «Имя» пишут текст, в «Возраст» — число. Тип объекта
+    в TypeScript — это и есть такой бланк: он говорит, <strong>какие поля должны быть</strong>
+    и <strong>что в них класть</strong>.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 282" width="100%" role="img" aria-label="Тип объекта как бланк-анкета с подписанными полями и ярлыком-типом сверху">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">тип объекта — это бланк с подписанными полями</text>
+
+      <rect x="140" y="44" width="340" height="34" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="67" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">: &#123; name: string; age: number &#125;</text>
+
+      <line x1="310" y1="78" x2="310" y2="96" stroke="var(--accent)" stroke-width="2" />
+
+      <rect x="160" y="96" width="300" height="150" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+
+      <text x="188" y="141" fill="var(--muted)" font-family="monospace" font-size="14">name</text>
+      <line x1="258" y1="146" x2="432" y2="146" stroke="var(--border)" stroke-width="1.4" />
+      <text x="268" y="141" fill="var(--fg)" font-family="monospace" font-size="14">Аня</text>
+      <text x="432" y="129" text-anchor="end" fill="var(--accent)" font-size="10.5">string</text>
+
+      <text x="188" y="201" fill="var(--muted)" font-family="monospace" font-size="14">age</text>
+      <line x1="258" y1="206" x2="432" y2="206" stroke="var(--border)" stroke-width="1.4" />
+      <text x="268" y="201" fill="var(--fg)" font-family="monospace" font-size="14">30</text>
+      <text x="432" y="189" text-anchor="end" fill="var(--accent)" font-size="10.5">number</text>
+
+      <text x="310" y="238" text-anchor="middle" fill="var(--muted)" font-size="11">подпись слева, значение справа — у каждого поля свой сорт данных</text>
+    </svg>
+    <figcaption>Ярлык-тип сверху перечисляет поля <code>name</code> и <code>age</code>. Сам объект-«бланк» снизу заполняет их данными нужного сорта.</figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Аналогия.</strong> Тип объекта — как пустой бланк, а конкретный объект — как
+    заполненный экземпляр этого бланка. Бланк не хранит данные, он лишь задаёт форму: «здесь
+    имя (текст), здесь возраст (число)». Пытаетесь вписать в графу «Возраст» слово вместо
+    числа — TypeScript, как строгий регистратор, сразу вернёт бланк с пометкой об ошибке.
+  </p>
+
+  <app-code-block [code]="shapeExample" lang="typescript" />
+
+  <p>
+    Обратите внимание: как только у переменной есть тип-форма, редактор знает про её поля.
+    Он подсказывает <code>name</code> и <code>age</code> при вводе точки и сразу подчёркивает
+    обращение к несуществующему полю — ещё до запуска программы.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис: чем разделять свойства</h2>
+  <p>
+    Форма пишется в фигурных скобках, а свойства внутри — как пары <code>имя: тип</code>.
+    Разделить их можно <strong>тремя равнозначными способами</strong>: точкой с запятой,
+    запятой или просто переносом строки. Никакой разницы в смысле нет — выбирайте по вкусу
+    (общепринятый стиль — точка с запятой).
+  </p>
+  <app-code-block [code]="separatorsExample" lang="typescript" />
+  <p class="note">
+    <strong>Для опытных.</strong> Форматтер Prettier по умолчанию расставит здесь точки с
+    запятой и разложит длинную форму по строкам. Так что чем именно разделять — обычно решает
+    не человек, а автоформат; важно лишь помнить, что синтаксис допускает любой из вариантов.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Вложенные объекты</h2>
+  <p>
+    Значением поля может быть снова объект. Тогда и тип поля — снова тип объекта, вложенный
+    в фигурные скобки. Получается «бланк внутри бланка»: например, у заказа есть поле
+    <code>customer</code>, а оно само — объект с полями <code>name</code> и <code>vip</code>.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 236" width="100%" role="img" aria-label="Вложенный объект: поле customer само является объектом с полями name и vip">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">вложенный объект — бланк внутри бланка</text>
+
+      <rect x="60" y="46" width="500" height="172" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="86" y="78" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">order</text>
+
+      <text x="86" y="118" fill="var(--muted)" font-family="monospace" font-size="13">id</text>
+      <text x="176" y="118" fill="var(--fg)" font-family="monospace" font-size="13">1</text>
+
+      <text x="86" y="164" fill="var(--muted)" font-family="monospace" font-size="13">customer</text>
+
+      <rect x="200" y="118" width="330" height="82" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="224" y="150" fill="var(--muted)" font-family="monospace" font-size="12.5">name</text>
+      <text x="320" y="150" fill="var(--fg)" font-family="monospace" font-size="12.5">Борис</text>
+      <text x="224" y="182" fill="var(--muted)" font-family="monospace" font-size="12.5">vip</text>
+      <text x="320" y="182" fill="var(--fg)" font-family="monospace" font-size="12.5">true</text>
+    </svg>
+    <figcaption>Внешний бланк <code>order</code> содержит поле <code>customer</code>, значение которого — отдельный бланк со своими полями.</figcaption>
+  </figure>
+
+  <app-code-block [code]="nestedExample" lang="typescript" />
+  <p>
+    До вложенного поля добираются через точку, шаг за шагом:
+    <code>order.customer.name</code>. TypeScript на каждом шаге знает форму и не даст
+    свернуть «не туда».
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Что именно проверяет TypeScript</h2>
+  <p>
+    Имея форму, компилятор сверяет с ней каждое присваивание. Три самые частые претензии:
+    <strong>нет обязательного поля</strong>, <strong>поле не того типа</strong> и
+    <strong>лишнее поле</strong> у объектного литерала. Разберём на одном типе-точке.
+  </p>
+  <app-code-block [code]="checksExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Лишние поля: только у литералов</h3>
+  <p>
+    С лишним полем есть тонкость. Если вы создаёте объект <strong>литералом прямо в месте
+    присваивания</strong> и дописываете поле, которого нет в типе, — TypeScript посчитает
+    это опечаткой и не пропустит (это называют <em>excess property check</em>). А вот если
+    тот же объект сначала положить в переменную, а потом присвоить — лишнее поле пройдёт.
+  </p>
+  <app-code-block [code]="excessExample" lang="typescript" />
+  <p class="note">
+    <strong>Важно.</strong> Это не противоречие, а намеренная защита от опечаток именно в
+    литералах. Почему через переменную «лишнее» разрешено и как это связано со структурной
+    типизацией — подробно на странице
+    <a routerLink="/typescript/objects-interfaces/pitfalls">Нюансы и подводные камни</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Тип на переменной — это не само значение</h2>
+  <p>
+    Новичка легко сбивает то, что <strong>тип</strong> и <strong>значение</strong> объекта
+    пишутся похоже — и там, и там фигурные скобки. Но роли у них разные. Слева от знака
+    <code>=</code> стоит <strong>тип</strong> (описание формы), справа — <strong>значение</strong>
+    (реальные данные).
+  </p>
+  <app-code-block [code]="typeVsValueExample" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Тип <code>&#123; size: number &#125;</code></th>
+          <th>Значение <code>&#123; size: 10 &#125;</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="yes">описывает форму: «есть поле <code>size</code>, оно число»</td>
+          <td class="yes">конкретные данные: в <code>size</code> лежит <code>10</code></td>
+        </tr>
+        <tr>
+          <td class="no">после компиляции исчезает — в рантайме его нет</td>
+          <td class="yes">существует во время работы программы</td>
+        </tr>
+        <tr>
+          <td class="no">в поле пишут <em>тип</em> (<code>number</code>)</td>
+          <td class="yes">в поле пишут <em>значение</em> (<code>10</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    <strong>Почему так.</strong> Типы нужны только компилятору, чтобы поймать ошибки заранее.
+    Когда TypeScript превращается в JavaScript, все аннотации стираются, и до браузера доедет
+    лишь голое значение. Поэтому «поле типа <code>number</code>» и «поле со значением
+    <code>10</code>» — вещи из разных миров, хоть и стоят рядом.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: объект в функциях</h2>
+  <p>
+    Чаще всего инлайновые типы объектов встречаются у функций — когда надо описать
+    «пакет» из нескольких значений в одном параметре или вернуть сразу несколько полей.
+  </p>
+
+  <h3 class="doc__subtitle">Объект как параметр</h3>
+  <p>
+    Вместо длинного списка отдельных аргументов функции часто передают один объект с
+    именованными полями. Тип такого параметра — обычный тип объекта.
+  </p>
+  <app-code-block [code]="paramExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Объект как возвращаемое значение</h3>
+  <p>
+    Функция может вернуть сразу несколько значений, упаковав их в объект. Форму результата
+    описывают после круглых скобок — там же, где обычно ставят тип возврата.
+  </p>
+  <app-code-block [code]="returnExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Когда инлайн становится тесен</h2>
+  <p>
+    Инлайновые типы удобны, пока форма маленькая и используется в одном месте. Но стоит
+    описать её в нескольких сигнатурах — и вы начинаете <strong>копировать одно и то же</strong>
+    снова и снова. Это утомительно и опасно: поправишь форму в одном месте, забудешь в
+    другом — и типы разойдутся.
+  </p>
+  <app-code-block [code]="verboseExample" lang="typescript" />
+  <p>
+    Решение — дать форме <strong>имя</strong> и переиспользовать его. Для этого есть два
+    инструмента: <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсы</a>
+    (<code>interface</code>) и
+    <a routerLink="/typescript/objects-interfaces/type-aliases">псевдонимы типов</a>
+    (<code>type</code>). Оба позволяют написать форму один раз и ссылаться на неё по имени;
+    чем они отличаются — на странице
+    <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface или type</a>.
+  </p>
+  <p class="note">
+    <strong>Дальше.</strong> Поля бывают необязательными или защищёнными от записи — про
+    <code>?</code> и <code>readonly</code> читайте в разделе
+    <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные и readonly</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Тип объекта</strong> описывает форму: какие поля есть и какого они типа. Пишется инлайном: <code>let user: &#123; name: string; age: number &#125;</code>.</li>
+    <li>Свойства разделяют <strong>точкой с запятой, запятой или переносом строки</strong> — это равнозначно.</li>
+    <li>Значением поля может быть <strong>снова объект</strong> — так получаются вложенные типы.</li>
+    <li>TypeScript ловит <strong>отсутствующее поле</strong>, <strong>поле неверного типа</strong> и <strong>лишнее поле у литерала</strong> (excess property check).</li>
+    <li><strong>Тип ≠ значение:</strong> слева от <code>=</code> — форма (исчезает после компиляции), справа — данные (живут в рантайме).</li>
+    <li>Тип объекта удобно ставить <strong>параметром и результатом функции</strong>.</li>
+    <li>Повторяющиеся инлайн-формы выносят в имя — <a routerLink="/typescript/objects-interfaces/interfaces">интерфейс</a> или <a routerLink="/typescript/objects-interfaces/type-aliases">псевдоним типа</a>.</li>
+  </ul>
+</section>
+</article>

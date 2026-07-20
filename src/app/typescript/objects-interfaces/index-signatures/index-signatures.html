@@ -1,0 +1,227 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Индексные сигнатуры</span></nav>
+
+<h1 class="doc__title">Индексные сигнатуры</h1>
+<p class="doc__lead">
+  Иногда мы заранее знаем все поля объекта поимённо: у пользователя есть <code>name</code> и
+  <code>age</code>. Но бывает иначе — ключей может быть сколько угодно, а имена их наперёд
+  неизвестны: словарь переводов, счётчики, кэш. Для таких объектов-словарей в TypeScript есть
+  <strong>индексная сигнатура</strong> — запись вида <code>&#123; [key: string]: T &#125;</code>.
+  Разберём её от самого простого к практике.
+</p>
+
+<section class="doc__section">
+  <h2>Проблема: ключи заранее неизвестны</h2>
+  <p>
+    Обычный тип объекта перечисляет свойства <strong>по именам</strong>. Это удобно, когда набор
+    полей фиксирован. Но представьте словарь населения городов: ключи — названия городов, и их
+    может быть сколько угодно. Перечислить каждый ключ в типе невозможно.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Объект-словарь: слева произвольные ключи-строки, справа одинаковые по типу значения number">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">объект-словарь: ключей сколько угодно, тип значения один</text>
+
+      <text x="150" y="58" text-anchor="middle" fill="var(--muted)" font-size="12">произвольные ключи (string)</text>
+      <text x="470" y="58" text-anchor="middle" fill="var(--muted)" font-size="12">значения (все — number)</text>
+
+      <rect x="40" y="72" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="140" y="94" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"Москва"</text>
+      <line x1="240" y1="89" x2="380" y2="89" stroke="var(--accent)" stroke-width="1.6" />
+      <path d="M380 89 l-9 -4 v8 z" fill="var(--accent)" />
+      <rect x="380" y="72" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="480" y="94" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">13100000</text>
+
+      <rect x="40" y="118" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="140" y="140" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"Казань"</text>
+      <line x1="240" y1="135" x2="380" y2="135" stroke="var(--accent)" stroke-width="1.6" />
+      <path d="M380 135 l-9 -4 v8 z" fill="var(--accent)" />
+      <rect x="380" y="118" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="480" y="140" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">1300000</text>
+
+      <rect x="40" y="164" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="140" y="186" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"Сочи"</text>
+      <line x1="240" y1="181" x2="380" y2="181" stroke="var(--accent)" stroke-width="1.6" />
+      <path d="M380 181 l-9 -4 v8 z" fill="var(--accent)" />
+      <rect x="380" y="164" width="200" height="34" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="480" y="186" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">500000</text>
+
+      <text x="310" y="230" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="14">[key: string]: number</text>
+    </svg>
+    <figcaption>Ключей может быть сколько угодно и они любые, но тип значения у всех один — <code>number</code>.</figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Аналогия.</strong> Индексная сигнатура — это <em>шкаф с одинаковыми ячейками</em>.
+    Ячеек можно навесить сколько угодно, подписать их как захочется («Москва», «Казань», «носки»,
+    «варежки»), но во всех ячейках лежат вещи <em>одного сорта</em>. Тип говорит не «какие именно
+    ячейки бывают», а «что лежит в любой ячейке».
+  </p>
+
+  <app-code-block [code]="problemExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис</h2>
+  <p>
+    Индексная сигнатура пишется в квадратных скобках: <code>[имяКлюча: string]: ТипЗначения</code>.
+    Её можно объявить и в <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсе</a>,
+    и в <a routerLink="/typescript/objects-interfaces/type-aliases">псевдониме типа</a> — разницы
+    в поведении нет.
+  </p>
+  <app-code-block [code]="syntaxExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Важно.</strong> Слово внутри квадратных скобок (<code>city</code>, <code>key</code>,
+    <code>город</code>) — это просто <strong>имя-заглушка</strong> для читателя. Оно нигде не
+    используется как настоящая переменная и не влияет на тип: <code>[key: string]</code> и
+    <code>[город: string]</code> — один и тот же тип. Выбирайте имя так, чтобы оно подсказывало, что
+    за ключ вы ожидаете.
+  </p>
+
+  <h3 class="doc__subtitle">Какими бывают ключи</h3>
+  <p>
+    Тип ключа может быть <code>string</code>, <code>number</code> или <code>symbol</code>. Чаще всего
+    используют <code>string</code> — обычный словарь. Есть тонкость: в JavaScript у объекта
+    <strong>не бывает</strong> настоящих числовых ключей — движок приводит число к строке, поэтому
+    <code>obj[0]</code> и <code>obj['0']</code> — один и тот же элемент. Из-за этого тип значения у
+    числового ключа обязан быть <strong>совместим</strong> с типом значения у строкового.
+  </p>
+  <app-code-block [code]="keyTypesExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Сочетание с известными свойствами</h2>
+  <p>
+    Часто у объекта есть и пара точно известных полей, и произвольные ключи. Индексную сигнатуру
+    разрешено сочетать с обычными свойствами, но действует строгое правило:
+    <strong>тип каждого явного свойства обязан быть совместим с типом значения индексной
+    сигнатуры</strong>. Логика простая: раз «любой ключ даёт <code>number</code>», то и конкретный
+    известный ключ тоже обязан давать <code>number</code>.
+  </p>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Явное свойство</th>
+          <th>Тип значения сигнатуры</th>
+          <th>Совместимо?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>total: number</code></td>
+          <td><code>[k: string]: number</code></td>
+          <td class="yes">да — number подходит под number</td>
+        </tr>
+        <tr>
+          <td><code>version: string</code></td>
+          <td><code>[k: string]: number</code></td>
+          <td class="no">нет — string не влезает в number</td>
+        </tr>
+        <tr>
+          <td><code>theme: string</code></td>
+          <td><code>[k: string]: string | number</code></td>
+          <td class="yes">да — string входит в string | number</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    А если явные свойства разного типа, расширьте тип значения сигнатуры до
+    <a routerLink="/typescript/unions-narrowing/union">объединения</a> (например,
+    <code>string | number</code>), чтобы в него поместились все, — как в примере ниже.
+  </p>
+  <app-code-block [code]="combineExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Опасность: доступ может вернуть <code>undefined</code></h2>
+  <p>
+    Вот самый коварный момент. Индексная сигнатура обещает, что под ключом лежит значение типа
+    <code>T</code>. Но объект-словарь на то и словарь, что нужного ключа в нём может просто
+    <strong>не оказаться</strong>. По умолчанию TypeScript верит сигнатуре на слово и молча выдаёт
+    вам <code>T</code> — хотя в реальности там <code>undefined</code>.
+  </p>
+  <app-code-block [code]="undefinedAccessExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Флаг <code>noUncheckedIndexedAccess</code></h3>
+  <p>
+    Эту дыру закрывает флаг компилятора <code>noUncheckedIndexedAccess</code> в
+    <code>tsconfig.json</code>. С ним доступ по ключу возвращает не <code>T</code>, а
+    <code>T | undefined</code> — и компилятор заставит вас проверить значение перед использованием.
+  </p>
+  <app-code-block [code]="noUncheckedExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Почему так.</strong> Без этого флага система типов «уверена» в том, чего не знает, и
+    ошибка всплывёт только в рантайме. Включённый <code>noUncheckedIndexedAccess</code> честно
+    признаёт неопределённость и подталкивает к безопасным привычкам — проверке через
+    <code>if</code> или значению по умолчанию через <code>??</code>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Короче и нагляднее: <code>Record</code></h2>
+  <p>
+    Ту же идею словаря обычно выражают встроенной утилитой <code>Record&lt;Ключи, Значение&gt;</code>.
+    Запись <code>Record&lt;string, number&gt;</code> — это ровно то же самое, что
+    <code>&#123; [key: string]: number &#125;</code>, но короче и читается легче. Более того,
+    <code>Record</code> позволяет <strong>ограничить</strong> ключи конкретным набором строк.
+  </p>
+  <app-code-block [code]="recordExample" lang="typescript" />
+  <p>
+    Когда ключи произвольные — берите индексную сигнатуру или <code>Record&lt;string, T&gt;</code>,
+    как удобнее. Когда ключей фиксированный набор — <code>Record</code> с объединением строк даёт
+    больше защиты. Подробный разбор — на странице
+    <a routerLink="/typescript/utility-types/record">Record</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика</h2>
+  <p>
+    Соберём три типичные задачи, где без словаря не обойтись.
+  </p>
+
+  <h3 class="doc__subtitle">Счётчик частоты слов</h3>
+  <p>
+    Ключи — сами слова, значения — сколько раз слово встретилось. Заранее слова неизвестны, поэтому
+    словарь идеален.
+  </p>
+  <app-code-block [code]="wordCountExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Простой кэш ответов</h3>
+  <p>
+    Ключ — адрес запроса, значение — сохранённый ответ. Обратите внимание: функция чтения честно
+    возвращает <code>string | undefined</code> — ведь в кэше может быть пусто.
+  </p>
+  <app-code-block [code]="cacheExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Словарь переводов ru → en</h3>
+  <p>
+    Классический словарь: русское слово как ключ, английское как значение. На случай отсутствия
+    перевода возвращаем исходное слово через <code>??</code>.
+  </p>
+  <app-code-block [code]="translationExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Индексная сигнатура</strong> <code>&#123; [key: string]: T &#125;</code> описывает объект-словарь, когда имена ключей заранее неизвестны.</li>
+    <li>Имя ключа в скобках — просто <strong>заглушка</strong> для читателя; на тип оно не влияет.</li>
+    <li>Тип ключа — <code>string</code>, <code>number</code> или <code>symbol</code>. Числовые ключи в JS всё равно приводятся к строкам.</li>
+    <li>Явные свойства обязаны быть <strong>совместимы</strong> с типом значения сигнатуры; иначе расширьте её тип до объединения.</li>
+    <li>Доступ по произвольному ключу может дать <code>undefined</code>. Флаг <code>noUncheckedIndexedAccess</code> добавляет <code>| undefined</code> и заставляет проверять.</li>
+    <li><code>Record&lt;Ключи, Значение&gt;</code> — короткая и более гибкая альтернатива (см. <a routerLink="/typescript/utility-types/record">Record</a>).</li>
+  </ul>
+  <p class="note">
+    Дальше полезно посмотреть <a routerLink="/typescript/objects-interfaces/object-types">Типы объектов</a>,
+    <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные и readonly</a>, а также
+    <a routerLink="/typescript/objects-interfaces/pitfalls">Нюансы и подводные камни</a>.
+  </p>
+</section>
+</article>

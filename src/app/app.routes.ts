@@ -28,6 +28,38 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./typescript/basic-types/inference/inference').then((m) => m.BasicTypesInference),
   'typescript/basic-types/pitfalls': () =>
     import('./typescript/basic-types/pitfalls/pitfalls').then((m) => m.BasicTypesPitfalls),
+  'typescript/objects-interfaces/object-types': () =>
+    import('./typescript/objects-interfaces/object-types/object-types').then(
+      (m) => m.ObjectsInterfacesObjectTypes,
+    ),
+  'typescript/objects-interfaces/interfaces': () =>
+    import('./typescript/objects-interfaces/interfaces/interfaces').then(
+      (m) => m.ObjectsInterfacesInterfaces,
+    ),
+  'typescript/objects-interfaces/type-aliases': () =>
+    import('./typescript/objects-interfaces/type-aliases/type-aliases').then(
+      (m) => m.ObjectsInterfacesTypeAliases,
+    ),
+  'typescript/objects-interfaces/interface-vs-type': () =>
+    import('./typescript/objects-interfaces/interface-vs-type/interface-vs-type').then(
+      (m) => m.ObjectsInterfacesInterfaceVsType,
+    ),
+  'typescript/objects-interfaces/optional-readonly': () =>
+    import('./typescript/objects-interfaces/optional-readonly/optional-readonly').then(
+      (m) => m.ObjectsInterfacesOptionalReadonly,
+    ),
+  'typescript/objects-interfaces/index-signatures': () =>
+    import('./typescript/objects-interfaces/index-signatures/index-signatures').then(
+      (m) => m.ObjectsInterfacesIndexSignatures,
+    ),
+  'typescript/objects-interfaces/extending': () =>
+    import('./typescript/objects-interfaces/extending/extending').then(
+      (m) => m.ObjectsInterfacesExtending,
+    ),
+  'typescript/objects-interfaces/pitfalls': () =>
+    import('./typescript/objects-interfaces/pitfalls/pitfalls').then(
+      (m) => m.ObjectsInterfacesPitfalls,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

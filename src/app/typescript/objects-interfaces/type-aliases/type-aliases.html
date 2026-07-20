@@ -1,0 +1,267 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Псевдонимы типов (type)</span></nav>
+
+<h1 class="doc__title">Псевдонимы типов (type)</h1>
+<p class="doc__lead">
+  Ключевое слово <code>type</code> позволяет дать <strong>короткое имя</strong> любому типу —
+  и не только объекту, но и числу, строке, объединению, кортежу или функции. Такое имя
+  называют <strong>псевдонимом</strong> (по-английски <em>type alias</em>). В этом уроке
+  разберём, как его создавать, зачем это нужно и в чём главная сила <code>type</code>
+  по сравнению с <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсом</a>.
+</p>
+
+<section class="doc__section">
+  <h2>Что такое псевдоним типа</h2>
+  <p>
+    Идея простая: слева пишем <strong>новое имя</strong>, ставим знак <code>=</code>, а справа —
+    тот тип, которому это имя даём. С этого момента имя и исходный тип означают
+    <strong>одно и то же</strong> — их можно использовать как синонимы.
+  </p>
+
+  <app-code-block [code]="basicAliasExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Аналогия.</strong> Псевдоним — как <em>прозвище</em> или сокращение. У человека есть
+    полное имя «Александр», но друзья зовут его «Саша» — это тот же человек, просто короче и
+    привычнее. Точно так же <code>ID</code> — это «прозвище» для <code>string</code>: удобнее
+    читать, а по сути перед нами всё та же строка.
+  </p>
+
+  <p class="note">
+    <strong>Важно.</strong> Псевдоним похож на переменную, но для <em>типа</em>, а не для значения.
+    Переменная <code>const x = 5</code> даёт имя <strong>значению</strong>, а
+    <code>type ID = string</code> даёт имя <strong>типу</strong>. И там, и там есть знак
+    <code>=</code> — это и отличает <code>type</code> от <code>interface</code>, у которого
+    знака <code>=</code> нет.
+  </p>
+
+  <h3 class="doc__subtitle">Знак <code>=</code>: главное отличие от <code>interface</code></h3>
+  <p>
+    <a routerLink="/typescript/objects-interfaces/interfaces">Интерфейс</a> описывает форму объекта
+    без знака <code>=</code>: сразу пишут тело в фигурных скобках. А <code>type</code> —
+    это именно присваивание имени, поэтому знак <code>=</code> обязателен. Сравните:
+  </p>
+  <app-code-block [code]="aliasVsInterfaceExample" lang="typescript" />
+  <p>
+    Полное сравнение «что выбрать» разобрано на отдельной странице —
+    <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface или type</a>.
+    Здесь же сосредоточимся на том, что умеет именно <code>type</code>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>type для формы объекта</h2>
+  <p>
+    Чаще всего <code>type</code> применяют, чтобы назвать <strong>форму объекта</strong> —
+    какие поля в нём есть и какого они типа. В этой роли псевдоним работает практически так же,
+    как интерфейс: имя можно ставить в аннотациях переменных, параметров и возвращаемых значений.
+  </p>
+  <app-code-block [code]="objectAliasExample" lang="typescript" />
+  <p>
+    Подробнее про синтаксис формы объекта — на странице
+    <a routerLink="/typescript/objects-interfaces/object-types">Типы объектов</a>.
+    Но <code>type</code> умеет и то, чего форма объекта не покрывает совсем.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Сила type: имя для любого типа</h2>
+  <p>
+    Вот где <code>type</code> обгоняет <code>interface</code>. Интерфейс умеет описывать
+    <strong>только объекты</strong>. А псевдоним можно навесить на <strong>что угодно</strong>:
+    на примитив, на объединение, на кортеж, на тип функции. Посмотрим на эту универсальность
+    на схеме.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 320" width="100%" role="img" aria-label="Одно имя псевдонима type указывает на разные виды типов: примитив, объединение, объект, функцию, кортеж">
+      <text x="310" y="24" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Одно имя type — любой тип справа</text>
+
+      <rect x="24" y="118" width="180" height="74" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="114" y="150" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15" font-weight="700">type Name =</text>
+      <text x="114" y="172" text-anchor="middle" fill="var(--muted)" font-size="11">псевдоним</text>
+
+      <line x1="204" y1="155" x2="356" y2="61" stroke="var(--muted)" stroke-width="1.6" />
+      <line x1="204" y1="155" x2="356" y2="113" stroke="var(--muted)" stroke-width="1.6" />
+      <line x1="204" y1="155" x2="356" y2="165" stroke="var(--muted)" stroke-width="1.6" />
+      <line x1="204" y1="155" x2="356" y2="217" stroke="var(--muted)" stroke-width="1.6" />
+      <line x1="204" y1="155" x2="356" y2="269" stroke="var(--muted)" stroke-width="1.6" />
+
+      <rect x="360" y="40" width="236" height="42" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="478" y="66" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">string — примитив</text>
+
+      <rect x="360" y="92" width="236" height="42" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="478" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'idle' | 'done' — объединение</text>
+
+      <rect x="360" y="144" width="236" height="42" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="478" y="170" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#123; name; age &#125; — объект</text>
+
+      <rect x="360" y="196" width="236" height="42" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="478" y="222" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">(e) =&gt; void — функция</text>
+
+      <rect x="360" y="248" width="236" height="42" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="478" y="274" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">[x, y] — кортеж</text>
+    </svg>
+    <figcaption>Псевдоним <code>type</code> — универсальное «имя» для типа любой формы. Интерфейс так не умеет: он охватывает только объектную ветку.</figcaption>
+  </figure>
+
+  <h3 class="doc__subtitle">Имя для примитива</h3>
+  <p>
+    Можно дать говорящее имя даже обычному <code>number</code> или <code>string</code>. Код
+    становится понятнее, хотя под капотом остаётся всё тот же примитив.
+  </p>
+  <app-code-block [code]="primitiveAliasExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Имя для объединения — самое полезное</h3>
+  <p>
+    На практике чаще всего псевдоним дают <strong>объединению</strong> (union) — набору из
+    нескольких допустимых значений через <code>|</code>. Один раз описали список статусов —
+    и переиспользуете имя везде. Интерфейс объединение назвать не может в принципе.
+  </p>
+  <app-code-block [code]="unionAliasExample" lang="typescript" />
+  <p>
+    Подробно про объединения и как с ними работать — на странице
+    <a routerLink="/typescript/unions-narrowing/union">Объединения (union)</a>.
+  </p>
+
+  <h3 class="doc__subtitle">Имя для кортежа</h3>
+  <p>
+    Кортеж — это массив <strong>фиксированной длины</strong>, где у каждой позиции свой тип.
+    Псевдоним делает такой тип читаемым: <code>Point</code> вместо непонятного
+    <code>[number, number]</code> прямо в аннотации.
+  </p>
+  <app-code-block [code]="tupleAliasExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Имя для типа функции</h3>
+  <p>
+    Тип функции описывает, <strong>что она принимает и что возвращает</strong>. Дать ему имя
+    особенно удобно, когда один и тот же вид колбэка встречается в коде много раз.
+  </p>
+  <app-code-block [code]="functionAliasExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Композиция: пересечение через <code>&amp;</code></h2>
+  <p>
+    Псевдонимы можно <strong>складывать</strong>. Оператор <code>&amp;</code> (пересечение)
+    создаёт тип, у которого есть поля <strong>сразу нескольких</strong> типов. Читается как
+    «и то, <em>и</em> другое одновременно».
+  </p>
+  <app-code-block [code]="intersectionAliasExample" lang="typescript" />
+  <p class="note">
+    <strong>Аналогия.</strong> Пересечение <code>&amp;</code> — как «собрать анкету из двух
+    бланков». Был бланк с полями <code>&#123; name, age &#125;</code>; берём второй бланк с полем
+    <code>&#123; role &#125;</code> — и в итоговой анкете нужно заполнить <strong>все</strong>
+    поля обоих. Пропустишь <code>role</code> — анкета неполная, TypeScript её не примет.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Псевдоним исчезает в рантайме</h2>
+  <p>
+    Важно понимать: <code>type</code> — это исключительно <strong>инструмент проверки</strong>.
+    Компилятор использует псевдонимы, чтобы найти ошибки, а затем <strong>стирает</strong> их.
+    В готовом JavaScript-файле никаких <code>type</code> нет — только значения.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 210" width="100%" role="img" aria-label="Компилятор стирает псевдоним type: в исходном .ts он есть, в собранном .js его уже нет">
+      <text x="140" y="30" text-anchor="middle" fill="var(--muted)" font-size="12">исходник .ts</text>
+      <rect x="20" y="44" width="240" height="120" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="40" y="80" fill="var(--muted)" font-family="monospace" font-size="13" text-decoration="line-through">type User = &#123; name &#125;</text>
+      <text x="40" y="112" fill="var(--fg)" font-family="monospace" font-size="13">const anna =</text>
+      <text x="56" y="134" fill="var(--fg)" font-family="monospace" font-size="13">&#123; name: 'Аня' &#125;</text>
+
+      <line x1="270" y1="104" x2="352" y2="104" stroke="var(--accent)" stroke-width="2" />
+      <path d="M352 104 l-12 -6 v12 z" fill="var(--accent)" />
+      <text x="311" y="94" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">tsc</text>
+      <text x="311" y="128" text-anchor="middle" fill="var(--muted)" font-size="10.5">стирание типов</text>
+
+      <text x="480" y="30" text-anchor="middle" fill="var(--muted)" font-size="12">результат .js</text>
+      <rect x="360" y="44" width="240" height="120" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.8" />
+      <text x="380" y="96" fill="var(--fg)" font-family="monospace" font-size="13">const anna =</text>
+      <text x="396" y="118" fill="var(--fg)" font-family="monospace" font-size="13">&#123; name: 'Аня' &#125;</text>
+      <text x="480" y="152" text-anchor="middle" fill="var(--green)" font-size="11">строки type больше нет</text>
+    </svg>
+    <figcaption>Псевдоним живёт только на этапе компиляции. В рантайме его нельзя использовать как значение — например, передать в <code>typeof</code>.</figcaption>
+  </figure>
+
+  <app-code-block [code]="runtimeErasedExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Почему так.</strong> TypeScript не добавляет проверок типов в готовый JavaScript —
+    иначе программа стала бы медленнее, а браузер вообще не понимает слово <code>type</code>.
+    Поэтому вся типизация — это «леса», которые убирают после стройки: они помогли собрать дом
+    правильно, но в самом доме их уже нет.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Что умеет type, а что interface</h2>
+  <p>
+    Коротко о разнице возможностей. Для <strong>формы объекта</strong> подходят оба; но как только
+    нужно назвать примитив, объединение, кортеж или функцию — работает только <code>type</code>.
+  </p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Задача</th>
+          <th><code>type</code></th>
+          <th><code>interface</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Форма объекта <code>&#123; name; age &#125;</code></td>
+          <td class="yes">да</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td>Имя примитиву <code>type Age = number</code></td>
+          <td class="yes">да</td>
+          <td class="no">нет</td>
+        </tr>
+        <tr>
+          <td>Объединение <code>'idle' | 'done'</code></td>
+          <td class="yes">да</td>
+          <td class="no">нет</td>
+        </tr>
+        <tr>
+          <td>Кортеж <code>[number, number]</code></td>
+          <td class="yes">да</td>
+          <td class="no">нет</td>
+        </tr>
+        <tr>
+          <td>Тип функции <code>(e) =&gt; void</code></td>
+          <td class="yes">да</td>
+          <td class="no">нет</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Практика</h2>
+  <p>
+    Соберём всё вместе на трёх маленьких, но жизненных примерах: статус запроса, координата с
+    обработчиком и связка «пользователь + админ».
+  </p>
+  <app-code-block [code]="practiceStatusExample" lang="typescript" />
+  <app-code-block [code]="practicePointExample" lang="typescript" />
+  <app-code-block [code]="practiceUserExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Псевдоним</strong> — короткое имя для типа: <code>type ID = string</code>. У <code>type</code> есть знак <code>=</code>, а у <a routerLink="/typescript/objects-interfaces/interfaces">интерфейса</a> — нет.</li>
+    <li>Для <strong>формы объекта</strong> <code>type</code> работает как <a routerLink="/typescript/objects-interfaces/object-types">тип объекта</a>: <code>type User = &#123; name: string &#125;</code>.</li>
+    <li><strong>Сила type</strong> — имя можно дать чему угодно: примитиву (<code>type Age = number</code>), <a routerLink="/typescript/unions-narrowing/union">объединению</a> (<code>'idle' | 'done'</code>), кортежу (<code>[number, number]</code>), функции (<code>(e) =&gt; void</code>).</li>
+    <li><strong>Композиция</strong> через <code>&amp;</code>: <code>type Admin = User &amp; &#123; role: string &#125;</code> — поля обоих типов сразу.</li>
+    <li>Псевдоним <strong>стирается в рантайме</strong> — это только имя на этапе проверки, в JavaScript его нет.</li>
+    <li>Что выбрать — <code>type</code> или <code>interface</code> — разобрано на странице <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface или type</a>.</li>
+  </ul>
+</section>
+</article>

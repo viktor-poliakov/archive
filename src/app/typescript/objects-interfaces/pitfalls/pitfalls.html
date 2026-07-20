@@ -1,0 +1,248 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">
+  Типы объектов, интерфейсы и <code>type</code> устроены логично, но в них есть несколько
+  мест, где поведение неожиданно для новичка — да и опытного порой ставит в тупик. Ниже —
+  коллекция самых частых «граблей»: почему лишнее поле то ловится, то нет; почему
+  <code>readonly</code> не всегда спасает; чем <code>name?: T</code> отличается от
+  <code>name: T | undefined</code>. Для каждого пункта — короткое объяснение, пример
+  и как сделать правильно.
+</p>
+
+<section class="doc__section">
+  <h2>1. Проверка лишних свойств срабатывает не всегда</h2>
+  <p>
+    Если вы присваиваете переменной с известным типом <strong>объектный литерал</strong>
+    (то есть пишете <code>&#123; ... &#125;</code> прямо на месте) и в нём есть поле,
+    которого нет в целевом типе, — TypeScript ругается. Это называют
+    <em>excess property check</em> — проверка на лишние свойства.
+  </p>
+  <app-code-block [code]="excessLiteralExample" lang="typescript" />
+  <p>
+    Казалось бы, лишнее поле всегда ошибка. Но стоит положить тот же объект
+    <strong>в промежуточную переменную</strong> — и проверка исчезает: значение проходит
+    молча. Это классический сюрприз.
+  </p>
+  <app-code-block [code]="excessVariableExample" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 300" width="100%" role="img" aria-label="Лишнее поле z: у литерала ошибка, через переменную проходит">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Лишнее поле z: как его видит TypeScript</text>
+
+      <rect x="190" y="42" width="240" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="66" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">цель — тип Point</text>
+      <text x="310" y="86" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">&#123; x: number; y: number &#125;</text>
+
+      <line x1="310" y1="98" x2="156" y2="168" stroke="var(--red)" stroke-width="1.8" />
+      <path d="M151 158 h10 l-5 12 z" fill="var(--red)" />
+      <line x1="310" y1="98" x2="464" y2="168" stroke="var(--green)" stroke-width="1.8" />
+      <path d="M459 158 h10 l-5 12 z" fill="var(--green)" />
+
+      <rect x="30" y="172" width="250" height="110" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="155" y="196" text-anchor="middle" fill="var(--fg)" font-size="12">записан ЛИТЕРАЛОМ на месте</text>
+      <text x="155" y="228" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">= &#123; x, y, z &#125;</text>
+      <text x="155" y="262" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="600">❌ ошибка: поля z нет в Point</text>
+
+      <rect x="340" y="172" width="250" height="110" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="465" y="196" text-anchor="middle" fill="var(--fg)" font-size="12">пришёл через ПЕРЕМЕННУЮ</text>
+      <text x="465" y="228" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">= raw</text>
+      <text x="465" y="262" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">✅ проходит: z просто игнор.</text>
+    </svg>
+    <figcaption>Одно и то же значение с лишним полем: литерал на месте — ошибка, а тот же объект через переменную — проходит.</figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Почему так.</strong> Если вы прямо тут создаёте объект и вписываете в него поле,
+    которого нет в типе, — это почти наверняка опечатка, и компилятор предупреждает. А когда
+    объект уже лежит в переменной, действует обычное <a routerLink="/typescript/objects-interfaces/object-types">структурное правило</a>:
+    объект с лишними полями всё равно подходит. Подробнее про сами типы объектов — на странице
+    <a routerLink="/typescript/objects-interfaces/object-types">Типы объектов</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>2. Структурная («утиная») типизация</h2>
+  <p>
+    TypeScript сравнивает типы объектов не по имени, а по <strong>форме</strong>. Действует
+    принцип «если нечто крякает как утка — значит, утка»: объект подходит под тип, если у него
+    есть все нужные поля правильных типов, даже если формально он «другого сорта».
+  </p>
+  <app-code-block [code]="structuralExample" lang="typescript" />
+  <p class="note">
+    <strong>Аналогия.</strong> Розетке всё равно, какой на вилке бренд — важно, чтобы совпали
+    форма и штырьки. Так и здесь: имя класса или интерфейса не проверяется, проверяется набор
+    полей. Это удобно, но иногда «случайно совместимые» объекты проходят туда, куда вы их не
+    планировали пускать.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>3. <code>name?: T</code> — это не <code>name: T | undefined</code></h2>
+  <p>
+    Оба варианта разрешают значению «отсутствовать», но по-разному, и путаница тут частая.
+    Знак вопроса <code>?</code> делает <strong>сам ключ необязательным</strong> — его можно
+    вообще не писать. А <code>| undefined</code> оставляет ключ <strong>обязательным</strong>,
+    просто разрешает в нём значение <code>undefined</code>.
+  </p>
+  <app-code-block [code]="optionalVsUndefinedExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Запись</th>
+          <th>Ключ можно опустить?</th>
+          <th><code>&#123; &#125;</code> подходит?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>name?: string</code></td>
+          <td class="yes">да, ключ необязателен</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td><code>name: string | undefined</code></td>
+          <td class="no">нет, ключ обязателен</td>
+          <td class="no">❌ нет, нужен ключ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Подробный разбор опциональных полей — на странице
+    <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные и readonly</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>4. <code>readonly</code> поверхностный и живёт только при компиляции</h2>
+  <p>
+    Модификатор <code>readonly</code> запрещает <strong>переприсваивать</strong> поле. Но у него
+    два важных ограничения. Первое: он <strong>поверхностный</strong> (shallow) — защищена только
+    сама ссылка, а содержимое вложенного массива или объекта менять можно. Второе: он существует
+    <strong>только на этапе компиляции</strong> — в собранном JavaScript этого ограничения нет.
+  </p>
+  <app-code-block [code]="readonlyShallowExample" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="readonly защищает ссылку на массив, но не его содержимое">
+      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">readonly: заморожена ссылка, а не содержимое</text>
+
+      <rect x="36" y="52" width="262" height="150" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="56" y="80" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">const c: Config</text>
+      <line x1="56" y1="92" x2="278" y2="92" stroke="var(--border)" stroke-width="1.2" />
+      <text x="56" y="122" fill="var(--fg)" font-family="monospace" font-size="13">url: '/api'</text>
+      <rect x="252" y="108" width="16" height="12" rx="2" fill="var(--accent)" />
+      <path d="M255 108 v-3 a5 5 0 0 1 10 0 v3" fill="none" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="56" y="164" fill="var(--fg)" font-family="monospace" font-size="13">tags: [ … ]</text>
+      <rect x="252" y="150" width="16" height="12" rx="2" fill="var(--accent)" />
+      <path d="M255 150 v-3 a5 5 0 0 1 10 0 v3" fill="none" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="167" y="192" text-anchor="middle" fill="var(--muted)" font-size="11">оба поля нельзя переприсвоить</text>
+
+      <line x1="300" y1="158" x2="356" y2="132" stroke="var(--orange)" stroke-width="2" />
+      <path d="M356 132 l-12 1 l6 8 z" fill="var(--orange)" />
+
+      <rect x="360" y="92" width="224" height="76" rx="12" fill="var(--surface)" stroke="var(--orange)" stroke-width="2" />
+      <text x="472" y="116" text-anchor="middle" fill="var(--muted)" font-size="11">массив внутри tags</text>
+      <text x="472" y="142" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15" font-weight="700">[ 'a', 'b', 'hack' ]</text>
+      <text x="472" y="192" text-anchor="middle" fill="var(--orange)" font-size="12" font-weight="600">c.tags.push('hack') — пройдёт</text>
+    </svg>
+    <figcaption>Замок стоит на полях объекта (ссылки заморожены), но сам массив внутри не защищён — в него можно добавлять элементы.</figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Важно.</strong> Если нужна по-настоящему неизменяемая структура, одного
+    <code>readonly</code> на поле мало — придётся помечать readonly и вложенные типы, использовать
+    <code>readonly T[]</code> для массивов или замораживать объект в рантайме через
+    <code>Object.freeze</code>. Про модификатор — на странице
+    <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные и readonly</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>5. Индексная сигнатура прячет опечатки</h2>
+  <p>
+    Индексная сигнатура вида <code>[key: string]: number</code> говорит: «любой строковый ключ
+    даёт число». Удобно для словарей, но есть побочка: обращение по <strong>несуществующему</strong>
+    ключу не считается ошибкой — вы молча получаете <code>undefined</code>, а компилятор уверен,
+    что там число.
+  </p>
+  <app-code-block [code]="indexSignatureExample" lang="typescript" />
+  <p>
+    Лечится флагом компилятора <code>noUncheckedIndexedAccess</code>: с ним результат доступа по
+    индексу становится <code>number | undefined</code>, и TypeScript заставит вас проверить
+    значение перед использованием. Подробнее про сами сигнатуры —
+    <a routerLink="/typescript/objects-interfaces/index-signatures">Индексные сигнатуры</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>6. Коварные типы: <code>object</code>, <code>Object</code> и <code>&#123;&#125;</code></h2>
+  <p>
+    Тип <code>&#123;&#125;</code> выглядит как «пустой объект», но означает совсем другое — «почти
+    что угодно, <strong>кроме</strong> <code>null</code> и <code>undefined</code>». В него влезут
+    и число, и строка, и <code>boolean</code>. То же касается заглавного <code>Object</code>. Если
+    нужен именно объект, есть отдельный тип <code>object</code> (со строчной буквы) — он исключает
+    примитивы.
+  </p>
+  <app-code-block [code]="emptyObjectTypeExample" lang="typescript" />
+  <p class="note">
+    <strong>Важно.</strong> Аннотация <code>: &#123;&#125;</code> почти никогда не то, что вы
+    имели в виду: она не запрещает передать число или строку. Хотите «любой объект» — пишите
+    <code>object</code>; хотите «объект с произвольными полями» — берите
+    <a routerLink="/typescript/objects-interfaces/index-signatures">индексную сигнатуру</a> или
+    <code>Record&lt;string, unknown&gt;</code>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>7. Интерфейсы молча сливаются</h2>
+  <p>
+    Если объявить <strong>два интерфейса с одинаковым именем</strong> в одной области видимости,
+    TypeScript не выдаст ошибку, а незаметно <strong>объединит</strong> их поля в один
+    (это называется <em>declaration merging</em>). Иногда это специально используют (например, чтобы
+    дополнить типы библиотеки), но чаще это ловушка: вы случайно назвали свой интерфейс как
+    уже существующий — и он «оброс» чужими полями.
+  </p>
+  <app-code-block [code]="declarationMergingExample" lang="typescript" />
+  <p>
+    У <a routerLink="/typescript/objects-interfaces/type-aliases">псевдонимов типов</a>
+    <code>type</code> такого поведения нет: два одинаковых <code>type</code> — это ошибка-дубликат.
+    Это одно из отличий, разобранных на странице
+    <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface или type</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>8. Доступ к опциональному полю без проверки</h2>
+  <p>
+    При включённом <code>strict</code> обращаться к вложенному свойству опционального поля
+    напрямую нельзя — оно может оказаться <code>undefined</code>, и программа упадёт в рантайме.
+    TypeScript ловит это заранее. Правильный путь — сначала проверить поле или использовать
+    <strong>опциональную цепочку</strong> <code>?.</code>.
+  </p>
+  <app-code-block [code]="optionalAccessExample" lang="typescript" />
+  <p class="note">
+    <strong>Аналогия.</strong> Прежде чем достать письмо из почтового ящика, стоит убедиться,
+    что ящик вообще есть. <code>?.</code> делает это автоматически: если «ящика» (значения) нет,
+    вся цепочка спокойно вернёт <code>undefined</code> вместо падения.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Лишние поля</strong> ловятся у объектного литерала на месте (excess property check), но проходят, если объект пришёл через переменную.</li>
+    <li><strong>Структурная типизация:</strong> совместимость по форме (набору полей), а не по имени типа или класса.</li>
+    <li><code>name?: T</code> разрешает <em>отсутствие ключа</em>; <code>name: T | undefined</code> требует ключ, но допускает значение <code>undefined</code>.</li>
+    <li><code>readonly</code> <strong>поверхностный</strong> (вложенное содержимое не защищено) и действует <strong>только при компиляции</strong>.</li>
+    <li><strong>Индексная сигнатура</strong> прячет опечатки — доступ по любому ключу «валиден»; включайте <code>noUncheckedIndexedAccess</code>.</li>
+    <li><code>&#123;&#125;</code> и <code>Object</code> — это «почти что угодно, кроме null/undefined», а не «пустой объект»; для объекта берите <code>object</code> или <code>Record</code>.</li>
+    <li>Одноимённые <strong>интерфейсы сливаются</strong> (declaration merging); у <code>type</code> такого нет.</li>
+    <li>К опциональному полю обращайтесь через проверку или <code>?.</code> — иначе при <code>strict</code> будет ошибка.</li>
+  </ul>
+</section>
+</article>

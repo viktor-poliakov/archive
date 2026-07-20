@@ -1,0 +1,246 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/objects-interfaces">Объекты и интерфейсы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Опциональные и readonly-свойства</span></nav>
+
+<h1 class="doc__title">Опциональные и readonly-свойства</h1>
+<p class="doc__lead">
+  У свойства объекта, кроме имени и типа, бывают ещё два «значка»-модификатора.
+  Знак вопроса <code>?</code> говорит «этого поля может и не быть», а слово
+  <code>readonly</code> — «поле можно задать один раз, но потом не менять». Оба значка
+  помогают точнее описать форму объекта и заранее ловить ошибки. В этом уроке разберём
+  каждый по отдельности, покажем частые ловушки и соберём всё на практике.
+</p>
+
+<figure class="diagram">
+  <svg viewBox="0 0 620 260" width="100%" role="img" aria-label="Карточка объекта: поля помечены значками обязательное, необязательное и только для чтения">
+    <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Модификаторы полей объекта</text>
+
+    <rect x="90" y="46" width="212" height="190" rx="14" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+    <text x="196" y="74" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">interface Product</text>
+    <line x1="90" y1="88" x2="302" y2="88" stroke="var(--border)" stroke-width="1.4" />
+
+    <text x="108" y="116" fill="var(--fg)" font-family="monospace" font-size="13.5">readonly id: number</text>
+    <text x="108" y="154" fill="var(--fg)" font-family="monospace" font-size="13.5">name: string</text>
+    <text x="108" y="192" fill="var(--fg)" font-family="monospace" font-size="13.5">nickname?: string</text>
+
+    <line x1="302" y1="112" x2="340" y2="112" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3" />
+    <rect x="345" y="108" width="15" height="12" rx="2" fill="var(--purple)" />
+    <path d="M348 108 v-3 a5 5 0 0 1 10 0 v3" fill="none" stroke="var(--purple)" stroke-width="1.8" />
+    <text x="370" y="116" fill="var(--purple)" font-size="12.5">readonly — только чтение</text>
+
+    <line x1="302" y1="150" x2="340" y2="150" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3" />
+    <text x="346" y="156" fill="var(--green)" font-size="18" font-weight="700">*</text>
+    <text x="362" y="154" fill="var(--green)" font-size="12.5">обязательное поле</text>
+
+    <line x1="302" y1="188" x2="340" y2="188" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="3 3" />
+    <text x="346" y="194" fill="var(--orange)" font-size="18" font-weight="700">?</text>
+    <text x="362" y="192" fill="var(--orange)" font-size="12.5">необязательное — может не быть</text>
+  </svg>
+  <figcaption>Каждое свойство может нести значки: <code>readonly</code> (замок — менять нельзя), обязательность или <code>?</code> (можно опустить).</figcaption>
+</figure>
+
+<section class="doc__section">
+  <h2>Опциональное свойство <code>?</code></h2>
+  <p>
+    Поставьте знак вопроса сразу после имени свойства — <code>name?: string</code> — и
+    поле станет <strong>необязательным</strong>. Это значит, что в объекте такого типа
+    поля может <strong>не быть вообще</strong>: ни ключа, ни значения. А объявленные без
+    <code>?</code> поля остаются обязательными — забыть их нельзя.
+  </p>
+
+  <p class="note">
+    <strong>Аналогия.</strong> Представьте бумажную анкету. Поле «Фамилия» обязательное —
+    без него анкету не примут. А поле «Отчество (при наличии)» помечено звёздочкой
+    «необязательно»: можно вписать, а можно оставить пустым, и анкета всё равно
+    действительна. Знак <code>?</code> — это ровно та самая пометка «можно не заполнять».
+  </p>
+
+  <app-code-block [code]="optionalBasicExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Перед использованием — проверьте</h3>
+  <p>
+    Тип необязательного поля фактически становится <strong>«значение ИЛИ
+    <code>undefined</code>»</strong>. Поэтому в строгом режиме (<code>strict</code>)
+    TypeScript не даст сразу обратиться к такому полю или вызвать у него метод — вдруг
+    его нет. Сначала нужно <strong>проверить</strong>, что значение действительно есть.
+  </p>
+  <app-code-block [code]="optionalAccessExample" lang="typescript" />
+  <p>
+    Про то, как компилятор «сужает» тип после проверки <code>if (u.name)</code> и убирает
+    из него <code>undefined</code>, подробно рассказано на странице
+    <a routerLink="/typescript/unions-narrowing/union">Объединения и сужение</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2><code>name?: string</code> против <code>name: string | undefined</code></h2>
+  <p>
+    Эти две записи похожи, но отличаются в одном важном моменте — <strong>обязателен ли
+    сам ключ</strong>. С <code>?</code> ключ можно вообще не писать. А с
+    <code>| undefined</code> без <code>?</code> ключ обязателен: значение может быть
+    <code>undefined</code>, но передать сам ключ придётся явно.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Сравнение необязательного свойства и свойства со значением undefined">
+      <rect x="24" y="42" width="270" height="188" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="159" y="72" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">name?: string</text>
+      <text x="159" y="94" text-anchor="middle" fill="var(--muted)" font-size="12">ключ можно НЕ писать</text>
+      <text x="52" y="138" fill="var(--green)" font-size="17" font-weight="700">✓</text>
+      <text x="76" y="138" fill="var(--fg)" font-family="monospace" font-size="13.5">&#123; &#125;</text>
+      <text x="52" y="176" fill="var(--green)" font-size="17" font-weight="700">✓</text>
+      <text x="76" y="176" fill="var(--fg)" font-family="monospace" font-size="13.5">&#123; name: 'Аня' &#125;</text>
+      <text x="52" y="212" fill="var(--green)" font-size="17" font-weight="700">✓</text>
+      <text x="76" y="212" fill="var(--fg)" font-family="monospace" font-size="13.5">&#123; name: undefined &#125;</text>
+
+      <rect x="326" y="42" width="270" height="188" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <text x="461" y="72" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13.5" font-weight="700">name: string | undefined</text>
+      <text x="461" y="94" text-anchor="middle" fill="var(--muted)" font-size="12">ключ ОБЯЗАТЕЛЕН</text>
+      <text x="354" y="138" fill="var(--red)" font-size="17" font-weight="700">✗</text>
+      <text x="378" y="138" fill="var(--fg)" font-family="monospace" font-size="13.5">&#123; &#125;</text>
+      <text x="354" y="176" fill="var(--green)" font-size="17" font-weight="700">✓</text>
+      <text x="378" y="176" fill="var(--fg)" font-family="monospace" font-size="13.5">&#123; name: 'Аня' &#125;</text>
+      <text x="354" y="212" fill="var(--green)" font-size="17" font-weight="700">✓</text>
+      <text x="378" y="212" fill="var(--fg)" font-family="monospace" font-size="13.5">&#123; name: undefined &#125;</text>
+    </svg>
+    <figcaption>Слева ключ <code>name</code> можно опустить целиком. Справа объект без ключа <code>name</code> уже не подходит — его нужно передать хотя бы со значением <code>undefined</code>.</figcaption>
+  </figure>
+
+  <app-code-block [code]="optionalVsUndefinedExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Что можно</th>
+          <th><code>name?: string</code></th>
+          <th><code>name: string | undefined</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Опустить ключ целиком</td>
+          <td class="yes">✅ да</td>
+          <td class="no">❌ нет, ключ нужен</td>
+        </tr>
+        <tr>
+          <td>Передать значение <code>undefined</code></td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Передать строку</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <strong>Важно.</strong> На практике почти всегда нужен именно <code>?</code>: он
+    описывает «поля может не быть». Форма <code>string | undefined</code> без <code>?</code>
+    встречается редко — когда вы хотите заставить вызывающий код <em>осознанно</em>
+    передать «пусто», а не забыть про поле по невнимательности.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Свойство <code>readonly</code> — только для чтения</h2>
+  <p>
+    Слово <code>readonly</code> перед именем свойства разрешает <strong>задать значение
+    один раз</strong> — при создании объекта — и <strong>запрещает менять его потом</strong>.
+    Читать такое поле можно сколько угодно, а вот присвоить ему новое значение
+    компилятор не даст.
+  </p>
+
+  <p class="note">
+    <strong>Аналогия.</strong> Это как серийный номер, выгравированный на корпусе
+    устройства. В момент выпуска его наносят — а после стереть и написать другой уже
+    нельзя. Поле <code>readonly id</code> ведёт себя так же: значение «выгравировано» при
+    создании объекта.
+  </p>
+
+  <app-code-block [code]="readonlyBasicExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Честно: <code>readonly</code> живёт только в типах</h3>
+  <p>
+    Скажем прямо: <code>readonly</code> — это проверка <strong>только на этапе
+    компиляции</strong>. В готовом JavaScript-коде такое поле остаётся самым обычным
+    свойством, никакой реальной защиты у него нет. Компилятор просто подсвечивает
+    попытки присваивания в вашем коде, но обойти проверку типов (например, через
+    <code>as any</code>) — и значение изменится во время выполнения.
+  </p>
+  <app-code-block [code]="readonlyRuntimeExample" lang="typescript" />
+  <p class="note">
+    <strong>Почему так.</strong> TypeScript исчезает после компиляции — в браузере или
+    Node.js исполняется чистый JavaScript, который про <code>readonly</code> ничего не
+    знает. Если нужна настоящая неизменяемость во время выполнения, применяйте
+    <code>Object.freeze()</code> — это уже механизм самого JavaScript.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Массивы только для чтения</h2>
+  <p>
+    <code>readonly</code> работает и с массивами. Есть две равнозначные записи:
+    <code>readonly number[]</code> и <code>ReadonlyArray&lt;number&gt;</code> — это одно
+    и то же. У такого массива можно читать элементы и длину, но <strong>нельзя
+    менять</strong>: методы вроде <code>push</code>, <code>pop</code>, <code>sort</code> и
+    присваивание по индексу становятся недоступны.
+  </p>
+  <app-code-block [code]="readonlyArrayExample" lang="typescript" />
+  <p>
+    Это удобно для функций, которым массив нужен только «на чтение»: пометив параметр
+    как <code>readonly number[]</code>, вы гарантируете, что функция случайно не
+    испортит переданные данные.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Оба значка вместе и практика</h2>
+  <p>
+    Модификаторы не спорят друг с другом — свойство может быть <strong>одновременно</strong>
+    и <code>readonly</code>, и необязательным: <code>readonly nickname?: string</code>.
+    Читается как «поле можно не указывать, но если указали — менять его нельзя».
+  </p>
+  <app-code-block [code]="readonlyOptionalExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Практика 1: объект конфигурации</h3>
+  <p>
+    Типичный случай для <code>?</code> — настройки, где часть полей обязательна, а часть
+    имеет значения по умолчанию. Необязательные поля подстраховываем оператором
+    <code>??</code>.
+  </p>
+  <app-code-block [code]="practiceConfigExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Практика 2: сущность с <code>readonly id</code></h3>
+  <p>
+    Типичный случай для <code>readonly</code> — идентификатор записи в базе. Его выдают
+    один раз при создании, и по логике приложения он не должен меняться. Пометка
+    <code>readonly</code> защищает от случайной перезаписи прямо в редакторе.
+  </p>
+  <app-code-block [code]="practiceEntityExample" lang="typescript" />
+
+  <p>
+    Когда таких полей много и хочется сделать <em>все</em> свойства необязательными или
+    <em>все</em> только для чтения разом, пригодятся вспомогательные типы
+    <code>Partial</code> и <code>Readonly</code> — про них есть отдельная страница
+    <a routerLink="/typescript/utility-types/partial-required-readonly">Partial, Required, Readonly</a>.
+    А базовые способы описывать форму объекта разобраны в разделах
+    <a routerLink="/typescript/objects-interfaces/object-types">Типы объектов</a> и
+    <a routerLink="/typescript/objects-interfaces/interfaces">Интерфейсы</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong><code>?</code> — необязательное свойство:</strong> поля может не быть совсем. Тип поля фактически «значение <code>| undefined</code>», поэтому перед использованием его нужно проверить.</li>
+    <li><code>name?: string</code> — ключ можно <strong>опустить</strong>; <code>name: string | undefined</code> — ключ <strong>обязателен</strong>, но его значением может быть <code>undefined</code>.</li>
+    <li><strong><code>readonly</code> — только чтение:</strong> значение задаётся при создании и не переписывается потом.</li>
+    <li><code>readonly</code> проверяется <strong>только при компиляции</strong>; в рантайме поле обычное. Для настоящей неизменяемости — <code>Object.freeze()</code>.</li>
+    <li><strong>Массивы:</strong> <code>readonly number[]</code> и <code>ReadonlyArray&lt;number&gt;</code> запрещают <code>push</code>, <code>sort</code> и запись по индексу.</li>
+    <li>Значки <strong>комбинируются</strong>: <code>readonly name?: string</code>. Массово навесить их помогают <a routerLink="/typescript/utility-types/partial-required-readonly">Partial и Readonly</a>.</li>
+  </ul>
+</section>
+</article>
