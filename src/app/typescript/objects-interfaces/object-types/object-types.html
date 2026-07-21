@@ -21,29 +21,38 @@
   </p>
 
   <figure class="diagram">
-    <svg viewBox="0 0 620 282" width="100%" role="img" aria-label="Тип объекта как бланк-анкета с подписанными полями и ярлыком-типом сверху">
-      <text x="310" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">тип объекта — это бланк с подписанными полями</text>
+    <svg viewBox="0 0 620 336" width="100%" role="img" aria-label="Тип объекта в виде пустого бланка. Сверху — запись типа с полями name сорта string и age сорта number. Ниже тот же тип в виде анкеты с двумя полями: в графах указан требуемый сорт данных — string с подсказкой «сюда впишут текст» и number с подсказкой «сюда впишут число». Конкретных значений в бланке нет.">
+      <text x="310" y="30" text-anchor="middle" fill="var(--fg)" font-size="16" font-weight="600">Тип объекта — это пустой бланк</text>
 
-      <rect x="140" y="44" width="340" height="34" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
-      <text x="310" y="67" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14" font-weight="700">: &#123; name: string; age: number &#125;</text>
+      <rect x="155" y="46" width="310" height="34" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5" />
+      <text x="310" y="68" text-anchor="middle" font-family="monospace" font-size="15"><tspan fill="var(--fg)">&#123; name</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">string</tspan><tspan fill="var(--fg)">; age</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">number</tspan><tspan fill="var(--fg)"> &#125;</tspan></text>
 
-      <line x1="310" y1="78" x2="310" y2="96" stroke="var(--accent)" stroke-width="2" />
+      <line x1="310" y1="84" x2="310" y2="102" stroke="var(--border)" stroke-width="1.5" />
+      <polygon points="310,108 304,99 316,99" fill="var(--border)" />
 
-      <rect x="160" y="96" width="300" height="150" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <rect x="90" y="114" width="440" height="184" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
 
-      <text x="188" y="141" fill="var(--muted)" font-family="monospace" font-size="14">name</text>
-      <line x1="258" y1="146" x2="432" y2="146" stroke="var(--border)" stroke-width="1.4" />
-      <text x="268" y="141" fill="var(--fg)" font-family="monospace" font-size="14">Аня</text>
-      <text x="432" y="129" text-anchor="end" fill="var(--accent)" font-size="10.5">string</text>
+      <text x="310" y="136" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">та же запись типа — в виде анкеты</text>
 
-      <text x="188" y="201" fill="var(--muted)" font-family="monospace" font-size="14">age</text>
-      <line x1="258" y1="206" x2="432" y2="206" stroke="var(--border)" stroke-width="1.4" />
-      <text x="268" y="201" fill="var(--fg)" font-family="monospace" font-size="14">30</text>
-      <text x="432" y="189" text-anchor="end" fill="var(--accent)" font-size="10.5">number</text>
+      <text x="112" y="162" fill="var(--muted)" font-size="11.5" font-weight="700" letter-spacing="0.6">ПОЛЕ</text>
+      <text x="236" y="162" fill="var(--muted)" font-size="11.5" font-weight="700" letter-spacing="0.6">СОРТ ДАННЫХ</text>
+      <line x1="106" y1="170" x2="514" y2="170" stroke="var(--border)" />
+      <line x1="220" y1="148" x2="220" y2="288" stroke="var(--border)" stroke-opacity="0.55" />
+      <line x1="106" y1="232" x2="514" y2="232" stroke="var(--border)" stroke-opacity="0.4" />
 
-      <text x="310" y="238" text-anchor="middle" fill="var(--muted)" font-size="11">подпись слева, значение справа — у каждого поля свой сорт данных</text>
+      <text x="112" y="204" font-family="monospace" font-size="16" fill="var(--fg)">name</text>
+      <rect x="232" y="182" width="286" height="40" rx="7" fill="none" stroke="var(--border)" stroke-width="1.3" stroke-dasharray="5 4" />
+      <text x="248" y="201" font-family="monospace" font-size="15" fill="var(--accent)">string</text>
+      <text x="248" y="217" fill="var(--muted)" font-size="11.5" font-style="italic">сюда впишут текст</text>
+
+      <text x="112" y="262" font-family="monospace" font-size="16" fill="var(--fg)">age</text>
+      <rect x="232" y="240" width="286" height="40" rx="7" fill="none" stroke="var(--border)" stroke-width="1.3" stroke-dasharray="5 4" />
+      <text x="248" y="259" font-family="monospace" font-size="15" fill="var(--accent)">number</text>
+      <text x="248" y="275" fill="var(--muted)" font-size="11.5" font-style="italic">сюда впишут число</text>
+
+      <text x="310" y="322" text-anchor="middle" fill="var(--muted)" font-size="11.5">В пустом бланке — только поля и их сорт данных; конкретных значений внутри нет.</text>
     </svg>
-    <figcaption>Ярлык-тип сверху перечисляет поля <code>name</code> и <code>age</code>. Сам объект-«бланк» снизу заполняет их данными нужного сорта.</figcaption>
+    <figcaption>Сверху — сам тип, ниже он же в виде бланка-анкеты: перечислены поля (<code>name</code>, <code>age</code>) и какого <strong>сорта</strong> данные в них класть. Конкретных значений внутри пока нет — их впишет уже отдельный объект.</figcaption>
   </figure>
 
   <p class="note">
