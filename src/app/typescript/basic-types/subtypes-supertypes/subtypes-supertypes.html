@@ -36,17 +36,17 @@
       <path d="M30 40 l-5 10 h10 z" fill="var(--muted)" />
       <path d="M30 300 l-5 -10 h10 z" fill="var(--muted)" />
 
-      <rect x="70" y="36" width="470" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
-      <text x="305" y="65" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">unknown — вершина (top)</text>
+      <rect x="70" y="36" width="460" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="300" y="65" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">unknown — вершина (top)</text>
 
-      <rect x="130" y="106" width="350" height="48" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
-      <text x="305" y="135" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string · number · boolean</text>
+      <rect x="110" y="106" width="380" height="48" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="300" y="135" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string · number · boolean</text>
 
-      <rect x="190" y="176" width="230" height="48" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
-      <text x="305" y="205" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">"red" · 42 · true</text>
+      <rect x="150" y="176" width="300" height="48" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="300" y="205" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">"red" · 42 · true</text>
 
-      <rect x="235" y="246" width="140" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
-      <text x="305" y="275" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">never — низ (bottom)</text>
+      <rect x="185" y="246" width="230" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="300" y="275" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">never — низ (bottom)</text>
 
       <text x="300" y="330" text-anchor="middle" fill="var(--muted)" font-size="12">уже — подтип (меньше значений)</text>
     </svg>
@@ -127,6 +127,11 @@
   <p>Эта пара красиво ведёт себя и в объединениях — прямо как операции над множествами. <code>never</code> (пустое множество) в объединении просто <em>исчезает</em>, а <code>unknown</code> (множество «всё») — наоборот, <em>поглощает</em> остальных:</p>
   <app-code-block [code]="neverInUnion" lang="typescript" />
   <p class="note"><strong>Аналогия.</strong> <code>unknown</code> — как ящик с надписью «здесь что-то есть»: положить можно любую вещь, но прежде чем пользоваться — надо заглянуть и убедиться, что именно. <code>never</code> — как ящик с надписью «сюда ничего нельзя положить»: он всегда пуст. Про эту пару типов есть отдельные страницы — <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a> и <a routerLink="/typescript/basic-types/void-never">void и never</a>.</p>
+
+  <h3 class="doc__subtitle">А где же <code>any</code>?</h3>
+  <p>Резонный вопрос: если <code>unknown</code> — вершина, а <code>never</code> — низ, то куда поставить <code>any</code>? Ответ: <strong>никуда</strong> — и это не пропуск, а его суть. Каждый нормальный тип занимает <em>одно</em> место в лестнице: <code>'red'</code> уже <code>string</code>, <code>string</code> уже <code>unknown</code>. А <code>any</code> совместим сразу в <strong>обе стороны</strong> — в него можно и положить что угодно (как в <code>unknown</code>), и достать из него что угодно без проверки (как из <code>never</code>). Он ведёт себя одновременно и как вершина, и как низ, а значит выпадает из порядка «уже ↔ шире» вовсе.</p>
+  <app-code-block [code]="anyOutside" lang="typescript" />
+  <p>Секрет в том, что <code>any</code> не описывает множество значений, а просто <strong>выключает проверку типов</strong>: на его этикетке написано «не проверять». Поэтому честного места на схеме множеств для него нет — в отличие от <code>unknown</code>, безопасной вершины, которую сужают проверкой. Почему из-за этого <code>any</code> опасен и когда вместо него лучше брать <code>unknown</code> — разобрано на странице <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>.</p>
 </section>
 
 <section class="doc__section">

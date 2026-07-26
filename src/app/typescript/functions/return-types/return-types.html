@@ -1,0 +1,284 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/functions">Функции</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Типы возврата</span></nav>
+
+<h1 class="doc__title">Типы возврата</h1>
+<p class="doc__lead">
+  У функции есть не только параметры «на входе», но и результат «на выходе» — то,
+  что она отдаёт вызвавшему её коду. <strong>Тип возврата</strong> описывает этот
+  результат: число, строку, объект, а иногда — особые случаи «ничего полезного»
+  (<code>void</code>) или «вообще не возвращает» (<code>never</code>). В этом уроке
+  разберём, где записывается тип возврата, зачем указывать его явно, и пройдёмся по
+  специальным типам: <code>void</code>, <code>never</code> и <code>Promise</code>.
+</p>
+
+<section class="doc__section">
+  <h2>Явный тип возврата и вывод</h2>
+  <p>
+    Тип возврата пишут <strong>после круглых скобок с параметрами</strong>, через
+    двоеточие — и уже перед телом функции. В сигнатуре
+    <code>function toNumber(s: string): number</code> кусочек <code>: number</code> и
+    есть обещание: «эта функция отдаст наружу число».
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 210" width="100%" role="img" aria-label="Разбор сигнатуры функции toNumber. Слева направо четыре части: имя toNumber, параметры в скобках s двоеточие string, затем тип возврата двоеточие number, выделенный акцентным цветом, и тело в фигурных скобках. Подпись показывает, что тип возврата стоит между списком параметров и телом функции.">
+      <text x="320" y="30" text-anchor="middle" fill="var(--fg)" font-size="16" font-weight="600">Где стоит тип возврата</text>
+
+      <rect x="24" y="64" width="118" height="46" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="83" y="93" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--fg)">toNumber</text>
+      <text x="83" y="140" text-anchor="middle" fill="var(--muted)" font-size="11.5">имя</text>
+
+      <rect x="150" y="64" width="150" height="46" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="225" y="93" text-anchor="middle" font-family="monospace" font-size="14"><tspan fill="var(--fg)">(s</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">string</tspan><tspan fill="var(--fg)">)</tspan></text>
+      <text x="225" y="140" text-anchor="middle" fill="var(--muted)" font-size="11.5">параметры (вход)</text>
+
+      <rect x="308" y="64" width="150" height="46" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.4" />
+      <text x="383" y="93" text-anchor="middle" font-family="monospace" font-size="14"><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)" font-weight="700">number</tspan></text>
+      <text x="383" y="140" text-anchor="middle" fill="var(--accent)" font-size="11.5" font-weight="700">тип возврата (выход)</text>
+
+      <rect x="466" y="64" width="150" height="46" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="541" y="93" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--fg)">&#123; ... &#125;</text>
+      <text x="541" y="140" text-anchor="middle" fill="var(--muted)" font-size="11.5">тело</text>
+
+      <line x1="383" y1="150" x2="383" y2="176" stroke="var(--accent)" stroke-width="1.6" />
+      <polygon points="383,182 377,173 389,173" fill="var(--accent)" />
+      <text x="383" y="200" text-anchor="middle" fill="var(--muted)" font-size="11.5">стоит между списком параметров и телом функции</text>
+    </svg>
+    <figcaption>Сигнатура по частям: имя, параметры, затем <strong>тип возврата</strong> <code>: number</code> и, наконец, тело <code>&#123; ... &#125;</code>.</figcaption>
+  </figure>
+
+  <p>
+    TypeScript умеет <strong>вывести</strong> тип возврата сам — из того, что стоит в
+    <code>return</code>. Так что аннотацию можно и не писать. Тогда зачем указывать её
+    явно? По двум причинам: она <strong>документирует намерение</strong> (читателю сразу
+    ясно, что вернёт функция) и <strong>заставляет компилятор сверить тело с обещанием</strong>,
+    ловя ошибку в самом источнике, а не там, где результат используют.
+  </p>
+  <app-code-block [code]="placementExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Аналогия.</strong> Явный тип возврата — как надпись на выходном лотке автомата:
+    «здесь выдаётся <em>кофе</em>». Без надписи вы поймёте, что там, только заглянув внутрь
+    (это и делает вывод типов). С надписью же контролёр сразу поймает брак: если автомат по
+    ошибке начал сыпать в кофейный лоток чай — несоответствие заметят прямо у автомата, а не
+    у разочарованного покупателя.
+  </p>
+
+  <h3 class="doc__subtitle">Как явный тип ловит ошибку внутри тела</h3>
+  <p>
+    Разница видна на примере с ошибкой. Без аннотации неверный тип «протекает» наружу и
+    всплывает в чужом месте — там, где результат пытаются использовать. С явным
+    <code>: number</code> компилятор ругается прямо на <code>return</code>, у причины.
+  </p>
+  <app-code-block [code]="catchBugExample" lang="typescript" />
+  <p class="note">
+    <strong>Для опытных.</strong> Явный тип возврата ещё и стабилизирует публичный контракт
+    функции: пока подпись не меняется, случайная правка тела не «утечёт» в выведенный тип и
+    не сломает вызывающий код незаметно. Для экспортируемых функций это особенно ценно.
+    Подробнее про сам механизм — на странице
+    <a routerLink="/typescript/basic-types/inference">Вывод типов</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2><code>void</code> — функция ничего не возвращает</h2>
+  <p>
+    Некоторые функции нужны ради <strong>действия</strong>, а не результата: записать в лог,
+    показать сообщение, сохранить данные. Они не отдают полезного значения — их тип возврата
+    <code>void</code>. Внутри такой функции либо вовсе нет <code>return</code>, либо стоит
+    пустой <code>return;</code> без значения (обычно для раннего выхода).
+  </p>
+  <app-code-block [code]="voidBasicExample" lang="typescript" />
+  <p>
+    Значение типа <code>void</code> бесполезно как данные: фактически это
+    <code>undefined</code>, и использовать его в вычислениях нельзя. Тип <code>void</code>
+    словно говорит: «результата тут не жди, смотри на побочный эффект».
+  </p>
+
+  <h3 class="doc__subtitle">Тонкость: колбэк с <code>void</code> может вернуть значение</h3>
+  <p>
+    Есть неочевидный, но важный нюанс. Если функция <strong>ожидает колбэк с типом возврата
+    <code>void</code></strong>, то переданный колбэк <strong>вправе вернуть какое-нибудь
+    значение</strong> — оно просто будет проигнорировано. Классический пример:
+    <code>forEach</code> ждёт колбэк, возвращающий <code>void</code>, а метод
+    <code>push</code> возвращает <code>number</code> (новую длину массива) — и всё равно так
+    писать можно.
+  </p>
+  <app-code-block [code]="voidCallbackExample" lang="typescript" />
+  <p class="note">
+    <strong>Почему так.</strong> Это называют <em>контекстным типом возврата
+    <code>void</code></em>. Тип <code>void</code> в позиции колбэка означает не «обязан вернуть
+    <code>undefined</code>», а «мне не важно, что ты вернёшь, — я всё равно это не использую».
+    Так удобнее писать короткие стрелки вроде <code>(n) =&gt; list.push(n)</code>, не оборачивая
+    тело в фигурные скобки только ради того, чтобы «проглотить» результат. Обратная сторона:
+    сам вызывающий код (тот же <code>forEach</code>) на этот результат опираться не должен.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2><code>never</code> — функция никогда не возвращает</h2>
+  <p>
+    Тип <code>never</code> означает, что функция <strong>вообще не возвращает управление</strong>
+    вызвавшему коду. Так бывает в двух случаях: функция <strong>всегда бросает исключение</strong>
+    либо <strong>уходит в бесконечный цикл</strong>. Важно не путать его с <code>void</code>:
+    <code>void</code>-функция возвращается, просто без значения; <code>never</code>-функция
+    <em>не возвращается вовсе</em> — код после её вызова недостижим.
+  </p>
+  <app-code-block [code]="neverExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th><code>void</code></th>
+          <th><code>never</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Возвращает управление?</td>
+          <td class="yes">✅ да, возвращается</td>
+          <td class="no">❌ нет, не возвращается</td>
+        </tr>
+        <tr>
+          <td>Есть полезное значение?</td>
+          <td class="no">нет (по сути <code>undefined</code>)</td>
+          <td class="no">значения не бывает в принципе</td>
+        </tr>
+        <tr>
+          <td>Типичный случай</td>
+          <td class="yes">лог, сохранение, обработчик события</td>
+          <td class="yes">бросок ошибки, вечный цикл</td>
+        </tr>
+        <tr>
+          <td>Код после вызова</td>
+          <td class="yes">выполнится дальше</td>
+          <td class="no">недостижим</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 232" width="100%" role="img" aria-label="Сравнение void и never. Слева карточка void: блок кода передаёт управление функции, а затем управление возвращается в следующий блок кода — программа идёт дальше, но без полезного значения. Справа карточка never: блок кода вызывает функцию, и на этом путь обрывается красным знаком — управление наружу не возвращается, throw или вечный цикл.">
+      <rect x="24" y="42" width="276" height="172" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="162" y="70" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="15" font-weight="700">void</text>
+      <text x="162" y="90" text-anchor="middle" fill="var(--muted)" font-size="11.5">возвращается, но без значения</text>
+
+      <rect x="44" y="112" width="58" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="73" y="134" text-anchor="middle" fill="var(--fg)" font-size="11.5">код</text>
+      <line x1="102" y1="129" x2="128" y2="129" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="134,129 125,124 125,134" fill="var(--muted)" />
+
+      <rect x="134" y="112" width="72" height="34" rx="7" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="170" y="134" text-anchor="middle" fill="var(--fg)" font-size="11.5">функция</text>
+      <line x1="206" y1="129" x2="232" y2="129" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="238,129 229,124 229,134" fill="var(--muted)" />
+
+      <rect x="238" y="112" width="46" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="261" y="134" text-anchor="middle" fill="var(--fg)" font-size="11.5">код</text>
+      <text x="162" y="188" text-anchor="middle" fill="var(--muted)" font-size="11.5">управление вернулось —</text>
+      <text x="162" y="204" text-anchor="middle" fill="var(--muted)" font-size="11.5">программа идёт дальше</text>
+
+      <rect x="320" y="42" width="276" height="172" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="458" y="70" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="15" font-weight="700">never</text>
+      <text x="458" y="90" text-anchor="middle" fill="var(--muted)" font-size="11.5">управление не возвращается</text>
+
+      <rect x="352" y="112" width="58" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="381" y="134" text-anchor="middle" fill="var(--fg)" font-size="11.5">код</text>
+      <line x1="410" y1="129" x2="436" y2="129" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="442,129 433,124 433,134" fill="var(--muted)" />
+
+      <rect x="442" y="112" width="72" height="34" rx="7" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="478" y="134" text-anchor="middle" fill="var(--fg)" font-size="11.5">функция</text>
+
+      <line x1="528" y1="116" x2="552" y2="142" stroke="var(--red)" stroke-width="2.4" />
+      <line x1="552" y1="116" x2="528" y2="142" stroke="var(--red)" stroke-width="2.4" />
+      <text x="458" y="188" text-anchor="middle" fill="var(--muted)" font-size="11.5">throw или вечный цикл —</text>
+      <text x="458" y="204" text-anchor="middle" fill="var(--muted)" font-size="11.5">назад пути нет</text>
+    </svg>
+    <figcaption>Слева <code>void</code>: управление возвращается, но полезного значения нет. Справа <code>never</code>: путь обрывается — наружу функция не выходит.</figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Дальше.</strong> Оба этих типа с их тонкостями (например, зачем <code>never</code>
+    нужен для проверки полноты <code>switch</code>) подробно разобраны на отдельной странице
+    <a routerLink="/typescript/basic-types/void-never">void и never</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Асинхронные функции — <code>Promise</code></h2>
+  <p>
+    Функция, помеченная <code>async</code>, <strong>всегда возвращает <code>Promise</code></strong> —
+    даже если внутри вы пишете <code>return 42</code>. Компилятор автоматически оборачивает
+    результат: число превращается в <code>Promise&lt;number&gt;</code>. Поэтому тип возврата
+    async-функции почти всегда записывают как <code>Promise&lt;ЧтоВнутри&gt;</code>, например
+    <code>async function load(): Promise&lt;number&gt;</code>.
+  </p>
+  <app-code-block [code]="asyncExample" lang="typescript" />
+  <p>
+    Обещанный внутренний тип компилятор проверяет: вернёте из
+    <code>Promise&lt;number&gt;</code>-функции строку — получите ошибку прямо на
+    <code>return</code>. А чтобы достать значение из <code>Promise</code>, его
+    <strong>разворачивают</strong> через <code>await</code>: <code>await load()</code> даёт
+    уже <code>number</code>, а не <code>Promise&lt;number&gt;</code>. Если асинхронная функция
+    не отдаёт полезного результата, её тип — <code>Promise&lt;void&gt;</code>.
+  </p>
+  <p class="note">
+    <strong>Важно.</strong> Указывать тип возврата <code>number</code> у async-функции
+    <em>нельзя</em> — компилятор потребует именно <code>Promise&lt;number&gt;</code>. Ошибка
+    новичка «функция ведь возвращает число» здесь не работает: значение станет доступным как
+    число только после <code>await</code>, а сама функция всегда отдаёт обёртку-обещание.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Возврат объединения или объекта</h2>
+  <p>
+    Результат не обязан быть одним простым типом. Функция может вернуть
+    <strong>объединение</strong>, например <code>number | null</code> или
+    <code>User | null</code>, — и тогда вызывающий код <strong>обязан разобрать каждый
+    случай</strong>. Может вернуть и целый <strong>объект</strong>, упаковав несколько
+    значений вместе.
+  </p>
+  <app-code-block [code]="unionReturnExample" lang="typescript" />
+  <p>
+    Пока результат может быть <code>null</code>, компилятор не даст обратиться к полю напрямую
+    — сначала нужно проверкой <strong>сузить</strong> тип. Как это работает, подробно на
+    странице <a routerLink="/typescript/unions-narrowing/union">Объединения и сужение</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Особые типы возврата: проверки во время выполнения</h2>
+  <p>
+    Наконец, есть два необычных вида типа возврата, которые описывают не «какое значение
+    вернём», а <strong>проверку, влияющую на типы</strong>. Это <strong>предикаты типа</strong>
+    (<code>x is Foo</code>) и <strong>сигнатуры-утверждения</strong>
+    (<code>asserts x is Foo</code>). Оба говорят компилятору, как сузить тип аргумента после
+    вызова функции.
+  </p>
+  <app-code-block [code]="guardExample" lang="typescript" />
+  <p>
+    Это большая отдельная тема — здесь достаточно знать, что такие «типы возврата» существуют.
+    Подробно про них — на страницах
+    <a routerLink="/typescript/assertions/user-type-guards">Пользовательские защитники типов</a>
+    и <a routerLink="/typescript/assertions/assertion-functions">Функции-утверждения</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Тип возврата</strong> пишут после скобок с параметрами: <code>function toNumber(s: string): number</code>. TypeScript умеет вывести его сам.</li>
+    <li>Указывать тип явно полезно: он <strong>документирует намерение</strong> и заставляет компилятор проверить тело, ловя ошибку <strong>в источнике</strong>, а не в месте вызова.</li>
+    <li><strong><code>void</code></strong> — функция не отдаёт полезного значения (лог, сохранение). Колбэк с <code>void</code> <em>вправе</em> вернуть значение — оно игнорируется (контекстный <code>void</code>).</li>
+    <li><strong><code>never</code></strong> — функция никогда не возвращается: всегда <code>throw</code> или вечный цикл. Отличается от <code>void</code>, который возвращается, просто без значения.</li>
+    <li><strong><code>async</code>-функция всегда возвращает <code>Promise</code>:</strong> тип пишут как <code>Promise&lt;number&gt;</code>, значение достают через <code>await</code>.</li>
+    <li>Функция может вернуть <strong>объединение</strong> (<code>User | null</code>) или <strong>объект</strong>; при <code>null</code> вызывающий код обязан сузить тип проверкой.</li>
+    <li>Особые типы возврата <code>x is Foo</code> и <code>asserts x is Foo</code> описывают <strong>проверки времени выполнения</strong> — см. <a routerLink="/typescript/assertions/user-type-guards">защитники типов</a> и <a routerLink="/typescript/assertions/assertion-functions">функции-утверждения</a>.</li>
+  </ul>
+</section>
+</article>

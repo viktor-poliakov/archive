@@ -76,7 +76,7 @@
                   [style.--accent]="active.color"
                   [attr.aria-expanded]="!isGroupCollapsed(child.id)"
                 >
-                  <span class="submenu__label">{{ child.label }}</span>
+                  <span class="submenu__label" [appTruncateTooltip]="child.label">{{ child.label }}</span>
                   <svg
                     viewBox="0 0 24 24"
                     width="16"
@@ -101,6 +101,7 @@
                   [routerLink]="['/', active.id, child.id]"
                   routerLinkActive="submenu__item--active"
                   [style.--accent]="active.color"
+                  [appTruncateTooltip]="child.label"
                 >
                   {{ child.label }}
                 </a>
@@ -115,6 +116,7 @@
                         [routerLink]="['/', active.id, child.id, sub.id]"
                         routerLinkActive="submenu__item--active"
                         [style.--accent]="active.color"
+                        [appTruncateTooltip]="sub.label"
                       >
                         {{ sub.label }}
                       </a>

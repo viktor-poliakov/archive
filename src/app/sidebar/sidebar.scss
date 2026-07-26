@@ -187,6 +187,14 @@
   }
 }
 
+// Длинные пункты-ссылки (без собственного вложенного меню) обрезаем троеточием;
+// полный текст показывается во всплывающей подсказке (атрибут title в шаблоне).
+// Групповые строки обрезаются отдельно — через вложенный .submenu__label.
+.submenu__item:not(.submenu__item--group) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 // Leaf items of the second level (e.g. «Переменные», «Hoisting») stand next to the
 // expandable group rows, which inherit the base 16px font. Match their size so all
 // second-level items look the same (nested `--sub` items keep their smaller size).

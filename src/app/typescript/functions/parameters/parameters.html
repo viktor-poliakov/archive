@@ -1,0 +1,256 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/functions">Функции</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Параметры: опциональные и по умолчанию</span></nav>
+
+<h1 class="doc__title">Параметры: опциональные и по умолчанию</h1>
+<p class="doc__lead">
+  Иногда заставлять того, кто вызывает функцию, передавать <strong>все</strong> аргументы —
+  перебор. Приветствие можно и не указывать, количество по умолчанию равно единице, а
+  комментарий часто пустой. У TypeScript для этого два инструмента: <strong>опциональные
+  параметры</strong> (знак <code>?</code>) — «аргумент можно опустить» — и
+  <strong>параметры со значением по умолчанию</strong> (знак <code>=</code>) — «если не
+  передали, подставится вот это». Похожи, но ведут себя по-разному; разберём оба и увидим,
+  когда какой брать.
+</p>
+
+<section class="doc__section">
+  <h2>Опциональные параметры <code>?</code></h2>
+  <p>
+    Поставьте знак вопроса сразу после имени параметра — <code>greeting?: string</code> — и
+    его станет можно <strong>не передавать при вызове</strong>. Функция
+    <code>greet(name: string, greeting?: string)</code> согласится и на два аргумента, и на
+    один: второй теперь необязателен.
+  </p>
+
+  <p class="note">
+    <strong>Аналогия.</strong> Это как бумажный бланк-заявка. Поле «Имя» обязательное — без
+    него заявку не примут. А «Комментарий (при желании)» помечено как необязательное: можно
+    вписать, можно оставить пустым — бланк всё равно действителен. Знак <code>?</code> — ровно
+    та самая пометка «можно не заполнять».
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Сигнатура функции greet как бланк с двумя слотами. Слева обязательный слот name сорта string, помеченный зелёной звёздочкой «заполнить обязательно». Справа необязательный слот greeting сорта string или undefined, обведённый пунктиром и помеченный оранжевым знаком вопроса «можно опустить».">
+      <text x="310" y="28" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Сигнатура функции — бланк со слотами</text>
+
+      <text x="310" y="58" text-anchor="middle" font-family="monospace" font-size="14"><tspan fill="var(--accent)">greet</tspan><tspan fill="var(--muted)">(</tspan><tspan fill="var(--fg)">name</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">string</tspan><tspan fill="var(--muted)">, </tspan><tspan fill="var(--fg)">greeting</tspan><tspan fill="var(--orange)">?</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">string</tspan><tspan fill="var(--muted)">)</tspan></text>
+
+      <rect x="70" y="84" width="220" height="132" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="180" y="116" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15" font-weight="700">name</text>
+      <rect x="96" y="130" width="168" height="40" rx="7" fill="none" stroke="var(--border)" stroke-width="1.3" stroke-dasharray="5 4" />
+      <text x="180" y="155" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">string</text>
+      <text x="104" y="200" fill="var(--green)" font-size="18" font-weight="700">*</text>
+      <text x="122" y="200" fill="var(--green)" font-size="12.5">заполнить обязательно</text>
+
+      <rect x="330" y="84" width="220" height="132" rx="12" fill="var(--surface)" stroke="var(--orange)" stroke-width="2" stroke-dasharray="7 5" />
+      <text x="440" y="116" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15" font-weight="700">greeting</text>
+      <rect x="356" y="130" width="168" height="40" rx="7" fill="none" stroke="var(--border)" stroke-width="1.3" stroke-dasharray="5 4" />
+      <text x="440" y="155" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12.5">string | undefined</text>
+      <text x="364" y="200" fill="var(--orange)" font-size="18" font-weight="700">?</text>
+      <text x="384" y="200" fill="var(--orange)" font-size="12.5">можно опустить</text>
+    </svg>
+    <figcaption>Обязательный слот <code>name</code> надо заполнить всегда; слот <code>greeting?</code> обведён пунктиром — его можно оставить пустым, и тогда внутри функции там окажется <code>undefined</code>.</figcaption>
+  </figure>
+
+  <app-code-block [code]="optionalBasicExample" lang="typescript" />
+
+  <p>
+    Обратите внимание на диагностику компилятора. Раз аргумент могли не передать, то
+    <strong>внутри функции</strong> тип <code>greeting</code> становится не просто
+    <code>string</code>, а <code>string | undefined</code>. Поэтому в строгом режиме
+    (<code>strict</code>) TypeScript не даёт сразу вызвать у него метод — вдруг там
+    <code>undefined</code>.
+  </p>
+
+  <h3 class="doc__subtitle">Перед использованием — проверьте</h3>
+  <p>
+    Лечится это проверкой. Убедитесь, что значение действительно есть, — и компилятор
+    <strong>сузит</strong> тип, убрав из него <code>undefined</code>. После
+    <code>if (greeting === undefined)</code> в основной ветке остаётся чистый
+    <code>string</code>, и все строковые методы снова доступны.
+  </p>
+  <app-code-block [code]="optionalAccessExample" lang="typescript" />
+  <p>
+    Подробно про то, как проверка «отрезает» <code>undefined</code> от типа, рассказано на
+    странице <a routerLink="/typescript/unions-narrowing/union">Объединения и сужение</a>.
+    Тот же знак <code>?</code> работает и на
+    <a routerLink="/typescript/objects-interfaces/optional-readonly">свойствах объектов</a> —
+    там он означает «поля может не быть».
+  </p>
+
+  <h3 class="doc__subtitle">Опциональные — только после обязательных</h3>
+  <p>
+    Есть жёсткое правило порядка: необязательный параметр <strong>не может стоять перед
+    обязательным</strong>. Иначе позиционные аргументы стали бы неоднозначными — непонятно,
+    какому слоту принадлежит переданное значение. Поставите <code>?</code> раньше, чем нужно, —
+    получите ошибку прямо в объявлении.
+  </p>
+  <app-code-block [code]="optionalOrderExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Параметры со значением по умолчанию <code>=</code></h2>
+  <p>
+    Второй инструмент — задать параметру <strong>значение по умолчанию</strong> через знак
+    равенства: <code>greeting = 'Привет'</code>. Если аргумент не передали, подставится это
+    значение. Отдельно писать <code>?</code> не нужно: наличие значения по умолчанию само
+    делает параметр необязательным при вызове.
+  </p>
+  <p>
+    Приятный бонус — тип можно не писать вовсе. TypeScript <strong>выведет</strong> его из
+    значения по умолчанию: у <code>greeting = 'Привет'</code> тип станет <code>string</code>.
+    При желании тип указывают и явно (<code>greeting: string = 'Привет'</code>) — это ровно то
+    же самое, просто нагляднее.
+  </p>
+  <app-code-block [code]="defaultBasicExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Важно.</strong> Заметьте разницу с <code>?</code>: внутри функции тип
+    <code>greeting</code> здесь — просто <code>string</code>, а не <code>string | undefined</code>.
+    Значение гарантировано (своё или по умолчанию), поэтому проверять на <code>undefined</code>
+    и что-либо сужать не нужно. Это одно из главных практических отличий двух подходов.
+  </p>
+
+  <h3 class="doc__subtitle">Когда именно подставляется значение</h3>
+  <p>
+    Значение по умолчанию срабатывает в <strong>двух</strong> ситуациях: когда аргумент
+    <strong>вообще не передан</strong> и когда на его месте <strong>явно стоит
+    <code>undefined</code></strong>. А вот <code>null</code> «пустотой» не считается — это
+    осмысленное значение, и оно default не запускает (да ещё и не подходит по типу
+    <code>string</code>).
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 214" width="100%" role="img" aria-label="Схема подстановки значения по умолчанию. Вызовы greet со строкой Аня без второго аргумента и greet с Аня и undefined ведут стрелками к результату greeting равно строка Привет — это значение по умолчанию. Вызов greet с Аня и строкой Салют ведёт к результату greeting равно Салют — переданное значение.">
+      <text x="320" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Когда подставляется значение по умолчанию</text>
+
+      <text x="26" y="78" font-family="monospace" font-size="13" fill="var(--fg)">greet('Аня')</text>
+      <text x="26" y="112" font-family="monospace" font-size="13" fill="var(--fg)">greet('Аня', undefined)</text>
+      <text x="26" y="176" font-family="monospace" font-size="13" fill="var(--fg)">greet('Аня', 'Салют')</text>
+
+      <line x1="250" y1="74" x2="368" y2="90" stroke="var(--accent)" stroke-width="1.6" />
+      <line x1="270" y1="108" x2="368" y2="98" stroke="var(--accent)" stroke-width="1.6" />
+      <polygon points="374,94 362,90 364,101" fill="var(--accent)" />
+
+      <line x1="256" y1="172" x2="368" y2="168" stroke="var(--green)" stroke-width="1.6" />
+      <polygon points="374,167 362,163 362,174" fill="var(--green)" />
+
+      <rect x="378" y="72" width="248" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="502" y="97" text-anchor="middle" font-family="monospace" font-size="13.5" fill="var(--fg)">greeting = 'Привет'</text>
+      <text x="502" y="114" text-anchor="middle" font-size="11" fill="var(--muted)">значение по умолчанию</text>
+
+      <rect x="378" y="146" width="248" height="46" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="502" y="168" text-anchor="middle" font-family="monospace" font-size="13.5" fill="var(--fg)">greeting = 'Салют'</text>
+      <text x="502" y="184" text-anchor="middle" font-size="11" fill="var(--muted)">переданное значение</text>
+    </svg>
+    <figcaption>Опущенный аргумент и явный <code>undefined</code> дают одинаковый результат — подставляется значение по умолчанию. Любое другое переданное значение используется как есть.</figcaption>
+  </figure>
+
+  <app-code-block [code]="defaultAppliesExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Для опытных.</strong> Значение по умолчанию — это не константа, а
+    <strong>выражение</strong>: оно вычисляется заново при каждом вызове, где аргумент опущен,
+    и может ссылаться на параметры, объявленные <em>левее</em>. Так удобно строить одни
+    аргументы из других.
+  </p>
+  <app-code-block [code]="defaultRefEarlierExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2><code>?</code> или значение по умолчанию</h2>
+  <p>
+    Оба знака делают аргумент необязательным — но дальше расходятся. Ключевой вопрос: что
+    окажется внутри функции, если аргумент не передали. С <code>?</code> это
+    <code>undefined</code> (и тип придётся проверять), со значением по умолчанию — само это
+    значение (проверять нечего). Сведём различия в таблицу.
+  </p>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Вопрос</th>
+          <th><code>greeting?: string</code></th>
+          <th><code>greeting = 'Привет'</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Можно опустить аргумент?</td>
+          <td class="yes">да</td>
+          <td class="yes">да</td>
+        </tr>
+        <tr>
+          <td>Тип параметра внутри функции</td>
+          <td><code>string | undefined</code></td>
+          <td><code>string</code></td>
+        </tr>
+        <tr>
+          <td>Нужно проверять на <code>undefined</code>?</td>
+          <td class="no">да, иначе ошибка</td>
+          <td class="yes">нет</td>
+        </tr>
+        <tr>
+          <td>Значение, когда аргумент не передан</td>
+          <td><code>undefined</code></td>
+          <td><code>'Привет'</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Отсюда простое правило выбора: если у параметра есть <strong>разумное значение по
+    умолчанию</strong> — берите <code>=</code>, так удобнее и вам, и вызывающему коду. Если же
+    «отсутствие» само по себе несёт смысл (поля просто нет) и вы готовы обрабатывать его в
+    коде — берите <code>?</code>.
+  </p>
+
+  <h3 class="doc__subtitle">Нельзя совмещать <code>?</code> и <code>=</code></h3>
+  <p>
+    Соблазнительно написать <code>greeting?: string = 'Привет'</code> — и попросить сразу «и
+    необязательный, и со значением». Так нельзя: это ошибка синтаксиса. Значение по умолчанию
+    и так делает параметр необязательным, поэтому <code>?</code> оказывается лишним.
+    Выбирайте что-то одно.
+  </p>
+  <app-code-block [code]="cannotCombineExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Обязательный параметр после параметра по умолчанию</h2>
+  <p>
+    Тут есть тонкость, отличающая <code>=</code> от <code>?</code>. Необязательный
+    <code>?</code>-параметр обязан идти после всех обязательных — иначе ошибка. А параметр со
+    значением по умолчанию TypeScript <strong>разрешает</strong> поставить и перед
+    обязательным: само объявление компилируется без ошибок.
+  </p>
+  <p>
+    Вот только пользы от этого мало. Аргументы передаются по позиции, поэтому, чтобы добраться
+    до обязательного параметра справа и при этом оставить значение по умолчанию слева,
+    вызывающему коду придётся <strong>явно передать <code>undefined</code></strong> на место
+    «пропущенного» параметра. Выглядит неуклюже.
+  </p>
+  <app-code-block [code]="requiredAfterDefaultExample" lang="typescript" />
+  <p class="note">
+    <strong>Почему так.</strong> В JavaScript нет «пропуска» позиционного аргумента: нельзя
+    написать <code>box(, 'ширина')</code>. Единственный способ сказать «этот аргумент опускаю,
+    возьми умолчание, а следующий вот» — это подставить <code>undefined</code>. Чтобы такого не
+    случалось, параметры со значением по умолчанию держат <strong>в конце</strong> списка —
+    тогда их можно просто не писать.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong><code>?</code> — опциональный параметр:</strong> аргумент можно опустить. Внутри функции его тип — <code>значение | undefined</code>, поэтому перед использованием нужна проверка.</li>
+    <li>Опциональные параметры идут <strong>только после обязательных</strong> — иначе «A required parameter cannot follow an optional parameter».</li>
+    <li><strong><code>=</code> — значение по умолчанию:</strong> подставляется, когда аргумент не передан <em>или</em> равен <code>undefined</code>. Тип выводится из значения; внутри функции параметр — уже без <code>undefined</code>.</li>
+    <li><code>null</code> значение по умолчанию <strong>не запускает</strong> — это осмысленное значение, а не «пусто».</li>
+    <li>Совмещать <strong><code>?</code> и <code>=</code> нельзя</strong>: значение по умолчанию само делает параметр необязательным.</li>
+    <li>Обязательный параметр <em>после</em> параметра со значением по умолчанию заставляет вызывающего передавать <code>undefined</code> вручную — поэтому параметры с умолчанием ставят <strong>в конце</strong>.</li>
+    <li><strong>Выбор:</strong> есть разумное умолчание — берите <code>=</code>; «отсутствие» несёт смысл — берите <code>?</code>.</li>
+    <li>Дальше — как принять <strong>произвольное число</strong> аргументов: <a routerLink="/typescript/functions/rest">rest-параметры</a>. Знак <code>?</code> на полях объектов — на странице <a routerLink="/typescript/objects-interfaces/optional-readonly">Опциональные и readonly</a>. Основы синтаксиса аргументов в JS — <a routerLink="/javascript/functions/parameters">Параметры функций</a>.</li>
+  </ul>
+</section>
+</article>

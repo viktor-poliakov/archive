@@ -1,0 +1,295 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/functions">Функции</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">
+  Мы разобрали функции по частям: <a routerLink="/typescript/functions/basics">сигнатуры</a>,
+  <a routerLink="/typescript/functions/parameters">параметры</a>,
+  <a routerLink="/typescript/functions/return-types">типы возврата</a>,
+  <a routerLink="/typescript/functions/rest">rest</a>,
+  <a routerLink="/typescript/functions/overloads">перегрузки</a> и
+  <a routerLink="/typescript/functions/this">this</a>. Осталось собрать в одном месте
+  небольшие, но коварные тонкости — те самые, на которых спотыкаются даже опытные. Каждый
+  пункт короткий: крошечный пример и вывод одной строкой.
+</p>
+
+<section class="doc__section">
+  <h2>1. Меньше параметров — это нормально</h2>
+  <p>
+    Первое, что удивляет новичка: почему <code>arr.map(x =&gt; x * 2)</code> работает, хотя
+    <code>map</code> зовёт колбэк с <strong>тремя</strong> аргументами — элементом, индексом и
+    самим массивом? Потому что в TypeScript функцию с <strong>меньшим</strong> числом параметров
+    можно поставить туда, где ждут функцию с <strong>большим</strong>. Лишние аргументы
+    вызывающий код всё равно передаст, а функция их просто не заметит.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 296" width="100%" role="img" aria-label="map передаёт колбэку три аргумента: value, index и array. Колбэк объявил только один параметр value — он принимается, а index и array отбрасываются.">
+      <text x="320" y="28" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">map передаёт 3 аргумента — колбэк берёт сколько объявил</text>
+
+      <rect x="36" y="52" width="212" height="196" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="142" y="76" text-anchor="middle" fill="var(--muted)" font-size="12" font-style="italic">map передаёт</text>
+
+      <rect x="60" y="90" width="164" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="72" y="112" font-family="monospace" font-size="13" fill="var(--fg)">value <tspan fill="var(--muted)">(arg 0)</tspan></text>
+
+      <rect x="60" y="140" width="164" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="72" y="162" font-family="monospace" font-size="13" fill="var(--fg)">index <tspan fill="var(--muted)">(arg 1)</tspan></text>
+
+      <rect x="60" y="190" width="164" height="34" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="72" y="212" font-family="monospace" font-size="13" fill="var(--fg)">array <tspan fill="var(--muted)">(arg 2)</tspan></text>
+
+      <line x1="228" y1="107" x2="404" y2="107" stroke="var(--green)" stroke-width="2" />
+      <polygon points="414,107 402,101 402,113" fill="var(--green)" />
+      <text x="316" y="99" text-anchor="middle" fill="var(--green)" font-size="11">принят</text>
+
+      <line x1="228" y1="157" x2="352" y2="157" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" />
+      <text x="366" y="162" fill="var(--red)" font-size="15" font-weight="700">✗</text>
+      <line x1="228" y1="207" x2="352" y2="207" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" />
+      <text x="366" y="212" fill="var(--red)" font-size="15" font-weight="700">✗</text>
+
+      <rect x="416" y="52" width="208" height="196" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="520" y="76" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13" font-weight="700">(value) =&gt; …</text>
+      <text x="520" y="96" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">колбэк объявил 1 параметр</text>
+
+      <rect x="440" y="112" width="160" height="34" rx="7" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="520" y="134" text-anchor="middle" font-family="monospace" font-size="13" fill="var(--fg)">value</text>
+
+      <text x="520" y="196" text-anchor="middle" fill="var(--muted)" font-size="11.5">index и array колбэк</text>
+      <text x="520" y="214" text-anchor="middle" fill="var(--muted)" font-size="11.5">не объявил — они пропадают</text>
+
+      <text x="320" y="282" text-anchor="middle" fill="var(--muted)" font-size="11.5">Взять меньше, чем дают, — безопасно. Требовать больше, чем дадут, — нельзя.</text>
+    </svg>
+    <figcaption>Колбэк берёт только <code>value</code>; <code>index</code> и <code>array</code> всё равно передаются, но просто отбрасываются. Поэтому короткий колбэк подходит там, где ждут более «широкий».</figcaption>
+  </figure>
+
+  <app-code-block [code]="fewerParamsExample" lang="typescript" />
+
+  <p class="note">
+    <strong>Вывод.</strong> Функция может принимать <em>меньше</em> параметров, чем от неё ждут, —
+    это безопасно, потому что лишние аргументы никак не мешают. Обратное запрещено: функция не
+    вправе требовать больше аргументов, чем ей гарантированно дадут.
+  </p>
+
+  <h3 class="doc__subtitle">Возврат <code>void</code> разрешает вернуть что угодно</h3>
+  <p>
+    Родственная тонкость: если контекст ждёт функцию с типом возврата <code>void</code>, то
+    фактически вернуть из неё можно <strong>значение любого типа</strong> — его всё равно никто
+    не использует. Именно поэтому <code>[1,2,3].forEach(n =&gt; arr.push(n))</code> не ошибка,
+    хотя <code>push</code> возвращает число, а <code>forEach</code> ждёт <code>void</code>.
+    Подробно этот механизм разобран на странице
+    <a routerLink="/typescript/functions/return-types">Типы возвращаемого значения</a>.
+  </p>
+  <app-code-block [code]="voidReturnExample" lang="typescript" />
+  <p class="note">
+    <strong>Вывод.</strong> <code>void</code> в ожидаемой сигнатуре означает «результат
+    игнорируется», а не «функция обязана ничего не возвращать».
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>2. Опциональный <code>?</code> против union с <code>undefined</code></h2>
+  <p>
+    Две записи выглядят почти одинаково, но ведут себя по-разному. Параметр
+    <code>name?: string</code> можно <strong>вообще не передавать</strong>. А параметр
+    <code>name: string | undefined</code> (без <code>?</code>) передать
+    <strong>обязательно</strong> — пусть даже со значением <code>undefined</code>. Разница —
+    в том, обязателен ли сам аргумент в месте вызова.
+  </p>
+  <app-code-block [code]="optionalVsUndefinedExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Что можно в месте вызова</th>
+          <th><code>name?: string</code></th>
+          <th><code>name: string | undefined</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Не передавать аргумент вообще</td>
+          <td class="yes">✅ да</td>
+          <td class="no">❌ нет, аргумент обязателен</td>
+        </tr>
+        <tr>
+          <td>Передать <code>undefined</code> явно</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Передать строку</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <strong>Вывод.</strong> Нужно «поле можно опустить» — берите <code>?</code>. Форму
+    <code>| undefined</code> без <code>?</code> используют редко: когда хотят заставить
+    вызывающего <em>осознанно</em> передать «пусто», а не забыть аргумент по невнимательности.
+    Больше про это — на странице
+    <a routerLink="/typescript/functions/parameters">Параметры функций</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>3. <code>strictFunctionTypes</code>: функции и методы проверяются по-разному</h2>
+  <p>
+    Флаг <code>strictFunctionTypes</code> (входит в <code>strict</code>) делает проверку типов
+    параметров строгой и безопасной — но <strong>только для функций, записанных как
+    поле-функция</strong> (<code>on: (e) =&gt; void</code>). У параметров, записанных
+    <strong>синтаксисом метода</strong> (<code>on(e): void</code>), проверка осталась мягкой.
+    Это не баг, а намеренная «дырка», оставленная ради совместимости со множеством старых
+    типов (например, DOM-обработчиков событий).
+  </p>
+  <app-code-block [code]="strictFunctionTypesExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Форма записи</th>
+          <th>Как проверяются параметры</th>
+          <th>Небезопасная подстановка</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Поле-функция: <code>on: (e) =&gt; void</code></td>
+          <td class="yes">строго (контравариантно)</td>
+          <td class="yes">✅ ловится ошибкой</td>
+        </tr>
+        <tr>
+          <td>Метод: <code>on(e): void</code></td>
+          <td class="no">мягко (бивариантно)</td>
+          <td class="no">❌ проходит молча</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <strong>Вывод.</strong> Теорию про вариантность запоминать не обязательно — важно
+    практическое: если хотите, чтобы TypeScript строго проверял параметры колбэка, объявляйте
+    его <strong>полем-функцией</strong>, а не методом. И помните, что у методов эта проверка
+    сознательно ослаблена.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>4. Тип <code>Function</code> — избегайте</h2>
+  <p>
+    У TypeScript есть встроенный тип <code>Function</code> — казалось бы, «любая функция». Но по
+    сути это <strong><code>any</code> для функций</strong>: такое значение можно вызвать с любыми
+    аргументами, а результат вызова имеет тип <code>any</code>. Никакой проверки ни аргументов,
+    ни возврата — вся польза типизации пропадает.
+  </p>
+  <app-code-block [code]="functionTypeExample" lang="typescript" />
+  <p class="note">
+    <strong>Вывод.</strong> Никогда не пишите <code>Function</code>. Всегда указывайте точную
+    сигнатуру: <code>(x: number) =&gt; void</code>. Если функция действительно может быть любой,
+    честнее написать <code>(...args: unknown[]) =&gt; unknown</code> — это заставит вас
+    аккуратно проверить аргументы и результат, в отличие от <code>Function</code>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>5. Перегрузки против объединений</h2>
+  <p>
+    <a routerLink="/typescript/functions/overloads">Перегрузки</a> кажутся мощным инструментом,
+    но они многословны и легко расходятся с реализацией. В большинстве случаев то же самое
+    выражается короче и безопаснее через <a routerLink="/typescript/unions-narrowing/union">объединение</a>
+    в одном параметре или через <a routerLink="/typescript/generics/functions">дженерик</a>,
+    когда тип результата зависит от типа аргумента.
+  </p>
+  <app-code-block [code]="overloadsVsUnionExample" lang="typescript" />
+  <p class="note">
+    <strong>Вывод.</strong> Сначала попробуйте объединение или дженерик — и только если форма
+    вызова принципиально разная для разных аргументов, беритесь за перегрузки.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>6. Неявный <code>any</code> в параметрах</h2>
+  <p>
+    Параметр без аннотации типа получает тип <code>any</code> — «неявный any». При включённом
+    <code>noImplicitAny</code> (а он входит в <code>strict</code>) это ошибка компиляции. Функция
+    с таким параметром теряет всю защиту типов: внутри с аргументом можно делать что угодно, и
+    ни одна опечатка не будет поймана.
+  </p>
+  <app-code-block [code]="implicitAnyExample" lang="typescript" />
+  <p class="note">
+    <strong>Вывод.</strong> Всегда аннотируйте параметры обычных функций. Исключение — колбэки,
+    где тип параметра TypeScript выводит <strong>из контекста</strong> (как в
+    <code>arr.map(x =&gt; …)</code>): там аннотация не нужна и даже избыточна.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>7. Потеря <code>this</code> при передаче метода</h2>
+  <p>
+    Метод объекта «знает» свой <code>this</code>, только пока его вызывают через сам объект:
+    <code>counter.inc()</code>. Если же передать <code>counter.inc</code> куда-то как колбэк
+    (в <code>setTimeout</code>, обработчик события и т. п.), метод <strong>отрывается</strong> от
+    объекта, и <code>this</code> теряется. Это чисто джаваскриптовое поведение, но TypeScript
+    умеет предупредить о нём — если у метода объявлен параметр <code>this</code>.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 250" width="100%" role="img" aria-label="Слева: метод inc вызван через объект counter, this указывает на counter — верно. Справа: метод сохранён в отдельную переменную fn и оторван от объекта, this становится undefined — ошибка.">
+      <text x="320" y="28" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Метод, оторванный от объекта, теряет this</text>
+
+      <rect x="30" y="50" width="270" height="170" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="165" y="76" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13" font-weight="700">counter.inc()</text>
+      <text x="165" y="96" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">вызов ЧЕРЕЗ объект</text>
+
+      <rect x="58" y="112" width="214" height="60" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="74" y="134" font-family="monospace" font-size="12.5" fill="var(--fg)">counter = &#123; count, inc &#125;</text>
+      <text x="74" y="158" font-family="monospace" font-size="12.5" fill="var(--muted)">this.count++</text>
+
+      <line x1="165" y1="172" x2="165" y2="196" stroke="var(--green)" stroke-width="2" />
+      <polygon points="165,172 159,184 171,184" fill="var(--green)" />
+      <text x="165" y="212" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">this → counter ✓</text>
+
+      <rect x="340" y="50" width="270" height="170" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="475" y="76" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12.5" font-weight="700">const fn = counter.inc</text>
+      <text x="475" y="96" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">метод оторван от объекта</text>
+
+      <rect x="368" y="112" width="214" height="60" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" stroke-dasharray="5 4" />
+      <text x="384" y="134" font-family="monospace" font-size="12.5" fill="var(--fg)">inc()  <tspan fill="var(--muted)">(сам по себе)</tspan></text>
+      <text x="384" y="158" font-family="monospace" font-size="12.5" fill="var(--muted)">this.count++</text>
+
+      <line x1="475" y1="172" x2="475" y2="196" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 3" />
+      <polygon points="475,172 469,184 481,184" fill="var(--red)" />
+      <text x="475" y="212" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="600">this → undefined ✗</text>
+    </svg>
+    <figcaption>Слева <code>this</code> указывает на <code>counter</code>, потому что вызов идёт через объект. Справа переменная <code>fn</code> хранит метод отдельно — связь с объектом разорвана, и <code>this</code> становится <code>undefined</code>.</figcaption>
+  </figure>
+
+  <app-code-block [code]="thisLossExample" lang="typescript" />
+  <p class="note">
+    <strong>Вывод.</strong> Передавая метод как колбэк, оборачивайте вызов в стрелку
+    (<code>() =&gt; obj.method()</code>) или привязывайте контекст через <code>bind</code>.
+    Подробно про природу <code>this</code> и способы его сохранить — на странице
+    <a routerLink="/typescript/functions/this">Типизация this</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Меньше параметров — можно:</strong> функция с меньшим числом параметров подходит туда, где ждут больше (поэтому <code>map(x =&gt; …)</code> работает). Требовать больше, чем дадут, — нельзя.</li>
+    <li><strong>Возврат <code>void</code></strong> в ожидаемой сигнатуре разрешает вернуть значение любого типа — его игнорируют (<a routerLink="/typescript/functions/return-types">подробнее</a>).</li>
+    <li><strong><code>x?: T</code></strong> — аргумент можно опустить; <strong><code>x: T | undefined</code></strong> — аргумент обязателен, но им может быть <code>undefined</code>.</li>
+    <li><strong><code>strictFunctionTypes</code>:</strong> параметры поля-функции проверяются строго, параметры метода — мягко (намеренная «дырка»).</li>
+    <li><strong>Тип <code>Function</code></strong> — это <code>any</code> для функций; вместо него всегда пишите точную сигнатуру вроде <code>(x: number) =&gt; void</code>.</li>
+    <li><strong>Перегрузки</strong> берите в последнюю очередь — обычно хватает <a routerLink="/typescript/unions-narrowing/union">объединения</a> или <a routerLink="/typescript/generics/functions">дженерика</a>.</li>
+    <li><strong>Неявный <code>any</code></strong> в параметре — ошибка при <code>noImplicitAny</code>; аннотируйте параметры (в колбэках тип выводится из контекста).</li>
+    <li><strong>Потеря <code>this</code>:</strong> передача <code>obj.method</code> как колбэка теряет контекст — спасают стрелка или <a routerLink="/typescript/functions/this">bind</a>.</li>
+  </ul>
+</section>
+</article>

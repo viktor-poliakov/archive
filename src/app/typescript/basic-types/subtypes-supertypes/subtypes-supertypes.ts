@@ -137,6 +137,20 @@ type C = string | unknown;          // = unknown
 
 // Это ровно логика множеств: X ∪ ∅ = X, а X ∪ (всё) = всё`;
 
+  protected readonly anyOutside = `// Обычный тип занимает ОДНО место в иерархии.
+// any — исключение: он совместим сразу в обе стороны.
+
+let anything: any;
+anything = 42;        // ✅ в any влезает что угодно — как в unknown (вершина)
+anything = 'hello';   // ✅
+
+// Но, в отличие от unknown, ИЗ any можно достать что угодно — без проверки:
+const n: number = anything; // ✅ (с unknown здесь была бы ошибка)
+const s: string = anything; // ✅ any присваивается любому типу — так «умеет» только never (низ)
+
+// Выходит, any — одновременно и вершина, и низ. На деле он не описывает
+// множество значений, а просто ОТКЛЮЧАЕТ проверку типов — места на схеме ему нет`;
+
   protected readonly structuralSubtype = `// Структурная («утиная») типизация: важна ФОРМА объекта, а не имя типа
 type WithName = { name: string };
 type User = { name: string; age: number };

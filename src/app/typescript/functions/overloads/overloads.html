@@ -1,0 +1,280 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/functions">Функции</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Перегрузки функций</span></nav>
+
+<h1 class="doc__title">Перегрузки функций</h1>
+<p class="doc__lead">
+  Иногда тип <strong>результата</strong> функции зависит от типов её <strong>аргументов</strong>:
+  дали строку — вернётся строка, дали число — вернётся число. Одной сигнатурой такую
+  связь точно не выразить: приходится писать <code>string | number</code>, и точность
+  теряется. <strong>Перегрузки</strong> (function overloads) решают это — они позволяют
+  показать вызывающему коду сразу <strong>несколько разрешённых форм вызова</strong>, у
+  каждой со своим типом результата.
+</p>
+
+<section class="doc__section">
+  <h2>Проблема: одна сигнатура теряет точность</h2>
+  <p>
+    Возьмём функцию <code>double</code>: строку она склеивает саму с собой
+    (<code>'ab'</code> → <code>'abab'</code>), а число умножает на два
+    (<code>5</code> → <code>10</code>). Логично ожидать: на строку — строку, на число —
+    число. Но если описать вход и выход <strong>одним объединением</strong>
+    <code>string | number</code>, компилятор потеряет связь между ними: он будет считать,
+    что результат <em>всегда</em> <code>string | number</code>, даже когда мы точно знаем,
+    что подали строку.
+  </p>
+  <app-code-block [code]="problemExample" lang="typescript" />
+  <p>
+    Формально ошибок в теле нет — беда в <strong>сигнатуре</strong>. Она честно говорит
+    «может вернуться строка, а может число», и после вызова с известной строкой мы всё
+    равно получаем размытый тип <code>string | number</code>. Вызвать строковый метод
+    нельзя — вдруг там число. Нужна запись, которая свяжет <em>конкретный</em> вход с
+    <em>конкретным</em> выходом.
+  </p>
+  <p class="note">
+    <strong>Аналогия.</strong> Представьте автомат с надписью на кнопке «выдаёт монеты
+    ИЛИ жетоны». Формально честно, но бесполезно: вы не знаете заранее, что получите, и
+    приходится готовиться к обоим. Перегрузки — это как отдельные кнопки: «нажал монеты —
+    точно монеты, нажал жетоны — точно жетоны».
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис перегрузок</h2>
+  <p>
+    Перегрузка состоит из двух частей. Сначала идут <strong>сигнатуры перегрузок</strong> —
+    несколько объявлений <em>без тела</em>, только форма вызова с точкой с запятой на конце.
+    Затем — <strong>одна реализация</strong> с телом, чьи параметры достаточно широки, чтобы
+    покрыть все перечисленные перегрузки. Вот та же <code>double</code>, но точная:
+  </p>
+  <app-code-block [code]="syntaxExample" lang="typescript" />
+  <p>
+    Теперь <code>double('ab')</code> имеет тип <code>string</code>, а <code>double(5)</code> —
+    <code>number</code>. Вызывающий код видит только две «витринные» сигнатуры и выбирает
+    подходящую. Реализация <code>double(x: string | number)</code> — это внутренняя кухня:
+    её задача только в том, чтобы <em>обслужить</em> обе перегрузки, и снаружи она не видна.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 300" width="100%" role="img" aria-label="Витрина перегрузок. Слева панель, видимая вызывающему коду, с двумя карточками-сигнатурами: double(x: string) возвращает string и double(x: number) возвращает number. Справа затемнённая панель со скрытой реализацией double(x: string или number), у которой есть тело. Между панелями стена: снаружи к реализации не пройти.">
+      <text x="320" y="28" text-anchor="middle" fill="var(--fg)" font-size="16" font-weight="600">Витрина и подсобка перегрузки</text>
+
+      <rect x="30" y="52" width="286" height="192" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="173" y="80" text-anchor="middle" fill="var(--accent)" font-size="13.5" font-weight="700">Витрина — видят вызывающие</text>
+      <line x1="30" y1="92" x2="316" y2="92" stroke="var(--border)" stroke-width="1.4" />
+
+      <rect x="48" y="106" width="250" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="64" y="132" font-family="monospace" font-size="13"><tspan fill="var(--fg)">double(x</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">string</tspan><tspan fill="var(--fg)">)</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">string</tspan></text>
+
+      <rect x="48" y="158" width="250" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="64" y="184" font-family="monospace" font-size="13"><tspan fill="var(--fg)">double(x</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">number</tspan><tspan fill="var(--fg)">)</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--accent)">number</tspan></text>
+
+      <text x="173" y="226" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">вызывающий выбирает подходящую</text>
+
+      <line x1="328" y1="60" x2="328" y2="236" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="4 4" />
+      <text x="328" y="270" text-anchor="middle" fill="var(--muted)" font-size="11">снаружи не пройти →</text>
+
+      <rect x="342" y="52" width="268" height="192" rx="12" fill="var(--bg)" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="476" y="80" text-anchor="middle" fill="var(--muted)" font-size="13.5" font-weight="700">Подсобка — реализация, скрыта</text>
+      <line x1="342" y1="92" x2="610" y2="92" stroke="var(--border)" stroke-width="1.2" />
+
+      <text x="360" y="118" font-family="monospace" font-size="12.5" fill="var(--muted)">double(</text>
+      <text x="380" y="142" font-family="monospace" font-size="12.5" fill="var(--muted)">x: string | number</text>
+      <text x="360" y="166" font-family="monospace" font-size="12.5" fill="var(--muted)">): string | number &#123;</text>
+      <text x="380" y="190" font-family="monospace" font-size="12.5" fill="var(--muted)">/* одно тело на всех */</text>
+      <text x="360" y="214" font-family="monospace" font-size="12.5" fill="var(--muted)">&#125;</text>
+    </svg>
+    <figcaption>Снаружи видны только сигнатуры-перегрузки (слева). Реализация с телом (справа) обслуживает их все, но вызывающему коду недоступна как отдельная форма вызова.</figcaption>
+  </figure>
+
+  <p class="note">
+    <strong>Важно.</strong> Реализацию пишут <strong>ровно одну</strong>, и её сигнатуру
+    вызвать напрямую нельзя. Если написать только реализацию <code>double(x: string | number)</code>
+    без строк-перегрузок над ней — это уже обычная функция с одной размытой сигнатурой из
+    первого раздела, а не перегрузка.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Правила перегрузок</h2>
+  <p>
+    Чтобы перегрузки работали предсказуемо, держите в голове четыре правила.
+  </p>
+  <ul class="rules">
+    <li><strong>Реализация не видна снаружи.</strong> Вызывающий код видит только сигнатуры-перегрузки. Аргумент должен подойти хотя бы под одну из них — иначе ошибка, даже если реализация технически его приняла бы.</li>
+    <li><strong>Реализация должна быть совместима с каждой перегрузкой.</strong> Её параметры — шире (обычно объединение), а возвращаемый тип — таким, чтобы удовлетворять всем. Иначе компилятор пожалуется, что перегрузка несовместима с реализацией.</li>
+    <li><strong>Порядок: от частного к общему.</strong> Перегрузки перебираются сверху вниз, и побеждает первая подходящая. Поэтому более узкую (точную) сигнатуру ставят выше более широкой.</li>
+    <li><strong>Перегрузок нужно минимум две.</strong> Одна перегрузка + реализация не имеют смысла: если форма вызова одна, достаточно обычной сигнатуры без всей этой машинерии.</li>
+  </ul>
+
+  <p>
+    Первое правило легко проверить: реализация принимает <code>string | number</code>, но
+    вызвать <code>double</code> с <code>boolean</code> всё равно нельзя — снаружи такой формы
+    вызова просто нет.
+  </p>
+  <app-code-block [code]="hiddenImplExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Сигнатуры перегрузок</th>
+          <th>Сигнатура реализации</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Есть тело</td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Видна вызывающему</td>
+          <td class="yes">✅ да</td>
+          <td class="no">❌ нет</td>
+        </tr>
+        <tr>
+          <td>Сколько штук</td>
+          <td>две и больше</td>
+          <td>ровно одна</td>
+        </tr>
+        <tr>
+          <td>Зачем нужна</td>
+          <td>что можно вызвать</td>
+          <td>как это устроено внутри</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="doc__subtitle">Почему важен порядок</h3>
+  <p>
+    Когда одна перегрузка «шире» другой (её параметр принимает и то, что принимает соседняя),
+    порядок начинает решать. Компилятор берёт <strong>первую подходящую</strong> сигнатуру,
+    поэтому общая, стоящая сверху, перехватит вызовы, которые вы хотели отдать более точной.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 600 214" width="100%" role="img" aria-label="Разрешение перегрузки для вызова double(5). Список перегрузок перебирается сверху вниз. Первая — double(x: string) возвращает string — не подходит, потому что число не строка. Вторая — double(x: number) возвращает number — подходит, это первая совпавшая, поэтому результат имеет тип number.">
+      <text x="300" y="26" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Вызов double(5): перебор сверху вниз</text>
+
+      <line x1="40" y1="54" x2="40" y2="164" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="40,172 34,160 46,160" fill="var(--muted)" />
+      <text x="24" y="112" fill="var(--muted)" font-size="10.5" transform="rotate(-90 24 112)" text-anchor="middle">поиск</text>
+
+      <rect x="74" y="52" width="390" height="44" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="92" y="79" font-family="monospace" font-size="13.5"><tspan fill="var(--fg)">double(x: string): string</tspan></text>
+      <text x="486" y="72" fill="var(--red)" font-size="17" font-weight="700">✗</text>
+      <text x="508" y="79" fill="var(--muted)" font-size="11.5">5 — не строка</text>
+
+      <rect x="74" y="110" width="390" height="44" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="92" y="137" font-family="monospace" font-size="13.5"><tspan fill="var(--fg)">double(x: number): number</tspan></text>
+      <text x="486" y="130" fill="var(--green)" font-size="17" font-weight="700">✓</text>
+      <text x="508" y="137" fill="var(--green)" font-size="11.5">совпало</text>
+
+      <text x="300" y="196" text-anchor="middle" fill="var(--muted)" font-size="11.5">Побеждает ПЕРВАЯ подходящая — поэтому узкие сигнатуры ставят выше.</text>
+    </svg>
+    <figcaption>Перегрузки проверяются по порядку. Для <code>double(5)</code> строковая не подошла, числовая совпала — её тип результата и получит вызов.</figcaption>
+  </figure>
+
+  <p>Наглядный пример, где неверный порядок портит точность:</p>
+  <app-code-block [code]="orderBadExample" lang="typescript" />
+  <p>Переставим точную перегрузку наверх — и всё встаёт на места:</p>
+  <app-code-block [code]="orderGoodExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Перегрузки методов</h2>
+  <p>
+    Тот же приём работает и для <strong>методов</strong> — в
+    <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсах</a> и
+    <a routerLink="/typescript/objects-interfaces/type-aliases">псевдонимах типов</a>.
+    Метод просто перечисляют <strong>несколькими сигнатурами</strong> подряд; тела здесь
+    нет вовсе — интерфейс лишь описывает форму, а реализацию даёт объект, который ему
+    соответствует.
+  </p>
+  <app-code-block [code]="methodExample" lang="typescript" />
+  <p>
+    По той же схеме описывают перегруженный <em>вызов</em> в псевдониме типа: несколько
+    строк вида <code>(аргументы): результат</code> внутри
+    <code>type Merge = &#123; ... &#125;</code>. Такой тип задаёт функцию, которую можно
+    вызвать двумя разными способами.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда перегрузки НЕ нужны</h2>
+  <p>
+    Перегрузки выглядят солидно, но чаще всего они <strong>избыточны</strong> и делают код
+    многословнее, чем нужно. Прежде чем писать их, проверьте три более простых инструмента:
+    <strong>параметр-объединение</strong>, <strong>необязательный параметр</strong> и
+    <strong>дженерик</strong>.
+  </p>
+  <app-code-block [code]="unionInsteadExample" lang="typescript" />
+  <p>
+    Особенно часто вместо перегрузок нужен именно
+    <a routerLink="/typescript/generics/functions">дженерик</a> — когда тип результата не
+    «ветвится» по типу входа, а просто <strong>повторяет</strong> его. Одна строка с
+    <code>&lt;T&gt;</code> заменяет целый список перегрузок и вдобавок работает для любых
+    типов, даже тех, что вы не перечисляли.
+  </p>
+  <app-code-block [code]="genericInsteadExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Что связывает вход и выход</th>
+          <th>Чем описать</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Результат всегда одного типа, а вход бывает разным</td>
+          <td class="yes"><a routerLink="/typescript/unions-narrowing/union">параметр-объединение</a></td>
+        </tr>
+        <tr>
+          <td>Разница только в наличии аргумента</td>
+          <td class="yes">необязательный параметр / значение по умолчанию</td>
+        </tr>
+        <tr>
+          <td>Тип результата = тип аргумента (проход насквозь)</td>
+          <td class="yes"><a routerLink="/typescript/generics/functions">дженерик</a></td>
+        </tr>
+        <tr>
+          <td>Тип результата по-разному зависит от типа входа</td>
+          <td class="yes">перегрузки</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <strong>Правило большого пальца.</strong> Перегрузки уместны, только когда тип
+    результата <em>реально по-разному</em> зависит от типов входа (как <code>double</code>:
+    строка → строка, число → число, и внутри есть ветвление). Если же результат один и тот
+    же тип или просто повторяет вход — берите объединение, необязательный параметр или
+    дженерик: короче, понятнее, легче поддерживать.
+  </p>
+  <p class="note">
+    <strong>Дальше.</strong> Базовый синтаксис объявления функций и их сигнатур разобран на
+    странице <a routerLink="/typescript/functions/basics">Объявление функций</a>, а
+    подробнее про типы результата — в разделе
+    <a routerLink="/typescript/functions/return-types">Возвращаемые типы</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Зачем.</strong> Перегрузки нужны, когда тип результата <strong>по-разному зависит</strong> от типов аргументов, а одна сигнатура даёт лишь размытое <code>string | number</code>.</li>
+    <li><strong>Синтаксис.</strong> Сначала несколько сигнатур-перегрузок <em>без тела</em>, затем <strong>одна реализация</strong> с телом и широкими параметрами.</li>
+    <li><strong>Реализация скрыта.</strong> Вызывающий видит только перегрузки; аргумент обязан подойти под одну из них.</li>
+    <li><strong>Совместимость.</strong> Реализация должна покрывать каждую перегрузку по параметрам и результату.</li>
+    <li><strong>Порядок.</strong> Сверху вниз, побеждает первая подходящая — значит, точные сигнатуры ставят выше общих.</li>
+    <li><strong>Минимум две.</strong> Одна перегрузка бессмысленна — хватит обычной сигнатуры.</li>
+    <li><strong>Методы.</strong> Тот же приём работает для методов в <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсах</a> и <a routerLink="/typescript/objects-interfaces/type-aliases">псевдонимах типов</a>.</li>
+    <li><strong>Чаще не нужны.</strong> Сначала попробуйте <a routerLink="/typescript/unions-narrowing/union">объединение</a>, необязательный параметр или <a routerLink="/typescript/generics/functions">дженерик</a> — обычно они проще и яснее.</li>
+  </ul>
+</section>
+</article>

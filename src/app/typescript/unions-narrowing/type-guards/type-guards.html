@@ -1,0 +1,158 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/unions-narrowing">Объединения и сужение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Проверки типов</span></nav>
+
+<h1 class="doc__title">Проверки типов</h1>
+<p class="doc__lead">Мы уже умеем <a routerLink="/typescript/unions-narrowing/narrowing">сужать типы</a> встроенными проверками <code>typeof</code>, <code>in</code> и <code>instanceof</code>. Но что делать, когда проверка сложная и её хочется вынести в отдельную функцию? Обычная функция, возвращающая <code>boolean</code>, тип у вызывающего <strong>не сужает</strong>. Чтобы научить функцию «передавать знание о типе» обратно, в TypeScript есть два инструмента: <strong>пользовательские type guards</strong> (предикаты <code>arg is Type</code>) и <strong>assertion-функции</strong> (<code>asserts …</code>). О них эта страница.</p>
+
+<section class="doc__section">
+  <h2>Отправная точка: встроенные проверки</h2>
+  <p>Держим в голове опорную модель всего раздела: <strong>тип — это множество значений</strong>. Объединение <code>Cat | Dog</code> — это «широкое» множество: значение может быть и котом, и собакой. <em>Сужение</em> — это отсечение части множества после проверки: были «кот или собака», проверили — остался «точно пёс».</p>
+  <p>Такие проверки TypeScript понимает «из коробки» и сужает тип прямо внутри ветки <code>if</code>:</p>
+  <app-code-block [code]="builtinNarrowing" lang="typescript" />
+  <p>Пока проверка помещается в одну строчку — всё отлично. Проблемы начинаются, когда логика проверки разрастается (проверить пять полей ответа API, распознать формат) и её хочется вынести в отдельную переиспользуемую функцию.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Проблема: обычный <code>boolean</code> не сужает тип</h2>
+  <p>Кажется логичным: выносим проверку в функцию <code>isDog</code>, она возвращает <code>true</code>/<code>false</code>, мы зовём её в <code>if</code> — и внутри должно сузиться. Но нет:</p>
+  <app-code-block [code]="boolNoNarrow" lang="typescript" />
+  <p>Почему так? Компилятор видит только <strong>сигнатуру</strong> функции: «принимает <code>Animal</code>, возвращает <code>boolean</code>». Что именно эта функция проверяет внутри — для системы типов загадка. Возвращённый <code>true</code> означает лишь «какое-то условие выполнилось», но <em>про какой тип</em> это условие — компилятор не знает. Поэтому тип аргумента остаётся прежним, широким <code>Cat | Dog</code>.</p>
+  <p class="note"><strong>Аналогия.</strong> Вы спросили у охранника: «этот человек прошёл проверку?» — он ответил «да». Ответ «да» сам по себе не говорит вам, <em>кто</em> перед вами. Нужна не просто отмашка, а <strong>справка с указанием, кто это</strong>. Ровно этого и не хватает обычному <code>boolean</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Пользовательский type guard: предикат <code>arg is Type</code></h2>
+  <p>Решение — сообщить компилятору смысл проверки прямо в возвращаемом типе. Вместо <code>: boolean</code> пишем <strong>предикат типа</strong>: <code>animal is Dog</code>. Читается как «<em>если функция вернула <code>true</code>, то <code>animal</code> — это <code>Dog</code></em>».</p>
+  <app-code-block [code]="predicateGuard" lang="typescript" />
+  <p>Тело функции не изменилось — по-прежнему <code>return animal.kind === 'dog'</code>, обычный <code>boolean</code> в рантайме. Изменилась только <strong>подпись возврата</strong>: она превращает функцию в <em>type guard</em>. Синтаксис предиката всегда одинаков:</p>
+  <ul class="rules">
+    <li><strong>слева от <code>is</code></strong> — имя параметра функции (именно параметра, не любого выражения);</li>
+    <li><strong>справа от <code>is</code></strong> — тип, до которого сужаем этот параметр, если функция вернула <code>true</code>;</li>
+    <li>тело обязано вернуть <code>boolean</code> — компилятор проверит это.</li>
+  </ul>
+  <p>Приятный бонус: сужается не только ветка <code>if</code>, но и <code>else</code>. Если <code>isDog</code> вернула <code>false</code>, то из <code>Cat | Dog</code> «пёс» вычёркивается — и в <code>else</code> остаётся <code>Cat</code>.</p>
+  <p class="note"><strong>Аналогия: контролёр со справкой.</strong> Обычный <code>boolean</code> — это контролёр, который говорит только «да/нет». Type guard — это контролёр, который <strong>выдаёт справку</strong>: «проверено, это точно <code>Dog</code>». Компилятор этой справке <em>доверяет</em> и дальше обращается со значением как с <code>Dog</code>. Вся ответственность за правдивость справки — на вас (об этом в конце страницы).</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>boolean</code> против предиката — в чём разница</h2>
+  <p>Поставим два варианта рядом: одинаковое тело, разный тип возврата. Разница — только в том, что «узнаёт» вызывающий код.</p>
+  <app-code-block [code]="boolVsPredicate" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Возвращаемый тип</th>
+          <th>В рантайме</th>
+          <th>Сужает тип у вызывающего?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>: boolean</code></td>
+          <td><code>true</code> / <code>false</code></td>
+          <td class="no">❌ нет — тип остаётся широким</td>
+        </tr>
+        <tr>
+          <td><code>: a is Dog</code></td>
+          <td><code>true</code> / <code>false</code> (то же самое)</td>
+          <td class="yes">✅ да — в ветке <code>true</code> тип сужается до <code>Dog</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 280" width="100%" role="img" aria-label="Поток: значение Cat или Dog проходит через guard isDog и сужается до Dog в ветке true или до Cat в ветке false">
+      <rect x="20" y="112" width="180" height="56" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="110" y="145" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">pet: Cat | Dog</text>
+
+      <line x1="200" y1="140" x2="248" y2="140" stroke="var(--muted)" stroke-width="1.6" />
+      <path d="M250 140 l-9 -5 v10 z" fill="var(--muted)" />
+
+      <rect x="250" y="112" width="150" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="325" y="138" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">isDog(pet)</text>
+      <text x="325" y="157" text-anchor="middle" fill="var(--muted)" font-size="11">type guard</text>
+
+      <path d="M400 140 H432 V78 H468" fill="none" stroke="var(--green)" stroke-width="1.6" />
+      <path d="M470 78 l-9 -5 v10 z" fill="var(--green)" />
+      <text x="450" y="66" text-anchor="middle" fill="var(--green)" font-size="12">true</text>
+
+      <path d="M400 140 H432 V202 H468" fill="none" stroke="var(--muted)" stroke-width="1.6" />
+      <path d="M470 202 l-9 -5 v10 z" fill="var(--muted)" />
+      <text x="450" y="224" text-anchor="middle" fill="var(--muted)" font-size="12">false</text>
+
+      <rect x="470" y="52" width="150" height="52" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="545" y="83" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="14">pet: Dog</text>
+
+      <rect x="470" y="176" width="150" height="52" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="545" y="207" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">pet: Cat</text>
+    </svg>
+    <figcaption>Значение входит «широким» (<code>Cat | Dog</code>). Guard делит поток на две ветки: в <code>true</code> тип сужен до <code>Dog</code>, в <code>false</code> — до <code>Cat</code>. Обычный <code>boolean</code> такого деления не даёт — тип на выходе остался бы прежним.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: маленькие переиспользуемые guard'ы</h2>
+  <p>Самые ходовые guard'ы — крошечные обёртки над <code>typeof</code> для типа <code>unknown</code>. Их удобно один раз положить в <code>utils</code> и звать везде, где на входе «что угодно»:</p>
+  <app-code-block [code]="isStringIsNumber" lang="typescript" />
+  <p>Обратите внимание: параметр здесь <code>unknown</code> (самый широкий тип, супертип всех), а предикат сужает его до конкретного <code>string</code> или <code>number</code>. Это тот же спуск «супертип → подтип», который без проверки запрещён, — guard как раз и есть та самая разрешённая проверка.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: проверка формы объекта</h2>
+  <p>Самый частый реальный кейс — данные пришли извне (ответ <code>fetch</code>, <code>JSON.parse</code>, сообщение от воркера). Их тип — <code>unknown</code>, и прежде чем читать поля, форму нужно проверить. Guard собирает все проверки в одном месте:</p>
+  <app-code-block [code]="objectShapeGuard" lang="typescript" />
+  <p>После <code>if (isUser(response))</code> компилятор разрешает спокойно писать <code>response.name</code> — тип сужен до <code>&#123; id: number; name: string &#125;</code>. Один guard заменяет россыпь проверок <code>typeof</code> по всему коду и делает намерение читаемым.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: фильтрация массива с сужением</h2>
+  <p>Классическая боль — отфильтровать массив от <code>null</code>/<code>undefined</code>. В рантайме <code>filter</code> элементы уберёт, но <strong>тип</strong> результата не изменит: компилятор не знает, что предикат отсёк именно пустые значения.</p>
+  <app-code-block [code]="filterNarrow" lang="typescript" />
+  <p>Приём с <code>(x): x is string</code> прямо в стрелке и решает задачу: он сообщает <code>filter</code>, что на выходе останутся только строки. А если такой guard нужен часто — заведём универсальный <code>isPresent</code> и будем передавать его в <code>filter</code> без обёртки:</p>
+  <app-code-block [code]="isPresentGuard" lang="typescript" />
+  <p class="note"><strong>Почему <code>!= null</code>, а не <code>!== null</code>?</strong> Нестрогое <code>!= null</code> — единственный случай, где «двойное равно» полезно: оно за одну проверку отсекает сразу и <code>null</code>, и <code>undefined</code>. Именно то, что нужно для «значение присутствует».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Assertion-функции: <code>asserts</code></h2>
+  <p>У type guard есть «строгий брат» — <strong>assertion-функция</strong>. Идея иная: не спрашивать «а это точно нужный тип?», а <em>требовать</em> этого. Если условие ложно — функция <strong>бросает ошибку</strong> и выполнение прерывается. А раз мы прошли эту строку и не упали — значит, дальше условие гарантированно истинно, и компилятор сужает тип.</p>
+  <p>Базовая форма — <code>asserts condition</code>: «ниже этой строки <code>condition</code> истинно».</p>
+  <app-code-block [code]="assertBasic" lang="typescript" />
+  <p>Вторая форма — <code>asserts arg is Type</code>: сужает конкретный аргумент до нужного типа (полный аналог предиката guard'а, только через «бросок», а не через <code>if</code>):</p>
+  <app-code-block [code]="assertIsDog" lang="typescript" />
+
+  <h3 class="doc__subtitle">Guard или assert — что когда</h3>
+  <p>Разница чисто в способе применения. <strong>Guard</strong> задаёт вопрос — его кладут в <code>if</code>, и обе ветки (да/нет) остаются рабочими. <strong>Assert</strong> ставит требование — ветки «нет» после него просто нет: если условие не выполнилось, до следующей строки код не дойдёт.</p>
+  <app-code-block [code]="assertVsGuard" lang="typescript" />
+  <ul class="rules">
+    <li>нужно <strong>обработать оба случая</strong> (и кота, и пса) — берите <strong>guard</strong> с <code>if/else</code>;</li>
+    <li>«дальше имеет смысл работать <strong>только</strong> с этим типом, иначе это баг/битые данные» — берите <strong>assert</strong>.</li>
+  </ul>
+  <p class="note"><strong>Аналогия.</strong> Guard — это <em>развилка</em> на дороге: указатель говорит, куда свернуть налево, а куда направо, но обе дороги существуют. Assert — это <em>шлагбаум</em>: либо у тебя правильный пропуск и ты едешь дальше, либо тебя не пускают вовсе. За шлагбаумом «неправильной» дороги нет.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Важное предупреждение: guard и assert могут соврать</h2>
+  <p>А теперь — обратная сторона «доверия». Тело type guard и assertion-функции компилятор <strong>не проверяет на честность</strong>. Он смотрит только на подпись (<code>value is string</code>, <code>asserts …</code>) и <em>верит ей на слово</em>. Если внутри написана ерунда — сужение окажется неверным, а тип-система будет уверена в обратном. Такое сужение называют <strong>unsound</strong> (несостоятельным): компилятор молчит, а ошибка вылезает в рантайме.</p>
+  <app-code-block [code]="unsoundGuard" lang="typescript" />
+  <p>То же самое и с assert: пустое или неполное тело «проходит» всегда, а компилятор поверит, что тип сужен:</p>
+  <app-code-block [code]="unsoundAssert" lang="typescript" />
+  <p>По сути guard и assert — это <strong>обещание</strong> компилятору, очень близкое к приведению типов через <a routerLink="/typescript/assertions/as">as</a>: и там, и там вы говорите «поверь мне, это тот тип», беря на себя ответственность за правду. Разница в том, что <code>as</code> — «немое» разовое утверждение в одной точке, а guard/assert упаковывают проверку в переиспользуемую функцию (и в идеале эта функция реально проверяет то, что обещает).</p>
+  <p class="note"><strong>Правило.</strong> Пишите в теле guard/assert ровно ту проверку, которую заявляете в предикате — и лучше покрывайте её тестами. Углубиться в тему: <a routerLink="/typescript/assertions/user-type-guards">Пользовательские type guards</a> и <a routerLink="/typescript/assertions/assertion-functions">Assertion-функции</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li>Встроенные <code>typeof</code>/<code>in</code>/<code>instanceof</code> сужают тип, но сложную проверку хочется вынести в функцию — а обычный <code>boolean</code> тип у вызывающего <strong>не сужает</strong>.</li>
+    <li><strong>Type guard</strong> — функция с возвратом-предикатом <code>arg is Type</code>. При <code>true</code> компилятор сужает <code>arg</code> до <code>Type</code> (а в <code>else</code> — до остатка объединения).</li>
+    <li>Разница <code>: boolean</code> и <code>: a is Dog</code> — только в подписи: тело и результат в рантайме одинаковы, но сужает лишь предикат.</li>
+    <li>Практика: маленькие <code>isString</code>/<code>isNumber</code>, проверка формы объекта из <code>unknown</code>, фильтрация массива через <code>(x): x is T</code> и универсальный <code>isPresent</code> для отсева <code>null</code>/<code>undefined</code>.</li>
+    <li><strong>Assertion-функция</strong> (<code>asserts cond</code> / <code>asserts arg is Type</code>) не спрашивает, а требует: бросает ошибку, если условие ложно, и сужает тип у всего кода <em>ниже</em> вызова.</li>
+    <li><strong>Guard — в <code>if</code></strong> (обе ветки рабочие); <strong>assert — «дальше только если истинно»</strong> (ветки «нет» нет).</li>
+    <li>⚠️ Тело guard/assert компилятор <strong>не проверяет</strong>: если оно врёт, сужение unsound и падает в рантайме. Это то же «поверь мне», что и приведение <code>as</code>.</li>
+  </ul>
+  <p class="note">Дальше по разделу: <a routerLink="/typescript/unions-narrowing/narrowing">Сужение типов</a> (встроенные механизмы, на которых всё строится) и <a routerLink="/typescript/unions-narrowing/discriminated-unions">Размеченные объединения</a> (где guard'ы особенно удобны по полю-дискриминатору). Смежное: приведение типов <a routerLink="/typescript/assertions/as">as</a> — с чем guard и assert роднит общий принцип «беру ответственность на себя».</p>
+</section>
+</article>

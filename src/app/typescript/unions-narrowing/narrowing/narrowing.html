@@ -1,0 +1,208 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/unions-narrowing">Объединения и сужение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Сужение типов</span></nav>
+
+<h1 class="doc__title">Сужение типов</h1>
+<p class="doc__lead">Объединение вроде <code>string | number</code> — это «широкое» множество: значение может оказаться и строкой, и числом. Но <em>работать</em> хочется с чем-то конкретным. <strong>Сужение типов (narrowing)</strong> — это процесс, в котором вы проверками <em>доказываете</em> компилятору, какой именно тип перед вами прямо сейчас, а он в ответ разрешает пользоваться специфичными для этого типа возможностями.</p>
+
+<section class="doc__section">
+  <h2>Зачем это нужно</h2>
+  <p>Пока значение имеет тип-объединение, TypeScript разрешает трогать только те свойства и методы, которые есть <strong>у всех</strong> членов union сразу. Ведь компилятор не знает заранее, строка там сейчас или число, — а значит, обязан защитить вас от вызова того, чего у одного из вариантов может не быть.</p>
+  <app-code-block [code]="unionMembers" lang="typescript" />
+  <p class="note"><strong>Аналогия: «сначала проверь — потом действуй».</strong> На странице <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a> был образ: «где нужен фрукт — яблоко сойдёт, а где нужно яблоко — не всякий фрукт подойдёт». Union — как ящик с надписью «фрукт»: там может лежать что угодно из фруктов. Прежде чем очистить его «как банан», надо <strong>заглянуть и убедиться</strong>, что это правда банан. Сужение — и есть тот самый взгляд в ящик.</p>
+  <p>В модели «<strong>тип — это множество значений</strong>» сужение выглядит как <em>отсечение части множества</em>. Проверка <code>typeof id === 'string'</code> разбивает исходное множество <code>string | number</code> на две части: то, что прошло проверку (строки), и то, что не прошло (числа). Внутри каждой ветки остаётся только своя половина.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Проверка отсекает часть множества: из string и number остаётся только string">
+      <text x="280" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">Значение id: тип string | number</text>
+      <rect x="30" y="52" width="500" height="196" rx="16" fill="none" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="6 5" />
+
+      <circle cx="178" cy="152" r="88" fill="var(--surface)" stroke="var(--accent)" stroke-width="3" />
+      <text x="178" y="150" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="17">string</text>
+      <text x="178" y="176" text-anchor="middle" fill="var(--green)" font-size="12">✅ прошло проверку</text>
+
+      <circle cx="384" cy="152" r="88" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" opacity="0.55" />
+      <text x="384" y="150" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="17">number</text>
+      <text x="384" y="176" text-anchor="middle" fill="var(--muted)" font-size="12">отброшено</text>
+    </svg>
+    <figcaption>После <code>typeof id === 'string'</code> внутри ветки остаётся только левое подмножество — <code>string</code>. Сужение всегда движется от широкого множества к более узкому.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Анализ потока управления</h2>
+  <p>Магия в том, что вам не нужно ничего сообщать компилятору вручную. TypeScript сам читает ваш код сверху вниз и <strong>отслеживает проверки</strong> — это называется <em>анализом потока управления</em> (control flow analysis). Попав внутрь ветки <code>if</code>, компилятор помнит, какое условие туда привело, и автоматически уточняет тип переменной именно в этом месте.</p>
+  <app-code-block [code]="controlFlowNarrow" lang="typescript" />
+  <p>Обратите внимание: в ветке <code>else</code> тип сузился до <code>number</code>, хотя мы про число ничего не проверяли. Логика простая: раз значение — из множества <code>string | number</code> и это <em>не</em> строка, остаётся единственный вариант — число. Компилятор умеет так рассуждать.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 380" width="100%" role="img" aria-label="Схема потока: значение union входит в проверку if и в каждой ветке сужается до конкретного типа">
+      <rect x="200" y="24" width="240" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="320" y="52" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">id: string | number</text>
+
+      <line x1="320" y1="70" x2="320" y2="102" stroke="var(--muted)" stroke-width="1.6" />
+      <path d="M320 108 l-6 -10 h12 z" fill="var(--muted)" />
+
+      <rect x="176" y="108" width="288" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="320" y="137" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">typeof id === 'string' ?</text>
+
+      <text x="212" y="196" text-anchor="middle" fill="var(--green)" font-size="13">да</text>
+      <text x="430" y="196" text-anchor="middle" fill="var(--muted)" font-size="13">нет (else)</text>
+
+      <line x1="300" y1="156" x2="168" y2="248" stroke="var(--border)" stroke-width="1.6" />
+      <path d="M164 244 l2 12 l9 -8 z" fill="var(--border)" />
+      <line x1="340" y1="156" x2="472" y2="248" stroke="var(--border)" stroke-width="1.6" />
+      <path d="M476 244 l-2 12 l-9 -8 z" fill="var(--border)" />
+
+      <rect x="44" y="250" width="248" height="66" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="168" y="278" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="15">id: string</text>
+      <text x="168" y="300" text-anchor="middle" fill="var(--muted)" font-size="11">доступно .toUpperCase()</text>
+
+      <rect x="348" y="250" width="248" height="66" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="472" y="278" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">id: number</text>
+      <text x="472" y="300" text-anchor="middle" fill="var(--muted)" font-size="11">доступно .toFixed()</text>
+
+      <text x="320" y="352" text-anchor="middle" fill="var(--muted)" font-size="12">после if/else тип снова широкий: string | number</text>
+    </svg>
+    <figcaption>Значение union входит в проверку, а в каждой ветке компилятор «видит» уже конкретный тип. За пределами <code>if</code> тип снова становится широким.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Способ 1: <code>typeof</code> — для примитивов</h2>
+  <p>Оператор <code>typeof</code> возвращает строку с названием типа значения. TypeScript знает все возможные результаты и по каждому из них сужает тип. Это главный инструмент для примитивов: строк, чисел, булевых значений.</p>
+  <app-code-block [code]="typeofNarrow" lang="typescript" />
+  <p>Возможных строковых результатов у <code>typeof</code> ровно восемь. Вот они и типы, к которым приводит сужение:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th><code>typeof x</code> вернёт</th>
+          <th>Примеры значений</th>
+          <th>Тип после сужения</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>'string'</code></td>
+          <td><code>'hello'</code>, <code>''</code></td>
+          <td class="yes"><code>string</code></td>
+        </tr>
+        <tr>
+          <td><code>'number'</code></td>
+          <td><code>42</code>, <code>3.14</code>, <code>NaN</code></td>
+          <td class="yes"><code>number</code></td>
+        </tr>
+        <tr>
+          <td><code>'boolean'</code></td>
+          <td><code>true</code>, <code>false</code></td>
+          <td class="yes"><code>boolean</code></td>
+        </tr>
+        <tr>
+          <td><code>'bigint'</code></td>
+          <td><code>10n</code></td>
+          <td class="yes"><code>bigint</code></td>
+        </tr>
+        <tr>
+          <td><code>'symbol'</code></td>
+          <td><code>Symbol('id')</code></td>
+          <td class="yes"><code>symbol</code></td>
+        </tr>
+        <tr>
+          <td><code>'undefined'</code></td>
+          <td><code>undefined</code></td>
+          <td class="yes"><code>undefined</code></td>
+        </tr>
+        <tr>
+          <td><code>'function'</code></td>
+          <td><code>console.log</code></td>
+          <td class="yes">тип функции</td>
+        </tr>
+        <tr>
+          <td><code>'object'</code></td>
+          <td><code>&#123; id: 1 &#125;</code>, <code>[1, 2]</code>, <code>null</code></td>
+          <td class="no">объект <em>или</em> <code>null</code>!</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="doc__subtitle">Подвох: <code>typeof null === 'object'</code></h3>
+  <p>Последняя строка таблицы — знаменитая ловушка JavaScript: у <code>null</code> тоже <code>typeof</code> равен <code>'object'</code>. Значит, проверка <code>typeof x === 'object'</code> пропустит внутрь и <code>null</code>, и массив, и обычный объект. Для отсева именно <code>null</code> надёжнее прямое сравнение.</p>
+  <app-code-block [code]="typeofNullPitfall" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Способ 2: проверка на истинность (truthiness)</h2>
+  <p>Условие <code>if (x)</code> пропускает внутрь только <em>truthy</em>-значения. Это удобный способ одним движением отсечь <code>null</code> и <code>undefined</code>: в ветке остаётся «настоящее» значение.</p>
+  <app-code-block [code]="truthiness" lang="typescript" />
+  <p>Но здесь прячется классическая ошибка. <em>Falsy</em> — это не только <code>null</code> и <code>undefined</code>. Пустая строка <code>''</code>, число <code>0</code> и <code>NaN</code> тоже falsy — и тоже «провалят» проверку <code>if (x)</code>, хотя это совершенно валидные значения.</p>
+  <app-code-block [code]="truthinessPitfall" lang="typescript" />
+  <p class="note"><strong>Правило.</strong> Проверку на истинность применяйте, когда «пустое» и «нулевое» для вас <em>одно и то же</em>. Если же <code>0</code> или <code>''</code> — это осмысленные значения, сужайте явным сравнением: <code>x !== undefined</code>, <code>x !== null</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Способ 3: равенство — <code>===</code>, <code>!==</code> и <code>switch</code></h2>
+  <p>Сравнение с конкретным значением тоже сужает тип. Особенно ярко это работает с <a routerLink="/typescript/basic-types/literal-types">литеральными типами</a>: убрав из union один из его литералов, вы оставляете остальные.</p>
+  <app-code-block [code]="equalityNarrow" lang="typescript" />
+  <p>Когда вариантов много, вместо цепочки <code>if</code> удобнее <code>switch</code> по конкретному значению — в каждой ветке <code>case</code> тип сужен до соответствующего литерала:</p>
+  <app-code-block [code]="switchNarrow" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Способ 4: оператор <code>in</code> — по наличию свойства</h2>
+  <p>Когда члены union — объекты с <em>разным набором полей</em>, различать их удобно оператором <code>in</code>: он проверяет, есть ли у объекта свойство с таким именем. Типичный кейс — ответ API, у которого «успех» и «ошибка» имеют разную форму.</p>
+  <app-code-block [code]="inNarrow" lang="typescript" />
+  <p>Проверка <code>'data' in res</code> означает «у этого объекта есть поле <code>data</code>». Поскольку <code>data</code> объявлено только в <code>ApiSuccess</code>, TypeScript сужает <code>res</code> до <code>ApiSuccess</code> внутри <code>if</code> и до <code>ApiError</code> — в <code>else</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Способ 5: <code>instanceof</code> — для экземпляров классов</h2>
+  <p>Если в union участвуют <strong>классы</strong>, проверяйте их через <code>instanceof</code>. Оператор отвечает на вопрос «создан ли объект этим классом (или его наследником)».</p>
+  <app-code-block [code]="instanceofNarrow" lang="typescript" />
+  <p>Важно: <code>instanceof</code> учитывает цепочку наследования — <code>err instanceof Error</code> будет <code>true</code> и для <code>ValidationError</code>, ведь тот расширяет <code>Error</code>. Поэтому более конкретные классы проверяйте <em>раньше</em> базовых.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Способ 6: <code>Array.isArray</code> — для <code>T | T[]</code></h2>
+  <p>Частая ситуация: значение приходит либо одним элементом, либо массивом элементов. Отличить массив от одиночного значения помогает встроенный <code>Array.isArray</code> — <code>typeof</code> тут бесполезен, ведь массив тоже <code>'object'</code>.</p>
+  <app-code-block [code]="arrayIsArray" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Способ 7: сужение через присваивание</h2>
+  <p>Тип уточняется не только в проверках. Как только вы <strong>присвоили</strong> переменной конкретное значение, TypeScript в дальнейшем коде считает её типом тип этого значения — при том что объявленный (широкий) тип он тоже помнит и разрешит присвоить другой член union позже.</p>
+  <app-code-block [code]="assignmentNarrow" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Приём: early return (guard clause)</h2>
+  <p>Сужение особенно красиво сочетается с ранним выходом из функции. Вместо «лесенки» вложенных <code>if</code> отсекайте неподходящие случаи <code>return</code>-ом в самом начале. Каждый такой <em>сторожевой</em> <code>if</code> сужает тип для всего кода ниже — и основная логика идёт ровным, невложенным «счастливым путём».</p>
+  <app-code-block [code]="earlyReturn" lang="typescript" />
+  <p>После <code>if (!user) return;</code> компилятор знает: раз мы дошли до следующей строки, <code>user</code> — точно не <code>null</code>. Дальше он уже сужен до <code>User</code>. Так сужение делает код одновременно и безопаснее, и чище.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Исчерпывающая проверка через <code>never</code></h2>
+  <p>Когда вы перебираете все члены union в <code>switch</code>, полезно застраховаться на будущее: пусть компилятор сам напомнит, если однажды в union добавят новый вариант, а обработать его забудут. Трюк — присвоить «недостижимое» значение переменной типа <a routerLink="/typescript/basic-types/void-never"><code>never</code></a>.</p>
+  <app-code-block [code]="exhaustiveNever" lang="typescript" />
+  <p>Пока все <code>case</code> разобраны, в <code>default</code> значение сужено до <code>never</code> (пустого множества) — и присваивание проходит. Стоит добавить в <code>Shape</code> новый вид фигуры и забыть про него — в <code>default</code> «дотечёт» этот необработанный тип, он уже не <code>never</code>, и компилятор подсветит ошибку. Подробный разбор этого приёма — на странице <a routerLink="/typescript/unions-narrowing/discriminated-unions">Размеченные объединения</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда встроенных проверок мало</h2>
+  <p><code>typeof</code>, <code>in</code>, <code>instanceof</code> покрывают большинство случаев, но не все — например, «это непустая строка» или «это валидный объект пользователя» встроенными операторами не выразить. На такой случай в TypeScript есть <strong>функции-предикаты</strong>: вы пишете свою проверку, а в её сигнатуре указываете <code>x is T</code> — и компилятор начинает доверять ей при сужении.</p>
+  <app-code-block [code]="predicateBridge" lang="typescript" />
+  <p>Это большая отдельная тема — как устроен предикат <code>is</code>, чем он отличается от обычного <code>boolean</code> и как не соврать компилятору. Ей посвящена страница <a routerLink="/typescript/unions-narrowing/type-guards">Проверки типов (type guards)</a> и продолжение — <a routerLink="/typescript/assertions/user-type-guards">Пользовательские type guards</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li>У значения-union доступны только <strong>общие</strong> члены. Чтобы добраться до специфичных, тип нужно <strong>сузить</strong> — доказать компилятору, что перед вами конкретный вариант.</li>
+    <li>Сужение — это <strong>отсечение части множества</strong>: движение от широкого union к более узкому подтипу. Прямое продолжение модели «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество</a>».</li>
+    <li>TypeScript сам следит за проверками — это <strong>анализ потока управления</strong>: внутри ветки тип уже уточнён, за её пределами снова широкий.</li>
+    <li>Инструменты сужения: <code>typeof</code> (примитивы), проверка на истинность, <code>===</code>/<code>!==</code> и <code>switch</code>, <code>in</code> (по свойству), <code>instanceof</code> (классы), <code>Array.isArray</code> (<code>T | T[]</code>), а также присваивание.</li>
+    <li>Помните ловушки: <code>typeof null === 'object'</code> и falsy-значения <code>0</code>, <code>''</code>, <code>NaN</code> при проверке на истинность.</li>
+    <li><strong>Early return</strong> с сужением делает код плоским и читаемым; <strong>проверка через <code>never</code></strong> ловит незакрытые ветки при расширении union.</li>
+  </ul>
+  <p class="note">Дальше стоит разобрать <a routerLink="/typescript/unions-narrowing/type-guards">Проверки типов (type guards)</a> — как писать собственные предикаты <code>is</code>, и <a routerLink="/typescript/unions-narrowing/discriminated-unions">Размеченные объединения</a> — приём, где сужение по одному «тегу» становится идеально надёжным. Освежить исходный материал можно на странице <a routerLink="/typescript/unions-narrowing/union">Объединения (union)</a>.</p>
+</section>
+</article>

@@ -1,0 +1,85 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/unions-narrowing">Объединения и сужение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">Объединения и сужение выглядят просто, пока не столкнёшься с мелочами: то <code>typeof</code> ведёт себя не так, как ждёшь, то сужение внезапно «отваливается», то <code>filter</code> оставляет в типе лишнее. Здесь собраны самые частые грабли — с объяснением, <em>почему</em> так, и как сделать правильно. Если базовые механизмы ещё в новинку, начните с <a routerLink="/typescript/unions-narrowing/narrowing">Сужения типов</a>.</p>
+
+<section class="doc__section">
+  <h2>1. <code>typeof null === 'object'</code></h2>
+  <p>Историческая ошибка самого JavaScript: у <code>null</code> оператор <code>typeof</code> возвращает <code>'object'</code>. Поэтому проверка <code>typeof x === 'object'</code> пропускает внутрь не только объекты и массивы, но и <code>null</code> — и сужение получается не таким, как вы рассчитывали.</p>
+  <app-code-block [code]="typeofNull" lang="typescript" />
+  <p>Отсекать <code>null</code> надёжнее прямым сравнением <code>x !== null</code> (или проверкой на истинность, если пустые значения вам не важны).</p>
+</section>
+
+<section class="doc__section">
+  <h2>2. Проверка на истинность съедает <code>0</code> и <code>''</code></h2>
+  <p>Условие <code>if (x)</code> удобно, чтобы отсечь <code>null</code> и <code>undefined</code>. Но <em>falsy</em>-значений больше: <code>0</code>, пустая строка <code>''</code> и <code>NaN</code> тоже «провалят» проверку — хотя это совершенно нормальные значения.</p>
+  <app-code-block [code]="truthinessFalsy" lang="typescript" />
+  <p class="note"><strong>Правило.</strong> Проверку <code>if (x)</code> применяйте, когда «пусто» и «ноль» для вас — одно и то же. Если <code>0</code> или <code>''</code> осмысленны, сужайте явно: <code>x !== undefined</code>, <code>x != null</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>3. Сужение теряется в колбэках и при переприсваивании</h2>
+  <p>Анализ потока управления работает <em>линейно и по месту</em>. Сужение надёжно держится, пока код идёт сверху вниз — <strong>даже через вызовы функций</strong>. Но оно <strong>сбрасывается</strong> в двух ситуациях: когда обращение к значению уезжает внутрь <em>колбэка</em> (он выполнится когда-то потом, и к тому моменту значение могло измениться) и когда переменную где-то <em>переприсваивают</em>.</p>
+  <app-code-block [code]="narrowingCallback" lang="typescript" />
+  <p>Вторая ситуация — переменную захватывает замыкание, а ниже ей присваивают другое значение:</p>
+  <app-code-block [code]="narrowingClosure" lang="typescript" />
+  <p class="note"><strong>Частый миф.</strong> Говорят, будто сужение «слетает после любого вызова функции или <code>await</code>». Это не так: в <em>линейном</em> коде TypeScript сохраняет сужение и после вызова, и после <code>await</code>. Теряется оно именно в <strong>отложенном</strong> коде (колбэки, обработчики событий) и при <strong>переприсваивании</strong> переменной. Лекарство — работать с <code>const</code> или скопировать суженное значение в отдельную переменную.</p>
+</section>
+
+<section class="doc__section">
+  <h2>4. <code>.filter(Boolean)</code> не сужает тип</h2>
+  <p>Классический приём «выкинуть пустые элементы» через <code>arr.filter(Boolean)</code> в рантайме работает, но <strong>тип массива не меняет</strong>: компилятор не знает, что предикат отсёк именно <code>null</code>/<code>undefined</code>. В типе они остаются — и вы получаете ошибку «possibly undefined» на следующем шаге.</p>
+  <app-code-block [code]="filterBoolean" lang="typescript" />
+  <p>Решение — предикат-guard прямо в стрелке: <code>(s): s is string =&gt; …</code>. Он сообщает <code>filter</code>, какой тип остаётся на выходе. Подробнее — на странице <a routerLink="/typescript/unions-narrowing/type-guards">Проверки типов</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>5. Дискриминант обязан быть литералом</h2>
+  <p>Сужение <a routerLink="/typescript/unions-narrowing/discriminated-unions">размеченного объединения</a> держится на том, что поле-метка имеет <em>литеральный</em> тип (<code>'circle'</code>), а не широкий <code>string</code>. Но при выводе типа обычного объекта TypeScript <a routerLink="/typescript/basic-types/inference">расширяет</a> строковый литерал до <code>string</code> — и объект внезапно перестаёт подходить под union.</p>
+  <app-code-block [code]="discriminantWidened" lang="typescript" />
+  <p>Помогает <code>as const</code> (фиксирует литеральные типы) или явная аннотация целевым типом. Тема литералов и их расширения — на странице <a routerLink="/typescript/basic-types/literal-types">Литеральные типы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>6. Оператор <code>in</code>: ключ есть — значение может быть <code>undefined</code></h2>
+  <p>Оператор <code>in</code> отвечает на вопрос «есть ли у объекта такой ключ», а не «задано ли значение». Для опционального свойства <code>&#123; cache?: boolean &#125;</code> его тип — <code>boolean | undefined</code>, и проверка <code>'cache' in config</code> этот <code>undefined</code> не убирает.</p>
+  <app-code-block [code]="inOptional" lang="typescript" />
+  <p>Оператор <code>in</code> хорош, чтобы <em>различать разные по форме</em> члены union (у одного есть поле, у другого нет). А вот «есть ли значение» надёжнее спрашивать напрямую у значения.</p>
+</section>
+
+<section class="doc__section">
+  <h2>7. Union функций почти невозможно вызвать</h2>
+  <p>Если переменная имеет тип «одна функция <em>или</em> другая», TypeScript, вычисляя тип параметра для вызова, <strong>пересекает</strong> типы параметров вариантов. Для <code>(x: string) =&gt; void</code> и <code>(x: number) =&gt; void</code> это даёт <code>string &amp; number</code> — то есть <a routerLink="/typescript/basic-types/void-never"><code>never</code></a>. Позвать такую функцию нечем.</p>
+  <app-code-block [code]="unionOfFunctions" lang="typescript" />
+  <p>Это не баг, а следствие безопасности: аргумент должен подойти <em>любому</em> из вариантов. Выход — сначала сузить union до одной конкретной функции, а уже потом вызывать.</p>
+</section>
+
+<section class="doc__section">
+  <h2>8. <code>switch</code> без <code>break</code> — проваливание</h2>
+  <p>Наследие JavaScript: если ветка <code>case</code> не заканчивается <code>break</code> или <code>return</code>, выполнение «протекает» в следующий <code>case</code>. Это источник неочевидных багов — но здесь TypeScript на вашей стороне: строгая опция <code>noFallthroughCasesInSwitch</code> (входит в набор проекта) ловит проваливание ещё при компиляции.</p>
+  <app-code-block [code]="switchFallthrough" lang="typescript" />
+  <p>Самая надёжная привычка — возвращать значение прямо из <code>case</code> (<code>return</code>): тогда проваливание невозможно в принципе, а заодно каждая ветка обязана дать результат.</p>
+</section>
+
+<section class="doc__section">
+  <h2>9. <code>as</code> — это «затычка», а не проверка</h2>
+  <p>Когда сужение не выходит, велик соблазн «объяснить» компилятору тип через приведение <code>as</code>. Но <code>as</code> ничего не проверяет во время работы программы — он лишь <strong>затыкает рот компилятору</strong>. Если реальные данные окажутся другими, ошибка просто переедет из этапа компиляции в рантайм, где её ловить куда неприятнее.</p>
+  <app-code-block [code]="asSilencing" lang="typescript" />
+  <p>Приведение <code>as</code> уместно, когда вы знаете о типе <em>больше</em> компилятора и берёте ответственность на себя. Но для внешних данных честнее проверить форму <a routerLink="/typescript/unions-narrowing/type-guards">guard'ом</a>. Подробнее о рисках <code>as</code> — на странице <a routerLink="/typescript/assertions/as">Приведение (as)</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><code>typeof null === 'object'</code> — <code>typeof</code> не отсекает <code>null</code>; убирайте его сравнением <code>!== null</code>.</li>
+    <li>Проверка <code>if (x)</code> заодно отбрасывает <code>0</code>, <code>''</code>, <code>NaN</code> — при осмысленных «нулевых» значениях сужайте явно.</li>
+    <li>Сужение держится в линейном коде (даже после вызовов и <code>await</code>), но теряется в <strong>колбэках/замыканиях</strong> и при <strong>переприсваивании</strong>. Спасают <code>const</code> и копия значения в отдельную переменную.</li>
+    <li><code>.filter(Boolean)</code> не меняет тип — для сужения массива нужен предикат-guard <code>(x): x is T</code>.</li>
+    <li>Дискриминант размеченного объединения должен быть <strong>литералом</strong> (следите за расширением до <code>string</code>; помогает <code>as const</code>).</li>
+    <li><code>in</code> проверяет наличие <em>ключа</em>, а не заданность значения; union функций сводит параметр к <code>never</code>.</li>
+    <li><code>as</code> не проверяет данные, а отключает контроль — для внешних данных предпочитайте guard.</li>
+  </ul>
+  <p class="note">Назад к механике: <a routerLink="/typescript/unions-narrowing/narrowing">Сужение типов</a>, <a routerLink="/typescript/unions-narrowing/type-guards">Проверки типов</a> и <a routerLink="/typescript/unions-narrowing/discriminated-unions">Размеченные объединения</a>. Общая опора всего раздела — модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>».</p>
+</section>
+</article>

@@ -1,0 +1,210 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/functions">Функции</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Rest-параметры</span></nav>
+
+<h1 class="doc__title">Rest-параметры</h1>
+<p class="doc__lead">
+  Обычно у функции фиксированный список параметров. Но иногда заранее неизвестно,
+  <strong>сколько аргументов</strong> передадут: сложить два числа или двадцать, вывести
+  одну метку или десяток. Для этого есть <strong>rest-параметр</strong> — три точки перед
+  именем, которые собирают <strong>все оставшиеся аргументы</strong> в один массив:
+  <code>function sum(...nums: number[])</code>. Разберём синтаксис, строгие правила
+  расстановки и одну частую путаницу — где «три точки» собирают, а где, наоборот,
+  разворачивают.
+</p>
+
+<figure class="diagram">
+  <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Вызов sum с аргументами 1, 2 и 3. Три отдельных аргумента сходятся вниз и складываются в один массив 1, 2, 3, который внутри функции доступен как параметр nums типа number[].">
+    <text x="310" y="28" text-anchor="middle" fill="var(--fg)" font-size="15" font-weight="600">Rest собирает «все остальные» аргументы в один массив</text>
+
+    <rect x="70" y="52" width="110" height="40" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+    <text x="125" y="78" text-anchor="middle" font-family="monospace" font-size="16" fill="var(--fg)">1</text>
+    <rect x="255" y="52" width="110" height="40" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+    <text x="310" y="78" text-anchor="middle" font-family="monospace" font-size="16" fill="var(--fg)">2</text>
+    <rect x="440" y="52" width="110" height="40" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+    <text x="495" y="78" text-anchor="middle" font-family="monospace" font-size="16" fill="var(--fg)">3</text>
+
+    <text x="310" y="112" text-anchor="middle" fill="var(--muted)" font-size="12">аргументы вызова sum(1, 2, 3)</text>
+
+    <line x1="125" y1="120" x2="278" y2="156" stroke="var(--accent)" stroke-width="1.6" />
+    <line x1="310" y1="120" x2="310" y2="156" stroke="var(--accent)" stroke-width="1.6" />
+    <line x1="495" y1="120" x2="342" y2="156" stroke="var(--accent)" stroke-width="1.6" />
+    <polygon points="310,162 304,152 316,152" fill="var(--accent)" />
+
+    <rect x="180" y="164" width="260" height="58" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+    <text x="310" y="190" text-anchor="middle" font-family="monospace" font-size="16" fill="var(--fg)">[ 1, 2, 3 ]</text>
+    <text x="310" y="210" text-anchor="middle" font-family="monospace" font-size="12" fill="var(--accent)">nums: number[]</text>
+  </svg>
+  <figcaption>Сколько бы аргументов ни передали, rest-параметр сложит их все в один массив <code>nums</code>. Внутри функции это обычный <code>number[]</code>.</figcaption>
+</figure>
+
+<p class="note">
+  <strong>Аналогия.</strong> Rest-параметр — как один большой почтовый мешок в конце
+  сортировки. Первые письма могут раскладывать по именным ячейкам (обычные параметры),
+  но <strong>все оставшиеся</strong> письма, сколько бы их ни пришло, падают в один мешок.
+  Мешок всегда один, и стоит он в самом конце — иначе непонятно, где заканчивается «всё
+  остальное».
+</p>
+
+<section class="doc__section">
+  <h2>Синтаксис: три точки</h2>
+  <p>
+    Rest-параметр пишется так же, как в JavaScript
+    (<a routerLink="/javascript/functions/parameters">rest-параметры в JS</a>): три точки
+    <code>...</code>, затем имя. Новое в TypeScript — <strong>тип</strong>. И тут главное
+    правило: тип rest-параметра — это <strong>всегда тип массива</strong>
+    (<code>number[]</code>, <code>string[]</code> и т. п.), потому что внутри функции rest
+    и есть массив собранных аргументов. При этом <strong>каждый переданный аргумент</strong>
+    должен подойти под <em>тип элемента</em> этого массива.
+  </p>
+  <app-code-block [code]="syntaxExample" lang="typescript" />
+  <p>
+    Обратите внимание: вызвать функцию можно с любым числом аргументов — тремя, двумя или
+    вовсе без них (тогда массив окажется пустым). А вот <em>сорт</em> данных строго
+    проверяется: подсунуть строку туда, где ждут <code>number[]</code>, не выйдет.
+  </p>
+  <app-code-block [code]="mustBeArrayExample" lang="typescript" />
+  <p class="note">
+    <strong>Почему так.</strong> Тип элемента и тип rest-параметра связаны просто: если
+    каждый аргумент — <code>string</code>, то собранные вместе они дают <code>string[]</code>.
+    Поэтому написать <code>...x: number</code> нельзя — компилятор сразу отвечает
+    <code>A rest parameter must be of an array type.</code>: rest без массива не бывает.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Правила: один rest и только последним</h2>
+  <p>
+    У rest-параметра два жёстких ограничения, и оба следуют из его смысла «забрать всё
+    остальное»:
+  </p>
+  <ul class="rules">
+    <li>rest-параметр в функции может быть <strong>только один</strong>;</li>
+    <li>он обязан стоять <strong>последним</strong> в списке параметров.</li>
+  </ul>
+  <p>
+    Обычные (именованные) параметры при этом спокойно стоят <strong>перед</strong> rest:
+    сначала TypeScript раздаёт аргументы им по порядку, а всё, что осталось, отправляет
+    в rest-массив.
+  </p>
+  <app-code-block [code]="rulesExample" lang="typescript" />
+  <p>
+    А вот поставить обычный параметр <em>после</em> rest или завести второй rest нельзя —
+    тогда стало бы неясно, где заканчивается «всё остальное» и начинается следующий
+    параметр:
+  </p>
+  <app-code-block [code]="rulesErrorExample" lang="typescript" />
+  <p class="note">
+    <strong>Важно.</strong> Отсюда же вытекает совместимость с необязательными и
+    дефолтными параметрами (о них — на странице
+    <a routerLink="/typescript/functions/parameters">Параметры функций</a>): rest как бы
+    «продолжает» необязательные, ведь ноль собранных аргументов — это нормально. Но и
+    необязательный параметр после rest поставить всё равно нельзя: последнее место занято.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>rest при объявлении и spread при вызове</h2>
+  <p>
+    Одни и те же три точки означают <strong>противоположные вещи</strong> в зависимости от
+    того, где стоят. В <strong>списке параметров</strong> (при объявлении функции) они
+    <strong>собирают</strong> аргументы в массив — это rest. В <strong>месте вызова</strong>
+    они, наоборот, <strong>разворачивают</strong> готовый массив обратно в отдельные
+    аргументы — это spread. Собрать и разложить — зеркальные операции.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 236" width="100%" role="img" aria-label="Слева: объявление функции sum с rest-параметром nums. Отдельные аргументы 1, 2, 3 собираются тремя точками в массив nums. Справа: в месте вызова готовый массив scores из 1, 2, 3 тремя точками разворачивается обратно в отдельные аргументы вызова sum.">
+      <rect x="18" y="42" width="292" height="176" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="164" y="68" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="700">Сбор — rest</text>
+      <text x="164" y="86" text-anchor="middle" fill="var(--muted)" font-size="11">в СПИСКЕ ПАРАМЕТРОВ</text>
+      <text x="164" y="120" text-anchor="middle" font-family="monospace" font-size="15" fill="var(--fg)">1, 2, 3</text>
+      <text x="164" y="137" text-anchor="middle" fill="var(--muted)" font-size="10.5">отдельные аргументы</text>
+      <line x1="164" y1="146" x2="164" y2="172" stroke="var(--accent)" stroke-width="1.6" />
+      <polygon points="164,178 158,168 170,168" fill="var(--accent)" />
+      <text x="164" y="202" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--fg)">...nums → [1, 2, 3]</text>
+
+      <rect x="330" y="42" width="292" height="176" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <text x="476" y="68" text-anchor="middle" fill="var(--fg)" font-size="14" font-weight="700">Разворачивание — spread</text>
+      <text x="476" y="86" text-anchor="middle" fill="var(--muted)" font-size="11">в МЕСТЕ ВЫЗОВА</text>
+      <text x="476" y="120" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--fg)">scores = [1, 2, 3]</text>
+      <text x="476" y="137" text-anchor="middle" fill="var(--muted)" font-size="10.5">готовый массив</text>
+      <line x1="476" y1="146" x2="476" y2="172" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="476,178 470,168 482,168" fill="var(--muted)" />
+      <text x="476" y="202" text-anchor="middle" font-family="monospace" font-size="14" fill="var(--fg)">sum(...scores)</text>
+    </svg>
+    <figcaption>Слева три точки <strong>собирают</strong> аргументы в параметр-массив; справа те же три точки <strong>разворачивают</strong> массив обратно в аргументы вызова.</figcaption>
+  </figure>
+
+  <app-code-block [code]="collectVsSpreadExample" lang="typescript" />
+  <p>
+    При развороте массива в rest-вызов TypeScript тоже проверяет типы: элементы массива
+    должны подходить под тип элемента rest-параметра. Развернуть <code>string[]</code> в
+    функцию, которая ждёт <code>number[]</code>, не получится.
+  </p>
+  <app-code-block [code]="spreadTypeExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Кортежные rest (продвинутое)</h2>
+  <p>
+    Обычно тип rest — это «однородный» массив: сколько угодно элементов <em>одного</em>
+    типа. Но rest можно типизировать и <strong>кортежем</strong>
+    (<a routerLink="/typescript/basic-types/arrays-tuples">массивы и кортежи</a>) — тогда
+    из «сколько угодно» он превращается в <strong>фиксированный набор аргументов на
+    конкретных позициях</strong>, каждый со своим типом.
+  </p>
+  <app-code-block [code]="tupleRestExample" lang="typescript" />
+  <p>
+    По сути <code>function makePair(...args: [number, string])</code> — это тот же
+    <code>function makePair(a: number, b: string)</code>, только аргументы попадают в
+    массив <code>args</code>. Компилятор следит и за количеством
+    (<code>Expected 2 arguments</code>), и за порядком типов.
+  </p>
+
+  <h3 class="doc__subtitle">Подписанные элементы кортежа</h3>
+  <p>
+    Элементам кортежа можно дать <strong>имена-подписи</strong> — они ни на что не влияют
+    во время выполнения, но делают подсказки редактора понятнее. И тут открывается приём:
+    в подписанном кортеже можно <strong>смешать</strong> фиксированные позиции и хвост
+    из «сколько угодно» — например, <code>[id: number, ...labels: string[]]</code>
+    означает «сначала обязательное число, затем любое количество строк».
+  </p>
+  <app-code-block [code]="labeledTupleExample" lang="typescript" />
+  <h3 class="doc__subtitle">Зачем это на практике: обёртка с теми же аргументами</h3>
+  <p>
+    Частая задача — написать <strong>обёртку</strong> над функцией: добавить что-то вокруг
+    вызова (запись в лог, замер времени, проверку прав), но аргументы принять и передать
+    дальше <strong>ровно те же</strong>, что у исходной функции. Если выписывать список
+    параметров руками, то при любом изменении исходной функции обёртка молча
+    «рассинхронится» — и ошибку никто не подсветит.
+  </p>
+  <p>
+    Здесь и выручает встроенная утилита <code>Parameters&lt;F&gt;</code>: она берёт функцию
+    и возвращает её параметры <strong>как кортеж</strong>. Этот кортеж мы кладём в rest
+    обёртки — <code>(...args: Parameters&lt;typeof fn&gt;)</code> — а при вызове
+    разворачиваем обратно — <code>fn(...args)</code>. Те самые «три точки»: слева
+    <strong>собирают</strong> аргументы, справа <strong>разворачивают</strong>.
+  </p>
+  <app-code-block [code]="wrapperExample" lang="typescript" />
+  <p class="note">
+    <strong>Если совсем коротко:</strong> <code>...args: Parameters&lt;typeof fn&gt;</code>
+    значит «принимай те же аргументы, что и <code>fn</code>», а <code>fn(...args)</code> —
+    «передай их дальше без изменений». Сама утилита <code>Parameters&lt;&gt;</code> и её
+    родственники разобраны на странице
+    <a routerLink="/typescript/utility-types/function-types">ReturnType, Parameters</a> —
+    отдельно знать их для этой темы не обязательно.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Rest-параметр</strong> — три точки перед именем; он собирает все оставшиеся аргументы вызова в один массив: <code>function sum(...nums: number[])</code>.</li>
+    <li>Тип rest — <strong>всегда тип массива</strong>; каждый переданный аргумент должен подойти под тип элемента.</li>
+    <li>rest может быть <strong>только один</strong> и стоять <strong>последним</strong>; обычные параметры могут идти перед ним.</li>
+    <li>Три точки в <strong>списке параметров</strong> собирают (rest), а в <strong>месте вызова</strong> — разворачивают массив в аргументы (spread).</li>
+    <li>При развороте массива в rest-вызов элементы должны совпадать по типу с элементом rest-параметра.</li>
+    <li>rest можно типизировать <strong>кортежем</strong> для фиксированного набора позиций: <code>...args: [number, string]</code>; элементы кортежа можно подписать и смешать с хвостом <code>[id: number, ...labels: string[]]</code>.</li>
+  </ul>
+</section>
+</article>

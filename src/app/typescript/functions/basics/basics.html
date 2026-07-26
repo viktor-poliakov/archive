@@ -1,0 +1,232 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/functions">Функции</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Типизация функций</span></nav>
+
+<h1 class="doc__title">Типизация функций</h1>
+<p class="doc__lead">
+  В JavaScript функция принимает <strong>что угодно</strong>: передадите строку вместо
+  числа — язык не возразит, а ошибка вылезет уже во время работы программы. TypeScript
+  позволяет описать функцию точнее: сказать, что в неё <strong>входит</strong> (типы
+  параметров) и что из неё <strong>выходит</strong> (тип результата). Дальше компилятор
+  сам следит, чтобы этот «договор» соблюдался — и ловит несоответствия ещё до запуска.
+  Если устройство JS-функций пока в новинку — загляните в раздел
+  <a routerLink="/javascript/functions/basics">Основы функций</a>, а здесь мы добавляем
+  к ним типы.
+</p>
+
+<p class="note">
+  <strong>Аналогия.</strong> Функция — как рецепт на кухне. Рецепт заранее оговаривает,
+  какие <em>ингредиенты определённого сорта</em> нужно положить (два числа, а не «щепотку
+  строки») и какое <em>блюдо</em> получится на выходе (число). Аннотации типов — это и есть
+  такие пометки в рецепте: они не готовят за вас, но не дают перепутать соль с сахаром.
+</p>
+
+<section class="doc__section">
+  <h2>Аннотации параметров и результата</h2>
+  <p>
+    Тип параметра пишут через двоеточие сразу после его имени: <code>a: number</code>.
+    Тип результата ставят <strong>после круглых скобок</strong>, тоже через двоеточие:
+    <code>function add(a: number, b: number): number</code>. Читается как «функция
+    <code>add</code> берёт два числа и возвращает число».
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Анатомия сигнатуры функции add. Слово function, затем имя add, затем в круглых скобках два параметра — a двоеточие number и b двоеточие number, после закрывающей скобки двоеточие number обозначает тип результата.">
+      <text x="310" y="30" text-anchor="middle" fill="var(--fg)" font-size="16" font-weight="600">Анатомия сигнатуры функции</text>
+
+      <rect x="40" y="86" width="540" height="46" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="56" y="116" font-family="monospace" font-size="17"><tspan fill="var(--purple)">function </tspan><tspan fill="var(--accent)">add</tspan><tspan fill="var(--fg)">(</tspan><tspan fill="var(--fg)">a</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--green)">number</tspan><tspan fill="var(--fg)">, b</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--green)">number</tspan><tspan fill="var(--fg)">)</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--green)">number</tspan></text>
+
+      <line x1="86" y1="140" x2="86" y2="168" stroke="var(--accent)" stroke-width="1.4" />
+      <text x="86" y="188" text-anchor="middle" fill="var(--accent)" font-size="12">имя функции</text>
+
+      <line x1="205" y1="140" x2="205" y2="200" stroke="var(--green)" stroke-width="1.4" />
+      <text x="205" y="220" text-anchor="middle" fill="var(--green)" font-size="12">типы параметров</text>
+
+      <line x1="512" y1="140" x2="512" y2="168" stroke="var(--green)" stroke-width="1.4" />
+      <text x="512" y="188" text-anchor="middle" fill="var(--green)" font-size="12">тип результата</text>
+    </svg>
+    <figcaption>Каждое двоеточие вводит тип: у параметров — внутри скобок, у результата — сразу после закрывающей скобки.</figcaption>
+  </figure>
+
+  <app-code-block [code]="addExample" lang="typescript" />
+
+  <p>
+    Главная выгода — ошибку с неверным аргументом видно <strong>до запуска</strong>, прямо
+    в редакторе. В чистом JavaScript такой промах тихо дожил бы до продакшена.
+  </p>
+  <app-code-block [code]="wrongArgExample" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Стрелочные функции</h2>
+  <p>
+    У <a routerLink="/javascript/functions/first-class">стрелочных функций</a> всё
+    устроено так же: типы параметров — в скобках, тип результата — после скобок, перед
+    стрелкой <code>=&gt;</code>. Например, <code>const square = (x: number): number =&gt; x * x</code>.
+  </p>
+  <app-code-block [code]="arrowExample" lang="typescript" />
+  <p class="note">
+    <strong>Важно.</strong> Не путайте <strong>стрелку значения</strong> (<code>=&gt;</code>
+    в самой функции — она реально что-то вычисляет) со <strong>стрелкой типа</strong>, о
+    которой пойдёт речь ниже. Выглядят одинаково, но одна создаёт функцию, а вторая лишь
+    описывает её форму.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Вывод типа возврата</h2>
+  <p>
+    Тип результата можно <strong>не писать вовсе</strong> — TypeScript прочитает тело
+    функции и выведет его сам. Если <code>double</code> возвращает <code>x * 2</code>, а
+    <code>x</code> — число, то и результат — число; компилятор поймёт это без подсказки.
+    Подробнее про то, как работает автоматический
+    <a routerLink="/typescript/basic-types/inference">вывод типов</a>.
+  </p>
+  <app-code-block [code]="inferExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Когда всё-таки писать тип явно</h3>
+  <p>
+    Раз TypeScript и так всё выводит, зачем указывать тип результата руками? Есть два
+    веских повода:
+  </p>
+  <ul class="rules">
+    <li><strong>Публичный API.</strong> Явный тип фиксирует «договор» функции. Если тело
+      случайно начнёт возвращать не то, ошибка загорится <em>у самого объявления</em>, а
+      не разлетится по всем местам, откуда функцию вызывают.</li>
+    <li><strong>Ранняя ловля ошибок в теле.</strong> С явным <code>: number</code> опечатка
+      внутри функции подсвечивается прямо там, где написана, — а не «уезжает» к вызывающему
+      коду в виде загадочного несоответствия типов.</li>
+  </ul>
+  <app-code-block [code]="explicitReturnExample" lang="typescript" />
+  <p class="note">
+    <strong>Для опытных.</strong> Разумный компромисс: для внутренних мелких функций
+    полагаться на вывод, а на границах модулей и в экспортируемых функциях писать тип
+    результата явно. Тонкости и приёмы собраны на странице
+    <a routerLink="/typescript/functions/return-types">Типы возвращаемого значения</a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Тип функции как значение</h2>
+  <p>
+    В TypeScript <a routerLink="/javascript/functions/first-class">функция — такое же
+    значение</a>, как число или строка, а значит у неё есть <strong>свой тип</strong>.
+    Записывается он стрелкой: <code>(a: number, b: number) =&gt; number</code> — «берёт
+    два числа, возвращает число». Чтобы на такой тип было удобно ссылаться, ему обычно
+    дают имя через <code>type</code>: например <code>type MyCb = (a: number) =&gt; number</code>
+    — «функция, которая берёт одно число и возвращает число». Такой
+    <em>function type expression</em> ставят там же, где любой другой тип: на переменную,
+    на параметр-колбэк, на поле объекта.
+  </p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 680 214" width="100%" role="img" aria-label="Сравнение типа функции и функции-значения. Слева объявление типа: type MyCb равно открытая скобка a двоеточие number закрытая скобка стрелка number — это только описание формы. Справа функция-значение: const double равно скобка a скобка стрелка a умножить на 2 — настоящая функция, вызов double от 5 вернёт 10.">
+      <rect x="20" y="44" width="300" height="146" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="170" y="74" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="700">ТИП функции</text>
+      <text x="170" y="114" text-anchor="middle" font-family="monospace" font-size="13"><tspan fill="var(--muted)">type </tspan><tspan fill="var(--fg)">MyCb </tspan><tspan fill="var(--muted)">= </tspan><tspan fill="var(--fg)">(a</tspan><tspan fill="var(--muted)">: </tspan><tspan fill="var(--green)">number</tspan><tspan fill="var(--fg)">) </tspan><tspan fill="var(--accent)" font-weight="700">=&gt;</tspan><tspan fill="var(--green)"> number</tspan></text>
+      <text x="170" y="152" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">только ОПИСАНИЕ формы функции;</text>
+      <text x="170" y="170" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">в готовом JS-коде его нет</text>
+
+      <rect x="360" y="44" width="300" height="146" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <text x="510" y="74" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="700">ФУНКЦИЯ-значение</text>
+      <text x="510" y="114" text-anchor="middle" font-family="monospace" font-size="13"><tspan fill="var(--muted)">const </tspan><tspan fill="var(--fg)">double </tspan><tspan fill="var(--muted)">= </tspan><tspan fill="var(--fg)">(a) </tspan><tspan fill="var(--accent)" font-weight="700">=&gt;</tspan><tspan fill="var(--fg)"> a * 2</tspan></text>
+      <text x="510" y="152" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">НАСТОЯЩАЯ функция;</text>
+      <text x="510" y="170" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-style="italic">вызов double(5) вернёт 10</text>
+    </svg>
+    <figcaption>Стрелка <code>=&gt;</code> есть и там, и там — но это разные вещи. Слева, в <strong>типе</strong>, она читается как «возвращает». Справа, в <strong>функции</strong>, она отделяет параметр <code>(a)</code> от тела <code>a * 2</code>. Значок один — миры разные.</figcaption>
+  </figure>
+
+  <p>
+    Переменной с типом-функцией можно присвоить любую функцию подходящей формы; несовпадение
+    компилятор отвергнет. Обратите внимание: у присваиваемой функции параметры уже
+    <strong>не нужно</strong> аннотировать — их типы TypeScript возьмёт из объявленного типа
+    переменной (это называют <em>контекстной типизацией</em>).
+  </p>
+  <app-code-block [code]="fnTypeExample" lang="typescript" />
+
+  <h3 class="doc__subtitle">Типизация колбэка</h3>
+  <p>
+    Самое частое применение — описать <strong>колбэк</strong>, функцию-аргумент. Тип
+    параметра-колбэка задаётся тем же выражением со стрелкой, и тогда компилятор проверит,
+    что переданная функция и принимает, и возвращает то, что нужно.
+  </p>
+  <app-code-block [code]="callbackExample" lang="typescript" />
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Тип-функция <code>(a: number) =&gt; number</code></th>
+          <th>Значение-функция <code>(a) =&gt; a * 2</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Что это</td>
+          <td class="yes">описание формы: что берёт и что вернёт</td>
+          <td class="yes">настоящий код, который выполняется</td>
+        </tr>
+        <tr>
+          <td>Где стоит</td>
+          <td class="yes">в аннотации — после <code>:</code></td>
+          <td class="yes">справа от <code>=</code>, как значение</td>
+        </tr>
+        <tr>
+          <td>В рантайме</td>
+          <td class="no">исчезает после компиляции</td>
+          <td class="yes">существует и вычисляет</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Параметр без типа — неявный <code>any</code></h2>
+  <p>
+    Если у параметра <strong>не написать тип</strong>, TypeScript нечего проверять — и он
+    молча присвоил бы такому параметру тип <a routerLink="/typescript/basic-types/any-unknown"><code>any</code></a>,
+    который отключает все проверки. Чтобы это не проходило незаметно, строгий режим (флаг
+    <code>noImplicitAny</code>, он входит в <code>strict</code>) считает <strong>неявный
+    <code>any</code> ошибкой</strong>.
+  </p>
+  <app-code-block [code]="implicitAnyExample" lang="typescript" />
+  <p>
+    Лечится всегда одинаково — <strong>дописать аннотацию</strong>. После этого параметр
+    снова под контролем компилятора, и неверный вызов подсветится. Осознанный <code>any</code>
+    (написанный руками) допустим, но это последнее средство: он выключает проверки там, где
+    стоит.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Функция без результата: <code>void</code></h2>
+  <p>
+    Иногда функция ничего не возвращает — только делает что-то «в сторону»: печатает в
+    консоль, пишет в лог. Тип её результата — <code>void</code>. Чаще его тоже выводят
+    автоматически, но можно указать и явно.
+  </p>
+  <app-code-block [code]="voidExample" lang="typescript" />
+  <p class="note">
+    <strong>Дальше.</strong> У <code>void</code> есть тонкости (например, чем он отличается
+    от <code>undefined</code> и от «никогда не возвращающего» <code>never</code>) — про них
+    читайте на страницах <a routerLink="/typescript/functions/return-types">Типы
+    возвращаемого значения</a> и
+    <a routerLink="/typescript/basic-types/void-never"><code>void</code> и <code>never</code></a>.
+  </p>
+</section>
+
+<section class="doc__section">
+  <h2>Кратко</h2>
+  <ul class="rules">
+    <li><strong>Тип параметра</strong> пишут после его имени через двоеточие, <strong>тип результата</strong> — после круглых скобок: <code>function add(a: number, b: number): number</code>.</li>
+    <li>Неверный аргумент ловится <strong>до запуска</strong>, прямо в редакторе, а не в продакшене.</li>
+    <li>У <strong>стрелочных функций</strong> аннотации ставят так же: <code>const square = (x: number): number =&gt; x * x</code>.</li>
+    <li>Тип результата можно <strong>не писать</strong> — TypeScript его <a routerLink="/typescript/basic-types/inference">выведет</a>; но для публичного API и ранней ловли ошибок его указывают <a routerLink="/typescript/functions/return-types">явно</a>.</li>
+    <li>У функции есть <strong>свой тип-стрелка</strong>: <code>(a: number, b: number) =&gt; number</code>. Это описание формы (для переменных и колбэков), а не сама функция.</li>
+    <li>Параметр <strong>без аннотации</strong> получает неявный <a routerLink="/typescript/basic-types/any-unknown"><code>any</code></a> — при <code>noImplicitAny</code> это ошибка; лечится добавлением типа.</li>
+    <li>Функция, которая ничего не возвращает, имеет результат <a routerLink="/typescript/basic-types/void-never"><code>void</code></a>.</li>
+  </ul>
+</section>
+</article>

@@ -1,0 +1,164 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/unions-narrowing">Объединения и сужение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Объединения (union)</span></nav>
+
+<h1 class="doc__title">Объединения (union)</h1>
+<p class="doc__lead">Объединение (union type) — это способ сказать: «здесь будет значение <strong>или одного типа, или другого</strong>». Записывается через вертикальную черту: <code>string | number</code>. Если помнить, что <strong>тип — это множество значений</strong>, то union читается буквально как <em>объединение множеств</em>: он охватывает всё, что входит в любой из своих членов, а значит шире каждого из них.</p>
+
+<section class="doc__section">
+  <h2>Идея: «или A, или B»</h2>
+  <p>Иногда переменная не обязана быть строго одного типа. Идентификатор в базе бывает то числом, то строковым кодом. Поле ввода принимает то логин-строку, то числовой <code>id</code>. Функция-поиск возвращает то найденный объект, то «ничего». Для всех таких случаев в TypeScript есть <strong>объединение</strong>.</p>
+  <p class="note"><strong>Аналогия.</strong> Представьте ячейку торгового автомата с надписью «принимаю монету <em>или</em> банкноту». В неё влезет и то, и другое — но в каждый конкретный момент лежит что-то <em>одно</em>. Тип <code>Coin | Banknote</code> — ровно про это: значение будет одним из вариантов, а каким именно — выяснится в рантайме.</p>
+  <p>Свяжем это с моделью множеств из страницы <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>. Каждый тип — это множество значений. Объединение <code>A | B</code> — это <strong>объединение множеств</strong> (по-математически <code>A ∪ B</code>): в него входят все значения из <code>A</code> <em>плюс</em> все значения из <code>B</code>. Поэтому union всегда <strong>шире</strong> каждого своего члена и является их <strong>супертипом</strong>: и <code>A</code>, и <code>B</code> целиком помещаются внутрь <code>A | B</code>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 560 340" width="100%" role="img" aria-label="Объединение множеств string и number">
+      <text x="280" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">string | number — все строки ПЛЮС все числа</text>
+
+      <rect x="40" y="55" width="480" height="250" rx="16" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 6" />
+      <text x="280" y="82" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">string | number</text>
+
+      <circle cx="170" cy="200" r="85" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="170" y="170" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">string</text>
+      <text x="170" y="208" text-anchor="middle" fill="var(--muted)" font-size="12">'ok' · 'error'</text>
+
+      <circle cx="390" cy="200" r="85" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="390" y="170" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">number</text>
+      <text x="390" y="208" text-anchor="middle" fill="var(--muted)" font-size="12">42 · 3.14</text>
+    </svg>
+    <figcaption>Тип <code>string | number</code> — объединение двух множеств. В переменную влезает значение из любого круга; поэтому union <em>шире</em> каждого члена и является их супертипом.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Как объявить объединение</h2>
+  <p>Синтаксис предельно простой: перечислите типы через <code>|</code>. Самый частый случай — «строка или число»:</p>
+  <app-code-block [code]="declareBasic" lang="typescript" />
+
+  <h3 class="doc__subtitle">Литеральные объединения</h3>
+  <p>Членами union могут быть не только «широкие» типы вроде <code>string</code>, но и конкретные <a routerLink="/typescript/basic-types/literal-types">литеральные типы</a> — отдельные значения. Так описывают «одно из нескольких допустимых»: режим сортировки, статус заказа, размер футболки. Это одно из самых полезных применений union на практике.</p>
+  <app-code-block [code]="literalUnion" lang="typescript" />
+  <p>Компилятор будет следить, чтобы туда попадали только перечисленные варианты, а редактор — подсказывать их в автодополнении. Это гораздо надёжнее «магических строк» в обычном <code>string</code>.</p>
+
+  <h3 class="doc__subtitle">Псевдоним <code>type</code> и много членов</h3>
+  <p>Если объединение используется в нескольких местах — дайте ему имя через <code>type</code>. А членов может быть сколько угодно, не только два:</p>
+  <app-code-block [code]="aliasUnion" lang="typescript" />
+
+  <h3 class="doc__subtitle">Объединение с <code>null</code> и <code>undefined</code></h3>
+  <p>Очень частый вид union — «значение <em>или</em> его отсутствие». В TypeScript <code>null</code> и <code>undefined</code> — самостоятельные типы, поэтому возможность «пустоты» добавляют в объединение явно: <code>T | null</code> или <code>T | undefined</code>.</p>
+  <app-code-block [code]="nullableUnion" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Главное правило: без проверки доступно только общее</h2>
+  <p>Вот ключевой момент, ради которого стоит понять union целиком. Раз в переменной <code>string | number</code> может лежать <em>либо</em> строка, <em>либо</em> число, компилятор не знает заранее, что именно. Поэтому он разрешает обращаться только к тому, что есть у <strong>всех членов сразу</strong> — к их <em>общим</em> свойствам и методам.</p>
+  <p>В терминах множеств: набор доступных операций — это <strong>пересечение</strong> возможностей всех членов. У <code>string</code> и <code>number</code> общий, например, <code>toString()</code> — его звать можно. А вот специфичный для строки <code>toUpperCase()</code> — уже нет: вдруг там сейчас число.</p>
+  <app-code-block [code]="commonMembersError" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 560 320" width="100%" role="img" aria-label="Доступные операции union — пересечение возможностей его членов">
+      <text x="280" y="26" text-anchor="middle" fill="var(--muted)" font-size="12">без проверки доступно только пересечение возможностей</text>
+
+      <circle cx="195" cy="185" r="125" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <circle cx="365" cy="185" r="125" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+
+      <text x="140" y="100" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+      <text x="140" y="185" text-anchor="middle" fill="var(--muted)" font-size="12">toUpperCase()</text>
+      <text x="140" y="212" text-anchor="middle" fill="var(--muted)" font-size="12">startsWith()</text>
+
+      <text x="420" y="100" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">number</text>
+      <text x="420" y="185" text-anchor="middle" fill="var(--muted)" font-size="12">toFixed()</text>
+      <text x="420" y="212" text-anchor="middle" fill="var(--muted)" font-size="12">toPrecision()</text>
+
+      <rect x="232" y="148" width="96" height="90" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="280" y="176" text-anchor="middle" fill="var(--accent)" font-size="12">общее:</text>
+      <text x="280" y="196" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">toString()</text>
+      <text x="280" y="216" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">valueOf()</text>
+    </svg>
+    <figcaption>У значения <code>string | number</code> без сужения доступно лишь то, что умеют <strong>оба</strong> типа — их общие методы (пересечение), а не то, что специфично для одной стороны.</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Обращение к значению <code>id: string | number</code></th>
+          <th>Доступно?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>id.toString()</code> — есть у string и у number</td>
+          <td class="yes">✅ да, метод общий</td>
+        </tr>
+        <tr>
+          <td><code>id.toUpperCase()</code> — есть только у string</td>
+          <td class="no">❌ нет, вдруг там число</td>
+        </tr>
+        <tr>
+          <td><code>id.toFixed(2)</code> — есть только у number</td>
+          <td class="no">❌ нет, вдруг там строка</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Точно так же это работает и для объединения <strong>объектов</strong>: читать напрямую можно только те поля, что есть у каждого варианта.</p>
+  <app-code-block [code]="commonObjectFields" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> Вам вручили посылку с наклейкой «внутри книга <em>или</em> кружка». Не вскрывая её, вы уверены лишь в общем: «у неё есть вес и размер». А вот «полистать страницы» (только у книги) или «налить чай» (только в кружку) — нельзя, пока не откроете и не посмотрите, что именно внутри.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Мостик к сужению: как добраться до специфичного</h2>
+  <p>«И что, со <code>string | number</code> нельзя вызвать ни <code>toUpperCase</code>, ни <code>toFixed</code>?» — можно, но сперва нужно <strong>убедить компилятор</strong>, что именно сейчас в переменной. Этот процесс — «сначала проверь, потом пользуйся» — называется <strong>сужением типа</strong> (narrowing). Самый простой инструмент — проверка <code>typeof</code>:</p>
+  <app-code-block [code]="narrowingBridge" lang="typescript" />
+  <p>Внутри каждой ветки TypeScript уже точно знает конкретный тип и открывает все его методы. Это ровно та же логика, что и «супертип → подтип только после проверки» из страницы <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>: union — супертип своих членов, и чтобы спуститься к одному из них, нужна проверка.</p>
+  <p>Способов сужения много — <code>typeof</code>, сравнение с литералом, оператор <code>in</code>, <code>instanceof</code>. Все они подробно разобраны на отдельной странице <a routerLink="/typescript/unions-narrowing/narrowing">Сужение типов</a>, а для объединений объектов особенно удобны <a routerLink="/typescript/unions-narrowing/discriminated-unions">размеченные объединения</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Массивы: где стоят скобки — важно</h2>
+  <p>С массивами легко ошибиться: <code>(string | number)[]</code> и <code>string[] | number[]</code> — это <em>разные</em> типы, и разница именно в положении скобок.</p>
+  <app-code-block [code]="arraysDiff" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Тип</th>
+          <th>Что означает</th>
+          <th><code>['a', 1]</code> подходит?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>(string | number)[]</code></td>
+          <td>массив, где <em>каждый элемент</em> — строка или число</td>
+          <td class="yes">✅ да, элементы можно мешать</td>
+        </tr>
+        <tr>
+          <td><code>string[] | number[]</code></td>
+          <td><em>весь массив</em> — либо только строк, либо только чисел</td>
+          <td class="no">❌ нет, это смешанный массив</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Мнемоника: union действует ровно на то, к чему <em>прилипли</em> скобки. Прижали к элементу — <code>(A | B)[]</code> — гибкий разнородный массив. Обернули весь <code>[]</code> — <code>A[] | B[]</code> — «или один сорт целиком, или другой».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика</h2>
+  <p>Соберём типовые кейсы вместе. Первый — функция, принимающая <strong>несколько типов</strong> и разбирающая их сужением внутри:</p>
+  <app-code-block [code]="practiceFunctionParam" lang="typescript" />
+  <p>Второй, пожалуй, самый частый в реальном коде — функция, которая <strong>может ничего не вернуть</strong>. Тип результата <code>T | null</code> заставляет вызывающего проверить результат, прежде чем им пользоваться, — и это отличная защита от классической ошибки «cannot read property of null».</p>
+  <app-code-block [code]="practiceReturnNull" lang="typescript" />
+  <p>Обратите внимание, как union <code>Product | null</code> работает вместе с сужением: пока значение не проверено на <code>null</code>, компилятор охраняет вас; после проверки — открывает поля <code>Product</code>. Это и есть весь смысл объединений в одной картинке.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Union <code>A | B</code></strong> — «значение или типа <code>A</code>, или типа <code>B</code>»; в терминах множеств это <em>объединение</em>, поэтому union <strong>шире</strong> каждого члена и является их супертипом.</li>
+    <li>Объявляют через <code>|</code>: <code>string | number</code>, литеральные наборы (<code>'asc' | 'desc'</code>), много членов, псевдоним <code>type</code>, «пустоту» — как <code>T | null</code> / <code>T | undefined</code>.</li>
+    <li><strong>Без проверки доступно только общее</strong> — свойства и методы, которые есть у <em>всех</em> членов (пересечение возможностей). Специфичное для одной стороны напрямую вызвать нельзя.</li>
+    <li>Чтобы добраться до конкретного члена, тип нужно <strong>сузить</strong> (<code>typeof</code>, сравнение, <code>in</code>, <code>instanceof</code>) — см. <a routerLink="/typescript/unions-narrowing/narrowing">Сужение типов</a>.</li>
+    <li>Массивы: <code>(A | B)[]</code> — разнородный массив элементов; <code>A[] | B[]</code> — весь массив одного сорта. Скобки решают.</li>
+  </ul>
+  <p class="note">Дальше стоит посмотреть противоположную операцию — <a routerLink="/typescript/unions-narrowing/intersection">Пересечения (intersection)</a> (там <em>больше требований</em> и множество <em>уже</em>), затем углубиться в <a routerLink="/typescript/unions-narrowing/narrowing">Сужение типов</a>, а базовую модель «тип — это множество» всегда можно освежить на странице <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.</p>
+</section>
+</article>

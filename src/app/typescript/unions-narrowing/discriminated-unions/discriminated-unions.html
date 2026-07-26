@@ -1,0 +1,161 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/unions-narrowing">Объединения и сужение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Размеченные объединения</span></nav>
+
+<h1 class="doc__title">Размеченные объединения</h1>
+<p class="doc__lead">Размеченное (его ещё называют <em>тегированным</em>) объединение — это главный практический паттерн работы с union из объектов. Идея на удивление простая: у всех вариантов есть <strong>общее поле-метка</strong>, а его значение — строковый литерал. По этой метке TypeScript однозначно понимает, какой именно вариант перед ним, и открывает доступ ровно к «своим» полям этого варианта. Это прямое продолжение модели «тип — это множество значений» со страницы <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.</p>
+
+<section class="doc__section">
+  <h2>Идея: общий ярлык у всех вариантов</h2>
+  <p>Обычный union из объектов неудобен: TypeScript видит несколько форм сразу и не знает, к какой именно обратиться. Размеченное объединение решает это так — в <strong>каждый</strong> вариант добавляют одно и то же поле-метку (его называют <em>дискриминантом</em>), а типом этого поля делают <strong>строковый литерал</strong>, уникальный для варианта. Обычно метку называют <code>kind</code>, <code>type</code> или <code>status</code>.</p>
+  <app-code-block [code]="discriminantIdea" lang="typescript" />
+  <p class="note"><strong>Аналогия: посылка с ярлыком.</strong> Представьте гору посылок. Пока они закрыты, вы не знаете, что внутри. Но на каждой в углу наклеен <em>ярлык</em>: «хрупкое», «книги», «одежда». Достаточно взглянуть на ярлык — и сразу понятно, как обращаться с содержимым, не вскрывая коробку. Поле <code>kind</code> — это и есть такой ярлык: по нему TypeScript «читает», какой вариант перед ним, и что там за поля.</p>
+  <p>Самое ценное: проверив <strong>одно</strong> поле-метку, вы сужаете <strong>весь</strong> объект целиком. TypeScript автоматически понимает, что если <code>kind === 'circle'</code>, то перед нами именно <code>Circle</code> со всеми его полями:</p>
+  <app-code-block [code]="narrowByKind" lang="typescript" />
+  <p>Это и есть <a routerLink="/typescript/unions-narrowing/narrowing">сужение типов</a>, только удобнее обычного: не нужно проверять наличие каждого поля по отдельности — достаточно сравнить метку. TypeScript «умеет» такое сужение именно потому, что типы меток — непересекающиеся литералы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как это выглядит: набор помеченных вариантов</h2>
+  <p>Union из объектов удобно представлять как набор посылок, у каждой из которых свой ярлык <code>kind</code>. Ярлык у всех в одном и том же месте (это общее поле), но значение — своё. Остальные поля у вариантов различаются.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 270" width="100%" role="img" aria-label="Объединение Shape из трёх вариантов, у каждого свой ярлык kind">
+      <text x="360" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Одно объединение Shape — три варианта, у каждого свой ярлык kind</text>
+
+      <rect x="30" y="55" width="200" height="185" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <rect x="30" y="55" width="200" height="44" rx="12" fill="var(--accent)" fill-opacity="0.16" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="130" y="83" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">kind: 'circle'</text>
+      <text x="130" y="145" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">radius: number</text>
+
+      <rect x="260" y="55" width="200" height="185" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <rect x="260" y="55" width="200" height="44" rx="12" fill="var(--accent)" fill-opacity="0.16" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="360" y="83" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">kind: 'rectangle'</text>
+      <text x="360" y="138" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">width: number</text>
+      <text x="360" y="166" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">height: number</text>
+
+      <rect x="490" y="55" width="200" height="185" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <rect x="490" y="55" width="200" height="44" rx="12" fill="var(--accent)" fill-opacity="0.16" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="590" y="83" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">kind: 'triangle'</text>
+      <text x="590" y="138" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">base: number</text>
+      <text x="590" y="166" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">height: number</text>
+    </svg>
+    <figcaption>Тип-объединение как набор посылок: по ярлыку <code>kind</code> сразу видно, какой перед вами вариант и какие поля внутри.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Разбор №1: геометрические фигуры</h2>
+  <p>Каноничный пример — площадь фигуры. Есть три фигуры с совершенно разными полями: у круга радиус, у прямоугольника ширина и высота, у треугольника основание и высота. Объединяем их в один тип <code>Shape</code>, где общий дискриминант — поле <code>kind</code>:</p>
+  <app-code-block [code]="shapesUnion" lang="typescript" />
+  <p>Теперь пишем функцию площади через <code>switch</code> по <code>kind</code>. В каждой ветке TypeScript уже точно знает вариант, поэтому даёт доступ <strong>только к «своим» полям</strong> этого варианта:</p>
+  <app-code-block [code]="shapesArea" lang="typescript" />
+  <p>Обратите внимание: в ветке <code>'circle'</code> нет ни <code>width</code>, ни <code>height</code> — они «отрезаны» вместе с другими вариантами. Попытка обратиться к чужому полю — ошибка компиляции, а не сюрприз во время выполнения:</p>
+  <app-code-block [code]="shapesForeignFieldError" lang="typescript" />
+  <p class="note">Это и есть выгода паттерна: компилятор не даёт перепутать поля разных вариантов. Вы физически не сможете прочитать <code>radius</code> у прямоугольника — код просто не соберётся.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Разбор №2: состояние загрузки данных</h2>
+  <p>Второй пример — из повседневной разработки. Любой запрос к серверу проходит через несколько взаимоисключающих состояний: <em>идёт загрузка</em>, <em>пришли данные</em> либо <em>случилась ошибка</em>. Причём поля у состояний разные: при успехе есть <code>data</code>, при ошибке — <code>message</code>, а во время загрузки нет ни того, ни другого. Ровно под это заточено размеченное объединение:</p>
+  <app-code-block [code]="fetchStateUnion" lang="typescript" />
+  <p>Дискриминантом здесь удобно взять поле <code>status</code>. Дальше отрисовка сводится к <code>switch</code> по статусу, и в каждой ветке доступны ровно те данные, которые в этом состоянии реально существуют:</p>
+  <app-code-block [code]="fetchStateRender" lang="typescript" />
+  <p>Это тот самый случай, ради которого паттерн чаще всего и применяют: экран загрузки, ответ API, стейт формы, шаги мастера. Компилятор гарантирует, что вы не обратитесь к <code>data</code>, пока не убедились, что статус — <code>'success'</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Исчерпывающая проверка через <code>never</code></h2>
+  <p>У паттерна есть суперспособность: заставить компилятор следить, чтобы вы обработали <strong>все</strong> варианты. Приём такой — в ветку <code>default</code> кладём присваивание значения переменной типа <code>never</code>:</p>
+  <app-code-block [code]="exhaustiveNever" lang="typescript" />
+  <p><strong>Почему в <code>default</code> тип сужается до <code>never</code>?</strong> Вспомним, что <code>never</code> — это пустое множество, «низ» иерархии (см. <a routerLink="/typescript/basic-types/void-never">void и never</a>). Каждая ветка <code>case</code> «отрезает» от объединения свой вариант. Когда обработаны <code>'circle'</code>, <code>'rectangle'</code> и <code>'triangle'</code>, вычитать из объединения больше нечего — не остаётся ни одного возможного значения. А тип, в котором нет значений, — это ровно <code>never</code>. Значит, если все ветки на месте, <code>shape</code> в <code>default</code> имеет тип <code>never</code>, и присваивание <code>const _exhaustive: never = shape</code> проходит.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 300" width="100%" role="img" aria-label="switch по kind направляет в нужную ветку, в default остаётся never">
+      <rect x="30" y="115" width="210" height="70" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="135" y="147" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">switch (shape.kind)</text>
+      <text x="135" y="168" text-anchor="middle" fill="var(--muted)" font-size="11">сверяем ярлык</text>
+
+      <line x1="240" y1="150" x2="414" y2="45" stroke="var(--border)" stroke-width="1.6" />
+      <line x1="240" y1="150" x2="414" y2="115" stroke="var(--border)" stroke-width="1.6" />
+      <line x1="240" y1="150" x2="414" y2="185" stroke="var(--border)" stroke-width="1.6" />
+      <line x1="240" y1="150" x2="414" y2="255" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="5 4" />
+      <path d="M420 45 l-9 -4 v8 z" fill="var(--border)" />
+      <path d="M420 115 l-9 -4 v8 z" fill="var(--border)" />
+      <path d="M420 185 l-9 -4 v8 z" fill="var(--border)" />
+      <path d="M420 255 l-9 -4 v8 z" fill="var(--red)" />
+
+      <rect x="420" y="22" width="270" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="555" y="50" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'circle' → π · r²</text>
+
+      <rect x="420" y="92" width="270" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="555" y="120" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'rectangle' → w · h</text>
+
+      <rect x="420" y="162" width="270" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="555" y="190" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'triangle' → ½ · b · h</text>
+
+      <rect x="420" y="232" width="270" height="46" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="555" y="260" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">default → never</text>
+    </svg>
+    <figcaption>Проверяем ярлык в <code>switch</code> — TS ведёт в нужную ветку и сужает объект. При полном переборе в <code>default</code> остаётся <code>never</code>; забытый вариант компилятор сразу подсветит.</figcaption>
+  </figure>
+  <p>А теперь — ради чего всё затевалось. Допустим, спустя полгода в объединение добавили новую фигуру, а ветку в <code>switch</code> дописать забыли. Тогда до <code>default</code> будет «доходить» этот новый вариант, тип перестанет быть <code>never</code>, и присваивание <strong>перестанет компилироваться</strong>:</p>
+  <app-code-block [code]="exhaustiveNewVariant" lang="typescript" />
+  <p class="note"><strong>Ошибка вместо тихого бага.</strong> Без проверки через <code>never</code> забытая фигура молча вернула бы <code>undefined</code> где-то в рантайме. С ней компилятор укажет точное место ещё до запуска. Такую переменную часто выносят в отдельную функцию <code>assertNever(x: never)</code> и вызывают в каждом <code>default</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Почему это лучше «объекта-бога»</h2>
+  <p>Новички часто описывают состояние иначе — одним «толстым» типом, где все возможные поля свалены вместе и сделаны опциональными. Назовём это «объектом-богом»:</p>
+  <app-code-block [code]="godObjectBad" lang="typescript" />
+  <p>Проблема в том, что тип не связывает поля со статусом. Он разрешает и «пустой успех» без <code>data</code>, и абсурдные комбинации вроде «загрузка с данными и ошибкой одновременно». Компилятор молчит, а баги всплывают в рантайме. Размеченное объединение делает невозможные состояния <strong>невыразимыми</strong>:</p>
+  <app-code-block [code]="godObjectGood" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Что проверяем</th>
+          <th>Объект-бог (опциональные поля)</th>
+          <th>Размеченное объединение</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Невозможные состояния</td>
+          <td class="no">❌ можно собрать (загрузка + данные)</td>
+          <td class="yes">✅ отсекаются компилятором</td>
+        </tr>
+        <tr>
+          <td>Доступ к полям</td>
+          <td class="no">❌ всё опционально, всюду нужен <code>?.</code></td>
+          <td class="yes">✅ поле доступно только в своей ветке</td>
+        </tr>
+        <tr>
+          <td>Забыли новый вариант</td>
+          <td class="no">❌ тишина, узнаете в рантайме</td>
+          <td class="yes">✅ ловит проверка через <code>never</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>В терминах множеств разница наглядна. «Объект-бог» — это одно широкое множество, куда попадают и осмысленные, и бессмысленные объекты. Размеченное объединение — это <strong>объединение узких, непересекающихся множеств</strong>: каждое состояние строго очерчено, лишнему туда не попасть.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дискриминант обязан быть литеральным типом</h2>
+  <p>Весь фокус держится на одном условии: тип поля-метки — <strong>строковый литерал</strong> (<code>'circle'</code>), а не широкий <code>string</code>. Только по непересекающимся литералам TypeScript умеет однозначно разводить варианты. Если метка вдруг вывелась как <code>string</code>, сужение ломается:</p>
+  <app-code-block [code]="discriminantLiteral" lang="typescript" />
+  <p>Ловушка тут в выводе типов: у обычного <code>const</code>-объекта поле-строка выводится как широкий <code>string</code>, а не как литерал. Лечится это либо явной аннотацией типа переменной, либо добавлением <code>as const</code>, которое «замораживает» строки до литералов. Подробнее — на страницах <a routerLink="/typescript/basic-types/literal-types">Литеральные типы</a> и <a routerLink="/typescript/assertions/as">Приведение (as)</a>.</p>
+  <p class="note">Практический вывод: дискриминант почти всегда пишут строковым литералом (<code>kind: 'circle'</code>) прямо в определении типа. Внутри такого типа поле уже литеральное — проблема из примера выше возникает лишь тогда, когда объект собирают «вручную» без аннотации.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Размеченное объединение</strong> — union объектов с общим полем-меткой (дискриминантом), тип которого — строковый литерал.</li>
+    <li>Проверка <strong>одной</strong> метки (<code>kind</code>, <code>status</code>…) сужает <strong>весь</strong> объект до нужного варианта — в ветке доступны только «свои» поля.</li>
+    <li>Основной инструмент — <code>switch</code> по дискриминанту; обращение к чужому полю — ошибка компиляции.</li>
+    <li><strong>Исчерпывающая проверка:</strong> <code>const _exhaustive: never = x</code> в <code>default</code>. Пропустили вариант — тип перестаёт быть <code>never</code>, и код не соберётся.</li>
+    <li>Паттерн лучше «объекта-бога» с опциональными полями: невозможные состояния становятся <strong>невыразимыми</strong>.</li>
+    <li>Дискриминант обязан быть <strong>литералом</strong>, а не широким <code>string</code>; при ручной сборке объекта помогает <code>as const</code>.</li>
+  </ul>
+  <p class="note">Дальше стоит закрепить механику на странице <a routerLink="/typescript/unions-narrowing/narrowing">Сужение типов</a>, разобраться с «низом» иерархии на <a routerLink="/typescript/basic-types/void-never">void и never</a>, освежить <a routerLink="/typescript/basic-types/literal-types">Литеральные типы</a> и заглянуть в <a routerLink="/typescript/unions-narrowing/pitfalls">Нюансы и подводные камни</a>, где собраны частые ошибки с объединениями.</p>
+</section>
+</article>

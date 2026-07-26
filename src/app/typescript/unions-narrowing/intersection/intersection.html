@@ -1,0 +1,170 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/unions-narrowing">Объединения и сужение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Пересечения (intersection)</span></nav>
+
+<h1 class="doc__title">Пересечения (intersection)</h1>
+<p class="doc__lead">Пересечение <code>A &amp; B</code> — это тип значения, у которого есть <strong>всё сразу</strong>: и то, что требует <code>A</code>, и то, что требует <code>B</code>. Для объектов это значит «все свойства обоих типов в одном объекте». Здесь легко запутаться в направлении: символ <code>&amp;</code> добавляет свойства, но множество значений при этом <em>сужается</em>. Разберём почему — опираясь на всё ту же модель «тип — это множество значений».</p>
+
+<section class="doc__section">
+  <h2>Идея: «всё сразу» из двух типов</h2>
+  <p>Пересечение записывают через амперсанд: <code>A &amp; B</code>. Значение такого типа обязано подходить <strong>под оба</strong> типа одновременно. Если <code>A</code> и <code>B</code> — объектные типы, то в результирующем объекте должны присутствовать <strong>все</strong> свойства и из <code>A</code>, и из <code>B</code>.</p>
+  <app-code-block [code]="intersectBasic" lang="typescript" />
+  <p class="note"><strong>Аналогия: сотрудник-разработчик.</strong> Есть шаблон-анкета «Человек» (имя, возраст) и шаблон «Сотрудник» (компания, зарплата). Карточка конкретного разработчика — это <em>оба шаблона, наложенные друг на друга</em>: в ней заполнены и человеческие, и рабочие поля. Нельзя быть «сотрудником-человеком», не имея имени или не имея компании — иначе один из шаблонов останется недозаполненным.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 700 320" width="100%" role="img" aria-label="Два набора свойств Person и Employee сливаются в один объект Person & Employee">
+      <rect x="24" y="70" width="180" height="120" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="114" y="96" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">Person</text>
+      <text x="40" y="124" fill="var(--muted)" font-family="monospace" font-size="13">name: string</text>
+      <text x="40" y="150" fill="var(--muted)" font-family="monospace" font-size="13">age: number</text>
+
+      <text x="222" y="140" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="28">&amp;</text>
+
+      <rect x="244" y="70" width="190" height="120" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="339" y="96" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">Employee</text>
+      <text x="260" y="124" fill="var(--muted)" font-family="monospace" font-size="13">company: string</text>
+      <text x="260" y="150" fill="var(--muted)" font-family="monospace" font-size="13">salary: number</text>
+
+      <text x="452" y="140" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="26">→</text>
+
+      <rect x="470" y="40" width="210" height="200" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="575" y="68" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">Person &amp; Employee</text>
+      <text x="486" y="100" fill="var(--fg)" font-family="monospace" font-size="13">name: string</text>
+      <text x="486" y="128" fill="var(--fg)" font-family="monospace" font-size="13">age: number</text>
+      <text x="486" y="156" fill="var(--fg)" font-family="monospace" font-size="13">company: string</text>
+      <text x="486" y="184" fill="var(--fg)" font-family="monospace" font-size="13">salary: number</text>
+    </svg>
+    <figcaption>Пересечение <em>склеивает</em> два набора свойств в один объект: в нём должны быть все поля и из <code>Person</code>, и из <code>Employee</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Что можно делать со значением <code>A &amp; B</code></h2>
+  <p>Раз в значении есть свойства обоих типов, то и пользоваться можно <strong>всеми</strong> членами и <code>A</code>, и <code>B</code>. Это удобно противопоставить объединению <code>A | B</code>: там значение — «либо <code>A</code>, либо <code>B</code>», поэтому без проверки доступно только то, что есть в <em>каждом</em> из них.</p>
+  <app-code-block [code]="membersAccess" lang="typescript" />
+  <p>Запомнить легко: <code>&amp;</code> <strong>прибавляет</strong> возможности (доступно всё), а <code>|</code> оставляет только <strong>общий знаменатель</strong> (доступно пересечение членов). Как безопасно добраться до необщих полей объединения — на странице <a routerLink="/typescript/unions-narrowing/narrowing">Сужение типов</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Главное и контринтуитивное: больше свойств — <em>уже</em> множество</h2>
+  <p>Вот тот самый момент, на котором спотыкаются почти все. <code>A &amp; B</code> имеет <strong>больше</strong> свойств, чем <code>A</code> или <code>B</code> по отдельности — но множество его значений при этом <strong>меньше</strong>. Кажется, будто «больше» должно означать «шире». Наоборот.</p>
+  <p>Почему так? Вспомним правило со страницы <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>: <strong>каждое дополнительное требование отсекает часть значений</strong>. Условию «есть <code>name</code> и <code>age</code>» удовлетворяет много объектов. Добавили ещё «и <code>company</code>, и <code>salary</code>» — подходящих стало меньше: те, у кого нет рабочих полей, отпали. Больше требований → меньше подходящих объектов → <em>уже</em> множество.</p>
+  <p>А раз множество <code>A &amp; B</code> уже, чем у <code>A</code> и у <code>B</code>, то по определению <strong><code>A &amp; B</code> — подтип и <code>A</code>, и <code>B</code></strong>: его значение можно подставить туда, где ждут любой из них.</p>
+  <app-code-block [code]="intersectSubtype" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 300" width="100%" role="img" aria-label="Круги Эйлера: union закрашивает оба круга, intersection только их пересечение">
+      <text x="160" y="34" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">A | B</text>
+      <circle cx="128" cy="160" r="64" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="1.8" />
+      <circle cx="196" cy="160" r="64" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="104" y="165" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">A</text>
+      <text x="220" y="165" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">B</text>
+      <text x="160" y="268" text-anchor="middle" fill="var(--muted)" font-size="12">объединение — ШИРЕ</text>
+
+      <line x1="320" y1="40" x2="320" y2="260" stroke="var(--border)" stroke-width="1.2" />
+
+      <text x="480" y="34" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">A &amp; B</text>
+      <clipPath id="lensAB"><circle cx="448" cy="160" r="64" /></clipPath>
+      <circle cx="448" cy="160" r="64" fill="none" stroke="var(--border)" stroke-width="1.8" />
+      <circle cx="516" cy="160" r="64" fill="var(--accent)" fill-opacity="0.55" stroke="var(--border)" stroke-width="1.8" clip-path="url(#lensAB)" />
+      <text x="424" y="165" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">A</text>
+      <text x="540" y="165" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">B</text>
+      <text x="480" y="268" text-anchor="middle" fill="var(--muted)" font-size="12">пересечение — УЖЕ</text>
+    </svg>
+    <figcaption>В терминах множеств значений: <code>A | B</code> — <em>оба</em> круга (значений больше, тип шире), <code>A &amp; B</code> — только их <em>перекрытие</em> (значений меньше, тип уже). Больше свойств у объекта = меньше объектов проходят под все требования.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Сводная таблица: <code>|</code> против <code>&amp;</code></h2>
+  <p>Две операции — зеркальные. Одна расширяет множество, другая сужает. Держите эту табличку под рукой, пока привычка не закрепится.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Свойство</th>
+          <th>Объединение <code>A | B</code></th>
+          <th>Пересечение <code>A &amp; B</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Операция над множествами</td>
+          <td>объединение (∪)</td>
+          <td>пересечение (∩)</td>
+        </tr>
+        <tr>
+          <td>Что значит по значению</td>
+          <td>значение — это <strong>A ИЛИ B</strong></td>
+          <td>значение — это <strong>A И B</strong> сразу</td>
+        </tr>
+        <tr>
+          <td>Размер множества</td>
+          <td class="yes">ШИРЕ каждого члена</td>
+          <td class="no">УЖЕ каждого члена</td>
+        </tr>
+        <tr>
+          <td>Отношение подтипа</td>
+          <td>супертип обоих членов</td>
+          <td>подтип обоих членов</td>
+        </tr>
+        <tr>
+          <td>Свойства объекта</td>
+          <td>доступны только ОБЩИЕ</td>
+          <td>доступны ВСЕ из обоих</td>
+        </tr>
+        <tr>
+          <td>Когда применять</td>
+          <td>«или то, или это»: статусы, варианты ответа</td>
+          <td>«всё сразу»: миксины, служебные поля</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Мнемоника.</strong> <code>|</code> похоже на «ИЛИ» — выбор из вариантов, множество <em>растёт</em>. <code>&amp;</code> читается как «И» — нужно удовлетворить оба условия сразу, множество <em>сжимается</em>. Подробнее про объединения — на соседней странице <a routerLink="/typescript/unions-narrowing/union">Объединения (union)</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: где пересечения реально нужны</h2>
+
+  <h3 class="doc__subtitle">Служебные поля поверх модели</h3>
+  <p>Классика: доменная модель описывает бизнес-данные (<code>title</code>, <code>price</code>), а слою хранения нужны ещё технические поля (<code>id</code>, <code>createdAt</code>). Пересечение позволяет добавить их, не трогая исходный тип.</p>
+  <app-code-block [code]="serviceFields" lang="typescript" />
+
+  <h3 class="doc__subtitle">Миксины — сборка из способностей</h3>
+  <p>Пересечение удобно, когда объект должен обладать сразу несколькими независимыми «способностями»: быть сериализуемым, иметь метку времени, иметь идентификатор. Каждую способность описываем отдельным маленьким типом, а затем склеиваем через <code>&amp;</code>.</p>
+  <app-code-block [code]="mixins" lang="typescript" />
+
+  <h3 class="doc__subtitle">Расширение пропсов</h3>
+  <p>В UI-компонентах часто есть общая база атрибутов (<code>disabled</code>, <code>className</code>), к которой конкретный компонент добавляет свои поля. Пересечение выражает это буквально: «базовые пропсы плюс мои».</p>
+  <app-code-block [code]="extendProps" lang="typescript" />
+
+  <h3 class="doc__subtitle">Один параметр — сразу два контракта</h3>
+  <p>Иногда функции нужен объект, удовлетворяющий нескольким интерфейсам одновременно. Тип параметра <code>A &amp; B</code> заставит вызывающего передать всё необходимое.</p>
+  <app-code-block [code]="widgetContract" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Пересечение примитивов даёт <code>never</code></h2>
+  <p>С объектами <code>&amp;</code> «складывает» свойства. Но что будет, если пересечь примитивы — например, <code>string &amp; number</code>? Загляните в модель множеств: пересечение — это <em>общая часть</em> двух множеств. Множество всех строк и множество всех чисел <strong>не пересекаются</strong>: нет ни одного значения, которое было бы одновременно и строкой, и числом. Общая часть пуста — а пустое множество и есть <code>never</code>.</p>
+  <app-code-block [code]="primitivesNever" lang="typescript" />
+  <p>Это не ошибка компилятора, а честный результат: тип <code>never</code> означает «таких значений не бывает», поэтому в переменную такого типа ничего не положишь. Подробно про пустой тип — на странице <a routerLink="/typescript/basic-types/void-never">void и never</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Конфликт свойств: общее поле схлопывается в <code>never</code></h2>
+  <p>Та же логика срабатывает не только для «голых» примитивов, но и <em>внутри</em> объектов. Если у типов <code>A</code> и <code>B</code> есть <strong>общее поле</strong> с несовместимыми типами, то в пересечении это поле получает тип «пересечение его типов» — и если они не пересекаются, поле становится <code>never</code>. Объект с таким полем создать невозможно.</p>
+  <app-code-block [code]="conflictNever" lang="typescript" />
+  <p>Здесь <code>status</code> должен быть одновременно <code>'ok'</code> и <code>'error'</code> — таких строк нет, поле схлопывается в <code>never</code>. Это верный признак, что <code>&amp;</code> выбран ошибочно: для «либо успех, либо ошибка» нужен не пересечение, а <em>размеченное объединение</em>. Как его правильно построить — на странице <a routerLink="/typescript/unions-narrowing/discriminated-unions">Размеченные объединения</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><code>A &amp; B</code> — значение, у которого есть <strong>всё сразу</strong>: для объектов это все свойства обоих типов.</li>
+    <li>Контринтуитивно, но железно: <code>&amp;</code> <strong>добавляет свойства → сужает множество</strong> значений. Поэтому <code>A &amp; B</code> — <strong>подтип</strong> и <code>A</code>, и <code>B</code>.</li>
+    <li><code>&amp;</code> и <code>|</code> зеркальны: <code>|</code> — «ИЛИ», множество <em>шире</em>; <code>&amp;</code> — «И», множество <em>уже</em>. У <code>&amp;</code> доступны все члены обоих типов, у <code>|</code> — только общие.</li>
+    <li>Применяют для служебных полей (<code>Entity &amp; &#123; id; createdAt &#125;</code>), миксинов и расширения пропсов.</li>
+    <li>Пересечение непересекающихся множеств даёт <code>never</code>: <code>string &amp; number</code> — таких значений не существует.</li>
+    <li>Конфликт общего поля (например <code>'ok' &amp; 'error'</code>) превращает поле в <code>never</code> — сигнал, что здесь нужен <code>|</code>, а не <code>&amp;</code>.</li>
+  </ul>
+  <p class="note">Рядом стоит зеркальная тема — <a routerLink="/typescript/unions-narrowing/union">Объединения (union)</a>; обе выросли из модели «тип — это множество» со страницы <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>. Про пустой тип, в который схлопывается пустое пересечение, читайте в <a routerLink="/typescript/basic-types/void-never">void и never</a>.</p>
+</section>
+</article>

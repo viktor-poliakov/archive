@@ -60,6 +60,52 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./typescript/objects-interfaces/pitfalls/pitfalls').then(
       (m) => m.ObjectsInterfacesPitfalls,
     ),
+  'typescript/functions/basics': () =>
+    import('./typescript/functions/basics/basics').then((m) => m.TypescriptFunctionsBasics),
+  'typescript/functions/parameters': () =>
+    import('./typescript/functions/parameters/parameters').then(
+      (m) => m.TypescriptFunctionsParameters,
+    ),
+  'typescript/functions/rest': () =>
+    import('./typescript/functions/rest/rest').then((m) => m.TypescriptFunctionsRest),
+  'typescript/functions/return-types': () =>
+    import('./typescript/functions/return-types/return-types').then(
+      (m) => m.TypescriptFunctionsReturnTypes,
+    ),
+  'typescript/functions/overloads': () =>
+    import('./typescript/functions/overloads/overloads').then(
+      (m) => m.TypescriptFunctionsOverloads,
+    ),
+  'typescript/functions/this': () =>
+    import('./typescript/functions/this/this').then((m) => m.TypescriptFunctionsThis),
+  'typescript/functions/pitfalls': () =>
+    import('./typescript/functions/pitfalls/pitfalls').then(
+      (m) => m.TypescriptFunctionsPitfalls,
+    ),
+  'typescript/unions-narrowing/union': () =>
+    import('./typescript/unions-narrowing/union/union').then(
+      (m) => m.TypescriptUnionsNarrowingUnion,
+    ),
+  'typescript/unions-narrowing/intersection': () =>
+    import('./typescript/unions-narrowing/intersection/intersection').then(
+      (m) => m.TypescriptUnionsNarrowingIntersection,
+    ),
+  'typescript/unions-narrowing/narrowing': () =>
+    import('./typescript/unions-narrowing/narrowing/narrowing').then(
+      (m) => m.TypescriptUnionsNarrowingNarrowing,
+    ),
+  'typescript/unions-narrowing/type-guards': () =>
+    import('./typescript/unions-narrowing/type-guards/type-guards').then(
+      (m) => m.TypescriptUnionsNarrowingTypeGuards,
+    ),
+  'typescript/unions-narrowing/discriminated-unions': () =>
+    import('./typescript/unions-narrowing/discriminated-unions/discriminated-unions').then(
+      (m) => m.TypescriptUnionsNarrowingDiscriminatedUnions,
+    ),
+  'typescript/unions-narrowing/pitfalls': () =>
+    import('./typescript/unions-narrowing/pitfalls/pitfalls').then(
+      (m) => m.TypescriptUnionsNarrowingPitfalls,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

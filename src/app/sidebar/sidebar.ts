@@ -4,10 +4,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 
 import { NAV_SECTIONS, NavChild } from '../nav/nav.data';
+import { TruncateTooltip } from './truncate-tooltip';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, TruncateTooltip],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })
