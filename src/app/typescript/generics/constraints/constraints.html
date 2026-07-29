@@ -1,0 +1,199 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/generics">Дженерики</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Ограничения (extends)</span></nav>
+
+<h1 class="doc__title">Ограничения (extends)</h1>
+<p class="doc__lead">Обычный дженерик-параметр <code>T</code> — это «<strong>какой угодно тип</strong>», и в этом его сила. Но иногда полная свобода мешает: если <code>T</code> может быть <em>чем угодно</em>, то внутри функции с ним почти ничего нельзя сделать. Ограничение <code>T extends …</code> — это как <strong>требование к вакансии</strong>: «возьму любого кандидата, <em>но</em> он обязан уметь вот это». Мы сужаем круг допустимых типов ровно настолько, чтобы стало можно работать, — и ни капли больше.</p>
+
+<section class="doc__section">
+  <h2>Проблема: с «голым» <code>T</code> ничего нельзя сделать</h2>
+  <p>Начнём с боли. Напишем функцию <code>longest</code>, которая берёт два аргумента и возвращает тот, что <strong>длиннее</strong>. Логично взять любой тип — обозначим его <code>T</code> (если сама идея параметра-типа ещё в новинку, загляните в <a routerLink="/typescript/generics/basics">Основы</a> и <a routerLink="/typescript/generics/functions">Дженерик-функции</a>).</p>
+  <app-code-block [code]="problemNoConstraint" lang="typescript" />
+  <p>Компилятор бьёт по рукам: <code>Property 'length' does not exist on type 'T'</code>. И он прав. Ведь <code>T</code> — это «<em>любой</em> тип»: сегодня строка, завтра число, послезавтра <code>boolean</code>. У числа поля <code>length</code> нет, поэтому обращаться к нему небезопасно. Пока про <code>T</code> ничего не обещано, TypeScript разрешает лишь то, что есть у <strong>абсолютно всех</strong> значений.</p>
+  <p class="note"><strong>Связь с моделью «тип — это множество».</strong> Голый <code>T</code> — это множество <em>вообще всех</em> значений (по духу близко к <a routerLink="/typescript/basic-types/any-unknown"><code>unknown</code></a>). Раз туда попадает и число, и строка, и объект — общего у них почти ничего нет. Чтобы появилось общее свойство <code>length</code>, множество нужно <strong>сузить</strong> — оставить в нём только то, у чего это поле есть. Именно это и делает ограничение.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ограничение <code>&lt;T extends &#123; length: number &#125;&gt;</code></h2>
+  <p>Добавим к <code>T</code> <strong>требование формы</strong>. Пишется через ключевое слово <code>extends</code>: сразу после имени параметра указываем, какому типу он обязан соответствовать.</p>
+  <app-code-block [code]="withConstraint" lang="typescript" />
+  <p>Теперь читается так: «<code>T</code> — по-прежнему любой тип, <strong>но</strong> обязательно с полем <code>length: number</code>». Раз мы это потребовали, компилятор внутри функции спокойно разрешает <code>a.length</code> — он уверен, что поле есть. Свобода осталась (типов подходит много), но появилась гарантия, на которую можно опереться.</p>
+  <p>Посмотрим, кто теперь проходит «собеседование», а кто нет:</p>
+  <app-code-block [code]="constraintCalls" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 600 340" width="100%" role="img" aria-label="Ограничение extends length number как турникет: строка, массив и объект с полем length проходят, а число отскакивает">
+      <text x="300" y="24" text-anchor="middle" fill="var(--muted)" font-size="12">Ограничение как турникет: проходит лишь то, у чего есть length</text>
+
+      <rect x="18" y="46" width="120" height="44" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="78" y="68" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'корова'</text>
+      <text x="78" y="83" text-anchor="middle" fill="var(--muted)" font-size="10">string · есть length</text>
+
+      <rect x="158" y="46" width="120" height="44" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="218" y="68" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">[1, 2, 3]</text>
+      <text x="218" y="83" text-anchor="middle" fill="var(--muted)" font-size="10">массив · есть length</text>
+
+      <rect x="298" y="46" width="146" height="44" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="371" y="68" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#123; length: 3 &#125;</text>
+      <text x="371" y="83" text-anchor="middle" fill="var(--muted)" font-size="10">объект · есть length</text>
+
+      <rect x="462" y="46" width="120" height="44" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="522" y="68" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">42</text>
+      <text x="522" y="83" text-anchor="middle" fill="var(--muted)" font-size="10">number · нет length</text>
+
+      <line x1="78" y1="92" x2="78" y2="138" stroke="var(--green)" stroke-width="2" marker-end="url(#mAg)" />
+      <line x1="218" y1="92" x2="218" y2="138" stroke="var(--green)" stroke-width="2" marker-end="url(#mAg)" />
+      <line x1="371" y1="92" x2="371" y2="138" stroke="var(--green)" stroke-width="2" marker-end="url(#mAg)" />
+
+      <path d="M 522 92 L 522 122 Q 522 138 548 138" fill="none" stroke="var(--red)" stroke-width="2" marker-end="url(#mAr)" />
+      <text x="566" y="112" text-anchor="middle" fill="var(--red)" font-size="18">✗</text>
+
+      <rect x="18" y="144" width="564" height="46" rx="8" fill="none" stroke="var(--accent)" stroke-width="2" />
+      <text x="300" y="172" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">extends &#123; length: number &#125;</text>
+
+      <line x1="120" y1="192" x2="120" y2="226" stroke="var(--green)" stroke-width="2" marker-end="url(#mAg)" />
+      <line x1="300" y1="192" x2="300" y2="226" stroke="var(--green)" stroke-width="2" marker-end="url(#mAg)" />
+      <line x1="480" y1="192" x2="480" y2="226" stroke="var(--green)" stroke-width="2" marker-end="url(#mAg)" />
+
+      <rect x="18" y="228" width="564" height="86" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" stroke-dasharray="6 5" />
+      <text x="300" y="252" text-anchor="middle" fill="var(--fg)" font-size="12">прошли турникет → годятся как T (тип сохранён целиком)</text>
+      <text x="120" y="288" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">string</text>
+      <text x="300" y="288" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">number[]</text>
+      <text x="480" y="288" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="11">&#123; length: 3 &#125;</text>
+
+      <defs>
+        <marker id="mAg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--green)" /></marker>
+        <marker id="mAr" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--red)" /></marker>
+      </defs>
+    </svg>
+    <figcaption>Ограничение работает как турникет: строку, массив и объект с полем <code>length</code> оно пропускает (у них есть нужная «форма»), а число — отбрасывает. Прошедшие типы сохраняются целиком и работают как <code>T</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2><code>extends</code> здесь — это «форма», а не наследование класса</h2>
+  <p>Слово <code>extends</code> знакомо по классам (<code>class Dog extends Animal</code>), и это сбивает с толку. В ограничениях дженериков <code>extends</code> означает <strong>совсем другое</strong>: не «является наследником», а «<strong>удовлетворяет форме</strong>» — то есть «имеет как минимум такие поля».</p>
+  <p>Поэтому под <code>&lt;T extends &#123; length: number &#125;&gt;</code> подходит вообще любой тип с полем <code>length: number</code> — в том числе обычный объект, который ничего не наследует:</p>
+  <app-code-block [code]="shapeNotClass" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> Требование в вакансии «умеет водить машину» — это <em>навык</em>, а не «родственник водителя». Неважно, откуда у кандидата этот навык и кто его «родители». Важно одно: навык есть. Точно так же ограничение проверяет <em>наличие полей</em>, а не «родословную» типа. Это структурная проверка — та же идея, что и у <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсов</a>.</p>
+  <p>Ещё один важный момент: ограничение задаёт <strong>минимум</strong>, а не точную форму. Лишние поля не «отрезаются» — <code>T</code> запоминает тип аргумента <em>целиком</em>:</p>
+  <app-code-block [code]="preserveExtra" lang="typescript" />
+  <p>Это отличает дженерик от простого параметра типа <code>x: &#123; length: number &#125;</code>: там доступ к <code>x.label</code> был бы запрещён (в объявленной форме такого поля нет). Дженерик же держит настоящий тип значения и открывает все его поля.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ограничение по ключам: <code>K extends keyof T</code></h2>
+  <p>Второе классическое применение ограничений — <strong>типобезопасный геттер</strong>: функция, которая достаёт поле объекта по его имени. Хочется, чтобы (1) нельзя было спросить несуществующий ключ и (2) тип результата точно соответствовал типу этого поля.</p>
+  <p>Здесь появляется оператор <code>keyof</code>. Для типа <code>T</code> выражение <code>keyof T</code> — это <strong>объединение всех его ключей</strong> в виде литеральных строк. Для нашего <code>Task</code> это <code>'id' | 'title' | 'done'</code>. А запись <code>K extends keyof T</code> требует, чтобы ключ <code>K</code> был <strong>одним из этой «связки»</strong>.</p>
+  <app-code-block [code]="getPropDef" lang="typescript" />
+  <p>Теперь вызовы. Обратите внимание: результат — <strong>ровно тип нужного поля</strong>, а не общий union всех полей.</p>
+  <app-code-block [code]="getPropCalls" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 620 360" width="100%" role="img" aria-label="getProp: ключ выбирается из набора keyof Task, а результат имеет тип значения этого поля">
+      <text x="310" y="24" text-anchor="middle" fill="var(--muted)" font-size="12">getProp(obj, key): ключ — из keyof T, результат — тип значения T[key]</text>
+
+      <rect x="28" y="58" width="182" height="152" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="119" y="82" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">Task</text>
+      <line x1="28" y1="92" x2="210" y2="92" stroke="var(--border)" stroke-width="1" />
+      <text x="48" y="118" fill="var(--fg)" font-family="monospace" font-size="13">id: number</text>
+      <rect x="40" y="130" width="158" height="26" rx="6" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.4" />
+      <text x="48" y="148" fill="var(--fg)" font-family="monospace" font-size="13">title: string</text>
+      <text x="48" y="182" fill="var(--fg)" font-family="monospace" font-size="13">done: boolean</text>
+
+      <rect x="250" y="66" width="150" height="138" rx="12" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="325" y="90" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">keyof Task</text>
+      <text x="325" y="110" text-anchor="middle" fill="var(--muted)" font-size="10">связка ключей</text>
+      <text x="325" y="134" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'id'</text>
+      <rect x="278" y="142" width="94" height="24" rx="6" fill="var(--surface)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="325" y="159" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'title'</text>
+      <text x="325" y="188" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'done'</text>
+
+      <rect x="452" y="116" width="140" height="52" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="522" y="139" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+      <text x="522" y="157" text-anchor="middle" fill="var(--muted)" font-size="10">Task['title']</text>
+
+      <line x1="212" y1="143" x2="274" y2="154" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#mBacc)" />
+      <line x1="374" y1="154" x2="448" y2="142" stroke="var(--green)" stroke-width="2" marker-end="url(#mBg)" />
+
+      <rect x="250" y="252" width="150" height="48" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="325" y="274" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'foo'</text>
+      <text x="325" y="291" text-anchor="middle" fill="var(--red)" font-size="10">нет в keyof Task</text>
+      <line x1="325" y1="250" x2="325" y2="208" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="4 4" />
+      <text x="349" y="232" text-anchor="middle" fill="var(--red)" font-size="20">✗</text>
+
+      <defs>
+        <marker id="mBacc" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)" /></marker>
+        <marker id="mBg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--green)" /></marker>
+      </defs>
+    </svg>
+    <figcaption>Ключ можно взять только из «связки» <code>keyof Task</code>. Выбрали <code>'title'</code> — и результат получает ровно его тип, <code>string</code> (это <code>Task['title']</code>). Чужой ключ <code>'foo'</code> в связке отсутствует — «замок» его не примет.</figcaption>
+  </figure>
+  <p>А если попросить ключ, которого у объекта нет, — ошибка ещё на этапе компиляции:</p>
+  <app-code-block [code]="getPropWrongKey" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2><code>T[K]</code> — тип значения по ключу</h2>
+  <p>В сигнатуре геттера тип результата записан как <code>T[K]</code>. Это <strong>indexed access</strong> — «обращение по ключу, но на уровне типов». Читается один в один как обычное обращение <code>obj[key]</code>, только вместо значения получаем <em>тип</em> значения, лежащего под этим ключом.</p>
+  <app-code-block [code]="indexedAccess" lang="typescript" />
+  <p>Именно поэтому <code>getProp(task, 'title')</code> возвращает <code>string</code>: его результат объявлен как <code>T[K]</code>, что для <code>K = 'title'</code> разворачивается в <code>Task['title']</code>, то есть <code>string</code>. Подробнее <code>keyof</code> и indexed access разбираются в разделе <a routerLink="/typescript/advanced-types/keyof">keyof</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: несколько параметров под ограничением</h2>
+  <p>Ограничивать можно каждый параметр типа по отдельности. Классический пример — <code>merge</code>, склеивающий два объекта. Потребуем, чтобы <strong>оба</strong> аргумента были объектами (<code>extends object</code>), а результат опишем как <a routerLink="/typescript/unions-narrowing/intersection">пересечение</a> <code>T &amp; U</code> — в нём есть поля и из первого, и из второго:</p>
+  <app-code-block [code]="merge" lang="typescript" />
+  <p>Ещё один частый кейс — «обновить сущность в списке по её <code>id</code>». Функции всё равно, <em>что</em> за сущность, лишь бы у неё был числовой <code>id</code>. Это ровно <code>extends &#123; id: number &#125;</code>:</p>
+  <app-code-block [code]="updateById" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Что будет при нарушении ограничения</h2>
+  <p>Смысл ограничения в том, что нарушение ловится <strong>компилятором</strong>, а не всплывает багом в рантайме. Соберём типичные отказы в одну таблицу:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Вызов</th>
+          <th>Что решит компилятор</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>longest('aa', 'b')</code></td>
+          <td class="yes">✅ у строки есть <code>length</code></td>
+        </tr>
+        <tr>
+          <td><code>longest(1, 2)</code></td>
+          <td class="no">❌ у <code>number</code> нет <code>length</code></td>
+        </tr>
+        <tr>
+          <td><code>getProp(task, 'title')</code></td>
+          <td class="yes">✅ <code>'title'</code> есть в <code>keyof Task</code></td>
+        </tr>
+        <tr>
+          <td><code>getProp(task, 'foo')</code></td>
+          <td class="no">❌ <code>'foo'</code> нет в <code>keyof Task</code></td>
+        </tr>
+        <tr>
+          <td><code>merge(&#123; id: 1 &#125;, 42)</code></td>
+          <td class="no">❌ <code>42</code> — не <code>object</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Общее правило простое: аргумент обязан <strong>подойти под требование</strong> — иметь нужное поле (<code>length</code>, <code>id</code>), быть объектом или быть ключом из <code>keyof</code>. Не подошёл по форме — вызов не скомпилируется.</p>
+  <p class="note"><strong>Не путайте с приведением.</strong> Ограничение <em>честно проверяет</em> форму аргумента. Это противоположность приёму «поверь мне» через <a routerLink="/typescript/assertions/as">приведение <code>as</code></a>, которое ничего не проверяет. Если хочется, чтобы дженерик что-то <em>гарантировал</em>, — задавайте ограничение, а не глушите компилятор.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Голый <code>T</code></strong> — «любой тип», поэтому внутри функции у него нельзя вызвать ничего специфичного (<code>a.length</code> → ошибка).</li>
+    <li><strong>Ограничение <code>T extends Форма</code></strong> требует, чтобы тип имел хотя бы указанные поля. Круг подходящих типов сужается, зато внутри функции этими полями можно пользоваться.</li>
+    <li><code>extends</code> здесь — это «<strong>удовлетворяет форме</strong>» (структурно), а <em>не</em> «наследник класса». Подходит и обычный объект с нужным полем.</li>
+    <li>Ограничение задаёт <strong>минимум</strong>: лишние поля сохраняются, <code>T</code> запоминает точный тип аргумента целиком.</li>
+    <li><strong><code>K extends keyof T</code></strong> — ключ обязан быть из «связки» ключей объекта. Тип результата <code>T[K]</code> — это тип значения под этим ключом (indexed access).</li>
+    <li>Нарушение формы (<code>number</code> без <code>length</code>, чужой ключ, не-объект) ловится <strong>компилятором</strong>, а не рантаймом — в этом вся польза.</li>
+  </ul>
+  <p class="note">Дальше по теме: <a routerLink="/typescript/generics/defaults">Значения по умолчанию</a> (что подставится, если аргумент типа не указан), <a routerLink="/typescript/generics/classes-interfaces">Дженерики в классах и интерфейсах</a> и <a routerLink="/typescript/generics/pitfalls">Нюансы и подводные камни</a>. Основы всегда можно освежить на страницах <a routerLink="/typescript/generics/basics">Основы</a> и <a routerLink="/typescript/generics/functions">Дженерик-функции</a>, а базовую модель — на <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.</p>
+</section>
+</article>

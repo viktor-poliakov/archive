@@ -1,0 +1,169 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/classes">Классы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Реализация интерфейсов</span></nav>
+
+<h1 class="doc__title">Реализация интерфейсов</h1>
+<p class="doc__lead">Представьте <strong>техническое задание (ТЗ)</strong>: заказчик выписал список требований — что должно уметь готовое изделие. Интерфейс в TypeScript — это и есть такое ТЗ, <strong>контракт формы</strong>. А запись <code>class ... implements ...</code> — это исполнитель, который <strong>берётся выполнить ТЗ</strong>. Компилятор при этом играет роль <strong>приёмки</strong>: он проверяет, что все пункты ТЗ закрыты, и не пропускает работу, если чего-то не хватает. Один важный нюанс сразу: <code>implements</code> <strong>не выдаёт готовый код</strong> — он только сверяет форму. Весь код исполнитель пишет сам.</p>
+
+<section class="doc__section">
+  <h2>Зачем это нужно: гарантия формы</h2>
+  <p>Интерфейс сам по себе — просто описание. Он говорит «объект такой формы обязан иметь метод <code>log</code>», но никого не заставляет этой формы придерживаться. Пока мы пишем класс «на глазок», легко случайно отклониться от ТЗ — опечататься в имени метода, забыть параметр, вернуть не тот тип. Компилятор такую ошибку, конечно, поймает, но <em>не там, где удобно</em>:</p>
+  <app-code-block [code]="contractIntro" lang="typescript" />
+  <p>Ошибка загорелась не на классе <code>SilentLogger</code>, а в строке <code>const logger: Logger = ...</code> — иногда за сотни строк от самого класса, а то и в другом файле. Хочется наоборот: чтобы класс <strong>сразу</strong> заявлял «я выполняю контракт <code>Logger</code>» и проверялся на месте. Ровно это и делает <code>implements</code>.</p>
+  <p class="note"><strong>Аналогия.</strong> Интерфейс — это <em>чек-лист приёмки</em>, вывешенный на стене цеха. Он ничего не производит сам. Но как только исполнитель говорит «беру этот заказ» (<code>implements</code>), приёмщик (компилятор) идёт по чек-листу пункт за пунктом и не подписывает акт, пока хоть один пункт не закрыт. Если базовые классы JS ещё в новинку — загляните в <a routerLink="/javascript/classes/basics">JS: классы, основы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>class X implements I</code> — проверка формы</h2>
+  <p>Синтаксис простой: после имени класса пишем ключевое слово <code>implements</code> и имя интерфейса. Это обещание: «класс имеет форму, которую требует <code>I</code>». Компилятор тут же проверяет обещание.</p>
+  <app-code-block [code]="consoleOk" lang="typescript" />
+  <p>Здесь всё сошлось: интерфейс требовал метод <code>log(message: string): void</code>, класс его написал ровно такой формы — приёмка довольна. А теперь «забудем» реализовать требуемый метод и посмотрим на реакцию компилятора:</p>
+  <app-code-block [code]="missingMember" lang="typescript" />
+  <p>Ключевая фраза в ошибке — <code>incorrectly implements interface</code> («некорректно реализует интерфейс»). Дальше компилятор уточняет, <em>какого именно</em> пункта не хватает: <code>Property 'log' is missing</code>. Это и есть та самая ранняя проверка: провал виден прямо на классе, а не в далёком месте использования.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 300" width="100%" role="img" aria-label="implements как сертификат соответствия: по каждому пункту ТЗ ставится галочка, недостающий пункт помечен красным крестом">
+      <text x="310" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">implements = сертификат соответствия: закрыт ли каждый пункт ТЗ?</text>
+
+      <rect x="40" y="52" width="540" height="216" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+
+      <text x="64" y="82" text-anchor="start" fill="var(--accent)" font-size="13" font-family="monospace">interface Logger — требования</text>
+      <text x="556" y="82" text-anchor="end" fill="var(--muted)" font-size="12">class ConsoleLogger</text>
+      <line x1="64" y1="94" x2="556" y2="94" stroke="var(--border)" stroke-width="1" />
+
+      <rect x="64" y="108" width="360" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="80" y="133" text-anchor="start" fill="var(--fg)" font-size="13" font-family="monospace">log(message: string): void</text>
+      <text x="452" y="134" text-anchor="start" fill="var(--green)" font-size="17">&#10003;</text>
+      <text x="476" y="133" text-anchor="start" fill="var(--muted)" font-size="12">есть</text>
+
+      <rect x="64" y="156" width="360" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="80" y="181" text-anchor="start" fill="var(--fg)" font-size="13" font-family="monospace">format(entry): string</text>
+      <text x="452" y="182" text-anchor="start" fill="var(--green)" font-size="17">&#10003;</text>
+      <text x="476" y="181" text-anchor="start" fill="var(--muted)" font-size="12">есть</text>
+
+      <rect x="64" y="204" width="360" height="40" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.4" stroke-dasharray="6 5" />
+      <text x="80" y="229" text-anchor="start" fill="var(--fg)" font-size="13" font-family="monospace">clear(): void</text>
+      <text x="452" y="230" text-anchor="start" fill="var(--red)" font-size="17">&#10007;</text>
+      <text x="476" y="229" text-anchor="start" fill="var(--red)" font-size="12">нет</text>
+    </svg>
+    <figcaption>Приёмщик идёт по списку требований. Пока пункт <code>clear()</code> не закрыт — акт не подписан: <code>incorrectly implements</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2><code>implements</code> не наследует реализацию</h2>
+  <p>Это главное, что путают новички. Слово <code>implements</code> похоже на <code>extends</code>, но делает <strong>совсем другое</strong>. <code>implements</code> ничего не приносит внутрь класса — интерфейс <em>не содержит кода</em>, только описание формы (сигнатуры методов без тел). Значит, весь код класс обязан написать сам:</p>
+  <app-code-block [code]="implementsNoBody" lang="typescript" />
+  <p>Сравните с <code>extends</code>: наследование <strong>переносит готовый код</strong> из базового класса. Тот же метод <code>log</code>, но теперь его тело достаётся наследнику «в наследство», без переписывания:</p>
+  <app-code-block [code]="extendsGivesCode" lang="typescript" />
+  <p class="note"><strong>Запомните разницу одной фразой.</strong> <code>extends</code> — «возьми чужой код и пользуйся». <code>implements</code> — «пообещай нужную форму, а код напиши свой». Интерфейс — это ТЗ, а не готовая деталь.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Несколько интерфейсов: <code>implements A, B</code></h2>
+  <p>Исполнитель может взяться сразу за <strong>несколько ТЗ</strong>. Интерфейсы после <code>implements</code> перечисляются через запятую, и класс обязан закрыть требования <em>каждого</em> из них. Это удобно, когда объект играет несколько ролей одновременно: он и логирует, и умеет сериализоваться.</p>
+  <app-code-block [code]="multipleInterfaces" lang="typescript" />
+  <p>Компилятор проверит форму по <strong>обоим</strong> контрактам: пропусти класс метод <code>toJSON</code> — и загорится <code>incorrectly implements interface 'Serializable'</code>, ровно как раньше с <code>Logger</code>. Количество интерфейсов при этом не ограничено — можно писать <code>implements A, B, C</code> и дальше.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>extends</code> и <code>implements</code>: в чём разница</h2>
+  <p>Оба слова связывают класс с чем-то «сверху», но роли у них разные. Сведём различия в таблицу — держите её в голове, и путаницы больше не будет.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th><code>extends</code> (наследование)</th>
+          <th><code>implements</code> (реализация)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>С чем связывает</td>
+          <td>с классом (базой)</td>
+          <td>с интерфейсом (контрактом)</td>
+        </tr>
+        <tr>
+          <td>Приносит готовый код?</td>
+          <td class="yes">✅ да, тело методов наследуется</td>
+          <td class="no">❌ нет, только форма</td>
+        </tr>
+        <tr>
+          <td>Что делает компилятор</td>
+          <td>переносит члены базы вниз</td>
+          <td>проверяет, что форма совпала</td>
+        </tr>
+        <tr>
+          <td>Сколько сущностей сразу</td>
+          <td class="no">❌ один класс (одна база)</td>
+          <td class="yes">✅ много интерфейсов через запятую</td>
+        </tr>
+        <tr>
+          <td>Порядок в объявлении</td>
+          <td>идёт первым</td>
+          <td>идёт после <code>extends</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 300" width="100%" role="img" aria-label="Сравнение extends и implements: extends сплошной стрелкой переносит код вниз, implements пунктиром только проверяет форму">
+      <text x="180" y="30" text-anchor="middle" fill="var(--green)" font-size="13">extends — переносит код</text>
+      <text x="500" y="30" text-anchor="middle" fill="var(--accent)" font-size="13">implements — сверяет форму</text>
+
+      <rect x="52" y="58" width="256" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="180" y="82" text-anchor="middle" fill="var(--fg)" font-size="13" font-family="monospace">class BaseLogger</text>
+      <text x="180" y="103" text-anchor="middle" fill="var(--muted)" font-size="12" font-family="monospace">log() &#123; ... &#125;  // есть тело</text>
+
+      <line x1="180" y1="120" x2="180" y2="196" stroke="var(--green)" stroke-width="3" />
+      <polygon points="173,196 180,210 187,196" fill="var(--green)" />
+      <text x="180" y="162" text-anchor="middle" fill="var(--green)" font-size="11">код течёт вниз</text>
+
+      <rect x="52" y="212" width="256" height="60" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="180" y="236" text-anchor="middle" fill="var(--fg)" font-size="13" font-family="monospace">class TimeLogger</text>
+      <text x="180" y="257" text-anchor="middle" fill="var(--muted)" font-size="12">log достался готовым</text>
+
+      <rect x="372" y="58" width="256" height="60" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="500" y="82" text-anchor="middle" fill="var(--fg)" font-size="13" font-family="monospace">interface Logger</text>
+      <text x="500" y="103" text-anchor="middle" fill="var(--muted)" font-size="12" font-family="monospace">log(): void  // без тела</text>
+
+      <line x1="500" y1="120" x2="500" y2="196" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 6" />
+      <polygon points="493,196 500,210 507,196" fill="var(--accent)" />
+      <text x="500" y="162" text-anchor="middle" fill="var(--accent)" font-size="11">только сверка</text>
+
+      <rect x="372" y="212" width="256" height="60" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="500" y="236" text-anchor="middle" fill="var(--fg)" font-size="13" font-family="monospace">class ConsoleLogger</text>
+      <text x="500" y="257" text-anchor="middle" fill="var(--muted)" font-size="12">log пишем сами</text>
+    </svg>
+    <figcaption>Слева <code>extends</code>: сплошная стрелка тянет готовый код в наследника. Справа <code>implements</code>: пунктир — форма проверяется, но кода не переносит.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2><code>implements</code> вместе с <code>extends</code></h2>
+  <p>Раз это разные механизмы, их можно применять <strong>одновременно</strong>. Класс берёт готовый код у базы через <code>extends</code> и заодно обещает выполнить контракт через <code>implements</code>. Порядок в объявлении строгий: сначала <code>extends</code>, потом <code>implements</code>.</p>
+  <app-code-block [code]="extendsImplements" lang="typescript" />
+  <p>Обратите внимание, как делятся обязанности. Поле <code>name</code> и метод <code>describe()</code> пришли <em>готовыми</em> от базы <code>Device</code> (это работа <code>extends</code>). А метод <code>log</code> из контракта <code>Logger</code> пришлось написать самому — интерфейс его не дал, лишь потребовал (это работа <code>implements</code>). Если бы <code>Printer</code> переопределял метод базы <code>Device</code>, к нему нужно было бы добавить ключевое слово <code>override</code> — в этом проекте оно обязательно; но <code>log</code> базой не объявлен, поэтому здесь <code>override</code> не нужен.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: один контракт — много реализаций</h2>
+  <p>Теперь соберём всё вместе и увидим, <em>ради чего</em> вообще нужен <code>implements</code>. Главная выгода — <strong>взаимозаменяемость</strong>: код, который зависит только от контракта, готов принять любую его реализацию. Опишем один интерфейс <code>Logger</code> и дадим ему две разные «начинки».</p>
+  <app-code-block [code]="twoImpls" lang="typescript" />
+  <p>Классы <code>ConsoleLogger</code> и <code>ArrayLogger</code> устроены совершенно по-разному: один печатает в консоль, другой копит строки в массиве. Но снаружи они <strong>неотличимы по форме</strong> — оба честно выполняют <code>Logger</code>. Значит, любой код может работать с типом <code>Logger</code>, не зная и не заботясь, какая реализация внутри:</p>
+  <app-code-block [code]="useLogger" lang="typescript" />
+  <p>Это и есть смысл контрактов: <code>processOrder</code> написана один раз и <em>не привязана</em> к конкретному классу. В бою в неё передают <code>ConsoleLogger</code>, в тесте — <code>ArrayLogger</code> (чтобы проверить записанное), а завтра можно добавить <code>FileLogger</code> — и функцию менять не придётся. Тот же приём вы уже встречали у дженериков: <code>ArrayStack&lt;T&gt; implements Stack&lt;T&gt;</code> на странице <a routerLink="/typescript/generics/classes-interfaces">Дженерики в классах</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Интерфейс — это ТЗ (контракт формы)</strong>, а <code>class X implements I</code> — исполнитель, который берётся его выполнить. Компилятор играет роль приёмки.</li>
+    <li><code>implements</code> <strong>только проверяет форму</strong>. Недостающий член → ошибка <code>Class 'X' incorrectly implements interface 'I'. Property '...' is missing</code>, причём прямо на классе.</li>
+    <li><strong>Кода <code>implements</code> не приносит.</strong> Интерфейс не содержит реализации — все тела методов класс пишет сам. Этим он отличается от <code>extends</code>, который наследует готовый код.</li>
+    <li><strong>Интерфейсов может быть много</strong>: <code>implements A, B, C</code> — класс обязан закрыть требования каждого.</li>
+    <li><code>extends</code> и <code>implements</code> <strong>совместимы</strong>: сначала <code>extends</code> (берём код базы), затем <code>implements</code> (сверяем форму с контрактом).</li>
+    <li><strong>Зачем всё это</strong> — взаимозаменяемость: код зависит от контракта, а не от класса, поэтому реализации (<code>ConsoleLogger</code>, <code>ArrayLogger</code>, …) можно свободно подменять.</li>
+  </ul>
+  <p class="note">Дальше стоит освежить сами <a routerLink="/typescript/objects-interfaces/interfaces">Интерфейсы</a> — что вообще можно в них описывать. Дженерик-контракты живут на странице <a routerLink="/typescript/generics/classes-interfaces">Дженерики в классах</a> (<code>ArrayStack&lt;T&gt; implements Stack&lt;T&gt;</code>). А если контракту нужна ещё и общая реализация «по умолчанию» — сравните <code>implements</code> с <a routerLink="/typescript/classes/abstract">абстрактными классами</a>: интерфейс задаёт только форму, абстрактный класс может дать и часть готового кода.</p>
+</section>
+</article>

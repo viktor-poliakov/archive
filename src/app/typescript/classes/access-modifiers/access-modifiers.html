@@ -1,0 +1,218 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/classes">Классы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Модификаторы доступа</span></nav>
+
+<h1 class="doc__title">Модификаторы доступа</h1>
+<p class="doc__lead">Модификаторы доступа — это <strong>таблички «нажимай смело» и «руками не лезь»</strong> на деталях прибора. Снаружи у прибора есть <strong>кнопки</strong>: их для того и сделали, чтобы нажимать (это <code>public</code>). Под крышкой — <strong>проводка и платы</strong>: обычному пользователю туда нельзя (это <code>private</code>). А <strong>ремонтник из сервиса</strong> — «наследник» модели — крышку снимает и видит часть внутренностей, скрытых от пользователя (это <code>protected</code>). Модификатор — это способ заранее решить, <em>кто</em> имеет право дотянуться до конкретного поля или метода.</p>
+
+<section class="doc__section">
+  <h2>Зачем инкапсуляция</h2>
+  <p>Слово <strong>инкапсуляция</strong> звучит пугающе, но идея за ним простая и бытовая: <em>спрятать внутренности и дать наружу только безопасные ручки управления</em>. У микроволновки вы нажимаете кнопки, но не лезете руками в трансформатор — и правильно, иначе можно всё сломать (и себя заодно). В коде та же логика: класс прячет свои данные, а работать с ними разрешает только через проверенные методы.</p>
+  <p>Посмотрим, что бывает <strong>без</strong> инкапсуляции. Пусть у банковского счёта поле <code>balance</code> открыто всем. Тогда любой участок программы может присвоить туда что угодно — хоть отрицательное число, хоть <code>NaN</code>, — и правилу «баланс не бывает отрицательным» просто негде жить:</p>
+  <app-code-block [code]="whyEncapsulation" lang="typescript" />
+  <p>Проблема не в том, что кто-то <em>злой</em>. Проблема в том, что <strong>ничто не мешает ошибиться</strong>: опечатка, невнимательный коллега, старый код — и данные испорчены, а виновника не найти. Инкапсуляция закрывает поле и оставляет одну дверь — метод с проверками. Именно для этого и нужны модификаторы доступа. В TypeScript их три ключевых слова — <code>public</code>, <code>private</code>, <code>protected</code> — плюс «настоящие» приватные поля <code>#</code> из самого JavaScript. Разберём по очереди.</p>
+  <p class="note">Если сами классы, конструкторы и <code>this</code> ещё в новинку — сначала загляните на страницу <a routerLink="/javascript/classes/basics">JS: классы, основы</a>. Здесь мы считаем, что базовый синтаксис классов уже знаком, и говорим только про уровни доступа.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>public</code> — доступно всем (по умолчанию)</h2>
+  <p><code>public</code> — самый открытый уровень. Помеченные так поля и методы видны <strong>отовсюду</strong>: изнутри класса, из наследников и из любого внешнего кода. Это те самые «кнопки на панели» прибора. Важная деталь: если модификатор <em>не написать вообще</em>, поле или метод автоматически становятся <code>public</code>. То есть <code>public</code> — это уровень по умолчанию, и слово можно опускать.</p>
+  <app-code-block [code]="publicUser" lang="typescript" />
+  <p>Раз <code>public</code> подразумевается сам собой, писать его явно стоит скорее для читаемости или единообразия. А вот всё, что <em>не должно</em> торчать наружу, нужно закрывать осознанно — этим и займёмся дальше.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>private</code> — только внутри класса</h2>
+  <p><code>private</code> — противоположность <code>public</code>. Помеченное поле или метод доступны <strong>только коду самого класса</strong>: его собственным методам. Снаружи — стена. Это «проводка под крышкой»: класс ею пользуется внутри, а наружу отдаёт лишь безопасные методы.</p>
+  <app-code-block [code]="privateBank" lang="typescript" />
+  <p>Обратите внимание, как поменялась картина по сравнению с открытым счётом. Теперь <strong>единственный способ</strong> изменить баланс — методы <code>deposit</code> и <code>withdraw</code>, а в них встроены проверки. Прямое <code>acc.balance = -100</code> компилятор не пропустит — и правило «баланс под контролем» наконец соблюдается.</p>
+
+  <h3 class="doc__subtitle">Внутри класса — можно всё, даже к «чужому» экземпляру</h3>
+  <p>Есть тонкость, которая поначалу удивляет. <code>private</code> закрывает поле для <em>внешнего</em> кода, но внутри класса доступ полный — причём не только к <code>this</code>, а и к <strong>другому экземпляру того же класса</strong>. Модификатор ограничивает по <em>классу</em>, а не по конкретному объекту:</p>
+  <app-code-block [code]="privateBetweenInstances" lang="typescript" />
+  <p>Метод <code>richerThan</code> лезет в <code>other.balance</code> — приватное поле <em>чужого</em> объекта — и это законно, потому что код принадлежит тому же классу <code>BankAccount</code>. А вот снаружи то же самое обращение по-прежнему запрещено.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>protected</code> — внутри класса и в наследниках</h2>
+  <p><code>protected</code> — золотая середина между <code>public</code> и <code>private</code>. Доступ есть у самого класса <strong>и у его наследников</strong>, но не у внешнего кода. Вспомните аналогию: пользователь видит только кнопки, а <strong>ремонтник</strong> (подкласс, «специальная модель на базе обычной») снимает крышку и добирается до внутренностей, закрытых от пользователя.</p>
+  <app-code-block [code]="protectedInheritance" lang="typescript" />
+  <p>Наследник <code>SavingsAccount</code> свободно читает и меняет <code>this.balance</code> в своём методе <code>addInterest</code> — потому что поле <code>protected</code>. Будь оно <code>private</code>, наследник бы его уже не увидел. А снаружи <code>savings.balance</code> закрыт так же строго, как и <code>private</code>.</p>
+  <p class="note"><strong>Как выбирать.</strong> Спросите себя: кто должен трогать это поле? Только сам класс — берите <code>private</code>. Класс и его наследники (вы проектируете иерархию и хотите дать подклассам доступ к внутренней «кухне») — <code>protected</code>. Все подряд, это часть публичного интерфейса — <code>public</code>. По умолчанию начинайте с самого закрытого и открывайте ровно столько, сколько нужно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Кто и что видит: схема доступа</h2>
+  <p>Соберём три уровня в одну картинку. У каждого «наблюдателя» — снаружи, в наследнике, внутри класса — свой набор того, что ему видно.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 250" width="100%" role="img" aria-label="Что видно снаружи, в наследнике и внутри класса для public, protected, private и #private">
+      <text x="340" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">чем ближе к «сердцу» класса, тем больше видно</text>
+
+      <!-- Панель: Снаружи -->
+      <rect x="20" y="44" width="196" height="188" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="118" y="72" text-anchor="middle" fill="var(--fg)" font-size="14" font-weight="600">Снаружи</text>
+      <line x1="36" y1="84" x2="200" y2="84" stroke="var(--border)" stroke-width="1" />
+      <text x="40" y="112" fill="var(--fg)" font-family="monospace" font-size="13">public</text>
+      <text x="196" y="112" text-anchor="end" fill="var(--green)" font-size="14">✓</text>
+      <text x="40" y="144" fill="var(--muted)" font-family="monospace" font-size="13">protected</text>
+      <text x="196" y="144" text-anchor="end" fill="var(--red)" font-size="14">✗</text>
+      <text x="40" y="176" fill="var(--muted)" font-family="monospace" font-size="13">private</text>
+      <text x="196" y="176" text-anchor="end" fill="var(--red)" font-size="14">✗</text>
+      <text x="40" y="208" fill="var(--muted)" font-family="monospace" font-size="13">#private</text>
+      <text x="196" y="208" text-anchor="end" fill="var(--red)" font-size="14">✗</text>
+
+      <!-- Панель: В наследнике -->
+      <rect x="242" y="44" width="196" height="188" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="340" y="72" text-anchor="middle" fill="var(--fg)" font-size="14" font-weight="600">В наследнике</text>
+      <line x1="258" y1="84" x2="422" y2="84" stroke="var(--border)" stroke-width="1" />
+      <text x="262" y="112" fill="var(--fg)" font-family="monospace" font-size="13">public</text>
+      <text x="418" y="112" text-anchor="end" fill="var(--green)" font-size="14">✓</text>
+      <text x="262" y="144" fill="var(--fg)" font-family="monospace" font-size="13">protected</text>
+      <text x="418" y="144" text-anchor="end" fill="var(--green)" font-size="14">✓</text>
+      <text x="262" y="176" fill="var(--muted)" font-family="monospace" font-size="13">private</text>
+      <text x="418" y="176" text-anchor="end" fill="var(--red)" font-size="14">✗</text>
+      <text x="262" y="208" fill="var(--muted)" font-family="monospace" font-size="13">#private</text>
+      <text x="418" y="208" text-anchor="end" fill="var(--red)" font-size="14">✗</text>
+
+      <!-- Панель: Внутри класса -->
+      <rect x="464" y="44" width="196" height="188" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="562" y="72" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="600">Внутри класса</text>
+      <line x1="480" y1="84" x2="644" y2="84" stroke="var(--border)" stroke-width="1" />
+      <text x="484" y="112" fill="var(--fg)" font-family="monospace" font-size="13">public</text>
+      <text x="640" y="112" text-anchor="end" fill="var(--green)" font-size="14">✓</text>
+      <text x="484" y="144" fill="var(--fg)" font-family="monospace" font-size="13">protected</text>
+      <text x="640" y="144" text-anchor="end" fill="var(--green)" font-size="14">✓</text>
+      <text x="484" y="176" fill="var(--fg)" font-family="monospace" font-size="13">private</text>
+      <text x="640" y="176" text-anchor="end" fill="var(--green)" font-size="14">✓</text>
+      <text x="484" y="208" fill="var(--fg)" font-family="monospace" font-size="13">#private</text>
+      <text x="640" y="208" text-anchor="end" fill="var(--green)" font-size="14">✓</text>
+    </svg>
+    <figcaption>Снаружи виден только <code>public</code>. Наследник получает ещё и <code>protected</code>. Всё сразу — <code>public</code>, <code>protected</code>, <code>private</code> и <code>#private</code> — видит лишь код самого класса.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2><code>#private</code> — настоящая приватность из JavaScript</h2>
+  <p>У <code>private</code> есть важная особенность: это <strong>инструмент только TypeScript</strong>. Он живёт на этапе компиляции — компилятор ругается на запрещённый доступ и не даёт собрать проект. Но когда TypeScript превращается в JavaScript, модификатор <code>private</code> <strong>полностью стирается</strong>: в готовом коде остаётся обычное поле. А значит, обойдя проверку типов, до него можно дотянуться в рантайме.</p>
+  <p>В самом JavaScript есть свой, «железный» механизм приватности — <strong>приватные поля</strong>, имя которых начинается с решётки <code>#</code>. Они закрыты по-настоящему: и на компиляции, и во время работы программы. Снаружи такого поля будто вовсе не существует.</p>
+  <app-code-block [code]="hashPin" lang="typescript" />
+  <p>Синтаксис немного другой: <code>#</code> — часть имени, обращаться нужно как <code>this.#pin</code>, и объявить поле надо заранее (нельзя «на лету» создать новое <code>#</code>-поле в методе). Зато взамен вы получаете гарантию: никто снаружи не прочитает и не изменит это значение.</p>
+
+  <h3 class="doc__subtitle"><code>private</code> против <code>#private</code>: разница видна в рантайме</h3>
+  <p>Сравним оба механизма на живом примере. TS-<code>private</code> при сборке исчезает, поэтому через приведение к <code>any</code> поле оказывается доступным. А <code>#private</code> не поддаётся никаким трюкам:</p>
+  <app-code-block [code]="tsPrivateVsHashRuntime" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 680 300" width="100%" role="img" aria-label="TS private стирается при компиляции и виден в рантайме, а решётка-приватность сохраняет барьер">
+      <!-- Верхний ряд: TS private -->
+      <text x="24" y="34" fill="var(--fg)" font-size="14" font-weight="600">TypeScript-модификатор private</text>
+      <rect x="24" y="48" width="188" height="70" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="118" y="80" text-anchor="middle" fill="var(--muted)" font-size="11">исходник .ts</text>
+      <text x="118" y="102" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">private secret</text>
+
+      <line x1="216" y1="83" x2="290" y2="83" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="290,77 304,83 290,89" fill="var(--muted)" />
+      <text x="260" y="74" text-anchor="middle" fill="var(--muted)" font-size="11">сборка</text>
+
+      <rect x="312" y="48" width="344" height="70" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="484" y="76" text-anchor="middle" fill="var(--muted)" font-size="11">JavaScript в рантайме</text>
+      <text x="484" y="98" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">secret — обычное поле, барьер стёрт</text>
+
+      <line x1="30" y1="150" x2="650" y2="150" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+
+      <!-- Нижний ряд: #private -->
+      <text x="24" y="186" fill="var(--fg)" font-size="14" font-weight="600">Приватное поле #secret</text>
+      <rect x="24" y="200" width="188" height="70" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="118" y="232" text-anchor="middle" fill="var(--muted)" font-size="11">исходник .ts</text>
+      <text x="118" y="254" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">#secret</text>
+
+      <line x1="216" y1="235" x2="290" y2="235" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="290,229 304,235 290,241" fill="var(--muted)" />
+      <text x="260" y="226" text-anchor="middle" fill="var(--muted)" font-size="11">сборка</text>
+
+      <rect x="312" y="200" width="344" height="70" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="484" y="228" text-anchor="middle" fill="var(--muted)" font-size="11">JavaScript в рантайме</text>
+      <text x="484" y="250" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13">#secret за барьером — снаружи не достать</text>
+    </svg>
+    <figcaption>Сверху: TS-<code>private</code> исчезает при сборке — в рантайме поле открыто. Снизу: <code>#private</code> сохраняет настоящий барьер и после компиляции.</figcaption>
+  </figure>
+  <p>Есть у TS-<code>private</code> и вторая, ещё менее очевидная брешь: доступ через <strong>квадратные скобки</strong> компилятор пропускает, хотя точку блокирует.</p>
+  <app-code-block [code]="privateBracketLeak" lang="typescript" />
+  <p>Про эту и другие ловушки подробно — на странице <a routerLink="/typescript/classes/pitfalls">Нюансы и подводные камни</a>. Вывод простой: <code>private</code> и <code>protected</code> — прекрасные инструменты <em>дисциплины</em> внутри вашей кодовой базы (они не дают случайно нарушить границы). Но если нужна защита от намеренного вмешательства в рантайме — например, секрет, ключ, пин — берите <code>#private</code>. Родословная этих механизмов в чистом JS разобрана на странице <a routerLink="/javascript/classes/static-private">JS: статика и приватность</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Геттеры и сеттеры: контролируемый доступ</h2>
+  <p>Часто нужен промежуточный вариант: чтобы поле <em>выглядело</em> как обычное свойство (читаешь <code>acc.balance</code>, а не зовёшь <code>acc.getBalance()</code>), но за этим «свойством» стояла ваша логика — проверка, вычисление, запрет записи. Для этого есть <strong>геттеры</strong> (<code>get</code>) и <strong>сеттеры</strong> (<code>set</code>): специальные методы, которые снаружи ведут себя как поле.</p>
+  <p>Начнём с одного лишь геттера. Если у свойства есть <code>get</code>, но нет <code>set</code>, оно становится <strong>доступным только для чтения</strong> — присвоить ему снаружи нельзя:</p>
+  <app-code-block [code]="getterReadonly" lang="typescript" />
+  <p>Снаружи <code>acc.balance</code> читается без скобок, как поле, — а на деле это метод, который отдаёт приватное <code>_balance</code>. Записать в него нельзя, потому что сеттера мы не объявили. Это удобный способ показать значение «в окошко», но запретить его менять напрямую.</p>
+  <p>Теперь добавим <code>set</code> — и получим полноценную «умную» запись. Сеттер — идеальное место для проверки данных: снаружи это обычное присваивание, а внутри стоит охрана, которая не пропустит мусор:</p>
+  <app-code-block [code]="getterSetterUser" lang="typescript" />
+  <p>Пара <code>get email()</code> / <code>set email()</code> оборачивает приватное <code>#email</code>. Читаем как свойство, пишем как свойство — но каждая запись проходит через проверку на <code>@</code>. Так поле остаётся защищённым, а пользоваться им по-прежнему удобно.</p>
+  <p>Наконец, геттер вовсе не обязан хранить своё поле — он может <strong>вычислять</strong> значение на лету из других данных:</p>
+  <app-code-block [code]="computedGetter" lang="typescript" />
+  <p class="note"><strong>Итог по геттерам.</strong> Только <code>get</code> — свойство только для чтения. <code>get</code> плюс <code>set</code> — управляемое чтение и запись с проверками. Геттер без своего поля — вычисляемое свойство. Во всех случаях снаружи это выглядит как обычное поле, а за фасадом — ваша логика. Родственная тема — поля, которые нельзя менять после создания: см. <a routerLink="/typescript/classes/readonly-static">readonly и static</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Сводная таблица: где доступно</h2>
+  <p>Все четыре уровня доступа рядом. Последний столбец — самое коварное: где заканчивается «дисциплина компилятора» и начинается реальная защита во время работы программы.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Модификатор</th>
+          <th>Снаружи</th>
+          <th>В наследнике</th>
+          <th>Внутри класса</th>
+          <th>Реальная защита в рантайме</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>public</code></td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+          <td>— (поле и так открыто)</td>
+        </tr>
+        <tr>
+          <td><code>protected</code></td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+          <td>нет — модификатор стирается</td>
+        </tr>
+        <tr>
+          <td><code>private</code> (TS)</td>
+          <td class="no">❌ нет</td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ да</td>
+          <td>нет — стирается, есть лазейки</td>
+        </tr>
+        <tr>
+          <td><code>#private</code> (ES)</td>
+          <td class="no">❌ нет</td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да, настоящий барьер</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Первые три столбца — про то, что проверяет <em>компилятор</em>. Последний — про то, что реально происходит в собранном коде. <code>public</code>, <code>protected</code> и <code>private</code> одинаково «испаряются» при компиляции; отличается только строгость проверок TypeScript. Настоящую границу в рантайме ставит лишь <code>#private</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Инкапсуляция</strong> — спрятать данные и дать наружу только безопасные методы. Открытое поле <code>balance</code> кто угодно испортит; закрытое меняется лишь через методы с проверками.</li>
+    <li><code>public</code> — доступно <strong>отовсюду</strong>; это уровень <strong>по умолчанию</strong> (модификатор можно не писать). «Кнопки на панели».</li>
+    <li><code>private</code> — только <strong>код самого класса</strong> (включая другой экземпляр того же класса). Снаружи и в наследниках — запрещено.</li>
+    <li><code>protected</code> — класс <strong>и его наследники</strong>, но не внешний код. «То, что видит ремонтник, но не пользователь».</li>
+    <li><code>private</code> и <code>protected</code> — инструменты TypeScript: при сборке <strong>стираются</strong>. В рантайме поле доступно (через <code>as any</code>, а <code>private</code> — ещё и через <code>obj['поле']</code>).</li>
+    <li><code>#private</code> (решётка) — <strong>настоящая</strong> приватность JavaScript: закрыто и на компиляции, и в рантайме. Для секретов и ключей берите его.</li>
+    <li><strong>Геттеры/сеттеры</strong>: только <code>get</code> — свойство для чтения; <code>get</code>+<code>set</code> — чтение и запись с проверками; геттер без поля — вычисляемое свойство. Снаружи выглядят как обычное поле.</li>
+  </ul>
+  <p class="note">Рядом стоит посмотреть <a routerLink="/typescript/classes/readonly-static">readonly и static</a> (поля, которые нельзя менять, и данные на весь класс) и <a routerLink="/typescript/classes/parameter-properties">параметры-свойства</a> (короткая запись <code>constructor(private balance: number)</code>). Лазейки TS-<code>private</code> собраны в разделе <a routerLink="/typescript/classes/pitfalls">Нюансы и подводные камни</a>, а истоки приватности в чистом JavaScript — на странице <a routerLink="/javascript/classes/static-private">JS: статика и приватность</a>.</p>
+</section>
+</article>

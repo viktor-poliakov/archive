@@ -1,0 +1,121 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/classes">Классы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">Классы кажутся простыми, пока не столкнёшься с деталями: то <code>this</code> внезапно «теряется», то приватное поле оказывается не таким уж приватным, то компилятор требует загадочное слово <code>override</code>. Здесь собраны самые частые грабли — с объяснением, <em>почему</em> так, и как правильно. Если сами классы ещё в новинку — начните с <a routerLink="/typescript/classes/basics">Основ</a>.</p>
+
+<section class="doc__section">
+  <h2>1. Потеря <code>this</code> при передаче метода</h2>
+  <p>Метод класса опирается на <code>this</code> — «этот самый объект». Пока метод вызывают «через точку» (<code>timer.tick()</code>), <code>this</code> — это <code>timer</code>. Но стоит <strong>оторвать</strong> метод от объекта — положить в переменную или передать колбэком — и связь с <code>this</code> рвётся.</p>
+  <app-code-block [code]="lostThis" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 620 210" width="100%" role="img" aria-label="Метод, оторванный от объекта, теряет связь с this: вызов через точку работает, вызов из переменной теряет this">
+      <text x="310" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Метод без объекта слева теряет свой <tspan font-family="monospace">this</tspan></text>
+
+      <rect x="40" y="60" width="200" height="52" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="140" y="84" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">timer.tick()</text>
+      <text x="140" y="102" text-anchor="middle" fill="var(--green)" font-size="11">this = timer ✓</text>
+
+      <rect x="380" y="60" width="200" height="52" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="480" y="84" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">const fn = timer.tick</text>
+      <text x="480" y="102" text-anchor="middle" fill="var(--red)" font-size="11">this потерян ✗</text>
+
+      <text x="140" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">объект слева от точки</text>
+      <text x="480" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">точки нет — this «отвалился»</text>
+
+      <line x1="240" y1="86" x2="378" y2="86" stroke="var(--border)" stroke-width="1.4" stroke-dasharray="6 5" />
+      <text x="310" y="80" text-anchor="middle" fill="var(--red)" font-size="16">✂</text>
+    </svg>
+    <figcaption>Вызов «через точку» передаёт объект в <code>this</code>. Как только метод оторвали от объекта (переменная, колбэк), <code>this</code> теряется — в рантайме будет ошибка.</figcaption>
+  </figure>
+  <p>Лечится двумя способами: сделать метод <strong>стрелочным полем</strong> (у стрелки нет своего <code>this</code>, она навсегда берёт его из объекта) либо привязать через <code>.bind(this)</code>.</p>
+  <app-code-block [code]="lostThisFix" lang="typescript" />
+  <p class="note"><strong>Почему так.</strong> В JavaScript <code>this</code> определяется <em>в момент вызова</em>, а не там, где метод объявлен. Подробно эта механика разобрана на страницах <a routerLink="/typescript/functions/this">Типизация this</a> и <a routerLink="/javascript/context/losing-context">Потеря контекста</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>2. Забыли <code>override</code> при переопределении</h2>
+  <p>Наследник переопределяет метод базового класса — казалось бы, просто напиши метод с тем же именем. Но в этом проекте включена строгая опция <code>noImplicitOverride</code>, и компилятор <strong>требует</strong> явно пометить перекрытие словом <code>override</code>. Это не придирка: слово защищает от опечаток в имени и от «случайного» перекрытия.</p>
+  <app-code-block [code]="missingOverride" lang="typescript" />
+  <p class="note"><strong>Правило.</strong> Переопределяешь метод, который <em>есть</em> в базе → пиши <code>override</code>. Написал <code>override</code> на метод, которого в базе <em>нет</em> → тоже ошибка (значит, опечатался в имени). Исключение — реализация <strong>абстрактного</strong> метода: там <code>override</code> не нужен (это контракт, а не перекрытие готового кода).</p>
+</section>
+
+<section class="doc__section">
+  <h2>3. <code>private</code> в TypeScript — «дырявый»</h2>
+  <p>Ключевое слово <code>private</code> выглядит как надёжный замок, но на деле это скорее <strong>табличка «не трогать»</strong>. Компилятор ругается на прямое обращение <code>acc.secret</code> снаружи — но обойти запрет до обидного легко.</p>
+  <app-code-block [code]="privateLeak" lang="typescript" />
+  <p>Настоящую приватность даёт синтаксис <strong>приватных полей ECMAScript</strong> — имя с решёткой <code>#</code>. Такое поле недоступно снаружи ни через скобки, ни в рантайме.</p>
+  <app-code-block [code]="hardPrivate" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 620 210" width="100%" role="img" aria-label="TypeScript private стирается при компиляции и обходится, приватное поле с решёткой остаётся закрытым и в рантайме">
+      <text x="310" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Два «замка» на приватное поле — разной прочности</text>
+
+      <rect x="34" y="52" width="266" height="126" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="7 5" />
+      <text x="167" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">private secret</text>
+      <text x="167" y="108" text-anchor="middle" fill="var(--red)" font-size="12">табличка «не трогать»</text>
+      <text x="167" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">обходится: obj["secret"]</text>
+      <text x="167" y="152" text-anchor="middle" fill="var(--muted)" font-size="11">стирается в рантайме</text>
+
+      <rect x="320" y="52" width="266" height="126" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="453" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">#secret</text>
+      <text x="453" y="108" text-anchor="middle" fill="var(--green)" font-size="12">настоящий замок</text>
+      <text x="453" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">не достать снаружи</text>
+      <text x="453" y="152" text-anchor="middle" fill="var(--muted)" font-size="11">приватно и в рантайме</text>
+    </svg>
+    <figcaption><code>private</code> — соглашение уровня компилятора: обходится скобками и исчезает в готовом JS. <code>#private</code> — настоящая приватность языка, закрытая и во время выполнения.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>4. Забыли <code>super()</code> в конструкторе наследника</h2>
+  <p>Если класс наследуется (<code>extends</code>) и объявляет <strong>свой</strong> конструктор, он обязан вызвать конструктор базового класса через <code>super(...)</code>. Более того — сделать это <em>до</em> первого обращения к <code>this</code>: пока <code>super()</code> не отработал, объект ещё «не достроен».</p>
+  <app-code-block [code]="missingSuper" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>5. <code>this</code> в статическом методе — это класс</h2>
+  <p>Внутри <code>static</code>-метода <code>this</code> указывает не на экземпляр (его в принципе может не быть), а на <strong>сам класс</strong>. Поэтому обратиться из статического метода к полю экземпляра нельзя.</p>
+  <app-code-block [code]="thisInStatic" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>6. Статический член не виден через экземпляр</h2>
+  <p>Логичное следствие предыдущего пункта. <code>static</code>-поле принадлежит классу, поэтому обращаться к нему нужно через имя класса, а не через объект.</p>
+  <app-code-block [code]="staticViaInstance" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>7. <code>readonly</code> «неглубокий»</h2>
+  <p>Частое заблуждение: раз поле <code>readonly</code>, то и его содержимое неизменяемо. Нет. <code>readonly</code> запрещает <strong>переприсваивать само поле</strong> (менять ссылку), но если внутри лежит объект — его внутренности спокойно меняются.</p>
+  <app-code-block [code]="readonlyShallow" lang="typescript" />
+  <p class="note"><strong>Как запомнить.</strong> <code>readonly</code> замораживает «стрелку» от поля к значению, а не само значение. Чтобы запретить и изменение содержимого, нужны другие средства (например, <code>readonly</code>-типы для вложенных полей или <code>as const</code> — см. <a routerLink="/typescript/basic-types/subtypes-supertypes">модель множеств</a> и литеральные типы).</p>
+</section>
+
+<section class="doc__section">
+  <h2>8. Стрелочное поле-метод против метода в прототипе</h2>
+  <p>В пункте 1 стрелочное поле спасало <code>this</code>. Но у него есть цена. Обычный метод живёт <strong>в прототипе</strong> класса — он один на все экземпляры. А стрелочное поле-метод создаётся <strong>заново в каждом объекте</strong>.</p>
+  <app-code-block [code]="arrowVsPrototype" lang="typescript" />
+  <p class="note"><strong>Компромисс.</strong> Стрелочное поле — когда метод передают колбэком и важно не потерять <code>this</code> (обработчики событий, коллбэки). Обычный метод — во всех остальных случаях: он экономит память. Не делайте стрелочными все методы «на всякий случай».</p>
+</section>
+
+<section class="doc__section">
+  <h2>9. Неинициализированное поле (в строгом режиме)</h2>
+  <p>Ещё одна грабля, о которой полезно знать заранее. В <strong>строгом режиме</strong> (<code>strict: true</code>, точнее <code>strictPropertyInitialization</code>) поле, которому не задали значение — ни при объявлении, ни в конструкторе, — вызывает ошибку. Иначе оно молча окажется <code>undefined</code>, хотя тип обещает, например, <code>string</code>.</p>
+  <app-code-block [code]="strictInit" lang="typescript" />
+  <p class="note"><strong>Оговорка.</strong> В этом проекте строгий режим <em>выключен</em>, поэтому конкретно здесь ошибки не будет. Но большинство реальных проектов на TypeScript используют <code>strict</code> — и там инициализация полей обязательна. Задавайте значение сразу или присваивайте в конструкторе.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Потеря <code>this</code>:</strong> метод, оторванный от объекта (переменная, колбэк), теряет <code>this</code>. Спасают стрелочное поле-метод или <code>.bind(this)</code>.</li>
+    <li><strong><code>override</code> обязателен</strong> (<code>noImplicitOverride</code>) при перекрытии метода базы; на реализацию <code>abstract</code>-метода — не нужен.</li>
+    <li><strong><code>private</code> — «дырявый»:</strong> обходится через <code>obj["secret"]</code> и исчезает в рантайме. Настоящая приватность — <code>#private</code>.</li>
+    <li><strong><code>super()</code></strong> обязателен в конструкторе наследника и должен идти <em>до</em> обращения к <code>this</code>.</li>
+    <li><strong><code>static</code>:</strong> <code>this</code> в статическом методе — это класс; к статическому члену обращаются через класс, не через экземпляр.</li>
+    <li><strong><code>readonly</code> неглубокий</strong> — запрещает переприсваивание поля, но не меняет неизменяемость вложенного объекта.</li>
+    <li><strong>Стрелочное поле-метод</strong> хранит <code>this</code>, но создаётся в каждом экземпляре (память); обычный метод — один на прототип. В строгом режиме поля нужно инициализировать.</li>
+  </ul>
+  <p class="note">Назад к темам раздела: <a routerLink="/typescript/classes/basics">Основы</a>, <a routerLink="/typescript/classes/access-modifiers">Модификаторы доступа</a> (про <code>private</code> и <code>#private</code>), <a routerLink="/typescript/classes/readonly-static">readonly и static</a>. Механика <code>this</code> — на странице <a routerLink="/typescript/functions/this">Типизация this</a> и в JS-разделе <a routerLink="/javascript/context/losing-context">Потеря контекста</a>.</p>
+</section>
+</article>

@@ -1,0 +1,154 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/enums">Перечисления (enum)</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">const enum</span></nav>
+
+<h1 class="doc__title">const enum</h1>
+<p class="doc__lead"><strong>Представьте, что перед экзаменом вы составили шпаргалку, а потом аккуратно переписали все ответы в чистовик.</strong> Обычный <code>enum</code> — это отдельная методичка, которую вы всюду таскаете с собой: в готовой программе рядом с вашим кодом лежит целый объект-справочник. <code>const enum</code> обещает другое — взять ответы из шпаргалки и <em>вписать их прямо в текст</em>, а саму методичку выбросить: значения подставляются в код на этапе сборки, а объекта в рантайме не остаётся. Идея заманчивая, но, как мы увидим, <strong>именно в этом проекте она не срабатывает</strong>.</p>
+
+<section class="doc__section">
+  <h2>Проблема обычного enum: он остаётся в бандле</h2>
+  <p>Чтобы понять, зачем вообще придумали <code>const enum</code>, вспомним важную деталь про обычный <a routerLink="/typescript/enums/numeric">числовой enum</a>. Он — это <strong>не только тип</strong>, но и настоящий объект, который живёт в рантайме. Компилятор превращает объявление enum в кусок реального JavaScript-кода, и этот код попадает в итоговую сборку (бандл) вашего приложения.</p>
+  <app-code-block [code]="regularEnumEmit" lang="typescript" />
+  <p>Обычно это удобно: благодаря такому объекту у числового enum работает, например, обратный маппинг (<code>Direction[0] === 'Up'</code>). Но за удобство надо платить: даже если во всём приложении вы используете лишь одно значение <code>Direction.Up</code>, в бандл всё равно уезжает весь объект-справочник целиком. Для одного enum это капля, но в большой кодовой базе такие капли складываются в лишние килобайты, которые пользователь честно скачивает.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Идея const enum: инлайнинг на этапе компиляции</h2>
+  <p>Здесь на сцену выходит <code>const enum</code>. Пишется он почти как обычный enum — добавляется только слово <code>const</code>:</p>
+  <app-code-block [code]="constEnumBasic" lang="typescript" />
+  <p>Ключевое слово <code>const</code> — это обещание компилятору: «значения членов не изменятся, они известны заранее». А раз значения известны на этапе сборки, компилятор может проделать фокус под названием <strong>инлайнинг</strong> (от английского <em>inline</em> — «встроить по месту»): вместо обращения <code>Direction.Up</code> он подставит в код само значение — число <code>0</code>. Тогда объект-справочник становится не нужен, и его можно вообще не выпускать в рантайм.</p>
+  <p class="note"><strong>Аналогия.</strong> Обычный enum — как ссылка «см. таблицу в приложении &#8470;3»: чтобы узнать значение, программа каждый раз лезет в справочник. <code>const enum</code> — как если бы редактор заранее подставил в текст нужное число прямо на место ссылки, а само приложение с таблицей из книги вырезал. Читателю больше некуда «лезть» — ответ уже перед глазами.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что оказывается в JS: объекта нет</h2>
+  <p>Посмотрим, во что <code>const enum</code> превращается при сборке «классическим» компилятором <code>tsc</code> (в проекте <em>без</em> режима <code>isolatedModules</code> — о нём чуть ниже). Это и есть тот самый идеальный сценарий, ради которого <code>const enum</code> задумывался:</p>
+  <app-code-block [code]="plainTscEmit" lang="typescript" />
+  <p>Сравните с обычным enum из первой секции: там в бандле жил целый объект с самовызывающейся функцией, а здесь — только голые числа <code>0</code> и <code>3</code>. Объекта <code>Direction</code> в скомпилированном коде <strong>не существует</strong>. Схема ниже показывает оба конвейера рядом.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 300" width="100%" role="img" aria-label="Два конвейера компиляции: обычный enum оставляет в JS объект, а const enum обычным tsc подставляет числа и объекта не создаёт">
+      <text x="320" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">Что реально попадает в итоговый JS</text>
+
+      <text x="40" y="62" fill="var(--accent)" font-size="13" font-weight="600">обычный enum</text>
+      <rect x="40" y="72" width="210" height="64" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="145" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">исходник</text>
+      <text x="145" y="120" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">enum Direction</text>
+      <line x1="254" y1="104" x2="356" y2="104" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="366,104 356,99 356,109" fill="var(--muted)" />
+      <rect x="376" y="72" width="224" height="64" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="488" y="98" text-anchor="middle" fill="var(--red)" font-size="12">объект Direction (IIFE)</text>
+      <text x="488" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">лишний вес в бандле</text>
+
+      <text x="40" y="188" fill="var(--accent)" font-size="13" font-weight="600">const enum (обычный tsc)</text>
+      <rect x="40" y="198" width="210" height="64" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="145" y="224" text-anchor="middle" fill="var(--muted)" font-size="11">исходник</text>
+      <text x="145" y="246" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">const enum Direction</text>
+      <line x1="254" y1="230" x2="356" y2="230" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="366,230 356,225 356,235" fill="var(--muted)" />
+      <rect x="376" y="198" width="224" height="64" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="488" y="224" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">const x = 0</text>
+      <text x="488" y="246" text-anchor="middle" fill="var(--muted)" font-size="11">объекта нет</text>
+    </svg>
+    <figcaption>Обычный enum оставляет в JS объект-справочник; <code>const enum</code> при обычном <code>tsc</code> подставляет числа прямо в код, и объект не создаётся.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Плюс: нулевая рантайм-стоимость (в теории)</h2>
+  <p>Если инлайнинг сработал, выгода очевидна. Объект в бандл не попадает — значит, финальный файл чуть меньше, а браузеру нечего исполнять при загрузке этого модуля. Для типов вроде «направление», «сторона света» или «единица измерения», где нужны только сами значения, а обратный маппинг и перебор ключей не важны, <code>const enum</code> выглядит как бесплатная оптимизация: пишете читаемое <code>Direction.Up</code>, а в рантайм уходит компактное <code>0</code>.</p>
+  <p class="note"><strong>Важная оговорка — «в теории».</strong> Всё описанное выше верно только тогда, когда компилятор действительно инлайнит значения. А инлайнинг зависит от того, <em>как именно</em> собирается проект. И вот здесь заканчивается реклама и начинаются ограничения, из-за которых в современных проектах <code>const enum</code> чаще всего только вредит.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ограничения</h2>
+  <p>У <code>const enum</code> есть несколько подводных камней. Первые два — принципиальные, а третий (про наш проект) полностью перечёркивает всю выгоду.</p>
+
+  <h3 class="doc__subtitle">Нет обратного маппинга</h3>
+  <p>Раз объекта в рантайме нет, то и искать в нём нечего. Обратный маппинг «число &#8594; имя», который есть у обычного числового enum, у <code>const enum</code> отсутствует. Более того, компилятор запрещает даже обращаться к члену по вычисляемому индексу:</p>
+  <app-code-block [code]="noReverseMapping" lang="typescript" />
+
+  <h3 class="doc__subtitle">Под isolatedModules инлайна НЕТ</h3>
+  <p>Вот главное. Наш проект (Angular на <code>esbuild</code>) собирается в режиме <code>isolatedModules</code>. В этом режиме каждый файл компилируется <em>независимо</em> от остальных, и сборщик принципиально не заглядывает в определения из других файлов. А значит, он не может быть уверен, чему равно <code>Direction.Up</code>, и не рискует ничего инлайнить. Вместо подстановки числа он эмитит <strong>полный объект enum</strong> — ровно такой же, как у обычного enum.</p>
+  <app-code-block [code]="isolatedModulesEmit" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 240" width="100%" role="img" aria-label="Под isolatedModules инлайн отключён: тот же const enum снова превращается в полный объект, а ожидаемая выгода перечёркнута">
+      <text x="320" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">Тот же const enum — но в нашем проекте (isolatedModules)</text>
+
+      <rect x="40" y="66" width="210" height="64" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="145" y="92" text-anchor="middle" fill="var(--muted)" font-size="11">исходник</text>
+      <text x="145" y="114" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">const enum Direction</text>
+
+      <text x="313" y="86" text-anchor="middle" fill="var(--muted)" font-size="11">isolatedModules</text>
+      <line x1="254" y1="98" x2="366" y2="98" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="376,98 366,93 366,103" fill="var(--muted)" />
+
+      <rect x="386" y="66" width="214" height="64" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="493" y="92" text-anchor="middle" fill="var(--red)" font-size="12">снова ПОЛНЫЙ объект</text>
+      <text x="493" y="114" text-anchor="middle" fill="var(--muted)" font-size="11">как обычный enum</text>
+
+      <text x="320" y="184" text-anchor="middle" fill="var(--muted)" font-size="13">ожидаемая выгода: объекта нет</text>
+      <line x1="150" y1="179" x2="490" y2="179" stroke="var(--red)" stroke-width="2.5" />
+    </svg>
+    <figcaption>В режиме <code>isolatedModules</code> инлайнинг отключён: <code>const enum</code> ведёт себя как обычный enum, и обещанная выгода (отсутствие объекта) исчезает.</figcaption>
+  </figure>
+  <p>Вывод суровый: <strong>в этом проекте <code>const enum</code> не даёт ровным счётом ничего</strong>. Вы получаете все ограничения (нет обратного маппинга, особые правила доступа), но не получаете единственный ради чего всё затевалось плюс — компактный вывод без объекта.</p>
+
+  <h3 class="doc__subtitle">Ambient declare const enum — прямая ошибка</h3>
+  <p>Отдельно запрещён «ambient» вариант — <code>declare const enum</code>, который часто приходит из <code>.d.ts</code>-файлов библиотек. Под <code>isolatedModules</code> компилятор не видит его тела и не может подставить значение, поэтому просто останавливает сборку:</p>
+  <app-code-block [code]="ambientConstEnum" lang="typescript" />
+
+  <h3 class="doc__subtitle">Зависимость от preserveConstEnums</h3>
+  <p>Есть ещё флаг компилятора <code>preserveConstEnums</code>. Он заставляет <em>сохранить</em> объект <code>const enum</code> в JS. Иногда это включают, чтобы отладчик мог показать имена членов. Но такой режим убивает саму идею:</p>
+  <app-code-block [code]="preserveConstEnums" lang="typescript" />
+  <p>Получается парадокс: поведение <code>const enum</code> сильно зависит от настроек сборки, которые вы не всегда контролируете. То он инлайнится, то эмитит объект, то и вовсе падает с ошибкой. Обычный код так себя вести не должен.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда использовать и когда избегать</h2>
+  <p>Соберём всё в одну таблицу — от условий сборки зависит буквально всё:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Ситуация</th>
+          <th>const enum инлайнится?</th>
+          <th>Стоит использовать?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Проект на «чистом» <code>tsc</code>, без <code>isolatedModules</code></td>
+          <td class="yes">✅ да, объекта в JS нет</td>
+          <td class="yes">✅ можно, если нужна только скорость</td>
+        </tr>
+        <tr>
+          <td>Проект с бандлером и <code>isolatedModules</code> (<strong>наш случай</strong>)</td>
+          <td class="no">❌ нет, эмитится полный объект</td>
+          <td class="no">❌ избегать — выгоды ноль</td>
+        </tr>
+        <tr>
+          <td>Библиотека с ambient <code>.d.ts</code> (<code>declare const enum</code>)</td>
+          <td class="no">❌ вообще ошибка TS2748</td>
+          <td class="no">❌ избегать</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Для нашего проекта рекомендация однозначна: <strong><code>const enum</code> не использовать</strong>. Если нужен просто набор именованных констант с компактным выводом, возьмите обычный объект с <a routerLink="/typescript/assertions/as-const"><code>as const</code></a> — он предсказуем в любом сборщике, честно виден в рантайме и легко превращается в тип:</p>
+  <app-code-block [code]="asConstAlternative" lang="typescript" />
+  <p>Это лишь один из способов обойтись без enum. Полный обзор — на странице <a routerLink="/typescript/enums/alternatives">Альтернативы enum</a>. Механику <code>typeof</code> и <code>keyof</code>, которую использует пример, разбирают страницы <a routerLink="/typescript/advanced-types/typeof">оператор typeof</a> и <a routerLink="/typescript/advanced-types/keyof">keyof</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li>Обычный <code>enum</code> оставляет в бандле <strong>объект-справочник</strong>; <code>const enum</code> задуман, чтобы этого объекта не было.</li>
+    <li><strong>Идея</strong>: значения известны на этапе сборки, поэтому компилятор <em>инлайнит</em> их (<code>Direction.Up</code> &#8594; <code>0</code>), а объект не выпускает.</li>
+    <li>В идеальном случае (обычный <code>tsc</code>) в JS остаются голые числа: <code>const x = 0 /* Direction.Up */</code> — нулевая рантайм-стоимость.</li>
+    <li>У <code>const enum</code> <strong>нет обратного маппинга</strong>, а к членам нельзя обращаться по вычисляемому индексу (<code>Level[0]</code> — ошибка).</li>
+    <li><strong>Под <code>isolatedModules</code> (наш проект) инлайна нет</strong> — эмитится полный объект, как у обычного enum. Выгода исчезает.</li>
+    <li><code>declare const enum</code> под <code>isolatedModules</code> — ошибка <strong>TS2748</strong>; флаг <code>preserveConstEnums</code> и вовсе сохраняет объект, убивая смысл.</li>
+    <li><strong>В этом проекте <code>const enum</code> стоит избегать</strong> — берите обычный объект с <code>as const</code>.</li>
+  </ul>
+  <p class="note">Дальше стоит посмотреть <a routerLink="/typescript/enums/alternatives">Альтернативы enum</a> (главный практический вывод этой страницы), сравнить с <a routerLink="/typescript/enums/numeric">числовыми</a> и <a routerLink="/typescript/enums/string">строковыми</a> enum, а общие грабли собраны на странице <a routerLink="/typescript/enums/pitfalls">Нюансы и подводные камни</a>. Базовый приём <code>as const</code> подробно разобран на странице <a routerLink="/typescript/assertions/as-const">as const</a>.</p>
+</section>
+</article>

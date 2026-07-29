@@ -1,0 +1,168 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/classes">Классы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Параметры-свойства</span></nav>
+
+<h1 class="doc__title">Параметры-свойства</h1>
+<p class="doc__lead">Обычный класс заставляет писать имя поля <strong>трижды</strong>: сначала объявить поле, потом принять параметр конструктора с тем же именем, потом руками присвоить <code>this.x = x</code>. Это как заполнять бланк, где одну и ту же фамилию требуют вписать в три графы подряд. <strong>Параметр-свойство</strong> — это «три записи в одной строке»: один модификатор (<code>public</code>, <code>private</code>, <code>protected</code>, <code>readonly</code>), поставленный прямо в параметре конструктора, делает всё сразу. Если само устройство классов ещё в новинку, загляните в <a routerLink="/typescript/classes/basics">Основы</a> и в <a routerLink="/javascript/classes/basics">JS: классы, основы</a>.</p>
+
+<section class="doc__section">
+  <h2>Проблема: тройное повторение</h2>
+  <p>Чтобы почувствовать, зачем вообще нужен этот приём, сначала напишем самый обычный класс — без всяких сокращений. Возьмём «точку на плоскости»: у неё две координаты, <code>x</code> и <code>y</code>. Задача скромная — просто <em>сохранить</em> эти два числа внутри объекта. Но посмотрите, сколько раз придётся упомянуть каждую координату:</p>
+  <app-code-block [code]="verbosePoint" lang="typescript" />
+  <p>Имя <code>x</code> встречается <strong>три раза</strong>, и <code>y</code> — тоже три раза. И это ради того, чтобы просто положить пришедшее число в объект. Пока полей два — терпимо. Но представьте класс пользователя с десятью полями: тридцать строк почти одинакового текста, где легко ошибиться — например, случайно написать <code>this.x = y</code> и потом долго искать баг.</p>
+  <p class="note"><strong>Почему так вышло.</strong> Это не каприз TypeScript. Объявление поля (<code>x: number;</code>) нужно, чтобы у типа <code>Point</code> вообще было такое свойство. Параметр (<code>x: number</code>) нужен, чтобы принять значение снаружи. Присваивание (<code>this.x = x</code>) нужно, чтобы связать одно с другим. Три разные роли — три записи. Параметры-свойства не отменяют эти роли, а <em>схлопывают</em> их в одну запись.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Решение: модификатор прямо в параметре</h2>
+  <p>А теперь — тот же самый класс, но короче. Достаточно поставить <strong>модификатор доступа</strong> (здесь <code>public</code>) прямо перед параметром конструктора. Увидев модификатор, TypeScript берёт всю рутину на себя: сам <em>объявит</em> поле, сам <em>примет</em> параметр и сам <em>присвоит</em> его в поле. Тело конструктора может остаться пустым — <code>&#123;&#125;</code>.</p>
+  <app-code-block [code]="shorthandPoint" lang="typescript" />
+  <p>Результат <strong>ровно тот же</strong>: у объекта <code>p</code> есть поля <code>x</code> и <code>y</code>, их можно читать и (раз они <code>public</code>) менять снаружи. Но имя координаты теперь названо <strong>один раз</strong>, а не три. Именно такой параметр — с модификатором — и называют <em>параметром-свойством</em> (по-английски <em>parameter property</em>): параметр конструктора, который заодно становится свойством объекта.</p>
+  <p>Модификатор у каждого параметра свой — их можно смешивать в одном конструкторе. Сделаем одну координату публичной, а другую спрячем внутрь класса:</p>
+  <app-code-block [code]="pointPublicPrivate" lang="typescript" />
+  <p>Обратите внимание: <code>private</code>-параметр-свойство ведёт себя точно как обычное приватное поле — внутри класса (в методе <code>distanceToOrigin</code>) оно доступно, а снаружи обращение <code>pt.py</code> — ошибка компиляции. Про сами модификаторы <code>public</code>/<code>private</code>/<code>protected</code> подробно рассказано на странице <a routerLink="/typescript/classes/access-modifiers">Модификаторы доступа</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что именно происходит: до и после</h2>
+  <p>Здесь важно уложить в голове главное: параметр-свойство — это <strong>чистое сокращение записи</strong>, а не какая-то новая магия. Компилятор просто <em>разворачивает</em> короткую форму в ту самую длинную, что мы писали бы руками. Никакого другого поведения за этим нет.</p>
+  <app-code-block [code]="expansion" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 780 360" width="100%" role="img" aria-label="Слева подробная запись из трёх шагов, справа одна строка параметра-свойства — компилятор разворачивает одно в другое">
+      <text x="390" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Справа — что пишете вы. Слева — во что компилятор это разворачивает.</text>
+
+      <!-- Левая колонка: подробная запись из трёх шагов -->
+      <rect x="40" y="70" width="300" height="58" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="190" y="99" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">private balance: number;</text>
+      <text x="190" y="118" text-anchor="middle" fill="var(--muted)" font-size="12">① поле объявлено</text>
+
+      <rect x="40" y="146" width="300" height="58" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="190" y="175" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">constructor(balance: number)</text>
+      <text x="190" y="194" text-anchor="middle" fill="var(--muted)" font-size="12">② параметр принят</text>
+
+      <rect x="40" y="222" width="300" height="58" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="190" y="251" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">this.balance = balance;</text>
+      <text x="190" y="270" text-anchor="middle" fill="var(--muted)" font-size="12">③ присвоено в поле</text>
+
+      <!-- Стрелка: короткая форма разворачивается в подробную -->
+      <line x1="452" y1="175" x2="348" y2="175" stroke="var(--accent)" stroke-width="2.4" />
+      <polygon points="348,168 334,175 348,182" fill="var(--accent)" />
+      <text x="400" y="160" text-anchor="middle" fill="var(--accent)" font-size="12">разворачивает</text>
+
+      <!-- Правая колонка: одна строка -->
+      <rect x="460" y="134" width="286" height="92" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="603" y="164" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">constructor(</text>
+      <text x="603" y="186" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">&#160;&#160;private balance: number,</text>
+      <text x="603" y="208" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">) &#123;&#125;</text>
+      <text x="603" y="250" text-anchor="middle" fill="var(--muted)" font-size="12">одна строка — те же три действия</text>
+    </svg>
+    <figcaption>Одна строка <code>constructor(private balance: number)</code> эквивалентна трём отдельным записям слева. Компилятор разворачивает сокращение автоматически — поведение классов одинаковое.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Комбинации модификаторов</h2>
+  <p>Раз модификатор — обычное слово перед параметром, их можно комбинировать так же, как у обычных полей. Особенно полезна пара «модификатор доступа + <code>readonly</code>»: поле задаётся один раз при создании объекта и дальше защищено от случайного изменения. Такие «неизменяемые после создания» поля — типичная роль для параметра-свойства.</p>
+  <app-code-block [code]="userReadonly" lang="typescript" />
+  <p>Здесь два разных сочетания. <code>public readonly login</code> — поле видно снаружи, но переприсвоить его нельзя: <code>u.login = 'bob'</code> ловится компилятором. <code>private readonly id</code> — поле и спрятано от внешнего кода (<code>u.id</code> снаружи запрещено), и неизменяемо. Подробнее про <code>readonly</code> — на странице <a routerLink="/typescript/classes/readonly-static">readonly и static</a>.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Запись в параметре</th>
+          <th>Поле создаётся?</th>
+          <th>Видно снаружи?</th>
+          <th>Можно менять?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>public x</code></td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td><code>private x</code></td>
+          <td class="yes">✅ да</td>
+          <td class="no">❌ только внутри класса</td>
+          <td class="yes">✅ да (внутри)</td>
+        </tr>
+        <tr>
+          <td><code>public readonly x</code></td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+          <td class="no">❌ только в конструкторе</td>
+        </tr>
+        <tr>
+          <td><code>x</code> (без модификатора)</td>
+          <td class="no">❌ нет</td>
+          <td class="no">❌ нечему быть видимым</td>
+          <td class="no">❌ поля нет</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Важно: без модификатора поле НЕ создаётся</h2>
+  <p>Вот здесь скрыта самая частая ошибка новичка. Параметр-свойство работает <strong>только при наличии модификатора</strong>. Уберите <code>public</code>/<code>private</code>/<code>protected</code>/<code>readonly</code> — и это снова <em>обычный</em> параметр конструктора: он живёт только внутри конструктора и бесследно исчезает, как только тот отработал. Никакого поля на объекте не появляется.</p>
+  <app-code-block [code]="noModifier" lang="typescript" />
+  <p>Компилятор честно сообщает: <code>Property 'x' does not exist on type 'Point'</code> — и внутри метода, и при обращении снаружи. Никакого поля <code>x</code> у точки просто нет, потому что мы не попросили его создать. Достаточно вернуть модификатор — <code>constructor(public x: number, public y: number)</code> — и всё встаёт на места.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 250" width="100%" role="img" aria-label="С модификатором параметр становится полем объекта, без модификатора параметр исчезает и поля нет">
+      <!-- Строка 1: с модификатором -->
+      <rect x="30" y="42" width="230" height="48" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="145" y="71" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">constructor(public x)</text>
+
+      <line x1="262" y1="66" x2="352" y2="66" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="352,60 366,66 352,72" fill="var(--muted)" />
+
+      <rect x="372" y="42" width="150" height="48" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="447" y="71" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">&#123; x &#125;</text>
+
+      <text x="540" y="60" text-anchor="start" fill="var(--green)" font-size="12">поле x осталось</text>
+      <text x="540" y="78" text-anchor="start" fill="var(--muted)" font-size="12">на объекте ✅</text>
+
+      <!-- Строка 2: без модификатора -->
+      <rect x="30" y="150" width="230" height="48" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="145" y="179" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">constructor(x)</text>
+
+      <line x1="262" y1="174" x2="352" y2="174" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="352,168 366,174 352,180" fill="var(--muted)" />
+
+      <rect x="372" y="150" width="150" height="48" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="447" y="179" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">&#123; &#125;</text>
+
+      <text x="540" y="168" text-anchor="start" fill="var(--red)" font-size="12">поля нет ❌</text>
+      <text x="540" y="186" text-anchor="start" fill="var(--muted)" font-size="12">параметр исчез</text>
+    </svg>
+    <figcaption>Модификатор — это «переключатель», который превращает параметр в поле. Есть модификатор — поле остаётся на объекте; нет модификатора — параметр отработал внутри конструктора и пропал.</figcaption>
+  </figure>
+  <p>Из этого же правила растёт удобный приём — <strong>смешанный конструктор</strong>: часть параметров делаем свойствами, а часть оставляем обычными (например, что-то нужное только на этапе создания). Полем станут лишь те, у кого есть модификатор:</p>
+  <app-code-block [code]="mixedConstructor" lang="typescript" />
+  <p>Здесь <code>owner</code> и <code>balance</code> превратились в поля (модификаторы есть), а <code>startupNote</code> остался обычным параметром: его удобно использовать <em>внутри</em> конструктора (записать в лог), но хранить его в объекте не нужно — поэтому поле для него не создаётся.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда это уместно и читаемо</h2>
+  <p>Параметры-свойства особенно хороши для классов, чья главная задача — <strong>хранить данные</strong>: модели, значения-объекты, простые сущности вроде задачи, пользователя или банковского счёта. Всё состояние объекта видно в одной подписи конструктора — не нужно бегать глазами между списком полей вверху класса и присваиваниями в конструкторе.</p>
+  <app-code-block [code]="taskCase" lang="typescript" />
+  <p>Именно поэтому приём так часто встречается во «взрослом» коде — например, в Angular зависимость обычно объявляют как <code>constructor(private http: HttpClient)</code>: одна строка и принимает сервис, и сохраняет его в поле. Тот же паттерн вы видели в дженерик-классе <code>Box</code>: <a routerLink="/typescript/generics/classes-interfaces">constructor(private content: T)</a> сразу создаёт приватное поле нужного типа.</p>
+  <p class="note"><strong>Когда лучше подробная запись.</strong> Параметр-свойство теряет смысл, если полю нужно <em>вычисляемое</em> начальное значение, не совпадающее с параметром (например, <code>this.total = price * count</code>), или если имя поля должно отличаться от имени параметра. В таких случаях честнее написать обычное поле и присваивание — так понятнее, что происходит. Не гонитесь за краткостью там, где она прячет логику.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Проблема:</strong> обычное поле требует упомянуть имя <em>трижды</em> — объявить поле, принять параметр, присвоить <code>this.x = x</code>.</li>
+    <li><strong>Параметр-свойство</strong> — модификатор (<code>public</code>/<code>private</code>/<code>protected</code>/<code>readonly</code>) прямо в параметре конструктора. Он одной записью объявляет поле, принимает параметр и присваивает его.</li>
+    <li>Это <strong>чистое сокращение</strong>: компилятор разворачивает короткую форму в ту же подробную. Поведение классов при этом не меняется.</li>
+    <li>Модификаторы <strong>комбинируются</strong>: <code>private readonly id</code>, <code>public readonly login</code> — поле и спрятано/открыто, и защищено от изменения.</li>
+    <li><strong>Без модификатора поле НЕ создаётся</strong> — это обычный параметр, он исчезает после конструктора (обращение <code>this.x</code> → ошибка). Самая частая ловушка.</li>
+    <li>В <strong>смешанном</strong> конструкторе полями становятся только параметры с модификатором; остальные — обычные параметры (нужны лишь на этапе создания).</li>
+    <li><strong>Уместно</strong> для классов-хранилищ данных (модели, сущности). Если начальное значение вычисляется или имя поля отличается — берите подробную запись.</li>
+  </ul>
+  <p class="note">Соседние темы: <a routerLink="/typescript/classes/access-modifiers">Модификаторы доступа</a> (что именно значат <code>public</code>/<code>private</code>/<code>protected</code>), <a routerLink="/typescript/classes/readonly-static">readonly и static</a> (неизменяемые поля) и <a routerLink="/typescript/generics/classes-interfaces">Дженерики в классах</a> (там параметр-свойство <code>constructor(private content: T)</code> в связке с типом <code>T</code>). Базу классов JS освежат <a routerLink="/javascript/classes/basics">JS: классы, основы</a>.</p>
+</section>
+</article>

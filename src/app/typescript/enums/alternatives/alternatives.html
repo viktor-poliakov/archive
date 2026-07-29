@@ -1,0 +1,213 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/enums">Перечисления (enum)</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Альтернативы enum</span></nav>
+
+<h1 class="doc__title">Альтернативы enum</h1>
+<p class="doc__lead">Представьте <strong>список разрешённых ответов в анкете</strong>. Иногда достаточно записать в правилах: «допустимо: <em>да / нет / не знаю</em>» — это просто перечень, он ничего не делает, только ограничивает выбор. Так работает <strong>объединение литералов</strong> (union) — это чистый тип, ноль кода в рантайме. А иногда нужен <strong>реальный выпадающий список</strong>, по которому можно кликать и перебирать пункты, — это уже объект, живущий в программе. Такую роль играет <strong>объект <code>as const</code></strong>: он даёт и тип, и настоящие значения. Обе эти конструкции часто заменяют <code>enum</code> — и нередко оказываются удобнее.</p>
+
+<section class="doc__section">
+  <h2>Зачем вообще искать замену enum</h2>
+  <p>С <code>enum</code> всё выглядит просто, пока не заглянешь под капот. В отличие от типов (<code>type</code>, <code>interface</code>), которые полностью исчезают при компиляции, <strong>числовой <code>enum</code> превращается в реальный объект в готовом JavaScript</strong> — и тащит за собой две особенности, о которых легко забыть.</p>
+  <app-code-block [code]="enumDrawbacks" lang="typescript" />
+  <p>Первая причуда — <strong>обратный маппинг</strong> (reverse mapping): числовой <code>enum</code> кладёт в объект и имена, и числа, поэтому <code>Object.keys</code> и перебор значений выдают вдвое больше, чем ожидаешь. Вторая, куда опаснее, — <strong>дыра в безопасности</strong>: обычное число (переменная, результат функции) присваивается числовому <code>enum</code> <em>без ошибки</em>. Компилятор ругается только на числовой литерал вне диапазона, но не на переменную типа <code>number</code>. Подробный разбор этих ловушек — на странице <a routerLink="/typescript/enums/pitfalls">Нюансы и подводные камни</a>.</p>
+  <p class="note"><strong>А как же <code>const enum</code>?</strong> Он задуман, чтобы «схлопнуть» перечисление в чистые константы без объекта. Но под сборщиком с включённым <code>isolatedModules</code> (а это режим Angular-проектов, как наш) компилятор <em>не</em> инлайнит его, а эмитит тот же самый объект-<code>enum</code>. То есть в таком проекте <code>const enum</code> не даёт выгоды — см. <a routerLink="/typescript/enums/const-enum">const enum</a>. Поэтому и родились более лёгкие альтернативы.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Сравнение enum, union литералов и объекта as const по трём признакам">
+      <text x="283" y="26" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">enum</text>
+      <text x="429" y="26" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">union</text>
+      <text x="575" y="26" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">as const</text>
+
+      <line x1="16" y1="42" x2="644" y2="42" stroke="var(--border)" stroke-width="1" />
+      <line x1="210" y1="42" x2="210" y2="232" stroke="var(--border)" stroke-width="1" />
+      <line x1="16" y1="110" x2="644" y2="110" stroke="var(--border)" stroke-width="1" />
+      <line x1="16" y1="172" x2="644" y2="172" stroke="var(--border)" stroke-width="1" />
+
+      <text x="20" y="82" fill="var(--muted)" font-size="13">даёт тип?</text>
+      <text x="283" y="82" text-anchor="middle" fill="var(--green)" font-size="18">✓</text>
+      <text x="429" y="82" text-anchor="middle" fill="var(--green)" font-size="18">✓</text>
+      <text x="575" y="82" text-anchor="middle" fill="var(--green)" font-size="18">✓</text>
+
+      <text x="20" y="146" fill="var(--muted)" font-size="13">объект в рантайме?</text>
+      <text x="283" y="146" text-anchor="middle" fill="var(--green)" font-size="18">✓</text>
+      <text x="429" y="146" text-anchor="middle" fill="var(--red)" font-size="18">✗</text>
+      <text x="575" y="146" text-anchor="middle" fill="var(--green)" font-size="18">✓</text>
+
+      <text x="20" y="208" fill="var(--muted)" font-size="13">перебор значений?</text>
+      <text x="283" y="208" text-anchor="middle" fill="var(--green)" font-size="15">✓ с мусором</text>
+      <text x="429" y="208" text-anchor="middle" fill="var(--red)" font-size="18">✗</text>
+      <text x="575" y="208" text-anchor="middle" fill="var(--green)" font-size="15">✓ чисто</text>
+    </svg>
+    <figcaption>Три инструмента для набора значений. Union — только тип (никакого кода в JS). <code>enum</code> и <code>as const</code> дают ещё и объект в рантайме, но у числового <code>enum</code> перебор засорён обратным маппингом, а у <code>as const</code> — чистый.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Альтернатива A: объединение строковых литералов</h2>
+  <p>Самый лёгкий вариант — <a routerLink="/typescript/unions-narrowing/union">объединение</a> <a routerLink="/typescript/basic-types/literal-types">литеральных типов</a>. Вы просто перечисляете допустимые значения через <code>|</code>, как разрешённые ответы в анкете. Это <strong>чистый тип</strong>: он существует только на этапе компиляции и в готовый JavaScript не попадает ни единым символом.</p>
+  <app-code-block [code]="unionType" lang="typescript" />
+  <p>Опираясь на модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>», такой union читается буквально: множество из четырёх конкретных строк. Всё, что вне набора, компилятор отклонит — а редактор подскажет варианты в автодополнении. Union отлично живёт как тип параметра и как основа для <code>switch</code>:</p>
+  <app-code-block [code]="unionParamSwitch" lang="typescript" />
+  <p>Обратите внимание: чтобы описать статусы заказа, разобрать их в <code>switch</code> и защититься от опечаток, нам <strong>не понадобился ни один объект в рантайме</strong>. Если всё, что нужно, — это ограничить набор значений, объединение литералов почти всегда лучший выбор.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Альтернатива B: объект <code>as const</code> и вывод типа по шагам</h2>
+  <p>Union хорош, но у него нет «выпадающего списка»: по нему нельзя пройтись циклом и негде взять сами значения в рантайме. Если это нужно — берём обычный объект и «замораживаем» его через <code>as const</code>. Из одного такого объекта можно <strong>по шагам вывести</strong> ровно тот же union литералов. Разберём этот вывод как <strong>матрёшку</strong>: снимаем слой за слоем, пока не доберёмся до нужного набора значений.</p>
+
+  <h3 class="doc__subtitle">Шаг 1. <code>as const</code> — фиксируем литералы</h3>
+  <p>Без <code>as const</code> компилятор вывел бы для полей широкий тип <code>string</code> — и вся точность потерялась бы. С <code>as const</code> он запоминает конкретные литералы (<code>'created'</code>, а не <code>string</code>) и делает поля <code>readonly</code>. Подробнее про сам приём — на странице <a routerLink="/typescript/assertions/as-const">as const</a>.</p>
+  <app-code-block [code]="step1AsConst" lang="typescript" />
+
+  <h3 class="doc__subtitle">Шаг 2. <code>typeof Obj</code> — поднимаемся к форме типа</h3>
+  <p>Оператор <a routerLink="/typescript/advanced-types/typeof"><code>typeof</code></a> берёт из <em>значения</em> его тип. Для нашего объекта это структура вида «имя ключа → его литеральное значение».</p>
+  <app-code-block [code]="step2Typeof" lang="typescript" />
+
+  <h3 class="doc__subtitle">Шаг 3. <code>keyof typeof Obj</code> — достаём ключи (имена)</h3>
+  <p>Оператор <a routerLink="/typescript/advanced-types/keyof"><code>keyof</code></a> превращает форму типа в объединение её <strong>ключей</strong>. Важно: это <em>имена</em> полей (<code>'Created'</code>, <code>'Paid'</code>…), а не их значения.</p>
+  <app-code-block [code]="step3KeyofTypeof" lang="typescript" />
+
+  <h3 class="doc__subtitle">Шаг 4. <code>(typeof Obj)[keyof typeof Obj]</code> — достаём значения</h3>
+  <p>Последний слой матрёшки. Индексный доступ по всем ключам сразу возвращает объединение всех <strong>значений</strong> — тот самый union литералов, ради которого всё и затевалось.</p>
+  <app-code-block [code]="step4IndexedAccess" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 620 410" width="100%" role="img" aria-label="Конвейер вывода типа из объекта as const: typeof, keyof typeof, индексный доступ">
+      <rect x="80" y="16" width="460" height="64" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="42" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">OrderStatus = &#123; … &#125; as const</text>
+      <text x="310" y="64" text-anchor="middle" fill="var(--muted)" font-size="12">объект-значение (живёт в JS)</text>
+
+      <line x1="310" y1="80" x2="310" y2="110" stroke="var(--accent)" stroke-width="2" />
+      <polygon points="302,108 318,108 310,120" fill="var(--accent)" />
+      <text x="324" y="104" fill="var(--accent)" font-family="monospace" font-size="12">typeof</text>
+
+      <rect x="80" y="120" width="460" height="64" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="310" y="146" text-anchor="middle" fill="var(--muted)" font-size="12">тип-форма</text>
+      <text x="310" y="170" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#123; Created: 'created', Paid: 'paid', … &#125;</text>
+
+      <line x1="310" y1="184" x2="310" y2="214" stroke="var(--accent)" stroke-width="2" />
+      <polygon points="302,212 318,212 310,224" fill="var(--accent)" />
+      <text x="324" y="208" fill="var(--accent)" font-family="monospace" font-size="12">keyof typeof</text>
+
+      <rect x="80" y="224" width="460" height="64" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="310" y="250" text-anchor="middle" fill="var(--muted)" font-size="12">ключи — ИМЕНА</text>
+      <text x="310" y="274" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'Created' | 'Paid' | 'Shipped' | 'Cancelled'</text>
+
+      <line x1="310" y1="288" x2="310" y2="318" stroke="var(--accent)" stroke-width="2" />
+      <polygon points="302,316 318,316 310,328" fill="var(--accent)" />
+      <text x="324" y="312" fill="var(--accent)" font-family="monospace" font-size="11">[keyof …] индексный доступ</text>
+
+      <rect x="80" y="328" width="460" height="64" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="310" y="354" text-anchor="middle" fill="var(--green)" font-size="12">значения — ТО, ЧТО НУЖНО ✓</text>
+      <text x="310" y="378" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'created' | 'paid' | 'shipped' | 'cancelled'</text>
+    </svg>
+    <figcaption>Конвейер вывода: из объекта <code>as const</code> оператор <code>typeof</code> достаёт форму, <code>keyof typeof</code> — имена ключей, а индексный доступ <code>[keyof …]</code> — значения. На выходе тот же union литералов, что и в альтернативе A.</figcaption>
+  </figure>
+
+  <h3 class="doc__subtitle">Что это даёт сверх union</h3>
+  <p>Раз объект реально существует в рантайме, по нему можно <strong>перебирать значения</strong> — и, в отличие от числового <code>enum</code>, массив выходит чистым, без обратного маппинга.</p>
+  <app-code-block [code]="objectValues" lang="typescript" />
+  <p>Ещё один удобный приём — дать объекту и одноимённому типу <strong>одно имя</strong>. TypeScript хранит типы и значения в разных пространствах имён, поэтому <code>OrderStatus</code> может означать сразу и объект (для доступа <code>OrderStatus.Paid</code>), и тип (для аннотаций). Получается почти как <code>enum</code>, но без его рантайм-причуд — и, в отличие от строкового <code>enum</code>, сюда подойдёт и голый литерал из набора.</p>
+  <app-code-block [code]="nameValuePattern" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Сравнение: enum vs union литералов vs объект <code>as const</code></h2>
+  <p>Соберём три инструмента в одну таблицу. Она же — быстрый ответ на вопрос «что выбрать».</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Признак</th>
+          <th><code>enum</code></th>
+          <th>union литералов</th>
+          <th>объект <code>as const</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Даёт тип?</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да (через шаги)</td>
+        </tr>
+        <tr>
+          <td>Есть объект в рантайме?</td>
+          <td class="yes">✅ да (числовой/строковый)</td>
+          <td class="no">❌ нет, чистый тип</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Можно перебрать значения?</td>
+          <td class="no">⚠️ да, но с мусором reverse mapping</td>
+          <td class="no">❌ нет, перебирать нечего</td>
+          <td class="yes">✅ да, чистый массив</td>
+        </tr>
+        <tr>
+          <td>Читаемость в JSON</td>
+          <td class="no">❌ числовой даёт цифры (2)</td>
+          <td class="yes">✅ понятные строки</td>
+          <td class="yes">✅ понятные строки</td>
+        </tr>
+        <tr>
+          <td>Совместимость типов</td>
+          <td class="no">номинальная (свой enum ≠ чужой)</td>
+          <td class="yes">структурная (по значению)</td>
+          <td class="yes">структурная (по значению)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">«Номинальная» совместимость <code>enum</code> означает, что два разных перечисления с одинаковыми значениями <em>несовместимы</em> между собой, и даже голый литерал не присвоить переменной типа <code>enum</code>. Union и <code>as const</code> ведут себя «структурно»: подходит любое значение из набора, откуда бы оно ни взялось.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что же выбрать</h2>
+  <p>Правило простое и укладывается в одно дерево решений: всё зависит от того, нужен ли вам объект <em>в рантайме</em>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Дерево решений: нужен ли объект или перебор значений в рантайме">
+      <rect x="120" y="24" width="320" height="60" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="280" y="50" text-anchor="middle" fill="var(--fg)" font-size="13">Нужен объект или перебор</text>
+      <text x="280" y="70" text-anchor="middle" fill="var(--fg)" font-size="13">значений в рантайме?</text>
+
+      <line x1="240" y1="84" x2="150" y2="196" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="143,186 159,188 149,200" fill="var(--border)" />
+      <text x="176" y="146" text-anchor="middle" fill="var(--green)" font-size="13">нет</text>
+
+      <line x1="320" y1="84" x2="410" y2="196" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="401,188 417,186 411,200" fill="var(--border)" />
+      <text x="384" y="146" text-anchor="middle" fill="var(--accent)" font-size="13">да</text>
+
+      <rect x="40" y="200" width="220" height="66" rx="12" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="150" y="228" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">union литералов</text>
+      <text x="150" y="250" text-anchor="middle" fill="var(--muted)" font-size="12">только тип, 0 кода в JS</text>
+
+      <rect x="300" y="200" width="220" height="66" rx="12" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
+      <text x="410" y="228" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">объект as const</text>
+      <text x="410" y="250" text-anchor="middle" fill="var(--muted)" font-size="12">тип + значения в JS</text>
+    </svg>
+    <figcaption>Нужен только набор допустимых значений на этапе типов — берите union литералов. Нужны ещё и сами значения / перебор в рантайме — объект <code>as const</code>.</figcaption>
+  </figure>
+  <p>Пара конкретных рекомендаций:</p>
+  <ul class="rules">
+    <li><strong>Нужен только тип</strong> (параметр функции, поле интерфейса, набор ролей) — берите <strong>union литералов</strong>. Ноль лишнего кода, максимальная простота.</li>
+    <li><strong>Нужны ещё и значения в рантайме</strong> (перебрать список, отрисовать выпадашку, взять массив значений) — берите <strong>объект <code>as const</code></strong> и выведите тип по шагам.</li>
+    <li><strong><code>enum</code></strong> оправдан, если так уже <em>принято в команде</em> или это <em>легаси</em>-код, где перечисления повсюду. Тогда единообразие важнее теоретической чистоты.</li>
+  </ul>
+  <p>Роли пользователя — типичный случай для union: значения нигде не перебираются, важен лишь допустимый набор.</p>
+  <app-code-block [code]="roleType" lang="typescript" />
+  <p>А вот пример, где <code>enum</code> синтаксически чуть удобнее: одно объявление сразу даёт и доступ по имени <code>Direction.Up</code>, и готовый тип — без ручной «матрёшки» из <code>typeof</code>/<code>keyof</code>. Правда, ценой рантайм-объекта и номинальной строгости.</p>
+  <app-code-block [code]="whereEnumWins" lang="typescript" />
+  <p>Наконец, union литералов прекрасно дружит с <a routerLink="/typescript/utility-types/record"><code>Record</code></a>: он заставляет описать значение для <em>каждого</em> варианта из набора и не даст забыть ни одного статуса.</p>
+  <app-code-block [code]="recordLabels" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Числовой <code>enum</code> тащит рантайм-объект</strong> с обратным маппингом и дырой в безопасности (любое <code>number</code> присваивается без ошибки), а <code>const enum</code> под <code>isolatedModules</code> не даёт выгоды. Отсюда — потребность в альтернативах.</li>
+    <li><strong>Union литералов</strong> (<code>'created' | 'paid' | …</code>) — чистый тип: ноль кода в JS. Идеален, когда нужен только набор допустимых значений.</li>
+    <li><strong>Объект <code>as const</code></strong> даёт и значения в рантайме, и тип. Тип выводится по шагам: <code>as const</code> → <code>typeof</code> → <code>keyof typeof</code> (имена) → <code>(typeof O)[keyof typeof O]</code> (значения).</li>
+    <li>Бонус <code>as const</code> — <code>Object.values</code> возвращает <strong>чистый</strong> массив значений (у числового <code>enum</code> он засорён reverse mapping).</li>
+    <li>Выбор: только тип → <strong>union</strong>; нужен перебор/значения → <strong><code>as const</code></strong>; <code>enum</code> — если так принято в команде или это легаси.</li>
+  </ul>
+  <p class="note">Рядом полезно посмотреть: <a routerLink="/typescript/enums/numeric">Числовые enum</a> и <a routerLink="/typescript/enums/string">Строковые enum</a> (чтобы понять, от чего уходим), <a routerLink="/typescript/enums/const-enum">const enum</a> и <a routerLink="/typescript/enums/pitfalls">Нюансы и подводные камни</a>. База под всем разделом — <a routerLink="/typescript/basic-types/literal-types">Литеральные типы</a> и модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>».</p>
+</section>
+</article>

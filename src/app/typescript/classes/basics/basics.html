@@ -1,0 +1,159 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/classes">Классы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Основы</span></nav>
+
+<h1 class="doc__title">Основы</h1>
+<p class="doc__lead">Класс — это <strong>чертёж</strong> (или форма для выпечки), а объекты (по-другому — <em>экземпляры</em>) — это готовые изделия по этому чертежу. <strong>Устройство у всех одинаковое, а наполнение — разное</strong>: из одной формы для кексов выходит десяток кексов одинаковой формы, но с разной начинкой. Класс описывает, <em>как устроена</em> вещь один раз, а дальше по нему штампуют сколько угодно объектов.</p>
+
+<section class="doc__section">
+  <h2>Что такое класс</h2>
+  <p>Представьте задачу из списка дел. У неё есть <strong>данные</strong>: название («Купить хлеб») и признак «сделана или нет». И есть <strong>поведение</strong>: задачу можно отметить выполненной, переименовать, показать в списке. До классов данные обычно лежали в одном месте (в объекте), а функции, которые с ними работают, — в другом, и связать их можно было только на словах.</p>
+  <p>Класс наводит порядок: он <strong>складывает данные и поведение в один тип</strong>. Данные внутри класса называют <em>полями</em> (это переменные, живущие внутри объекта), а поведение — <em>методами</em> (это функции, живущие внутри объекта). Всё, что относится к задаче, теперь лежит рядом и путешествует вместе.</p>
+  <p class="note"><strong>Если классы в JavaScript вам ещё в новинку</strong>, начните с базовой страницы <a routerLink="/javascript/classes/basics">JS: классы, основы</a> — там разобрана сама механика без типов. Здесь мы смотрим на то же самое глазами TypeScript: добавляем к полям и методам <em>типы</em>, чтобы компилятор ловил ошибки заранее.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис: поля, конструктор, методы</h2>
+  <p>Опишем класс <code>Task</code> — задачу. Разберём его по частям сразу после кода.</p>
+  <app-code-block [code]="taskClass" lang="typescript" />
+  <p>Что здесь есть:</p>
+  <ul class="rules">
+    <li><strong>Поля</strong> <code>title: string</code> и <code>done: boolean</code> — это данные каждой задачи. В отличие от чистого JavaScript, у поля указан <em>тип</em> — компилятор проследит, чтобы в <code>title</code> не попало число, а в <code>done</code> — строка.</li>
+    <li><strong>Конструктор</strong> <code>constructor(...)</code> — особый метод, который автоматически срабатывает <em>в момент создания</em> объекта. Его задача — заполнить поля стартовыми значениями. Это «сборочный цех» изделия.</li>
+    <li><strong>Метод</strong> <code>toggle()</code> — обычная функция внутри класса, описывающая поведение. Запись <code>: void</code> означает «ничего не возвращает».</li>
+    <li><strong><code>this</code></strong> — ключевое слово, которое внутри класса указывает на <em>текущий экземпляр</em>: тот самый объект, который сейчас создаётся или у которого вызвали метод. Через <code>this.title</code> мы обращаемся к полю именно этого объекта.</li>
+  </ul>
+  <p class="note"><strong>Про <code>this</code> подробнее.</strong> Слово <code>this</code> нередко сбивает новичков с толку — что именно оно значит, зависит от того, <em>как</em> вызвали метод. Полный разбор — на страницах <a routerLink="/javascript/context/basics">JS: что такое this</a> и <a routerLink="/typescript/functions/this">Типизация this</a>. Для старта достаточно правила: внутри метода <code>this</code> — это «я», текущий объект.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Создание объекта: <code>new Task(...)</code></h2>
+  <p>Сам класс — это только чертёж, он ничего не хранит. Чтобы получить настоящую задачу, по чертежу нужно «изготовить изделие». Делается это оператором <code>new</code>: он запускает конструктор, передаёт ему аргументы и возвращает готовый объект.</p>
+  <app-code-block [code]="newTask" lang="typescript" />
+  <p>Мы создали две задачи из одного класса. Обе устроены одинаково — у обеих есть <code>title</code>, <code>done</code> и метод <code>toggle</code>. Но это <strong>два независимых объекта</strong> со своим наполнением: изменили <code>buyBread</code> — <code>callMom</code> остался нетронутым. В этом вся суть: один чертёж, много самостоятельных изделий.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 320" width="100%" role="img" aria-label="Класс Task как чертёж и три созданных по нему объекта с разным наполнением">
+      <text x="340" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">один чертёж — много объектов: устройство общее, наполнение своё</text>
+
+      <rect x="24" y="60" width="224" height="182" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="136" y="90" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">class Task</text>
+      <line x1="44" y1="102" x2="228" y2="102" stroke="var(--border)" stroke-width="1" />
+      <text x="44" y="128" fill="var(--fg)" font-family="monospace" font-size="12">title: string</text>
+      <text x="44" y="152" fill="var(--fg)" font-family="monospace" font-size="12">done: boolean</text>
+      <line x1="44" y1="166" x2="228" y2="166" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3" />
+      <text x="44" y="192" fill="var(--fg)" font-family="monospace" font-size="12">toggle()</text>
+      <text x="136" y="224" text-anchor="middle" fill="var(--muted)" font-size="11">ЧЕРТЁЖ (шаблон)</text>
+
+      <line x1="248" y1="151" x2="366" y2="151" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="366,145 380,151 366,157" fill="var(--muted)" />
+      <text x="313" y="141" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">new Task(...)</text>
+
+      <rect x="392" y="48" width="264" height="66" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="408" y="76" fill="var(--fg)" font-family="monospace" font-size="12">title: 'Купить хлеб'</text>
+      <text x="408" y="98" fill="var(--fg)" font-family="monospace" font-size="12">done: false</text>
+
+      <rect x="392" y="128" width="264" height="66" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="408" y="156" fill="var(--fg)" font-family="monospace" font-size="12">title: 'Позвонить маме'</text>
+      <text x="408" y="178" fill="var(--fg)" font-family="monospace" font-size="12">done: true</text>
+
+      <rect x="392" y="208" width="264" height="66" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="408" y="236" fill="var(--fg)" font-family="monospace" font-size="12">title: 'Помыть посуду'</text>
+      <text x="408" y="258" fill="var(--fg)" font-family="monospace" font-size="12">done: false</text>
+
+      <text x="524" y="294" text-anchor="middle" fill="var(--muted)" font-size="11">объекты (экземпляры)</text>
+    </svg>
+    <figcaption>Слева — класс <code>Task</code> (чертёж): какие поля и методы будут у каждой задачи. Справа — три готовых объекта: форма одна, значения разные.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Методы и <code>this</code></h2>
+  <p>Методы — это поведение объекта, а <code>this</code> — их связь с данными <em>конкретного</em> экземпляра. Добавим к <code>Task</code> ещё пару методов: <code>rename</code> (переименовать) и <code>describe</code> (показать в виде строки).</p>
+  <app-code-block [code]="thisMethods" lang="typescript" />
+  <p>Когда мы пишем <code>task.rename('...')</code>, внутри метода <code>this</code> становится равен <code>task</code> — тому объекту, слева от точки. Поэтому <code>this.title = newTitle</code> меняет название именно у <code>task</code>, а не у какой-то другой задачи. Метод <code>describe</code> тем же <code>this</code> <em>читает</em> поля и собирает из них строку. Один и тот же код метода обслуживает любой экземпляр — <code>this</code> каждый раз подставляет нужный.</p>
+  <p class="note"><strong>Аналогия.</strong> Представьте инструкцию «поставь <em>свою</em> подпись». Текст инструкции один на всех, но «своя» у каждого человека — своя. Вот <code>this</code> и есть это «своя/свой»: внутри метода оно указывает на того, кто сейчас его выполняет.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Наследование: <code>extends</code> и <code>super(...)</code></h2>
+  <p>Часто разные классы имеют общую часть. У кошки, собаки и попугая есть имя и умение подавать голос — это общее. Переписывать это в каждый класс заново скучно и опасно (легко разойтись). <strong>Наследование</strong> позволяет вынести общее в <em>базовый</em> класс, а остальным — «унаследовать» его и добавить своё.</p>
+  <p>Сначала опишем базовый класс <code>Animal</code> с общей частью:</p>
+  <app-code-block [code]="animalClass" lang="typescript" />
+  <p>Теперь сделаем <code>Dog</code> наследником <code>Animal</code> через ключевое слово <code>extends</code>. Собака автоматически получит поле <code>name</code> и метод <code>speak</code>, а мы добавим ей своё поле <code>breed</code> (порода) и по-своему научим её «говорить».</p>
+  <app-code-block [code]="dogClass" lang="typescript" />
+  <p>Ключевой момент — вызов <code>super(name)</code> в конструкторе наследника. <code>super</code> — это ссылка на базовый класс, а <code>super(...)</code> — вызов <em>его конструктора</em>. Мы как бы говорим: «пусть сначала Animal соберёт свою часть (заполнит <code>name</code>), а потом я допишу своё (<code>breed</code>)». Порядок важен: <strong>обращаться к <code>this</code> в наследнике можно только после <code>super()</code></strong> — до этого объект ещё «не собран» базой.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 300" width="100%" role="img" aria-label="Dog наследует Animal: получает поле name и метод speak, добавляет breed и заменяет speak через override">
+      <text x="340" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">наследник берёт всё у базы и может заменить нужное через override</text>
+
+      <rect x="36" y="70" width="250" height="172" rx="14" fill="var(--surface)" stroke="var(--border)" stroke-width="1.8" />
+      <text x="161" y="98" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">class Animal</text>
+      <line x1="56" y1="110" x2="266" y2="110" stroke="var(--border)" stroke-width="1" />
+      <text x="56" y="136" fill="var(--fg)" font-family="monospace" font-size="12">name: string</text>
+      <line x1="56" y1="150" x2="266" y2="150" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3" />
+      <text x="56" y="176" fill="var(--fg)" font-family="monospace" font-size="12">speak()</text>
+      <text x="161" y="216" text-anchor="middle" fill="var(--muted)" font-size="11">базовый класс</text>
+
+      <line x1="286" y1="156" x2="382" y2="156" stroke="var(--accent)" stroke-width="2" />
+      <polygon points="382,150 396,156 382,162" fill="var(--accent)" />
+      <text x="337" y="146" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">extends</text>
+
+      <rect x="396" y="44" width="256" height="248" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="524" y="72" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">class Dog</text>
+      <line x1="416" y1="84" x2="632" y2="84" stroke="var(--border)" stroke-width="1" />
+      <text x="416" y="108" fill="var(--muted)" font-size="11">получил от Animal:</text>
+      <text x="416" y="130" fill="var(--fg)" font-family="monospace" font-size="12">name: string</text>
+      <text x="416" y="156" fill="var(--muted)" font-size="11">добавил своё:</text>
+      <text x="416" y="178" fill="var(--fg)" font-family="monospace" font-size="12">breed: string</text>
+      <line x1="416" y1="192" x2="632" y2="192" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3" />
+      <text x="416" y="216" fill="var(--muted)" font-size="11">заменил через override:</text>
+      <text x="416" y="238" fill="var(--fg)" font-family="monospace" font-size="12">speak()</text>
+      <text x="524" y="272" text-anchor="middle" fill="var(--muted)" font-size="11">старый speak() из Animal перекрыт</text>
+    </svg>
+    <figcaption>Собака получает от <code>Animal</code> поле <code>name</code> и метод <code>speak</code> «в подарок», добавляет собственное поле <code>breed</code> и заменяет <code>speak</code> своей версией.</figcaption>
+  </figure>
+  <p>Иногда новую версию метода хочется не заменить полностью, а <em>дополнить</em> — вызвать старую и добавить к ней своё. Для этого есть <code>super.метод()</code>: он зовёт версию метода из базового класса.</p>
+  <app-code-block [code]="superCall" lang="typescript" />
+  <p class="note"><strong>Различайте два «super».</strong> <code>super(...)</code> (со скобками сразу после) — это вызов <em>конструктора</em> базы, он допустим только внутри конструктора. А <code>super.speak()</code> — вызов <em>метода</em> базы из любого метода наследника. Разные вещи с похожим написанием.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Переопределение и <code>override</code></h2>
+  <p>Когда наследник задаёт свою версию метода, уже существующего в базе, это называют <strong>переопределением</strong>. В этом проекте включена строгая опция <code>noImplicitOverride</code>, поэтому такой метод <strong>обязан</strong> быть помечен ключевым словом <code>override</code>. Это не формальность, а защита: <code>override</code> прямо заявляет «я осознанно перекрываю метод базы», и компилятор проверяет, что метод там действительно есть.</p>
+  <app-code-block [code]="overrideRule" lang="typescript" />
+  <p>Правило работает в обе стороны:</p>
+  <ul class="rules">
+    <li><strong>Забыли <code>override</code></strong> на методе, который перекрывает базовый → ошибка «<em>This member must have an 'override' modifier…</em>». Компилятор напоминает, что вы, возможно, случайно затёрли метод родителя.</li>
+    <li><strong>Поставили <code>override</code></strong> на метод, которого в базе нет (например, опечатались в имени) → ошибка «<em>This member cannot have an 'override' modifier…</em>». Значит, вы не переопределяете, а создаёте новый метод — и, скорее всего, из-за опечатки.</li>
+  </ul>
+  <p class="note"><strong>Зачем это нужно.</strong> Без <code>override</code> легко попасть в ловушку: переименовали метод в базовом классе — а в наследнике остался старый метод, который теперь ничего не перекрывает и молча живёт сам по себе. С <code>override</code> компилятор сразу подсветит рассинхрон. Обо всех тонкостях наследования — на странице <a routerLink="/typescript/classes/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Конструктор наследника обязан звать <code>super()</code></h2>
+  <p>Ещё одно жёсткое правило: если у наследника есть <em>свой</em> конструктор, он <strong>обязан</strong> вызвать <code>super(...)</code>, причём <em>до</em> первого обращения к <code>this</code>. Логика простая: пока базовый класс не собрал свою часть объекта, <code>this</code> ещё не готов, и трогать его нельзя.</p>
+  <app-code-block [code]="superRequired" lang="typescript" />
+  <p>Если наследник <em>не</em> объявляет собственный конструктор вовсе, TypeScript использует конструктор базового класса автоматически, и вызывать <code>super()</code> вручную не нужно — как в примере с <code>Dog</code> из раздела про <code>super.speak()</code>. Тонкости работы <code>this</code> при этом описаны на странице <a routerLink="/javascript/context/losing-context">JS: потеря контекста</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Класс — это ещё и тип</h2>
+  <p>Важная идея, которая отличает классы в TypeScript от классов в чистом JavaScript: <strong>объявляя класс, вы одновременно объявляете тип с тем же именем</strong>. То есть <code>Task</code> — это и «фабрика объектов» (её зовут через <code>new</code>), и полноценный тип, которым можно аннотировать переменные, параметры и результаты функций.</p>
+  <app-code-block [code]="classAsType" lang="typescript" />
+  <p>Обратите внимание на последнюю строку примера. TypeScript сравнивает типы <strong>по форме</strong> (это называют структурной типизацией): если у обычного объекта те же поля тех же типов, он подойдёт под тип <code>Task</code>, даже если создан без <code>new</code>. Такой объект несёт только данные — методов вроде <code>toggle</code> у него нет. Подробнее о том, что «тип — это множество подходящих значений», — на странице <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.</p>
+  <p class="note">Класс — удобный, но не единственный способ описать форму объекта. Когда нужна только <em>форма</em> без поведения и без <code>new</code>, часто берут <a routerLink="/typescript/objects-interfaces/interfaces">интерфейс</a>. Классы и интерфейсы отлично работают вместе — класс может пообещать соответствовать интерфейсу (об этом — на странице <a routerLink="/typescript/classes/implements">Реализация интерфейсов</a>).</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Класс</strong> — чертёж: он объединяет <em>данные</em> (поля) и <em>поведение</em> (методы) в один тип. <strong>Объект (экземпляр)</strong> — готовое изделие по чертежу, создаётся через <code>new</code>.</li>
+    <li><strong>Конструктор</strong> срабатывает при создании объекта и заполняет поля; <code>this</code> внутри класса — это «я», текущий экземпляр.</li>
+    <li><strong>Методы</strong> — функции внутри класса; через <code>this</code> они читают и меняют поля именно того объекта, у которого вызваны.</li>
+    <li><strong>Наследование</strong>: <code>class Dog extends Animal</code> даёт собаке поля и методы базы. Свой конструктор наследника обязан позвать <code>super(...)</code> до обращения к <code>this</code>.</li>
+    <li><code>super.метод()</code> вызывает версию метода из базового класса — чтобы дополнить, а не выбросить поведение родителя.</li>
+    <li><strong>Переопределение требует <code>override</code></strong> (включён <code>noImplicitOverride</code>): забыли — ошибка; поставили на несуществующий в базе метод — тоже ошибка.</li>
+    <li><strong>Класс — это ещё и тип</strong>: именем класса можно аннотировать переменные и параметры (<code>const t: Task</code>).</li>
+  </ul>
+  <p class="note">Дальше логично разобрать <a routerLink="/typescript/classes/access-modifiers">модификаторы доступа</a> (<code>public</code>, <code>private</code>, <code>protected</code>) — они решают, что у объекта видно снаружи, а что спрятано внутри. Если база JS-классов ещё шатается, загляните в <a routerLink="/javascript/classes/basics">JS: классы, основы</a> и <a routerLink="/javascript/classes/inheritance">JS: наследование</a>. А когда захочется описывать форму объектов без <code>new</code> — вам на страницу <a routerLink="/typescript/objects-interfaces/interfaces">Интерфейсы</a>.</p>
+</section>
+</article>

@@ -1,0 +1,164 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/classes">Классы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">readonly и static</span></nav>
+
+<h1 class="doc__title">readonly и static</h1>
+<p class="doc__lead">Два независимых модификатора, которые часто путают. <strong><code>readonly</code></strong> — это «залито в бетон после сборки»: поле можно поставить один раз (при создании объекта), а дальше — не переставить. <strong><code>static</code></strong> — это «общая доска объявлений на весь класс»: такой член <em>один на всех</em>, он принадлежит самому классу, а не каждому объекту по отдельности. Разберём обе идеи с нуля, на реальных примерах: пользователь, банковский счёт, круг. Если классы как таковые ещё в новинку, загляните в <a routerLink="/javascript/classes/basics">основы классов в JS</a>.</p>
+
+<section class="doc__section">
+  <h2><code>readonly</code>-поля: поставил раз — не переставишь</h2>
+  <p>Обычное поле класса можно менять сколько угодно раз. Иногда это опасно: например, <code>id</code> пользователя или номер счёта не должны меняться после создания — если их случайно перезапишут, поедет вся логика. Модификатор <code>readonly</code> («только для чтения») как раз для этого: он разрешает <strong>записать</strong> значение в поле только при «сборке» объекта, а потом делает поле неизменяемым.</p>
+  <p>Записать в <code>readonly</code>-поле можно ровно в двух местах: прямо в объявлении (значение общее для всех объектов) или в <a routerLink="/typescript/classes/basics">конструкторе</a> (у каждого объекта своё). Читать — где угодно и сколько угодно.</p>
+  <app-code-block [code]="userReadonly" lang="typescript" />
+  <p>А вот попытка переприсвоить <code>readonly</code>-поле <strong>после</strong> создания объекта — снаружи или даже из обычного метода — это ошибка компиляции. Бетон уже застыл:</p>
+  <app-code-block [code]="readonlyReassign" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Поле id можно присвоить только в конструкторе; после сборки объекта оно застывает и переприсвоить его нельзя">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">readonly-поле застывает сразу после конструктора</text>
+
+      <rect x="26" y="96" width="164" height="72" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="108" y="128" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">new User(7)</text>
+      <text x="108" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">создаём объект</text>
+
+      <line x1="190" y1="132" x2="238" y2="132" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="238,126 252,132 238,138" fill="var(--muted)" />
+
+      <rect x="256" y="96" width="164" height="72" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="338" y="124" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">this.id = 7</text>
+      <text x="338" y="150" text-anchor="middle" fill="var(--green)" font-size="12">в конструкторе — можно</text>
+
+      <line x1="420" y1="132" x2="468" y2="132" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="468,126 482,132 468,138" fill="var(--muted)" />
+
+      <rect x="486" y="96" width="164" height="72" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="2" />
+      <text x="568" y="124" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">u.id = 2</text>
+      <text x="568" y="150" text-anchor="middle" fill="var(--red)" font-size="12">после сборки — нельзя</text>
+
+      <rect x="548" y="46" width="40" height="30" rx="5" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <path d="M556 46 v-7 a12 12 0 0 1 24 0 v7" fill="none" stroke="var(--red)" stroke-width="2.6" />
+      <circle cx="568" cy="59" r="3.4" fill="var(--red)" />
+      <line x1="568" y1="59" x2="568" y2="68" stroke="var(--red)" stroke-width="2.4" />
+    </svg>
+    <figcaption>Записать в <code>readonly</code>-поле можно только на «сборке» (в конструкторе). Дальше висит замок — переприсвоить нельзя.</figcaption>
+  </figure>
+  <p class="note"><strong>Тонкость.</strong> <code>readonly</code> «поверхностный»: он запрещает переставить <em>саму ссылку</em>, но не запрещает менять содержимое объекта или массива, на которые поле указывает.</p>
+  <app-code-block [code]="readonlyShallow" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2><code>readonly</code> и <code>const</code> — в чём разница</h2>
+  <p>Новички часто спрашивают: чем <code>readonly</code> отличается от <code>const</code>, ведь оба «запрещают менять»? Разница в том, <em>что именно</em> они защищают. <code>const</code> — это про <strong>переменную</strong>: нельзя переприсвоить саму переменную. <code>readonly</code> — это про <strong>свойство</strong> объекта или класса: нельзя переприсвоить поле. Это разные уровни, и один другой не заменяет.</p>
+  <app-code-block [code]="readonlyVsConst" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th><code>const</code></th>
+          <th><code>readonly</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Что защищает</td>
+          <td>переменную</td>
+          <td>поле (свойство) класса/объекта</td>
+        </tr>
+        <tr>
+          <td>Где пишется</td>
+          <td>вместо <code>let</code>: <code>const x = ...</code></td>
+          <td>перед именем поля: <code>readonly id: number</code></td>
+        </tr>
+        <tr>
+          <td>Когда задаётся значение</td>
+          <td>сразу при объявлении</td>
+          <td>в объявлении или в конструкторе</td>
+        </tr>
+        <tr>
+          <td>Существует ли в рантайме</td>
+          <td class="yes">✅ да, это JS</td>
+          <td class="no">❌ нет, только проверка компилятора</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Важно.</strong> <code>readonly</code> — чисто «типовая» защита: при компиляции модификатор стирается, и в готовом JS никакого запрета не остаётся. Это страховка для вас и коллег на этапе написания кода, а не броня в рантайме.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>static</code>-члены: принадлежат классу, а не объекту</h2>
+  <p>Обычные поля и методы принадлежат <strong>каждому объекту по отдельности</strong>: у Анны свой баланс, у Бориса — свой. Но иногда данные логично держать <em>на весь класс сразу</em>: например, счётчик «сколько всего пользователей создано». Заводить его копию в каждом объекте бессмысленно — счётчик должен быть <strong>один общий</strong>. Для этого и нужен <code>static</code>: такой член живёт на самом классе, как объявление на общей доске.</p>
+  <app-code-block [code]="staticBasics" lang="typescript" />
+  <p>Раз <code>static</code>-член лежит на классе, то и обращаться к нему нужно <strong>через имя класса</strong> — <code>User.total</code>. А вот через экземпляр он недоступен: у объекта этого поля просто нет.</p>
+  <app-code-block [code]="staticViaInstance" lang="typescript" />
+  <p class="note"><strong>Запомните направление.</strong> <code>Class.member</code> — правильно; <code>instance.member</code> для static — ошибка «Property does not exist on type». Доска объявлений висит на стене (класс), а не в кармане у каждого сотрудника (объект).</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>static</code>-методы: фабрики и утилиты</h2>
+  <p>Статическими бывают не только поля, но и методы. Такой метод вызывают тоже через класс (<code>Class.method()</code>), и у него нет <a routerLink="/typescript/functions/this"><code>this</code></a> конкретного объекта — ведь он не привязан ни к одному экземпляру. Два самых частых применения — <strong>фабрики</strong> и <strong>утилиты</strong>.</p>
+  <p><strong>Фабрика</strong> — статический метод, который сам собирает готовый объект и избавляет вызывающего от возни с конструктором. Удобно для «типовых» объектов вроде гостя:</p>
+  <app-code-block [code]="staticFactory" lang="typescript" />
+  <p><strong>Утилита</strong> — статический метод-помощник, которому вообще не нужен объект: он просто считает результат по входным данным. Такие методы часто собирают в класс-«ящик с инструментами»:</p>
+  <app-code-block [code]="staticUtil" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2><code>static</code> + <code>readonly</code>: константы класса</h2>
+  <p>Два модификатора отлично сочетаются. <code>static readonly</code> вместе дают <strong>константу класса</strong>: значение одно на весь класс (это <code>static</code>) и его нельзя переприсвоить (это <code>readonly</code>). Классический пример — математические или конфигурационные константы вроде числа <code>PI</code>.</p>
+  <app-code-block [code]="staticReadonlyConst" lang="typescript" />
+  <p>Читается такая константа через имя класса (<code>Circle.PI</code>), а любая попытка её перезаписать ловится компилятором. Это удобнее, чем прятать «магическое число» где-то в коде метода: константа на виду, у неё есть имя, и она гарантированно неизменна.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>instance</code> и <code>static</code> рядом: у каждого своё, общее — одно</h2>
+  <p>Соберём всё вместе на банковском счёте. У каждого счёта <strong>свои</strong> владелец и баланс — это обычные (instance) поля, они хранятся в каждом объекте отдельно. А имя банка и общее число открытых счетов — <strong>общие</strong> для всех, это <code>static</code>-члены, они хранятся один раз на самом классе.</p>
+  <app-code-block [code]="instanceVsStatic" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 680 360" width="100%" role="img" aria-label="Static-поле totalAccounts одно на весь класс BankAccount, а у каждого из трёх экземпляров свои поля owner и balance; все экземпляры ссылаются на общий static">
+      <rect x="150" y="34" width="380" height="74" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="340" y="60" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">class BankAccount</text>
+      <text x="340" y="84" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">static totalAccounts = 3</text>
+      <text x="340" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">одна общая «доска» на весь класс</text>
+
+      <line x1="140" y1="240" x2="255" y2="112" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5 4" />
+      <polygon points="250,112 258,105 260,118" fill="var(--muted)" />
+      <line x1="340" y1="240" x2="340" y2="112" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5 4" />
+      <polygon points="334,114 340,106 346,114" fill="var(--muted)" />
+      <line x1="540" y1="240" x2="425" y2="112" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5 4" />
+      <polygon points="420,105 430,112 420,118" fill="var(--muted)" />
+
+      <text x="340" y="176" text-anchor="middle" fill="var(--muted)" font-size="12">все объекты смотрят на один и тот же static</text>
+
+      <rect x="44" y="242" width="192" height="94" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="140" y="266" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">экземпляр a</text>
+      <text x="140" y="292" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">owner: 'Анна'</text>
+      <text x="140" y="314" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">balance: 100</text>
+
+      <rect x="244" y="242" width="192" height="94" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="340" y="266" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">экземпляр b</text>
+      <text x="340" y="292" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">owner: 'Борис'</text>
+      <text x="340" y="314" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">balance: 0</text>
+
+      <rect x="444" y="242" width="192" height="94" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="540" y="266" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">экземпляр c</text>
+      <text x="540" y="292" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">owner: 'Вера'</text>
+      <text x="540" y="314" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">balance: 50</text>
+    </svg>
+    <figcaption>Поля <code>owner</code> и <code>balance</code> — свои у каждого объекта. Поле <code>static totalAccounts</code> — одно на весь класс, и все экземпляры «видят» именно его.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>readonly</code></strong> — поле «только для чтения»: записать можно в объявлении или в конструкторе, переприсвоить после — ошибка «Cannot assign to ... because it is a read-only property».</li>
+    <li><code>readonly</code> <strong>поверхностный</strong>: защищает саму ссылку, но не содержимое объекта/массива, на который она указывает.</li>
+    <li><strong><code>const</code> и <code>readonly</code> — разные уровни:</strong> <code>const</code> запрещает переприсвоить <em>переменную</em>, <code>readonly</code> — <em>поле</em>. У полей класса «своего const» не бывает.</li>
+    <li><strong><code>static</code></strong> — член принадлежит <em>классу</em>, а не объекту. Обращение через <code>Class.member</code>; через экземпляр — ошибка «Property does not exist on type».</li>
+    <li><strong><code>static</code>-методы</strong> — общие инструменты класса без <code>this</code> объекта: фабрики (<code>User.createGuest()</code>) и утилиты (<code>MathUtils.clamp(...)</code>).</li>
+    <li><strong><code>static readonly</code></strong> вместе — <em>константа класса</em>: одна на всех и неизменяемая (<code>Circle.PI</code>).</li>
+    <li>Оба модификатора живут только в типах: при компиляции они стираются и в готовом JS запретов не оставляют.</li>
+  </ul>
+  <p class="note">Рядом полезно посмотреть <a routerLink="/typescript/classes/access-modifiers">модификаторы доступа</a> (<code>public</code>/<code>private</code>/<code>protected</code>) и <a routerLink="/typescript/classes/parameter-properties">параметры-свойства</a>, где <code>readonly</code> можно объявить прямо в конструкторе. Как работают статические и приватные члены на уровне JavaScript — на странице <a routerLink="/javascript/classes/static-private">статика и приватность в JS</a>.</p>
+</section>
+</article>

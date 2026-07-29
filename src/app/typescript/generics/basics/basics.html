@@ -1,0 +1,201 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/generics">Дженерики</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Основы</span></nav>
+
+<h1 class="doc__title">Основы</h1>
+<p class="doc__lead">Дженерик (обобщённый тип) — это <strong>этикетка-переменная на коробке</strong>. Обычная коробка приходит с намертво напечатанной этикеткой «ЧИСЛА» — в неё ничего, кроме чисел, не положить. А у дженерик-коробки этикетка пустая: её заполняют <strong>в тот момент, когда что-то кладут</strong> внутрь («коробка для того, что положишь»). Ещё точнее — это <strong>бланк с пропуском «______»</strong>: сам бланк напечатан заранее, а пропуск заполняют при подписании. Буква <code>T</code> в дженерике — этот самый пропуск.</p>
+
+<section class="doc__section">
+  <h2>Боль без дженериков</h2>
+  <p>Чтобы понять, зачем дженерики вообще нужны, давайте сначала поживём без них и наткнёмся на стену. Представим простой контейнер — «коробку», которая хранит одно значение. Пусть сначала это будет число: например, счёт в игре.</p>
+  <app-code-block [code]="painNumberBox" lang="typescript" />
+  <p>Работает. Но вот беда: завтра такая же коробка понадобилась для строки, послезавтра — для задачи <code>Task</code>, потом для <code>boolean</code>. Тип <code>number</code> «прибит гвоздями» к коду, и переиспользовать его не получится. Остаётся копировать всё заново, меняя одно-единственное слово — тип:</p>
+  <app-code-block [code]="painStringBox" lang="typescript" />
+  <p>Это <strong>копипаста</strong>: десятки почти одинаковых <code>NumberBox</code>, <code>StringBox</code>, <code>TaskBox</code>, отличающихся лишь типом внутри. Скучно писать, легко ошибиться, тяжело поддерживать.</p>
+
+  <h3 class="doc__subtitle">Соблазн: сделать всё через <code>any</code></h3>
+  <p>Возникает «умная» мысль: а давайте объявим содержимое коробки как <a routerLink="/typescript/basic-types/any-unknown"><code>any</code></a> — тогда одна коробка подойдёт под любой тип, и копипасты не будет. Формально копипасты действительно не станет. Но цена окажется слишком высокой:</p>
+  <app-code-block [code]="painAnyBox" lang="typescript" />
+  <p class="note"><strong>Почему это плохо.</strong> <code>any</code> — это не «любой тип», а «выключи проверки полностью». Компилятор перестаёт следить за содержимым коробки: он молча пропустит и <code>value.toUpperCase()</code> на числе, и любую другую опечатку. Ошибка всплывёт не в редакторе, а у пользователя в рантайме. Мы избавились от копипасты, но потеряли главное, ради чего берут TypeScript, — проверки. Нужен способ, который даёт <em>и</em> переиспользование, <em>и</em> проверки. Это и есть дженерики.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Первый дженерик: <code>identity&lt;T&gt;</code></h2>
+  <p>Начнём с самой маленькой дженерик-функции на свете. Она называется <code>identity</code> (тождество) и просто возвращает то, что ей дали, — но описана так, чтобы <strong>работать с любым типом и при этом ничего не терять</strong>.</p>
+  <app-code-block [code]="identityDef" lang="typescript" />
+  <p>Разберём запись по частям. Сразу после имени функции идут <strong>угловые скобки с буквой</strong> — <code>&lt;T&gt;</code>. Это объявление <em>параметра типа</em>: мы говорим компилятору «здесь будет какой-то тип, и я буду называть его <code>T</code>». Дальше <code>T</code> используется как обычный тип: параметр <code>value: T</code> и возвращаемое значение <code>: T</code> — <strong>одна и та же буква</strong>. Именно это связывает вход и выход: какой тип пришёл, такой и уйдёт.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 210" width="100%" role="img" aria-label="Функция identity протаскивает тип насквозь: string на входе даёт string на выходе">
+      <text x="320" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">что вошло, то и вышло — тип протаскивается насквозь</text>
+
+      <rect x="28" y="86" width="120" height="54" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="88" y="119" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">string</text>
+
+      <line x1="150" y1="113" x2="228" y2="113" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="228,107 242,113 228,119" fill="var(--muted)" />
+
+      <rect x="246" y="70" width="150" height="86" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="321" y="104" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">identity&lt;T&gt;</text>
+      <text x="321" y="132" text-anchor="middle" fill="var(--muted)" font-size="12">T = string сейчас</text>
+
+      <line x1="396" y1="113" x2="474" y2="113" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="474,107 488,113 474,119" fill="var(--muted)" />
+
+      <rect x="492" y="86" width="120" height="54" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="552" y="119" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">string</text>
+    </svg>
+    <figcaption>Буква <code>T</code> — общий «провод» между входом и выходом. Подставили на входе <code>string</code> — на выходе гарантированно <code>string</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Что такое параметр типа <code>T</code></h2>
+  <p>Здесь новичков часто клинит, поэтому притормозим. <code>T</code> — это <strong>не какой-то особый тип</strong> и не сокращение от чего-либо конкретного. Это <em>переменная</em>, только не для значения, а для <strong>типа</strong>. Как <code>x</code> в математике — заглушка, вместо которой позже подставят конкретное число, — так и <code>T</code> заглушка, вместо которой подставят конкретный тип.</p>
+  <p>И вот ключевая мысль: пропуск <code>T</code> заполняется не тогда, когда вы <em>пишете</em> функцию, а тогда, когда вы её <strong>вызываете</strong>. В момент написания <code>identity&lt;T&gt;</code> ещё не знает, с чем будет работать, — как чистый бланк не знает, кто его подпишет. А на каждом вызове <code>T</code> превращается в конкретный тип: у одного вызова — в <code>string</code>, у другого — в <code>number</code>, у третьего — в вашу задачу <code>Task</code>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 300" width="100%" role="img" aria-label="Бланк с пропуском T заполняется конкретным типом при каждом вызове">
+      <rect x="130" y="26" width="360" height="72" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="60" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">function identity&lt;T&gt;(x: T): T</text>
+      <text x="310" y="84" text-anchor="middle" fill="var(--muted)" font-size="12">T — пустой пропуск, ещё не заполнен</text>
+
+      <line x1="310" y1="98" x2="310" y2="128" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="304,128 310,142 316,128" fill="var(--muted)" />
+      <text x="310" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">при вызове подставляем тип</text>
+
+      <rect x="70" y="150" width="480" height="36" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="92" y="173" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">identity('привет')</text>
+      <text x="528" y="173" text-anchor="end" fill="var(--green)" font-family="monospace" font-size="13">T = string</text>
+
+      <rect x="70" y="196" width="480" height="36" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="92" y="219" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">identity(42)</text>
+      <text x="528" y="219" text-anchor="end" fill="var(--green)" font-family="monospace" font-size="13">T = number</text>
+
+      <rect x="70" y="242" width="480" height="36" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="92" y="265" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">identity(task)</text>
+      <text x="528" y="265" text-anchor="end" fill="var(--green)" font-family="monospace" font-size="13">T = Task</text>
+    </svg>
+    <figcaption>Один и тот же бланк <code>identity&lt;T&gt;</code> — три подписи. На каждом вызове пропуск <code>T</code> заполняется своим типом.</figcaption>
+  </figure>
+  <p class="note"><strong>Аналогия с бланком.</strong> Типографский бланк договора печатают один раз, с пустыми строками «ФИО: ______». Дальше его подписывают сто разных людей, и каждый вписывает своё имя. Сам бланк при этом не меняется. Точно так же <code>identity&lt;T&gt;</code> написана один раз, а <code>T</code> «вписывают» заново на каждом вызове.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Откуда берётся <code>T</code>: вывод и явное указание</h2>
+  <p>Есть два способа заполнить пропуск <code>T</code>. Первый — самый частый — <strong>вывод типа</strong> (type inference): компилятор смотрит на аргумент, который вы передали, и сам догадывается, чем должен быть <code>T</code>. Вам не нужно писать вообще ничего лишнего:</p>
+  <app-code-block [code]="identityInference" lang="typescript" />
+  <p>Передали строку — компилятор понял, что <code>T</code> это <code>string</code>; передали число — <code>T</code> стал <code>number</code>. И, что важно, тип не потерялся по дороге: у результата <code>n</code> доступны строковые методы, у <code>a</code> — числовые. Никаких лишних скобок писать не пришлось.</p>
+  <p>Второй способ — <strong>указать <code>T</code> явно</strong>, в угловых скобках прямо при вызове. Пригождается редко, но знать полезно:</p>
+  <app-code-block [code]="identityExplicit" lang="typescript" />
+  <p>Явное указание — как самому вписать слово в пропуск, не полагаясь на догадку. К нему прибегают, когда вывести тип не из чего (например, аргументов нет) или когда автоматический вывод даёт не совсем то, что вы хотите. В обычном коде <code>&lt;...&gt;</code> чаще всего опускают — вывод справляется сам.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дженерики и массивы: <code>first&lt;T&gt;</code></h2>
+  <p>Дженерики особенно хороши там, где функция работает <strong>с коллекцией из чего угодно</strong>. Классический пример — «взять первый элемент списка». Список бывает из чисел, из строк, из задач — а логика одна и та же. Значит, тип элемента просится в параметр типа <code>T</code>, а сам массив описываем как <code>T[]</code> («массив из T»):</p>
+  <app-code-block [code]="firstElement" lang="typescript" />
+  <p>Обратите внимание на две вещи. Во-первых, тип <strong>протаскивается из массива в результат</strong>: дали массив чисел — получили <code>number | undefined</code>, дали массив строк — <code>string | undefined</code>. Во-вторых, в возвращаемом типе честно стоит <code>| undefined</code>: если список пуст, первого элемента нет, и <a routerLink="/typescript/unions-narrowing/union">объединение</a> с <code>undefined</code> заставит вызывающего это учесть. Одна маленькая функция корректно работает с любыми списками — и без единого <code>any</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Почему это не <code>any</code></h2>
+  <p>Самый частый вопрос новичка: «Погодите, но ведь <code>any</code> тоже принимает что угодно. Зачем городить <code>&lt;T&gt;</code>, если можно написать <code>any</code>?» Разница огромна, и она в одном слове — <strong>связь</strong>.</p>
+  <p><code>any</code> просто <em>стирает</em> тип: значение входит как «неважно что» и выходит как «неважно что». Компилятор теряет ниточку и больше ничего не проверяет. Дженерик же <strong>запоминает</strong>, что именно вы передали, и держит эту связь до самого выхода: положили число — на выходе тоже число, и все проверки на месте.</p>
+  <app-code-block [code]="anyVsGeneric" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 320" width="100%" role="img" aria-label="Сравнение: any теряет тип, дженерик T сохраняет тип">
+      <text x="330" y="30" text-anchor="middle" fill="var(--red)" font-size="13">через any: тип теряется — метку на выходе не прочесть</text>
+
+      <rect x="24" y="48" width="112" height="52" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="80" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+
+      <line x1="138" y1="74" x2="210" y2="74" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="210,68 224,74 210,80" fill="var(--muted)" />
+
+      <rect x="228" y="46" width="120" height="56" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="288" y="80" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="15">any</text>
+
+      <line x1="350" y1="74" x2="422" y2="74" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="422,68 436,74 422,80" fill="var(--muted)" />
+
+      <rect x="440" y="48" width="180" height="52" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="530" y="72" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="14">? неизвестно</text>
+      <text x="530" y="90" text-anchor="middle" fill="var(--muted)" font-size="11">метка потеряна</text>
+
+      <line x1="30" y1="170" x2="630" y2="170" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+
+      <text x="330" y="204" text-anchor="middle" fill="var(--green)" font-size="13">через дженерик &lt;T&gt;: тип сохраняется от входа до выхода</text>
+
+      <rect x="24" y="222" width="112" height="52" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="80" y="254" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+
+      <line x1="138" y1="248" x2="210" y2="248" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="210,242 224,248 210,254" fill="var(--muted)" />
+
+      <rect x="228" y="220" width="120" height="56" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="288" y="254" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="15">T</text>
+
+      <line x1="350" y1="248" x2="422" y2="248" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="422,242 436,248 422,254" fill="var(--muted)" />
+
+      <rect x="440" y="222" width="180" height="52" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="530" y="246" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+      <text x="530" y="264" text-anchor="middle" fill="var(--muted)" font-size="11">метка сохранена</text>
+    </svg>
+    <figcaption>Верхний конвейер: <code>any</code> обрывает связь — на выходе тип неизвестен. Нижний: <code>T</code> проносит метку насквозь — на выходе снова <code>string</code>.</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th><code>any</code></th>
+          <th>Дженерик <code>&lt;T&gt;</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Работает с любым типом</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Помнит связь «вход → выход»</td>
+          <td class="no">❌ нет, тип стирается</td>
+          <td class="yes">✅ да, тип сохраняется</td>
+        </tr>
+        <tr>
+          <td>Ловит опечатку <code>toUpperCase</code> на числе</td>
+          <td class="no">❌ пропустит молча</td>
+          <td class="yes">✅ ошибка компиляции</td>
+        </tr>
+        <tr>
+          <td>Автодополнение по результату</td>
+          <td class="no">❌ пусто</td>
+          <td class="yes">✅ методы конкретного типа</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Итог: <code>any</code> — это «сдаюсь, проверяйте сами», а дженерик — «не знаю тип заранее, но обещаю не терять его и всё проверить». Поэтому дженерик почти всегда лучше <code>any</code> там, где тип должен <em>пройти сквозь</em> функцию.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Соглашения об именах: <code>T</code>, <code>U</code>, <code>K</code>, <code>V</code></h2>
+  <p>Вы заметили, что параметр типа мы называли <code>T</code>. Это не обязательное имя, а просто традиция. По соглашению берут короткие заглавные буквы: <code>T</code> — от <em>Type</em> (тип), <code>U</code> — следующий по алфавиту, для второго типа, <code>K</code> — от <em>Key</em> (ключ), <code>V</code> — от <em>Value</em> (значение). Параметров типа может быть несколько сразу — их перечисляют через запятую:</p>
+  <app-code-block [code]="naming" lang="typescript" />
+  <p>Одиночные буквы удобны, пока дженерик простой. Но как только типов становится больше или роль каждого неочевидна, лучше давать <strong>осмысленные имена</strong> — их часто пишут с префиксом <code>T</code>, чтобы отличать от обычных типов: <code>TItem</code>, <code>TValue</code>, <code>TTask</code>. Читать <code>Map&lt;TKey, TValue&gt;</code> куда приятнее, чем <code>Map&lt;K, V&gt;</code>, когда контекст сложный.</p>
+  <p class="note"><strong>Важно.</strong> Имя параметра типа ни на что не влияет технически — <code>identity&lt;T&gt;</code> и <code>identity&lt;Item&gt;</code> работают одинаково. Это подсказка для человека, читающего код, а не команда компилятору. Выбирайте имя по ясности.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Дженерик</strong> — способ написать функцию/тип один раз так, чтобы он работал с любым типом и при этом <em>не терял</em> его. Это «этикетка-переменная» на коробке и «пропуск <code>______</code>» в бланке.</li>
+    <li><strong>Параметр типа <code>&lt;T&gt;</code></strong> — переменная для типа. Объявляется в угловых скобках, дальше используется как обычный тип (<code>value: T</code>, <code>: T</code>). Одна и та же буква связывает вход и выход.</li>
+    <li><code>T</code> — <strong>плейсхолдер</strong>: заполняется конкретным типом <em>при вызове</em>, а не при написании. Один <code>identity&lt;T&gt;</code> — разный <code>T</code> на каждом вызове.</li>
+    <li><strong>Откуда берётся <code>T</code></strong>: чаще всего компилятор <em>выводит</em> его из аргумента (<code>identity(42)</code>); можно и указать явно (<code>identity&lt;string&gt;(...)</code>).</li>
+    <li><strong>Это не <code>any</code>.</strong> <code>any</code> стирает тип и выключает проверки; дженерик сохраняет связь «вход → выход» и ловит ошибки на компиляции.</li>
+    <li><strong>Имена</strong> — по традиции <code>T</code>, <code>U</code>, <code>K</code>, <code>V</code>; для ясности можно осмысленные (<code>TItem</code>, <code>TValue</code>). На поведение имя не влияет.</li>
+  </ul>
+  <p class="note">Дальше стоит посмотреть <a routerLink="/typescript/generics/functions">дженерик-функции</a> подробнее, затем — как ограничить <code>T</code> через <a routerLink="/typescript/generics/constraints">extends</a> и задать <a routerLink="/typescript/generics/defaults">значения по умолчанию</a>. Дженерики живут не только в функциях — см. <a routerLink="/typescript/generics/classes-interfaces">классы и интерфейсы</a>, а типичные ошибки собраны в разделе <a routerLink="/typescript/generics/pitfalls">нюансы и подводные камни</a>. Базовую модель «тип — это множество значений» всегда можно освежить на странице <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.</p>
+</section>
+</article>

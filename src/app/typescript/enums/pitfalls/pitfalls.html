@@ -1,0 +1,198 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/enums">Перечисления (enum)</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead"><code>enum</code> выглядит как простой «список именованных вариантов», но за этой простотой прячется целый выводок граблей: числовой enum молча пропускает чужие числа, перебор выдаёт вдвое больше ключей, а перестановка членов способна тихо испортить уже сохранённые данные. Хорошая <strong>бытовая аналогия</strong> — <strong>номерки в гардеробе</strong>: пока номер 2 прибит к одному крючку, всё в порядке; но стоит переставить номерки — и ваш старый номер 2 приведёт к чужому пальто, хотя на бумажке всё то же «2». Здесь собраны самые частые подводные камни enum — с объяснением, <em>почему</em> так, и что делать вместо этого.</p>
+
+<section class="doc__section">
+  <h2>1. Числовой enum «дырявый»: обычное число проходит без проверки</h2>
+  <p>От типа-перечисления ждёшь, что он <em>ограничит</em> набор допустимых значений. С числовым enum это ожидание не оправдывается. Компилятор ловит только числовой <strong>литерал</strong> вне диапазона (<code>99</code>, <code>-5</code>). А вот любое обычное <code>number</code> — переменная, результат функции, распарсенный JSON — присваивается числовому enum <strong>вообще без ошибки</strong>.</p>
+  <app-code-block [code]="leakyNumeric" lang="typescript" />
+  <p>Сравните с последними строками примера: <strong>строковый</strong> enum строг — в него нельзя положить даже правильную по смыслу строку <code>'paid'</code>, только сам член <code>SStatus.Paid</code>. Именно поэтому для «границы с внешним миром» (данные из API, из формы, из базы) числовой enum — плохой сторож.</p>
+  <p class="note"><strong>Лекарство.</strong> Не полагайтесь на числовой enum как на валидатор входных данных. Если важна именно защита набора значений — берите <strong>строковый</strong> enum (строгий) или литеральный <a routerLink="/typescript/unions-narrowing/union">union</a> (<code>'new' | 'paid' | 'shipped'</code>), а внешние числа проверяйте явной проверкой перед присваиванием.</p>
+</section>
+
+<section class="doc__section">
+  <h2>2. Перебор числового enum даёт имена И числа</h2>
+  <p>Числовой enum компилируется в настоящий объект с <strong>обратным маппингом</strong> (reverse mapping): для каждого члена в объект кладутся <em>две</em> записи — «имя → число» и «число → имя». Из-за этого у enum с 4 членами <code>Object.keys()</code> возвращает <strong>8</strong> ключей, а не 4. Наивный цикл «пройдёмся по статусам» выдаёт мусор.</p>
+  <app-code-block [code]="enumIteration" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 360" width="100%" role="img" aria-label="Object.keys числового enum возвращает вдвое больше ключей — имена и числа">
+      <text x="320" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">Object.keys(enum) возвращает вдвое больше — имена И числа</text>
+
+      <rect x="35" y="70" width="180" height="220" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="125" y="98" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">enum Status</text>
+      <text x="125" y="128" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">New = 0</text>
+      <text x="125" y="156" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Paid = 1</text>
+      <text x="125" y="184" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Shipped = 2</text>
+      <text x="125" y="212" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Done = 3</text>
+      <text x="125" y="262" text-anchor="middle" fill="var(--muted)" font-size="12">4 члена</text>
+
+      <line x1="220" y1="180" x2="300" y2="180" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowA)" />
+      <text x="260" y="168" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">.keys()</text>
+
+      <rect x="315" y="70" width="300" height="220" rx="12" fill="none" stroke="var(--border)" stroke-width="1.6" />
+      <text x="465" y="98" text-anchor="middle" fill="var(--muted)" font-size="12">получили 8 ключей: 4 числа + 4 имени</text>
+
+      <rect x="335" y="118" width="80" height="30" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="375" y="138" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">"0"</text>
+      <rect x="335" y="158" width="80" height="30" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="375" y="178" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">"1"</text>
+      <rect x="335" y="198" width="80" height="30" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="375" y="218" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">"2"</text>
+      <rect x="335" y="238" width="80" height="30" rx="6" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="375" y="258" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">"3"</text>
+
+      <rect x="435" y="118" width="160" height="30" rx="6" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="515" y="138" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"New"</text>
+      <rect x="435" y="158" width="160" height="30" rx="6" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="515" y="178" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"Paid"</text>
+      <rect x="435" y="198" width="160" height="30" rx="6" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="515" y="218" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"Shipped"</text>
+      <rect x="435" y="238" width="160" height="30" rx="6" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="515" y="258" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">"Done"</text>
+
+      <defs>
+        <marker id="arrowA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>Красным — «лишние» числовые ключи от обратного маппинга. Из-за них перебор числового enum требует ручной фильтрации.</figcaption>
+  </figure>
+  <p>Отсюда мораль: если нужен просто перебираемый набор строковых значений, часто <strong>проще и предсказуемее</strong> обычный объект с <a routerLink="/typescript/assertions/as-const"><code>as const</code></a> — у него нет обратного маппинга, и <code>Object.keys()</code> вернёт ровно то, что вы написали. Об этом — на странице <a routerLink="/typescript/enums/alternatives">Альтернативы enum</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>3. enum номинальны: два «одинаковых» несовместимы</h2>
+  <p>Даже если два enum перечисляют буквально одни и те же значения, TypeScript считает их <strong>разными несовместимыми типами</strong>. Это называется <em>номинальная</em> типизация — важно имя типа, а не его содержимое.</p>
+  <p class="note"><strong>Аналогия.</strong> Два ключа могут быть отлиты по одной болванке и выглядеть одинаково — но это <strong>ключи от разных замков</strong>. Замок <code>Direction</code> не откроется ключом от <code>Move</code>, как бы похожи они ни были.</p>
+  <app-code-block [code]="nominal" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 560 240" width="100%" role="img" aria-label="Два enum с одинаковыми значениями не присваиваются друг другу">
+      <text x="280" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Одинаковые значения — но РАЗНЫЕ типы</text>
+
+      <rect x="30" y="55" width="200" height="130" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="130" y="82" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">enum Direction</text>
+      <text x="130" y="112" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Up = 'up'</text>
+      <text x="130" y="138" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Down = 'down'</text>
+
+      <rect x="330" y="55" width="200" height="130" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="430" y="82" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">enum Move</text>
+      <text x="430" y="112" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Up = 'up'</text>
+      <text x="430" y="138" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Down = 'down'</text>
+
+      <line x1="245" y1="120" x2="315" y2="120" stroke="var(--red)" stroke-width="2.5" stroke-dasharray="6 5" />
+      <circle cx="280" cy="120" r="18" fill="var(--bg)" stroke="var(--red)" stroke-width="2.5" />
+      <text x="280" y="126" text-anchor="middle" fill="var(--red)" font-size="18" font-weight="700">✗</text>
+      <text x="280" y="205" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">Move ≠ Direction</text>
+    </svg>
+    <figcaption>Значения совпадают до буквы, но присвоить <code>Move.Up</code> переменной типа <code>Direction</code> нельзя. Голый литерал <code>'up'</code> — тоже.</figcaption>
+  </figure>
+  <p>Практический вывод двоякий. С одной стороны, номинальность защищает от случайного смешивания «похожих» перечислений (нельзя перепутать направление и ход). С другой — она мешает, когда данные приходят строкой снаружи: голую строку <code>'up'</code> в <code>Direction</code> не положить без явного преобразования.</p>
+</section>
+
+<section class="doc__section">
+  <h2>4. Числа в JSON и логах нечитаемы и хрупки</h2>
+  <p>Когда значение числового enum уходит в <code>JSON.stringify</code>, лог или в базу, от него остаётся голое число. Прочитать такой лог, не держа перед глазами исходник enum, невозможно. Строковый enum в той же ситуации самодокументируется.</p>
+  <app-code-block [code]="jsonReadability" lang="typescript" />
+  <p>Мало того что <code>2</code> нечитаемо — оно ещё и <strong>хрупко</strong>: стоит переставить члены enum (см. пункт 9), и то же самое <code>2</code> начнёт означать другой статус, а все ранее сохранённые числа молча поменяют смысл. Строка <code>"shipped"</code> от порядка членов не зависит.</p>
+</section>
+
+<section class="doc__section">
+  <h2>5. <code>keyof typeof Enum</code> (имена) против типа <code>Enum</code> (значения)</h2>
+  <p>Это два <em>разных</em> типа, и их постоянно путают. Тип с именем самого enum (<code>Direction</code>) — это множество его <strong>значений</strong>. А <code>keyof typeof Direction</code> — это множество <strong>имён</strong> его членов. Строки в них разные.</p>
+  <app-code-block [code]="keyofVsType" lang="typescript" />
+  <p>Запомнить проще так: <code>Direction</code> хочет то, что <em>справа</em> от <code>=</code> (значение), а <code>keyof typeof Direction</code> — то, что <em>слева</em> (имя). Про операторы <a routerLink="/typescript/advanced-types/typeof"><code>typeof</code></a> и <a routerLink="/typescript/advanced-types/keyof"><code>keyof</code></a> есть отдельные страницы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>6. <code>const enum</code> под бандлером/isolatedModules бесполезен</h2>
+  <p>Приставку <code>const</code> к enum добавляют ради оптимизации: обычный <code>tsc</code> тогда <em>инлайнит</em> значения по месту использования и не эмитит объект вовсе. Но в проектах со сборщиком (Angular, Vite, esbuild, Babel — все они работают в режиме <code>isolatedModules</code>) этот трюк не срабатывает.</p>
+  <app-code-block [code]="constEnumUseless" lang="typescript" />
+  <p class="note"><strong>Вывод.</strong> В этом проекте (<code>isolatedModules</code> включён) <code>const enum</code> ведёт себя как обычный enum — эмитит полный объект-таблицу, никакой экономии. А внешний <code>declare const enum</code> и вовсе запрещён (ошибка <code>TS2748</code>). Подробный разбор — на странице <a routerLink="/typescript/enums/const-enum">const enum</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>7. Гетерогенные enum: обратный маппинг только у числовых членов</h2>
+  <p>TypeScript разрешает смешивать в одном enum числовые и строковые значения (<em>гетерогенный</em> enum). Компилируется он без ошибок, но ведёт себя <strong>непоследовательно</strong>: обратный маппинг «значение → имя» появляется только у числовых членов, а у строковых — нет.</p>
+  <app-code-block [code]="heterogeneous" lang="typescript" />
+  <p>Из-за этой асимметрии перебор и обратный поиск работают по-разному для разных членов одного и того же enum. На практике гетерогенные enum почти всегда — знак того, что тип стоит переосмыслить: разбить на два или заменить строковым enum либо union.</p>
+</section>
+
+<section class="doc__section">
+  <h2>8. enum — реальный объект в рантайме (цена и tree-shaking)</h2>
+  <p>В отличие от <code>type</code>, <code>interface</code> или литерального union, которые исчезают при компиляции, enum оставляет после себя <strong>настоящий объект</strong> в собранном JavaScript. Он попадает в бандл, даже если использовался лишь как тип аннотации, и плохо удаляется tree-shaking'ом.</p>
+  <app-code-block [code]="runtimeCost" lang="typescript" />
+  <p>Для небольшого приложения это капля, но в библиотеке или большом фронтенде десятки enum складываются в лишние килобайты кода, которые ничего не делают в рантайме. Если перечисление нужно только как <em>тип</em>, литеральный <a routerLink="/typescript/unions-narrowing/union">union</a> или объект с <a routerLink="/typescript/assertions/as-const"><code>as const</code></a> обойдутся бесплатно — сравнение на странице <a routerLink="/typescript/enums/alternatives">Альтернативы enum</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>9. Перестановка членов ломает уже сохранённые данные</h2>
+  <p>Это самый коварный из всех пунктов, потому что ломается не код, а <strong>данные</strong> — тихо и без единой ошибки. У числового enum значение члена привязано к его <em>позиции</em>. Если такие числа где-то сохранены (в базе, в кэше, в аналитике), то вставка нового члена в середину сдвигает все последующие — и старые записи начинают означать не то, что раньше.</p>
+  <p class="note"><strong>Аналогия.</strong> Те самые <strong>номерки в гардеробе</strong>: гости сдали пальто и ушли с бумажками «2», «3», «4». Ночью кто-то вставил новый крючок в середину и перенумеровал вешалки. Утром бумажка «2» ведёт уже к чужому пальто — хотя номер на ней не менялся.</p>
+  <app-code-block [code]="reorder" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 320" width="100%" role="img" aria-label="Вставка члена в середину числового enum меняет смысл ранее сохранённых чисел">
+      <text x="330" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Перестановка членов меняет смысл уже сохранённых чисел</text>
+
+      <rect x="30" y="55" width="210" height="215" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="135" y="82" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="650">Было (v1)</text>
+      <text x="135" y="110" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">New = 0</text>
+      <text x="135" y="132" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">Paid = 1</text>
+      <text x="135" y="154" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">Shipped = 2</text>
+      <text x="135" y="176" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">Done = 3</text>
+      <rect x="50" y="196" width="170" height="56" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="135" y="218" text-anchor="middle" fill="var(--muted)" font-size="11">в базе: status = 2</text>
+      <text x="135" y="238" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">→ Shipped ✓</text>
+
+      <line x1="248" y1="150" x2="418" y2="150" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowC)" />
+      <text x="333" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">вставили Packing</text>
+      <text x="333" y="148" text-anchor="middle" fill="var(--muted)" font-size="11">в середину</text>
+
+      <rect x="425" y="55" width="210" height="215" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="530" y="82" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="650">Стало (v2)</text>
+      <text x="530" y="106" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">New = 0</text>
+      <text x="530" y="126" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">Paid = 1</text>
+      <text x="530" y="146" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">Packing = 2</text>
+      <text x="530" y="166" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">Shipped = 3</text>
+      <text x="530" y="186" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">Done = 4</text>
+      <rect x="445" y="200" width="170" height="56" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.4" />
+      <text x="530" y="222" text-anchor="middle" fill="var(--muted)" font-size="11">та же запись: 2</text>
+      <text x="530" y="242" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">→ Packing ✗</text>
+
+      <defs>
+        <marker id="arrowC" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="var(--accent)" />
+        </marker>
+      </defs>
+    </svg>
+    <figcaption>Число <code>2</code> в базе не менялось, но после вставки члена стало означать <code>Packing</code> вместо <code>Shipped</code>. Данные «поехали» без единой ошибки компилятора.</figcaption>
+  </figure>
+  <p>Лекарство простое: либо <strong>прибивайте значения гвоздями</strong> (явные <code>= 0</code>, <code>= 1</code>, а новые члены добавляйте в конец), либо храните <strong>строки</strong> — их смысл не зависит от порядка. Второе почти всегда надёжнее.</p>
+</section>
+
+<section class="doc__section">
+  <h2>10. Дубликаты значений при авто-инкременте</h2>
+  <p>Авто-инкремент удобен, но он не проверяет, не совпало ли вычисленное значение с уже заданным вручную. Так в enum могут незаметно оказаться два члена с одним и тем же значением — компилятор не предупредит.</p>
+  <app-code-block [code]="duplicates" lang="typescript" />
+  <p>А поскольку обратный маппинг хранит только одну запись на значение, <code>Dup[1]</code> вернёт <strong>последний</strong> член с этим значением — <code>"C"</code>, а не <code>"A"</code>. Ошибка выстрелит не там, где её сделали, и найти её будет тяжело. Всегда проверяйте значения глазами, если задаёте их вручную вперемешку с авто-инкрементом.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко: чеклист выбора</h2>
+  <ul class="rules">
+    <li><strong>Числовой enum «дырявый»</strong> — пропускает любой <code>number</code>; для реальной защиты значений берите <strong>строковый</strong> enum или литеральный union.</li>
+    <li><strong>Перебор</strong> числового enum даёт вдвое больше ключей (имена + числа) — нужна фильтрация; для простого набора удобнее <code>as const</code>.</li>
+    <li><strong>enum номинальны</strong> — два «одинаковых» несовместимы, а голый литерал в enum не присвоить.</li>
+    <li><strong>Числа в JSON/логах</strong> нечитаемы и хрупки при перестановке членов — строки самодокументируются.</li>
+    <li>Не путайте <code>keyof typeof Enum</code> (<strong>имена</strong>) и тип <code>Enum</code> (<strong>значения</strong>) — это разные множества.</li>
+    <li><code>const enum</code> под <code>isolatedModules</code> (весь наш проект) выгоды не даёт; гетерогенные enum ведут себя непоследовательно.</li>
+    <li>enum — <strong>реальный объект в рантайме</strong>: остаётся в бандле и мешает tree-shaking, в отличие от union/<code>as const</code>.</li>
+    <li><strong>Перестановка членов</strong> числового enum молча ломает сохранённые данные — фиксируйте значения явно или храните строки.</li>
+    <li>Авто-инкремент может создать <strong>дубликаты значений</strong>; обратный маппинг оставит только последний член.</li>
+    <li><strong>Когда enum уместен:</strong> набор фиксирован, живёт внутри кода, вам нужны и имена, и значения, и вы берёте <em>строковый</em> enum с явными значениями. <strong>Когда лучше без него:</strong> значения уходят наружу (API, база, логи), важен минимальный бандл или нужен просто перебираемый набор — тогда union или объект с <code>as const</code>.</li>
+  </ul>
+  <p class="note">Соседние страницы: <a routerLink="/typescript/enums/numeric">Числовые enum</a> и <a routerLink="/typescript/enums/string">Строковые enum</a> (откуда растут пункты 1, 2 и 4), <a routerLink="/typescript/enums/const-enum">const enum</a> (пункт 6) и <a routerLink="/typescript/enums/alternatives">Альтернативы enum</a> (пункты 2 и 8). Общая опора всего раздела — модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>» и <a routerLink="/typescript/basic-types/literal-types">литеральные типы</a>.</p>
+</section>
+</article>

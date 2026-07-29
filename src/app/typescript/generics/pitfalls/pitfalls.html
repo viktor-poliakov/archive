@@ -1,0 +1,128 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/generics">Дженерики</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">Дженерики мощны, но с ними легко «выстрелить себе в ногу» так, что компилятор промолчит, а ошибка доживёт до рантайма. Здесь собраны самые частые грабли — с объяснением, <em>почему</em> так, и как сделать правильно. Каждый пункт проверен компилятором. Если базовые вещи ещё в новинку, начните с <a routerLink="/typescript/generics/basics">Основ</a>.</p>
+
+<section class="doc__section">
+  <h2>1. Дженерик только в типе результата — это замаскированный <code>as</code></h2>
+  <p>Самая коварная ловушка. Если параметр типа <code>T</code> стоит <strong>только</strong> в возвращаемом типе, а на входе его нет, то связывать <code>T</code> не с чем — и вызывающий по сути <em>сам вписывает</em>, какой тип он хочет получить. Компилятор поверит на слово, ничего не проверив.</p>
+  <app-code-block [code]="parseReturnOnly" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 210" width="100%" role="img" aria-label="У parse тип T приходит снаружи от вызывающего и никак не связан с входной строкой, поэтому проверки формы нет">
+      <text x="320" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">У честной <tspan font-family="monospace">identity</tspan> тип течёт со входа. У <tspan font-family="monospace">parse</tspan> — приходит СНАРУЖИ</text>
+
+      <rect x="34" y="86" width="120" height="52" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="94" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+
+      <line x1="154" y1="112" x2="228" y2="112" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 5" />
+      <polygon points="228,106 242,112 228,118" fill="var(--muted)" />
+      <text x="196" y="102" text-anchor="middle" fill="var(--red)" font-size="10">не связан</text>
+
+      <rect x="246" y="80" width="150" height="64" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="321" y="108" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">parse&lt;T&gt;</text>
+      <text x="321" y="130" text-anchor="middle" fill="var(--red)" font-size="11">проверки НЕТ</text>
+
+      <line x1="396" y1="112" x2="470" y2="112" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="470,106 484,112 470,118" fill="var(--muted)" />
+
+      <rect x="488" y="86" width="120" height="52" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="548" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">T</text>
+
+      <line x1="548" y1="60" x2="548" y2="84" stroke="var(--red)" stroke-width="2" />
+      <polygon points="542,84 548,96 554,84" fill="var(--red)" />
+      <text x="548" y="52" text-anchor="middle" fill="var(--red)" font-size="11">T задаёт вызывающий</text>
+    </svg>
+    <figcaption>В отличие от <code>identity</code>, где тип «протаскивается» со входа, у <code>parse&lt;T&gt;</code> тип <code>T</code> задаёт вызывающий, а входная строка с ним не связана. Форму данных никто не проверил — это ровно то же «поверь мне», что и приведение <a routerLink="/typescript/assertions/as">as</a>.</figcaption>
+  </figure>
+  <p class="note"><strong>Как правильно.</strong> Для внешних данных (ответ сервера, <code>JSON.parse</code>) не «обещайте» тип дженериком, а <strong>проверьте форму</strong> — например, функцией-проверкой (type guard). Дженерик уместен, когда тип реально <em>приходит со входа</em> и проходит насквозь, а не выдумывается вызывающим.</p>
+</section>
+
+<section class="doc__section">
+  <h2>2. <code>any</code> внутри дженерика убивает всю пользу</h2>
+  <p>Дженерик ценен тем, что <strong>сохраняет</strong> тип содержимого. Но стоит внутри объявить хоть одно поле как <code>any</code> — и защита рушится. Это как <strong>дырка в скафандре</strong>: одна дырка, и весь скафандр бесполезен.</p>
+  <app-code-block [code]="anyKillsGeneric" lang="typescript" />
+  <p>Разница наглядна: у <code>BadBox</code> с полем <code>any</code> компилятор молча пропускает <code>(5).toUpperCase()</code> — и это упадёт в рантайме. У честного <code>Box&lt;T&gt;</code> та же ошибка ловится сразу, на компиляции. Если завели дженерик — держите его «чистым», не подмешивайте <a routerLink="/typescript/basic-types/any-unknown"><code>any</code></a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>3. Лишний дженерик</h2>
+  <p>Параметр типа нужен, только если он что-то <strong>связывает</strong>: вход с выходом или два входа между собой. Если <code>T</code> встречается в сигнатуре <strong>ровно один раз</strong>, связывать нечего — такой дженерик бесполезен и только запутывает. Это как объявить переменную и ни разу её не использовать.</p>
+  <app-code-block [code]="uselessGeneric" lang="typescript" />
+  <p>Правило-памятка: пробегитесь взглядом по сигнатуре и сосчитайте, сколько раз встречается параметр типа. Один раз — замените его конкретным типом (чаще всего <a routerLink="/typescript/basic-types/any-unknown"><code>unknown</code></a>). Два и больше — дженерик оправдан.</p>
+</section>
+
+<section class="doc__section">
+  <h2>4. Пустой массив выводит <code>T</code> как <code>never</code></h2>
+  <p>Когда компилятору нечего смотреть, вывод даёт бесполезный результат. Передали в дженерик-функцию <strong>пустой массив</strong> — выводить тип элемента не из чего, и <code>T</code> схлопывается в <a routerLink="/typescript/basic-types/void-never"><code>never</code></a>. В <code>never[]</code> потом нельзя положить <em>ничего</em>.</p>
+  <app-code-block [code]="collectEmptyNever" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Если стартуете с пустой коллекции — подскажите тип <strong>явно</strong> в угловых скобках: <code>collect&lt;Task&gt;([])</code>. Тогда <code>T = Task</code>, и всё встаёт на место.</p>
+</section>
+
+<section class="doc__section">
+  <h2>5. Литерал теряется — но из-за массива, а не из-за дженерика</h2>
+  <p>Часто думают, будто дженерик «расширяет» литералы. На самом деле <strong>одиночный</strong> аргумент литерал сохраняет: <code>identity('idle')</code> даёт тип <code>'idle'</code>. А вот тип, выведенный из <strong>массива-литерала</strong>, расширяется до базового — и виноват тут не дженерик, а сам массив: он расширяет свои элементы ещё <em>до</em> вызова функции.</p>
+  <app-code-block [code]="literalLostFromArray" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 200" width="100%" role="img" aria-label="Массив строковых литералов расширяется до string массив, а с as const сохраняет литеральные типы idle и loading">
+      <text x="320" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Массив-литерал расширяет элементы — литералы теряются</text>
+
+      <rect x="60" y="52" width="230" height="44" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="175" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">['idle', 'loading']</text>
+      <line x1="290" y1="74" x2="352" y2="74" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="352,68 366,74 352,80" fill="var(--muted)" />
+      <rect x="372" y="52" width="210" height="44" rx="9" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="477" y="80" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="14">string[]</text>
+
+      <rect x="60" y="128" width="230" height="44" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="175" y="156" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">['idle', 'loading'] as const</text>
+      <line x1="290" y1="150" x2="352" y2="150" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="352,144 366,150 352,156" fill="var(--muted)" />
+      <rect x="372" y="128" width="210" height="44" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="477" y="156" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13">'idle' | 'loading'</text>
+    </svg>
+    <figcaption>Без <code>as const</code> массив расширяет элементы до <code>string</code>. С <code>as const</code> литеральные типы сохраняются. Лечит проблему именно фиксация массива, а не дженерик.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>6. Индексный доступ <code>T[K]</code> требует ограничения <code>K extends keyof T</code></h2>
+  <p>Захотели написать универсальный геттер поля <code>obj[key]</code> — и обнаружили, что без ограничения компилятор не пускает. Он прав: если <code>K</code> никак не связан с <code>T</code>, нет гарантии, что такой ключ у объекта вообще есть. Связывает их ограничение <code>K extends keyof T</code> («ключ — из полей этого объекта»).</p>
+  <app-code-block [code]="constraintIndexedAccess" lang="typescript" />
+  <p>С ограничением бонусом получаем <strong>точный</strong> тип результата — <code>T[K]</code>: у <code>getProp(task, 'title')</code> тип <code>string</code>, у <code>getProp(task, 'done')</code> — <code>boolean</code>. Подробно этот приём разобран на странице <a routerLink="/typescript/generics/constraints">Ограничения (extends)</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>7. Дефолт <code>T = any</code> тихо маскирует ошибку</h2>
+  <p>Соблазнительно поставить параметру типа значение по умолчанию <code>any</code>, чтобы «не ругался». Но тогда при вызове без аргумента <code>T</code> станет <code>any</code> — и проверки отключатся молча, а вы этого даже не заметите.</p>
+  <app-code-block [code]="defaultMasksError" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Если нужен «широкий» дефолт для неизвестных данных — берите <a routerLink="/typescript/basic-types/any-unknown"><code>unknown</code></a>, а не <code>any</code>. Он так же «принимает что угодно», но заставляет <em>проверить</em> значение перед использованием. Про дефолты подробнее — на странице <a routerLink="/typescript/generics/defaults">Значения по умолчанию</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>8. Внутри дженерик-функции <code>T</code> непрозрачен</h2>
+  <p>Ещё одно место, где новичок спорит с компилятором. Внутри <code>function f&lt;T&gt;(x: T): T</code> можно <a routerLink="/typescript/unions-narrowing/narrowing">сузить</a> <code>x</code> проверкой (<code>typeof</code>), но <strong>вернуть новое значение</strong> как <code>T</code> — нельзя. Причина: <code>T</code> — это «какой-то тип, который выберет вызывающий», и он не обязан быть просто <code>string</code>.</p>
+  <app-code-block [code]="narrowingLostInGeneric" lang="typescript" />
+  <p>Смотрите: <code>x.toUpperCase()</code> возвращает <code>string</code>, а вызывающий мог попросить <code>T = 'idle'</code> — и это <em>не любая</em> строка. Поэтому компилятор справедливо не пускает: вернуть можно только тот же самый <code>x</code>, но не «свежесозданное» значение как <code>T</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>9. Дистрибутивные условные типы — коротко</h2>
+  <p>Забегая вперёд: когда параметр типа объединения проходит через <em>условный тип</em>, тот «раздаётся» по каждому члену объединения по отдельности — это называют <strong>дистрибутивностью</strong>. Из-за этого результат бывает неожиданным.</p>
+  <app-code-block [code]="distributiveTease" lang="typescript" />
+  <p>Здесь <code>Boxed&lt;string | number&gt;</code> не превращается в <code>Box&lt;string | number&gt;</code>, а распределяется в <code>Box&lt;string&gt; | Box&lt;number&gt;</code>. Это отдельная большая тема — <a routerLink="/typescript/advanced-types/conditional">условные типы</a> и их дистрибутивность; здесь важно лишь знать, что такой эффект существует.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Дженерик только в типе результата</strong> (<code>parse&lt;T&gt;(s: string): T</code>) — замаскированный <code>as</code>: без явного <code>T</code> выводится <code>unknown</code>, с явным — компилятор верит на слово. Внешние данные проверяйте, а не «обещайте».</li>
+    <li><strong><code>any</code> внутри</strong> дженерика стирает тип и убивает всю пользу — держите параметр «чистым».</li>
+    <li><strong>Лишний дженерик:</strong> если <code>T</code> встречается один раз, он ничего не связывает — замените конкретным типом.</li>
+    <li><strong>Пустой массив</strong> выводит <code>T</code> как <code>never</code> (<code>never[]</code>) — подсказывайте тип явно: <code>collect&lt;Task&gt;([])</code>.</li>
+    <li><strong>Литерал теряется на массиве-литерале</strong> (<code>['idle','loading']</code> → <code>string[]</code>), а не из-за дженерика; фиксирует <code>as const</code>. Одиночный аргумент литерал сохраняет.</li>
+    <li>Индексный доступ <code>T[K]</code> требует <strong><code>K extends keyof T</code></strong>; дефолтом берите <strong><code>unknown</code>, а не <code>any</code></strong>; внутри функции <code>T</code> <strong>непрозрачен</strong> — новое значение как <code>T</code> не вернуть.</li>
+  </ul>
+  <p class="note">Назад к механике: <a routerLink="/typescript/generics/basics">Основы</a>, <a routerLink="/typescript/generics/functions">Дженерик-функции</a>, <a routerLink="/typescript/generics/constraints">Ограничения (extends)</a> и <a routerLink="/typescript/generics/defaults">Значения по умолчанию</a>. Смежное: приведение <a routerLink="/typescript/assertions/as">as</a> (роднит с ловушкой №1) и <a routerLink="/typescript/advanced-types/conditional">условные типы</a> (ловушка №9).</p>
+</section>
+</article>

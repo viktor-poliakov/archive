@@ -106,6 +106,56 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./typescript/unions-narrowing/pitfalls/pitfalls').then(
       (m) => m.TypescriptUnionsNarrowingPitfalls,
     ),
+  'typescript/enums/numeric': () =>
+    import('./typescript/enums/numeric/numeric').then((m) => m.TypescriptEnumsNumeric),
+  'typescript/enums/string': () =>
+    import('./typescript/enums/string/string').then((m) => m.TypescriptEnumsString),
+  'typescript/enums/const-enum': () =>
+    import('./typescript/enums/const-enum/const-enum').then((m) => m.TypescriptEnumsConstEnum),
+  'typescript/enums/alternatives': () =>
+    import('./typescript/enums/alternatives/alternatives').then(
+      (m) => m.TypescriptEnumsAlternatives,
+    ),
+  'typescript/enums/pitfalls': () =>
+    import('./typescript/enums/pitfalls/pitfalls').then((m) => m.TypescriptEnumsPitfalls),
+  'typescript/generics/basics': () =>
+    import('./typescript/generics/basics/basics').then((m) => m.TypescriptGenericsBasics),
+  'typescript/generics/functions': () =>
+    import('./typescript/generics/functions/functions').then((m) => m.TypescriptGenericsFunctions),
+  'typescript/generics/constraints': () =>
+    import('./typescript/generics/constraints/constraints').then(
+      (m) => m.TypescriptGenericsConstraints,
+    ),
+  'typescript/generics/defaults': () =>
+    import('./typescript/generics/defaults/defaults').then((m) => m.TypescriptGenericsDefaults),
+  'typescript/generics/classes-interfaces': () =>
+    import('./typescript/generics/classes-interfaces/classes-interfaces').then(
+      (m) => m.TypescriptGenericsClassesInterfaces,
+    ),
+  'typescript/generics/pitfalls': () =>
+    import('./typescript/generics/pitfalls/pitfalls').then((m) => m.TypescriptGenericsPitfalls),
+  'typescript/classes/basics': () =>
+    import('./typescript/classes/basics/basics').then((m) => m.TypescriptClassesBasics),
+  'typescript/classes/access-modifiers': () =>
+    import('./typescript/classes/access-modifiers/access-modifiers').then(
+      (m) => m.TypescriptClassesAccessModifiers,
+    ),
+  'typescript/classes/readonly-static': () =>
+    import('./typescript/classes/readonly-static/readonly-static').then(
+      (m) => m.TypescriptClassesReadonlyStatic,
+    ),
+  'typescript/classes/parameter-properties': () =>
+    import('./typescript/classes/parameter-properties/parameter-properties').then(
+      (m) => m.TypescriptClassesParameterProperties,
+    ),
+  'typescript/classes/abstract': () =>
+    import('./typescript/classes/abstract/abstract').then((m) => m.TypescriptClassesAbstract),
+  'typescript/classes/implements': () =>
+    import('./typescript/classes/implements/implements').then(
+      (m) => m.TypescriptClassesImplements,
+    ),
+  'typescript/classes/pitfalls': () =>
+    import('./typescript/classes/pitfalls/pitfalls').then((m) => m.TypescriptClassesPitfalls),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

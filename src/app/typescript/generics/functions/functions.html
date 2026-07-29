@@ -1,0 +1,150 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/generics">Дженерики</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Дженерик-функции</span></nav>
+
+<h1 class="doc__title">Дженерик-функции</h1>
+<p class="doc__lead">В <a routerLink="/typescript/generics/basics">Основах</a> мы познакомились с одним параметром типа <code>&lt;T&gt;</code>. Теперь разберём дженерик-функции подробнее: как использовать <strong>несколько</strong> параметров типа сразу и как компилятор сам <strong>выводит</strong> их из аргументов. Хорошая аналогия для этой страницы — функция <code>map</code> как <strong>конвейер-переработчик</strong>: на вход едет ящик яблок (тип <code>T</code>), а по заданному правилу выезжает ящик долек (тип <code>U</code>).</p>
+
+<section class="doc__section">
+  <h2>Напоминание: один параметр типа</h2>
+  <p>Начнём с уже знакомого. Параметр типа <code>T</code> — это «переменная для типа»: он подставляется в момент вызова и <strong>связывает</strong> вход с выходом. Какой тип передали — такой же и вернётся.</p>
+  <app-code-block [code]="identityReminder" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Несколько параметров типа: <code>&lt;T, U&gt;</code></h2>
+  <p>Параметров типа может быть не один, а сколько нужно — их перечисляют через запятую в угловых скобках. Классический пример — функция <code>pair</code>, склеивающая два значения <em>возможно разных</em> типов в кортеж. Первому значению соответствует параметр <code>K</code>, второму — <code>V</code>, и они <strong>независимы</strong>: не обязаны совпадать.</p>
+  <app-code-block [code]="pairExample" lang="typescript" />
+  <p>Обратите внимание: <code>K</code> и <code>V</code> вывелись <em>каждый из своего</em> аргумента. Это и есть суть нескольких параметров типа — они держат независимые «ниточки» между разными входами и выходами.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как компилятор выводит типы из аргументов</h2>
+  <p>Откуда компилятор берёт <code>K</code> и <code>V</code>? Он смотрит на <strong>аргументы по позициям</strong>: что реально передали на первое место, что на второе, — и подставляет их типы. Это как <strong>умный кассир</strong>: он не спрашивает «а какого сорта ваш товар?», а просто считывает штрихкод того, что вы положили на ленту.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 210" width="100%" role="img" aria-label="Вызов pair со строкой и числом: первый аргумент задаёт K равно string, второй V равно number, результат кортеж string number">
+      <text x="310" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">Типы считываются с аргументов — по позициям</text>
+      <text x="310" y="72" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="17">pair('id', 42)</text>
+
+      <line x1="268" y1="84" x2="205" y2="116" stroke="var(--green)" stroke-width="1.8" />
+      <polygon points="205,116 214,110 216,121" fill="var(--green)" />
+      <line x1="352" y1="84" x2="415" y2="116" stroke="var(--green)" stroke-width="1.8" />
+      <polygon points="415,116 404,110 406,121" fill="var(--green)" />
+
+      <rect x="120" y="120" width="170" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="205" y="148" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">K = string</text>
+
+      <rect x="330" y="120" width="170" height="46" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="415" y="148" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">V = number</text>
+
+      <text x="310" y="196" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="14">результат: [string, number]</text>
+    </svg>
+    <figcaption>Первый аргумент <code>'id'</code> задал <code>K = string</code>, второй <code>42</code> — <code>V = number</code>. Результат склеивается из выведенных типов: <code>[string, number]</code>.</figcaption>
+  </figure>
+  <app-code-block [code]="inferByPosition" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Классика: <code>map</code>, <code>filter</code>, <code>pluck</code></h2>
+  <p>Дженерик-функции сияют на обработке коллекций. Три «рабочие лошадки» — <code>map</code>, <code>filter</code>, <code>pluck</code> — встречаются в реальном коде постоянно.</p>
+  <p><strong><code>map</code></strong> — тот самый «конвейер-переработчик»: принимает массив элементов типа <code>T</code> и <em>правило</em> переработки <code>(x: T) =&gt; U</code>, отдаёт массив результатов типа <code>U</code>. Здесь два параметра типа не случайно: вход и выход — <strong>разные</strong> сорта.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 190" width="100%" role="img" aria-label="map превращает массив Task в массив string, применяя к каждому элементу правило t точка title">
+      <text x="330" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">ящик T → (по правилу) → ящик U</text>
+
+      <rect x="34" y="66" width="164" height="72" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="116" y="98" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">Task[]</text>
+      <text x="116" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">массив T (задачи)</text>
+
+      <line x1="198" y1="102" x2="248" y2="102" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="248,96 262,102 248,108" fill="var(--muted)" />
+
+      <rect x="264" y="74" width="132" height="56" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="330" y="99" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">(t: T) =&gt; t.title</text>
+      <text x="330" y="119" text-anchor="middle" fill="var(--muted)" font-size="11">правило T → U</text>
+
+      <line x1="396" y1="102" x2="446" y2="102" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="446,96 460,102 446,108" fill="var(--muted)" />
+
+      <rect x="462" y="66" width="164" height="72" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="544" y="98" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">string[]</text>
+      <text x="544" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">массив U (заголовки)</text>
+
+      <text x="330" y="170" text-anchor="middle" fill="var(--muted)" font-size="12">U не задаётся заранее — он вычисляется из того, что вернуло правило</text>
+    </svg>
+    <figcaption>Один и тот же <code>map</code> с разными правилами даёт разный тип результата: <code>t =&gt; t.title</code> → <code>string[]</code>, <code>t =&gt; t.done</code> → <code>boolean[]</code>.</figcaption>
+  </figure>
+  <app-code-block [code]="mapExample" lang="typescript" />
+  <p><strong><code>filter</code></strong> — наоборот, «сито»: часть элементов оставляет, часть выбрасывает, но <strong>тип не меняет</strong>. Вход <code>T[]</code> — и выход <code>T[]</code>. Поэтому здесь достаточно <em>одного</em> параметра типа.</p>
+  <app-code-block [code]="filterExample" lang="typescript" />
+  <p><strong><code>pluck</code></strong> — вытащить одно поле из каждого объекта. Пока напишем «наивную» версию, где ключ — просто <code>string</code>, и сразу увидим её слабое место:</p>
+  <app-code-block [code]="pluckExample" lang="typescript" />
+  <p class="note"><strong>Заметка.</strong> У «наивного» <code>pluck</code> ключ типа <code>string</code> слишком широк: компилятор не связал имя поля с его типом, поэтому результат вышел <code>unknown[]</code>, а опечатку в ключе он не поймал. Типобезопасная версия (ключ — <em>только</em> из полей объекта, а результат — <em>точный</em> тип этого поля) строится через <code>keyof</code> и разобрана на странице <a routerLink="/typescript/generics/constraints">Ограничения (extends)</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дженерик как тип переменной</h2>
+  <p>До сих пор <code>&lt;T&gt;</code> стоял у <em>объявления</em> функции. Но дженерик-сигнатуру можно записать и как <strong>тип переменной</strong> — тогда угловые скобки ставят прямо внутри типа, перед списком аргументов: <code>&lt;T&gt;(x: T) =&gt; T</code>.</p>
+  <app-code-block [code]="genericAsVarType" lang="typescript" />
+  <p>Такой дженерик-сигнатуре удобно дать <strong>имя</strong> через <code>type</code> — получится переиспользуемый «шаблон функции». Например, «преобразователь <code>T → U</code>»:</p>
+  <app-code-block [code]="mapperType" lang="typescript" />
+  <p>Это ровно тип второго аргумента нашего <code>map</code>. Именованные шаблоны функций делают сложные сигнатуры читаемее — подробнее про них на странице <a routerLink="/typescript/objects-interfaces/type-aliases">Псевдонимы типов</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда вывод не срабатывает — указываем явно</h2>
+  <p>Вывод хорош, пока компилятору есть на что смотреть. Но иногда типа неоткуда взять — и тогда результат разочаровывает. Самый частый случай — <strong>пустой массив</strong>: выводить <code>T</code> не из чего, и он «схлопывается» в <a routerLink="/typescript/basic-types/void-never"><code>never</code></a> (пустое множество значений).</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 200" width="100%" role="img" aria-label="collect от пустого массива даёт never массив, а collect с явным Task даёт Task массив">
+      <text x="310" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Пустой массив: выводить T не из чего</text>
+
+      <rect x="40" y="58" width="200" height="44" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="140" y="86" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">collect([])</text>
+      <line x1="240" y1="80" x2="300" y2="80" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="300,74 314,80 300,86" fill="var(--muted)" />
+      <rect x="320" y="58" width="200" height="44" rx="9" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="420" y="86" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="14">never[]</text>
+
+      <rect x="40" y="128" width="200" height="44" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="140" y="156" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">collect&lt;Task&gt;([])</text>
+      <line x1="240" y1="150" x2="300" y2="150" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="300,144 314,150 300,156" fill="var(--muted)" />
+      <rect x="320" y="128" width="200" height="44" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="420" y="156" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="14">Task[]</text>
+
+      <text x="560" y="86" text-anchor="middle" fill="var(--muted)" font-size="11">бесполезно</text>
+      <text x="560" y="156" text-anchor="middle" fill="var(--muted)" font-size="11">то, что нужно</text>
+    </svg>
+    <figcaption>Слева тип вывести неоткуда → <code>T = never</code> (в <code>never[]</code> ничего не положить). Справа тип задан явно в угловых скобках → <code>Task[]</code>.</figcaption>
+  </figure>
+  <app-code-block [code]="collectNever" lang="typescript" />
+  <p>То же самое, когда аргумент есть, но он слишком «общий» и вывод даёт не то, что нужно, — тип закрепляют явно:</p>
+  <app-code-block [code]="explicitWhenAmbiguous" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Стрелка или <code>function</code>: где ставить <code>&lt;T&gt;</code></h2>
+  <p>Место для параметра типа зависит от того, как записана функция. У обычного объявления <code>function</code> он идёт <strong>сразу после имени</strong>; у стрелочной функции — <strong>перед списком аргументов</strong>. В обычных <code>.ts</code>-файлах оба варианта равноправны.</p>
+  <app-code-block [code]="arrowVsFunction" lang="typescript" />
+  <p class="note"><strong>Тонкость для <code>.tsx</code> (React).</strong> В файлах с JSX голое <code>&lt;T&gt;</code> у стрелки компилятор принимает за открывающий тег. Лечится запятой-подсказкой <code>&lt;T,&gt;</code> либо переходом на обычное <code>function</code>-объявление, где такой неоднозначности нет.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дженерик вместо перегрузки — коротко</h2>
+  <p>Если тип результата просто <strong>повторяет</strong> тип аргумента (значение проходит «насквозь», без ветвления по типу), то дженерик короче и точнее, чем <a routerLink="/typescript/functions/overloads">перегрузки</a>.</p>
+  <app-code-block [code]="genericInsteadOverload" lang="typescript" />
+  <p>Важная оговорка: дженерик заменяет перегрузки <strong>только</strong> когда нет разного поведения по типу. Если результат по-настоящему зависит от того, строка пришла или число (разные поля, разная логика), нужны именно перегрузки — их подробный разбор на отдельной странице <a routerLink="/typescript/functions/overloads">Перегрузки</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li>Параметров типа может быть <strong>несколько</strong> (<code>&lt;T, U&gt;</code>, <code>&lt;K, V&gt;</code>) — они независимы и держат отдельные «ниточки» между входами и выходами.</li>
+    <li>Компилятор <strong>выводит</strong> типы из аргументов по позициям — как кассир по штрихкоду. Явно указывать <code>&lt;...&gt;</code> обычно не нужно.</li>
+    <li><code>map&lt;T, U&gt;</code> <strong>меняет</strong> тип (<code>T → U</code>), <code>filter&lt;T&gt;</code> — <strong>сохраняет</strong> (<code>T → T</code>). <code>U</code> вычисляется из того, что вернул колбэк.</li>
+    <li>Дженерик-сигнатуру можно записать как <strong>тип переменной</strong> (<code>&lt;T&gt;(x: T) =&gt; T</code>) и дать ей имя через <code>type</code> (<code>Mapper&lt;T, U&gt;</code>).</li>
+    <li>Когда вывести <code>T</code> не из чего (пустой массив → <code>never[]</code>) или вывод неточен — <strong>указывайте тип явно</strong> в угловых скобках.</li>
+    <li>Где ставить <code>&lt;T&gt;</code>: у <code>function</code> — после имени, у стрелки — перед скобками (в <code>.tsx</code> писать <code>&lt;T,&gt;</code>). Дженерик заменяет перегрузку, только если тип результата повторяет тип аргумента.</li>
+  </ul>
+  <p class="note">Дальше — как <strong>ограничить</strong> <code>T</code>, чтобы у него были нужные поля: <a routerLink="/typescript/generics/constraints">Ограничения (extends)</a> (там же типобезопасный <code>pluck</code> через <code>keyof</code>). Затем — <a routerLink="/typescript/generics/defaults">значения по умолчанию</a> и дженерики в <a routerLink="/typescript/generics/classes-interfaces">классах и интерфейсах</a>. Типичные ошибки собраны в разделе <a routerLink="/typescript/generics/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+</article>

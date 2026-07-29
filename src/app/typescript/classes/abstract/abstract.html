@@ -1,0 +1,185 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/classes">Классы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Абстрактные классы</span></nav>
+
+<h1 class="doc__title">Абстрактные классы</h1>
+<p class="doc__lead">Абстрактный класс — это <strong>недостроенный чертёж</strong>, или <strong>бланк с обязательными пропусками</strong>. Сам по себе он неполный: по нему нельзя изготовить готовое изделие (создать объект через <code>new</code> запрещено). Но он задаёт <strong>скелет</strong> — общие детали и список «пустых граф», которые наследник <em>обязан</em> заполнить. Такой родитель не просто описывает форму, как интерфейс, — он ещё и приносит готовый общий код. Если классы в целом пока в новинку, начните с <a routerLink="/javascript/classes/basics">основ классов в JS</a> и <a routerLink="/typescript/classes/basics">основ классов в TS</a>.</p>
+
+<section class="doc__section">
+  <h2>Зачем нужны абстрактные классы</h2>
+  <p>Представьте, что вы пишете калькулятор площадей для разных фигур: круга, прямоугольника, треугольника. У каждой фигуры <strong>своя формула площади</strong>, но есть и <strong>общее поведение</strong> — например, метод <code>describe()</code>, который печатает «Площадь ≈ …». Общий код хочется написать <em>один раз</em> в классе-родителе, а формулу площади оставить каждому наследнику своей.</p>
+  <p>Первая мысль новичка — сделать обычный класс-родитель <code>Shape</code>. Но тут же вылезают две проблемы:</p>
+  <app-code-block [code]="motivation" lang="typescript" />
+  <p>Обе беды — из-за того, что <code>Shape</code> <em>притворяется</em> готовым классом, хотя на самом деле это лишь <strong>заготовка</strong>. Нам нужен способ честно сказать компилятору: «этот класс — только каркас, создавать его напрямую нельзя, а метод <code>area()</code> — обязательная пустая графа, которую заполнит наследник». Ровно это и делает ключевое слово <code>abstract</code>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 380" width="100%" role="img" aria-label="Абстрактный класс Shape с методом-дырой area и общим методом describe; наследники Circle и Rectangle реализуют area по-своему; создание самого Shape через new запрещено">
+      <text x="340" y="22" text-anchor="middle" fill="var(--muted)" font-size="13">Абстрактный класс задаёт скелет; «дыру» area() доделывают наследники</text>
+
+      <!-- Shape box -->
+      <rect x="220" y="40" width="240" height="108" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="340" y="68" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">abstract Shape</text>
+      <line x1="236" y1="80" x2="444" y2="80" stroke="var(--border)" stroke-width="1" />
+      <text x="340" y="104" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">describe() — с телом</text>
+      <text x="340" y="132" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">area() — дыра, без тела</text>
+
+      <!-- new Shape forbidden -->
+      <rect x="40" y="58" width="150" height="72" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="115" y="90" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">new Shape()</text>
+      <text x="115" y="112" text-anchor="middle" fill="var(--red)" font-size="11">запрещено</text>
+      <line x1="48" y1="66" x2="182" y2="122" stroke="var(--red)" stroke-width="2" />
+      <line x1="182" y1="66" x2="48" y2="122" stroke="var(--red)" stroke-width="2" />
+
+      <!-- arrows down to subclasses -->
+      <line x1="300" y1="148" x2="170" y2="250" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="164,238 170,252 176,240" fill="var(--muted)" />
+      <line x1="380" y1="148" x2="510" y2="250" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="504,240 510,252 516,238" fill="var(--muted)" />
+      <text x="212" y="200" text-anchor="middle" fill="var(--green)" font-size="11">extends + свой area()</text>
+      <text x="470" y="200" text-anchor="middle" fill="var(--green)" font-size="11">extends + свой area()</text>
+
+      <!-- Circle box -->
+      <rect x="60" y="252" width="220" height="94" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="170" y="282" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">class Circle</text>
+      <line x1="76" y1="294" x2="264" y2="294" stroke="var(--border)" stroke-width="1" />
+      <text x="170" y="318" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">area() = π·r²</text>
+      <text x="170" y="337" text-anchor="middle" fill="var(--muted)" font-size="11">своя формула</text>
+
+      <!-- Rectangle box -->
+      <rect x="400" y="252" width="220" height="94" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="510" y="282" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">class Rectangle</text>
+      <line x1="416" y1="294" x2="604" y2="294" stroke="var(--border)" stroke-width="1" />
+      <text x="510" y="318" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">area() = w·h</text>
+      <text x="510" y="337" text-anchor="middle" fill="var(--muted)" font-size="11">своя формула</text>
+    </svg>
+    <figcaption>Один общий скелет <code>abstract Shape</code>: <code>describe()</code> готов и достаётся всем наследникам, а <code>area()</code> — обязательная «дыра», которую <code>Circle</code> и <code>Rectangle</code> закрывают по-своему. Создать <code>new Shape()</code> нельзя.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2><code>abstract class</code>: экземпляр создать нельзя</h2>
+  <p>Ставим перед словом <code>class</code> модификатор <code>abstract</code> — и класс превращается в «недостроенный чертёж». Внутри него метод <code>area()</code> тоже помечаем <code>abstract</code> и пишем <strong>без тела</strong> — только сигнатуру (имя, параметры, тип результата). Это и есть «обязательная пустая графа». А <code>describe()</code> оставляем обычным методом с телом — это общий код.</p>
+  <app-code-block [code]="abstractDeclare" lang="typescript" />
+  <p>Обратите внимание: <code>describe()</code> спокойно вызывает <code>this.area()</code>, хотя тела у <code>area()</code> здесь ещё нет. Это не ошибка — компилятор <em>гарантирует</em>, что к моменту реального вызова наследник обязательно даст <code>area()</code> настоящее тело. Пока же попытка сделать объект прямо из <code>Shape</code> обрывается сразу:</p>
+  <app-code-block [code]="noNew" lang="typescript" />
+  <p class="note"><strong>Почему <code>new</code> запрещён.</strong> Абстрактный класс неполон по определению: часть его методов — пустые графы. Если бы TypeScript позволил создать такой объект, вызов <code>area()</code> у него привёл бы в никуда (тела-то нет). Поэтому <code>new</code> разрешён только для <strong>конкретных</strong> (не-абстрактных) наследников, где все графы заполнены.</p>
+</section>
+
+<section class="doc__section">
+  <h2>abstract-метод: наследник обязан его реализовать</h2>
+  <p>Теперь «достроим чертёж». Создаём конкретный класс <code>Circle</code>, наследуем <code>Shape</code> через <code>extends</code> — и <strong>обязаны</strong> дать <code>area()</code> настоящее тело со своей формулой. Заодно посмотрим на конструктор наследника: он должен позвать <code>super()</code> (об этом — на странице <a routerLink="/typescript/classes/basics">Основы</a>), а параметр <code>radius</code> мы объявляем через <a routerLink="/typescript/classes/parameter-properties">параметр-свойство</a>.</p>
+  <app-code-block [code]="circle" lang="typescript" />
+  <p>А что будет, если наследник <strong>забудет</strong> реализовать <code>area()</code>? Компилятор не даст «сдать недоделку» — это и есть главная страховка абстрактных классов. Список обязательных граф выполняется под контролем типов:</p>
+  <app-code-block [code]="missingArea" lang="typescript" />
+  <p>Именно этого не хватало обычному классу из первой секции: там наследник мог <em>молча</em> унаследовать бессмысленную заглушку <code>return 0</code>, а здесь про пропущенную <code>area()</code> сразу сообщает компилятор. Заметьте и подсказку из ошибки: наследник может сам остаться <code>abstract</code> — тогда обязанность закрыть дыру переходит уже к <em>его</em> наследнику.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Общий код в базе: паттерн «шаблонный метод»</h2>
+  <p>Ключевое отличие абстрактного класса от интерфейса в том, что он умеет нести <strong>готовый, уже написанный код</strong>. Метод <code>describe()</code> мы написали в базе <em>один раз</em> — и все наследники получают его бесплатно, ничего не дублируя. При этом внутри <code>describe()</code> зовёт абстрактный <code>area()</code>, у которого <strong>у каждого наследника своя реализация</strong>. Получается элегантный приём: неизменный каркас живёт в базе, а переменная часть подставляется наследником.</p>
+  <app-code-block [code]="templateMethod" lang="typescript" />
+  <p>Такой приём называют <strong>шаблонным методом</strong> (template method): базовый метод задаёт общий «шаблон» действий, а «дырки» в нём заполняют абстрактные методы наследников. Отдельно отметим строку <code>const shapes: Shape[]</code>: создавать <em>сам</em> <code>Shape</code> нельзя, но использовать его <em>как тип</em> — можно и нужно. Массив «фигур вообще» прекрасно хранит и круги, и прямоугольники — ведь оба они являются <code>Shape</code>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 320" width="100%" role="img" aria-label="Шаблонный метод: общий describe вызывает абстрактный area, у которого своя реализация у Circle и Rectangle">
+      <!-- describe box -->
+      <rect x="180" y="26" width="260" height="70" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="56" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">describe(): string</text>
+      <text x="310" y="80" text-anchor="middle" fill="var(--muted)" font-size="12">общий код, один на все фигуры</text>
+
+      <!-- arrow to area -->
+      <line x1="310" y1="96" x2="310" y2="134" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="304,134 310,148 316,134" fill="var(--muted)" />
+      <text x="428" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">внутри зовёт this.area()</text>
+
+      <!-- area box -->
+      <rect x="205" y="150" width="210" height="60" rx="12" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="310" y="176" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="14">area(): number</text>
+      <text x="310" y="196" text-anchor="middle" fill="var(--muted)" font-size="11">abstract — разный у наследников</text>
+
+      <!-- arrows to implementations -->
+      <line x1="270" y1="210" x2="150" y2="252" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="144,240 150,254 156,242" fill="var(--muted)" />
+      <line x1="350" y1="210" x2="470" y2="252" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="464,242 470,254 476,240" fill="var(--muted)" />
+
+      <!-- Circle impl -->
+      <rect x="50" y="254" width="200" height="54" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="150" y="278" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Circle.area()</text>
+      <text x="150" y="298" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">= π·r²</text>
+
+      <!-- Rectangle impl -->
+      <rect x="370" y="254" width="200" height="54" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="470" y="278" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Rectangle.area()</text>
+      <text x="470" y="298" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">= w·h</text>
+    </svg>
+    <figcaption>Шаблонный метод: <code>describe()</code> — общий каркас в базе — вызывает абстрактный <code>area()</code>. Каркас один, но результат разный, потому что <code>area()</code> у каждой фигуры свой.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Реализация abstract-метода не требует <code>override</code></h2>
+  <p>Здесь новичка подстерегает тонкость. В проекте включена строгая опция <code>noImplicitOverride</code>: она <em>требует</em> писать ключевое слово <code>override</code>, когда наследник <strong>переопределяет</strong> метод базы. Но реализация <code>abstract</code>-метода — это <strong>не</strong> переопределение! В базе у <code>area()</code> не было тела — был лишь <em>контракт</em>, обещание. Мы даём этот метод <strong>впервые</strong>, а не заменяем существующую реализацию. Поэтому <code>override</code> на <code>area()</code> ставить <strong>не обязательно</strong> — обычно его и не пишут. Написать всё же можно (ошибки не будет, ведь <code>area()</code> в базе объявлен), но это лишнее:</p>
+  <app-code-block [code]="overrideOnAbstract" lang="typescript" />
+  <p>Совсем другое дело — обычный метод <code>describe()</code>: у него в базе <strong>есть</strong> тело. Если наследник хочет заменить его своей версией, это уже настоящее переопределение, и слово <code>override</code> становится обязательным. Забыли его — ошибка:</p>
+  <app-code-block [code]="overrideWrong" lang="typescript" />
+  <p>Дописываем <code>override</code> к <code>describe()</code> — и всё встаёт на места. Обратите внимание на контраст внутри одного класса: у <code>area()</code> (реализация абстрактного контракта) <code>override</code> <strong>нет</strong>, а у <code>describe()</code> (переопределение обычного метода) <code>override</code> <strong>есть</strong>:</p>
+  <app-code-block [code]="overrideRight" lang="typescript" />
+  <p class="note"><strong>Правило на пальцах.</strong> Спросите себя: «в базе у этого метода <em>было тело</em>?» Если было и вы его меняете — это переопределение, нужен <code>override</code>. Если тела не было (метод <code>abstract</code>) — вы реализуете контракт впервые, и <code>override</code> <strong>не обязателен</strong> (написать его можно, но обычно не пишут). Это ровно та же логика, что и с <a routerLink="/typescript/classes/implements">реализацией интерфейса</a>: там тоже <code>override</code> не ставят.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Абстрактный класс и интерфейс: в чём разница</h2>
+  <p>Начинающие часто путают абстрактный класс с <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсом</a> — оба ведь описывают «что класс должен уметь». Разница фундаментальная. <strong>Интерфейс — это только форма</strong>: список сигнатур без единой строчки кода, он полностью исчезает при компиляции и ничего не хранит. <strong>Абстрактный класс — это настоящий класс</strong>: он несёт готовые (реализованные) методы, может хранить поля-состояние и существует в рантайме.</p>
+  <app-code-block [code]="abstractVsInterface" lang="typescript" />
+  <p>Отсюда и практический выбор: <code>implements</code> лишь <em>проверяет</em> форму — реализацию каждого метода придётся написать вручную в каждом классе; <code>extends</code> абстрактного класса <em>наследует</em> готовый код — общий <code>describe()</code> достаётся наследнику бесплатно. Мостик к деталям — на странице <a routerLink="/typescript/classes/implements">Реализация интерфейсов</a>.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th>Абстрактный класс</th>
+          <th>Интерфейс</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Готовый код (тела методов)</td>
+          <td class="yes">✅ да, общий код в базе</td>
+          <td class="no">❌ нет, только сигнатуры</td>
+        </tr>
+        <tr>
+          <td>Хранит состояние (поля со значением)</td>
+          <td class="yes">✅ да</td>
+          <td class="no">❌ нет</td>
+        </tr>
+        <tr>
+          <td>Существует в рантайме</td>
+          <td class="yes">✅ да, это класс</td>
+          <td class="no">❌ нет, стирается при компиляции</td>
+        </tr>
+        <tr>
+          <td>Сколько можно «взять» одному классу</td>
+          <td class="no">❌ только один (<code>extends</code>)</td>
+          <td class="yes">✅ сколько угодно (<code>implements A, B</code>)</td>
+        </tr>
+        <tr>
+          <td>Свой объект через <code>new</code></td>
+          <td class="no">❌ нельзя (только у наследника)</td>
+          <td class="no">❌ нельзя (это не значение)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Абстрактный класс</strong> (<code>abstract class</code>) — «недостроенный чертёж»: задаёт скелет, но сам неполон. Создать его объект нельзя — <code>new Shape()</code> даёт ошибку «Cannot create an instance of an abstract class».</li>
+    <li><strong>abstract-метод</strong> объявляется без тела — только сигнатура. Это обязательная «дыра»: наследник <em>обязан</em> её реализовать, иначе ошибка «does not implement inherited abstract member».</li>
+    <li>Абстрактный класс <strong>может иметь и обычные методы с телом</strong> — общий код для всех наследников. Приём, когда общий метод (<code>describe()</code>) вызывает абстрактный (<code>area()</code>), называют <strong>шаблонным методом</strong>.</li>
+    <li>Реализация abstract-метода — это <strong>не переопределение</strong>, поэтому <code>override</code> на неё ставить не обязательно (но и не запрещено — можно как угодно). А вот <em>переопределение обычного</em> метода базы <code>override</code> требует (в проекте включён <code>noImplicitOverride</code>).</li>
+    <li>Конструктор наследника обязан вызвать <code>super()</code>; сам <code>abstract</code>-класс можно свободно использовать <em>как тип</em> (например, <code>Shape[]</code>), просто не создавать через <code>new</code>.</li>
+    <li><strong>Отличие от интерфейса:</strong> интерфейс — только форма (без кода и состояния, стирается при компиляции); абстрактный класс несёт готовый код и поля-состояние. Отсюда: <code>implements</code> лишь проверяет форму, <code>extends</code> наследует реализацию.</li>
+  </ul>
+  <p class="note">Дальше логично сравнить абстрактный класс с чистой формой — <a routerLink="/typescript/classes/implements">Реализация интерфейсов</a> и <a routerLink="/typescript/objects-interfaces/interfaces">Интерфейсы</a>. Механику наследования, <code>super()</code> и <code>override</code> подробно разбирают <a routerLink="/typescript/classes/basics">Основы</a>. А если базовые классы JS ещё в новинку — освежите <a routerLink="/javascript/classes/basics">основы</a> и <a routerLink="/javascript/classes/inheritance">наследование</a> в JavaScript.</p>
+</section>
+</article>

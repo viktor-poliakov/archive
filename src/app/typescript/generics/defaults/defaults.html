@@ -1,0 +1,133 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/generics">Дженерики</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Значения по умолчанию</span></nav>
+
+<h1 class="doc__title">Значения по умолчанию</h1>
+<p class="doc__lead">У обычного аргумента функции бывает <strong>значение по умолчанию</strong>: <code>greet(name = "друг")</code> — не передали имя, подставится «друг». У параметров типа есть ровно то же самое, только <strong>для типов</strong>: <code>Container&lt;T = string&gt;</code> — не передали тип, подставится <code>string</code>. Это как <strong>настройки прибора по умолчанию</strong>: работает из коробки под типовой сценарий, но при желании всё можно перенастроить.</p>
+
+<section class="doc__section">
+  <h2>Зачем дефолт у параметра типа</h2>
+  <p>Дженерик-тип — это «заготовка с дыркой»: <code>Container&lt;T&gt;</code> ничего не значит, пока не подставишь конкретный <code>T</code>. Обычно это удобно: тип подстраивается под задачу. Но у многих заготовок есть <strong>самый частый сценарий</strong>. Контейнер чаще всего хранит строку; «ответ сервера» по умолчанию содержит данные неизвестной формы; тип ошибки в большинстве случаев — <code>Error</code>.</p>
+  <p>Если для типового сценария каждый раз писать аргумент типа руками (<code>Container&lt;string&gt;</code>, <code>Result&lt;number, Error&gt;</code>), код засоряется повторами. Значение по умолчанию решает это: задаём «тип из коробки» один раз в объявлении, и тогда обычный вызов <code>Container</code> уже работает — а редкие случаи по-прежнему можно переопределить.</p>
+  <p class="note"><strong>Аналогия.</strong> Новый роутер работает сразу после включения: у него уже прописаны настройки по умолчанию (канал, режим, имя сети). Большинству этого хватает. Но кто хочет — заходит в панель и меняет их под себя. Дефолт у параметра типа — те самые «заводские настройки»: удобное поведение из коробки плюс возможность перенастроить.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис <code>&lt;T = string&gt;</code></h2>
+  <p>Значение по умолчанию записывают прямо в объявлении параметра — через знак <code>=</code> после имени: <code>&lt;T = string&gt;</code>. Читается это буквально так же, как <code>name = "друг"</code> у аргумента функции: «если <code>T</code> не передали — считай, что это <code>string</code>».</p>
+  <app-code-block [code]="containerDefault" lang="typescript" />
+  <p>Обратите внимание на строку с ошибкой: раз <code>Container</code> без аргумента означает <code>&#123; value: string &#125;</code>, положить туда число нельзя. Дефолт — это <em>реальный</em> тип, а не «что угодно»; он так же строго проверяется компилятором.</p>
+  <p>Чтобы связь с привычным аргументом функции стала совсем очевидной, положим их рядом:</p>
+  <app-code-block [code]="defaultArgAnalogy" lang="typescript" />
+  <p>Сравните две пары: вызов без аргумента (<code>greet()</code> ↔ тип <code>Container</code>) берёт значение по умолчанию, а вызов с аргументом (<code>greet("Анна")</code> ↔ тип <code>Container&lt;number&gt;</code>) использует переданное. Одна и та же механика — просто в одном случае это значение, а в другом тип.</p>
+  <p class="note">Если идея «заготовки с дыркой» ещё нова, загляните в <a routerLink="/typescript/generics/basics">Основы дженериков</a>, а модель «тип — это множество значений» разобрана на странице <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дефолт вместе с ограничением <code>&lt;T extends X = Y&gt;</code></h2>
+  <p>Дженерики часто <a routerLink="/typescript/generics/constraints">ограничивают</a> — требуют, чтобы <code>T</code> имел определённую форму: <code>&lt;T extends &#123; id: number &#125;&gt;</code>. Дефолт и ограничение прекрасно уживаются вместе. Порядок такой: сначала ограничение <code>extends X</code>, потом значение по умолчанию <code>= Y</code>.</p>
+  <app-code-block [code]="defaultWithConstraint" lang="typescript" />
+  <p>Здесь <code>Repository&lt;T extends Entity = Entity&gt;</code> читается так: «<code>T</code> обязан иметь поле <code>id: number</code> (ограничение), а если тип вообще не назвали — бери <code>Entity</code> (дефолт)». И то и другое работает одновременно.</p>
+  <h3 class="doc__subtitle">Правило: дефолт обязан удовлетворять ограничению</h3>
+  <p>Есть одно жёсткое требование, которое легко упустить. Значение по умолчанию <code>Y</code> само должно проходить проверку ограничения <code>X</code>. Логично: раз любое подставленное <code>T</code> обязано входить в <code>X</code>, то и тип «по умолчанию» — не исключение.</p>
+  <app-code-block [code]="constraintDefaultError" lang="typescript" />
+  <p>В строке <code>&lt;T extends string = number&gt;</code> ограничение говорит «только строки», а дефолт предлагает <code>number</code> — это противоречие, и компилятор его не пропускает. Достаточно взять дефолт, входящий в ограничение (например, литерал <code>'idle'</code>), и всё встанет на место.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Порядок параметров: обязательные раньше, с дефолтом позже</h2>
+  <p>Ещё одно правило один в один как у аргументов функции. Нельзя написать <code>function f(a = 1, b)</code> — обязательный <code>b</code> не может стоять после аргумента со значением по умолчанию. Точно так же и с параметрами типа: сперва идут <strong>обязательные</strong>, а параметры <strong>с дефолтом</strong> — только после них.</p>
+  <app-code-block [code]="paramOrder" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 600 320" width="100%" role="img" aria-label="Порядок параметров типа: обязательные раньше, с дефолтом позже">
+      <text x="300" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">Обязательные параметры — раньше, параметры с дефолтом — позже</text>
+
+      <text x="40" y="72" fill="var(--green)" font-size="13">✅ можно</text>
+      <text x="300" y="72" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">&lt;T, E = Error&gt;</text>
+
+      <rect x="150" y="86" width="120" height="58" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="210" y="114" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">T</text>
+      <text x="210" y="134" text-anchor="middle" fill="var(--muted)" font-size="11">обязательный</text>
+
+      <rect x="300" y="86" width="170" height="58" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="385" y="114" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">E = Error</text>
+      <text x="385" y="134" text-anchor="middle" fill="var(--muted)" font-size="11">с «подушкой»-дефолтом</text>
+
+      <text x="40" y="216" fill="var(--red)" font-size="13">❌ нельзя</text>
+      <text x="300" y="216" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">&lt;T = string, U&gt;</text>
+      <line x1="228" y1="211" x2="372" y2="211" stroke="var(--red)" stroke-width="2.5" />
+
+      <rect x="150" y="230" width="170" height="58" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="235" y="258" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="15">T = string</text>
+      <text x="235" y="278" text-anchor="middle" fill="var(--muted)" font-size="11">с дефолтом</text>
+
+      <rect x="350" y="230" width="120" height="58" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="410" y="258" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">U</text>
+      <text x="410" y="278" text-anchor="middle" fill="var(--red)" font-size="11">обязательный — после!</text>
+    </svg>
+    <figcaption>Обязательный параметр (<code>U</code>) не может идти после параметра с дефолтом (<code>T = string</code>) — компилятор выдаёт ошибку «Required type parameters may not follow optional type parameters».</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: типовые дефолты</h2>
+  <p>Соберём приёмы, которые встречаются в реальном коде постоянно. Первый — «ответ сервера». Пока форма данных не уточнена, разумно ставить дефолтом <code>unknown</code>: он <strong>безопасен</strong>, потому что заставляет проверить данные, прежде чем ими пользоваться (в отличие от <code>any</code> — про разницу см. <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>).</p>
+  <app-code-block [code]="apiResponseDefault" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 600 300" width="100%" role="img" aria-label="Дефолт подставляется, только когда аргумент типа не передан">
+      <text x="300" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">Дефолт заполняет «пустое место», если аргумент типа не передан</text>
+
+      <rect x="170" y="46" width="260" height="52" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="300" y="78" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">ApiResponse&lt;T = unknown&gt;</text>
+
+      <line x1="300" y1="98" x2="135" y2="166" stroke="var(--border)" stroke-width="1.6" />
+      <line x1="300" y1="98" x2="465" y2="166" stroke="var(--border)" stroke-width="1.6" />
+
+      <text x="135" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">ApiResponse — без аргумента</text>
+      <rect x="45" y="166" width="180" height="66" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="135" y="196" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="15">T = unknown</text>
+      <text x="135" y="218" text-anchor="middle" fill="var(--muted)" font-size="11">дефолт подставлен</text>
+
+      <text x="465" y="150" text-anchor="middle" fill="var(--fg)" font-size="12">ApiResponse&lt;Task&gt;</text>
+      <rect x="375" y="166" width="180" height="66" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="465" y="196" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="15">T = Task</text>
+      <text x="465" y="218" text-anchor="middle" fill="var(--green)" font-size="11">переопределили явно</text>
+    </svg>
+    <figcaption>Слева тип не назвали → срабатывает дефолт (<code>T = unknown</code>). Справа передали аргумент <code>&lt;Task&gt;</code> → он побеждает дефолт (<code>T = Task</code>).</figcaption>
+  </figure>
+  <p>Второй классический кейс — <strong>результат операции</strong>: либо успех со значением, либо ошибка. Тип ошибки почти всегда <code>Error</code>, поэтому его ставят дефолтом; а когда ошибки — это, например, строковые коды, второй параметр переопределяют.</p>
+  <app-code-block [code]="resultType" lang="typescript" />
+  <p>Здесь дефолт экономит писанину: в 90% случаев мы пишем просто <code>Result&lt;number&gt;</code>, и <code>E</code> автоматически становится <code>Error</code>. Это тот же приём «размеченного объединения», что и на странице <a routerLink="/typescript/unions-narrowing/union">Объединения</a> — только с настраиваемым типом ошибки.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дефолт против вывода: кто побеждает</h2>
+  <p>Важно понимать, <em>когда именно</em> включается значение по умолчанию. Правило простое: дефолт применяется, только если тип <strong>не указан явно</strong> и его <strong>неоткуда вывести</strong>. Как только у компилятора есть способ узнать <code>T</code> — из явного аргумента типа или из обычного аргумента функции — дефолт молча уступает.</p>
+  <h3 class="doc__subtitle">Явный аргумент типа отменяет дефолт</h3>
+  <app-code-block [code]="defaultIgnored" lang="typescript" />
+  <p>Как только вы написали <code>Container&lt;number&gt;</code>, тип по умолчанию <code>string</code> вообще не рассматривается — ровно как <code>greet("Анна")</code> не заглядывает в дефолт <code>"друг"</code>.</p>
+  <h3 class="doc__subtitle">Вывод из аргумента тоже сильнее дефолта</h3>
+  <p>Отдельный тонкий момент для <a routerLink="/typescript/generics/functions">дженерик-функций</a>: если <code>T</code> можно <strong>вывести</strong> из переданного аргумента, компилятор возьмёт выведенный тип, а не дефолт. Дефолт остаётся «в резерве» — на случай, когда выводить не из чего.</p>
+  <app-code-block [code]="defaultVsInference" lang="typescript" />
+  <p>Отсюда практичный вывод: у функций дефолт полезен там, где <code>T</code> появляется <em>только</em> в возвращаемом типе (как <code>makeList</code>) и его физически неоткуда вывести. Если же <code>T</code> приходит через аргумент — дефолт почти никогда не сработает, потому что вывод его опережает.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Осторожно: дефолт <code>T = any</code></h2>
+  <p>И последнее — самая частая ловушка. Соблазнительно поставить дефолтом <code>any</code>, чтобы «не ругался». Но <code>any</code> отключает проверки, и такой дефолт незаметно проделывает дыру в типах: код компилируется, а ошибки прячутся до рантайма.</p>
+  <app-code-block [code]="anyDefaultTeaser" lang="typescript" />
+  <p>Мораль: если нужен «широкий» дефолт для неизвестных данных — берите <code>unknown</code>, а не <code>any</code>. <code>unknown</code> так же «принимает что угодно», но заставляет проверить значение перед использованием. Эта и другие тонкости разобраны на странице <a routerLink="/typescript/generics/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Значение по умолчанию у параметра типа</strong> — это «тип из коробки»: <code>&lt;T = string&gt;</code> работает как <code>name = "друг"</code> у аргумента функции. Не передали тип — подставится дефолт.</li>
+    <li>Дефолт — <strong>реальный тип</strong> и проверяется строго: <code>Container</code> без аргумента означает <code>&#123; value: string &#125;</code>, и число туда уже не положить.</li>
+    <li>С ограничением дефолт совмещается (<code>&lt;T extends X = Y&gt;</code>), но <strong>дефолт обязан удовлетворять ограничению</strong>: <code>&lt;T extends string = number&gt;</code> — ошибка.</li>
+    <li><strong>Порядок:</strong> обязательные параметры раньше, с дефолтом — позже. <code>&lt;T = string, U&gt;</code> запрещено («Required type parameters may not follow optional type parameters»).</li>
+    <li>Дефолт применяется, <strong>только когда тип не указан и его неоткуда вывести</strong>. Явный аргумент типа и вывод из аргумента функции его отменяют.</li>
+    <li>Не делайте дефолтом <code>any</code> — он маскирует ошибки. Безопасный «широкий» дефолт — <code>unknown</code>.</li>
+  </ul>
+  <p class="note">Дальше логично посмотреть <a routerLink="/typescript/generics/pitfalls">Нюансы и подводные камни</a> (там про опасный <code>T = any</code> и другие грабли), освежить <a routerLink="/typescript/generics/constraints">Ограничения (extends)</a> и <a routerLink="/typescript/generics/functions">Дженерик-функции</a>, а базовую механику — на странице <a routerLink="/typescript/generics/basics">Основы дженериков</a>.</p>
+</section>
+</article>

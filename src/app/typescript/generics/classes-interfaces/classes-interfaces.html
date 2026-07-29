@@ -1,0 +1,167 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/generics">Дженерики</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">В классах и интерфейсах</span></nav>
+
+<h1 class="doc__title">В классах и интерфейсах</h1>
+<p class="doc__lead">Дженерик-класс — это <strong>чертёж-фабрика коробок</strong>. Сам по себе чертёж не знает, что будут хранить коробки: тип содержимого он оставляет как «пустое место» <code>T</code>. А когда вы делаете конкретную коробку — <code>new Box&lt;number&gt;()</code> — вы <em>размечаете</em> её под числа, и с этого момента компилятор следит, чтобы туда попадали только числа. Ровно так же ведут себя дженерик-интерфейсы и псевдонимы типов: одна форма — сколько угодно наполнений.</p>
+
+<section class="doc__section">
+  <h2>Дженерик-класс <code>class Box&lt;T&gt;</code></h2>
+  <p>Параметр типа объявляют в угловых скобках сразу после имени класса: <code>class Box&lt;T&gt;</code>. Дальше <code>T</code> можно использовать внутри класса как обычный тип — в полях, в параметрах методов, в типах возвращаемых значений. Пока класс только описан, <code>T</code> — это заглушка: конкретный тип встанет на его место в момент создания объекта.</p>
+  <p class="note"><strong>Аналогия.</strong> Представьте станок, который штампует коробки. На чертеже написано «сюда кладётся <em>что-то одного сорта</em>» — но какого именно, чертёж не уточняет. Один и тот же станок делает и коробки под болты, и коробки под печенье. <code>T</code> — это и есть «сорт содержимого», который выбирают при запуске станка.</p>
+  <app-code-block [code]="boxClass" lang="typescript" />
+  <p>Обратите внимание: и геттер <code>value</code> возвращает <code>T</code>, и сеттер принимает <code>T</code>. Как только мы создали <code>Box&lt;number&gt;</code>, все <code>T</code> внутри превращаются в <code>number</code> — компилятор не даст положить туда строку. Это и есть польза дженерика: тип содержимого не теряется (сравните с <a routerLink="/typescript/basic-types/any-unknown">any</a>, который стёр бы его).</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 290" width="100%" role="img" aria-label="Один класс-чертёж Box порождает разные коробки">
+      <text x="310" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">Один класс-чертёж — сколько угодно готовых коробок</text>
+
+      <rect x="225" y="42" width="170" height="60" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" stroke-dasharray="7 6" />
+      <text x="310" y="70" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="16">Box&lt;T&gt;</text>
+      <text x="310" y="90" text-anchor="middle" fill="var(--muted)" font-size="11">чертёж-фабрика</text>
+
+      <line x1="310" y1="102" x2="105" y2="186" stroke="var(--border)" stroke-width="1.6" />
+      <line x1="310" y1="102" x2="310" y2="186" stroke="var(--border)" stroke-width="1.6" />
+      <line x1="310" y1="102" x2="515" y2="186" stroke="var(--border)" stroke-width="1.6" />
+
+      <rect x="25" y="188" width="160" height="70" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="105" y="216" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">Box&lt;number&gt;</text>
+      <text x="105" y="240" text-anchor="middle" fill="var(--muted)" font-size="12">внутри: 42</text>
+
+      <rect x="230" y="188" width="160" height="70" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="310" y="216" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">Box&lt;string&gt;</text>
+      <text x="310" y="240" text-anchor="middle" fill="var(--muted)" font-size="12">внутри: 'hi'</text>
+
+      <rect x="435" y="188" width="160" height="70" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="515" y="216" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">Box&lt;Task&gt;</text>
+      <text x="515" y="240" text-anchor="middle" fill="var(--muted)" font-size="12">внутри: задача</text>
+    </svg>
+    <figcaption>Класс <code>Box&lt;T&gt;</code> — один чертёж. Каждое <code>new Box&lt;…&gt;()</code> порождает коробку, «размеченную» под свой тип: их содержимое разное, а устройство — общее.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Создание объекта: явно или по выводу</h2>
+  <p>Указать тип коробки можно двумя путями. Либо написать его <strong>явно</strong> в угловых скобках при вызове конструктора — <code>new Box&lt;string&gt;('привет')</code>. Либо ничего не писать и позволить компилятору <strong>вывести</strong> тип из аргумента конструктора — <code>new Box(5)</code> даст <code>Box&lt;number&gt;</code>, потому что <code>5</code> — число. Это тот же механизм вывода, что и у <a routerLink="/typescript/generics/functions">дженерик-функций</a>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 210" width="100%" role="img" aria-label="Откуда берётся T при создании коробки: вывод из аргумента и явное указание">
+      <text x="360" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">Откуда берётся T при new Box(...)</text>
+
+      <text x="58" y="82" text-anchor="middle" fill="var(--muted)" font-size="11">вывод</text>
+      <rect x="120" y="55" width="190" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="215" y="83" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">new Box(5)</text>
+      <line x1="312" y1="78" x2="344" y2="78" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="350,78 340,73 340,83" fill="var(--border)" />
+      <rect x="346" y="55" width="210" height="46" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="451" y="83" text-anchor="middle" fill="var(--fg)" font-size="12">аргумент 5 → number</text>
+      <line x1="558" y1="78" x2="590" y2="78" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="596,78 586,73 586,83" fill="var(--border)" />
+      <rect x="592" y="55" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="652" y="83" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">Box&lt;number&gt;</text>
+
+      <text x="58" y="157" text-anchor="middle" fill="var(--muted)" font-size="11">явно</text>
+      <rect x="120" y="130" width="190" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="215" y="158" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">new Box&lt;string&gt;('a')</text>
+      <line x1="312" y1="153" x2="344" y2="153" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="350,153 340,148 340,158" fill="var(--border)" />
+      <rect x="346" y="130" width="210" height="46" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="451" y="158" text-anchor="middle" fill="var(--fg)" font-size="12">T задан явно: string</text>
+      <line x1="558" y1="153" x2="590" y2="153" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="596,153 586,148 586,158" fill="var(--border)" />
+      <rect x="592" y="130" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="652" y="158" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">Box&lt;string&gt;</text>
+    </svg>
+    <figcaption>Сверху — тип выводится из значения аргумента. Снизу — тип задан вручную. Результат в обоих случаях — конкретный <code>Box&lt;…&gt;</code>.</figcaption>
+  </figure>
+  <app-code-block [code]="newExplicitVsInfer" lang="typescript" />
+  <p>Важный вывод: <code>Box&lt;number&gt;</code> и <code>Box&lt;string&gt;</code> — это <strong>разные типы</strong>, и один нельзя присвоить другому. Класс становится «номинально» различимым по своему параметру: две коробки одинакового устройства, но с разной разметкой содержимого несовместимы. Это защищает от случайного перемешивания «коробки под числа» и «коробки под строки».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дженерик-интерфейс <code>interface Container&lt;T&gt;</code></h2>
+  <p>Интерфейсы описывают <em>форму</em> объекта, и они тоже умеют быть дженериками. Параметр типа ставится после имени: <code>interface Container&lt;T&gt;</code>. Внутри <code>T</code> используется в типах полей и методов. Это позволяет одним интерфейсом описать «контейнер для чего угодно», не плодя <code>StringContainer</code>, <code>NumberContainer</code> и так далее.</p>
+  <app-code-block [code]="containerInterface" lang="typescript" />
+  <p>Как и с классом, при использовании интерфейса тип подставляется в угловых скобках: <code>Container&lt;number&gt;</code>, <code>Container&lt;string[]&gt;</code>. Дженерик-интерфейсы — прямое развитие обычных <a routerLink="/typescript/objects-interfaces/interfaces">интерфейсов</a>: та же идея «описать форму», только форма теперь настраиваемая.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дженерик-псевдоним <code>type Pair&lt;T, U&gt;</code></h2>
+  <p>Параметры типа принимает и <a routerLink="/typescript/objects-interfaces/type-aliases">псевдоним <code>type</code></a>. Более того, параметров может быть несколько — просто перечислите их через запятую: <code>type Pair&lt;T, U&gt;</code>. Классический пример — <strong>пара</strong> из двух значений возможно разных типов.</p>
+  <app-code-block [code]="pairAlias" lang="typescript" />
+  <p>Здесь <code>T</code> и <code>U</code> независимы: <code>Pair&lt;string, number&gt;</code> — это «строка плюс число», а <code>Pair&lt;number, number&gt;</code> — «число плюс число». Компилятор подставляет каждый параметр на своё место и следит за соответствием.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: реальные дженерик-типы</h2>
+  <p>Соберём несколько типовых структур, которые встречаются в реальном коде. Начнём со <strong>стека</strong> — «стопки тарелок»: класть и снимать элементы можно только сверху. Тип элементов задаётся параметром <code>T</code>, поэтому один класс <code>Stack&lt;T&gt;</code> годится и для чисел, и для строк, и для задач.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 600 300" width="100%" role="img" aria-label="Стек: push кладёт элемент наверх, pop снимает верхний и возвращает T или undefined">
+      <text x="300" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">Стек: и класть, и снимать можно только сверху</text>
+
+      <text x="200" y="66" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13">push(item: T)</text>
+      <line x1="200" y1="80" x2="200" y2="145" stroke="var(--green)" stroke-width="2" />
+      <polygon points="200,151 194,139 206,139" fill="var(--green)" />
+
+      <text x="400" y="66" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">pop(): T | undefined</text>
+      <line x1="400" y1="145" x2="400" y2="82" stroke="var(--accent)" stroke-width="2" />
+      <polygon points="400,76 394,88 406,88" fill="var(--accent)" />
+
+      <rect x="175" y="152" width="250" height="34" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="300" y="174" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">T  (верхний)</text>
+
+      <rect x="175" y="192" width="250" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="300" y="214" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">T</text>
+
+      <rect x="175" y="232" width="250" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="300" y="254" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">T  (нижний)</text>
+    </svg>
+    <figcaption><code>push</code> кладёт значение типа <code>T</code> наверх, <code>pop</code> снимает верхний и возвращает <code>T | undefined</code> (вдруг стопка пуста).</figcaption>
+  </figure>
+  <app-code-block [code]="stackClass" lang="typescript" />
+  <p>Заметьте <code>T | undefined</code> у <code>pop</code> и <code>peek</code>: стек может оказаться пустым, и честный тип это показывает — вызывающему придётся проверить результат. Это та же логика «может ничего не быть», что и у <a routerLink="/typescript/unions-narrowing/union">объединений</a> с <code>undefined</code>.</p>
+
+  <h3 class="doc__subtitle"><code>Result&lt;T, E = Error&gt;</code> — успех или ошибка</h3>
+  <p>Очень удобный тип для функций, которые могут завершиться неудачей: вместо исключения они возвращают «конверт» — либо успех со значением <code>T</code>, либо ошибку <code>E</code>. У параметра <code>E</code> есть <a routerLink="/typescript/generics/defaults">значение по умолчанию</a> <code>Error</code>, поэтому чаще всего пишут просто <code>Result&lt;number&gt;</code>.</p>
+  <app-code-block [code]="resultType" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>Repository&lt;T extends &#123; id: number &#125;&gt;</code> — картотека</h3>
+  <p>Хранилище-«картотека»: складывает записи и находит их по <code>id</code>. Но чтобы искать по <code>id</code>, надо быть уверенным, что поле <code>id</code> у записей вообще есть. Здесь помогает <a routerLink="/typescript/generics/constraints">ограничение</a> <code>T extends &#123; id: number &#125;</code>: оно требует, чтобы у любого <code>T</code> было числовое поле <code>id</code>.</p>
+  <app-code-block [code]="repositoryClass" lang="typescript" />
+
+  <h3 class="doc__subtitle"><code>KeyValueStore&lt;K, V&gt;</code> — обёртка над Map</h3>
+  <p>Два параметра типа: <code>K</code> — тип ключа, <code>V</code> — тип значения. Внутри — встроенный <code>Map&lt;K, V&gt;</code> (тоже дженерик!), а класс лишь даёт ему удобное имя и методы. Ограничение <code>K extends string | number</code> сужает ключи до разумных типов.</p>
+  <app-code-block [code]="kvStoreClass" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> <code>Repository&lt;Task&gt;</code> — это <em>склад под один сорт товара</em>: на воротах висит табличка «только задачи», и кладовщик не примет коробку без инвентарного номера (<code>id</code>). А <code>KeyValueStore&lt;string, number&gt;</code> — <em>шкафчики камеры хранения</em>: у каждого номерок-ключ (строка) и содержимое (число).</p>
+</section>
+
+<section class="doc__section">
+  <h2>Статические члены не видят <code>T</code></h2>
+  <p>Есть одно важное ограничение. Параметр типа <code>T</code> «принадлежит» экземпляру: у каждого объекта <code>Box</code> он свой (<code>Box&lt;number&gt;</code>, <code>Box&lt;string&gt;</code>…). А <strong>статический</strong> член — общий на весь класс, он один на всех. Связать «одно на всех» с «у каждого своё» невозможно, поэтому компилятор запрещает использовать <code>T</code> в статических полях и свойствах.</p>
+  <p class="note"><strong>Аналогия.</strong> <code>T</code> — это ярлык на <em>конкретной коробке</em> («тут числа», «тут строки»). А статический член — <em>вывеска на воротах всего завода</em>: она одна, и не может одновременно гласить «числа» для одной коробки и «строки» для другой. Отсюда и запрет.</p>
+  <app-code-block [code]="staticError" lang="typescript" />
+  <p>Обход простой: если статическому методу нужен «какой-то тип», дайте <strong>ему самому</strong> отдельный параметр типа (<code>static of&lt;U&gt;(...)</code>). Такой <code>U</code> не связан с <code>T</code> класса и потому разрешён.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Класс реализует дженерик-интерфейс</h2>
+  <p>Дженерик-интерфейс отлично работает как <strong>контракт</strong>: он говорит «что» умеет структура, не навязывая «как». Класс берёт на себя выполнение контракта через <code>implements</code>. Улучшим наш стек: вынесем список умений в интерфейс <code>Stack&lt;T&gt;</code>, а конкретную реализацию назовём <code>ArrayStack&lt;T&gt;</code>.</p>
+  <app-code-block [code]="implementsStack" lang="typescript" />
+  <p>Параметр <code>T</code> класса передаётся в <code>T</code> интерфейса: <code>class ArrayStack&lt;T&gt; implements Stack&lt;T&gt;</code>. Компилятор проверит, что класс реализовал все методы контракта с правильными типами — забыли <code>peek</code> или перепутали тип, и будет ошибка. Плюс контракта в том, что реализаций может быть несколько (например, стек поверх связного списка), а код, работающий с типом <code>Stack&lt;T&gt;</code>, не заметит разницы.</p>
+
+  <h3 class="doc__subtitle">Метод со своим параметром типа</h3>
+  <p>Отдельный параметр типа может быть не только у класса, но и у конкретного <strong>метода</strong>. Классический пример — <code>map</code>: он берёт <code>Box&lt;T&gt;</code> и превращает его в <code>Box&lt;U&gt;</code>, применив функцию преобразования. Тип <code>U</code> компилятор выведет из того, что вернёт эта функция.</p>
+  <app-code-block [code]="genericMethod" lang="typescript" />
+  <p>Так дженерик-класс и дженерик-метод складываются вместе: <code>numBox.map(n =&gt; &#96;#$&#123;n&#125;&#96;)</code> превращает <code>Box&lt;number&gt;</code> в <code>Box&lt;string&gt;</code>, а следующий <code>map</code> — обратно в <code>Box&lt;number&gt;</code>, и на каждом шаге тип содержимого известен точно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Дженерик-класс <code>class Box&lt;T&gt;</code></strong> — чертёж-фабрика: <code>T</code> — «сорт содержимого», подставляется при создании объекта.</li>
+    <li>Тип объекта задают <strong>явно</strong> (<code>new Box&lt;string&gt;('a')</code>) или получают <strong>выводом</strong> из аргумента конструктора (<code>new Box(5)</code> → <code>Box&lt;number&gt;</code>). <code>Box&lt;number&gt;</code> и <code>Box&lt;string&gt;</code> — <em>разные</em>, несовместимые типы.</li>
+    <li>Дженериками бывают и <strong>интерфейсы</strong> (<code>interface Container&lt;T&gt;</code>), и <strong>псевдонимы</strong> (<code>type Pair&lt;T, U&gt;</code>) — параметров может быть несколько.</li>
+    <li>Типовые структуры: <code>Stack&lt;T&gt;</code>, <code>Result&lt;T, E = Error&gt;</code>, <code>Repository&lt;T extends &#123; id: number &#125;&gt;</code>, <code>KeyValueStore&lt;K, V&gt;</code> — один класс на любой тип содержимого.</li>
+    <li><strong>Статические члены не видят <code>T</code></strong> класса (он у каждого экземпляра свой). Нужен тип статике — дайте параметр самому методу: <code>static of&lt;U&gt;(...)</code>.</li>
+    <li>Класс выполняет контракт дженерик-интерфейса через <code>implements Stack&lt;T&gt;</code>; у отдельного метода может быть свой параметр типа (<code>map&lt;U&gt;</code>).</li>
+  </ul>
+  <p class="note">Дальше загляните в <a routerLink="/typescript/generics/constraints">Ограничения (extends)</a> — там подробно про <code>T extends &#123; id: number &#125;</code>, и в <a routerLink="/typescript/generics/defaults">Значения по умолчанию</a> — про <code>E = Error</code>. Тонкие места (пустой тип, дженерик в возвращаемом типе как замаскированный <a routerLink="/typescript/assertions/as">as</a>) собраны на странице <a routerLink="/typescript/generics/pitfalls">Нюансы и подводные камни</a>. Базовую механику дженериков всегда можно освежить в разделе <a routerLink="/typescript/generics/basics">Основы</a>.</p>
+</section>
+</article>
