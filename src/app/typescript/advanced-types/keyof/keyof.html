@@ -1,0 +1,125 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/advanced-types">Продвинутые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">keyof</span></nav>
+
+<h1 class="doc__title">keyof</h1>
+<p class="doc__lead"><code>keyof</code> — это <strong>«оглавление типа»</strong>, или <strong>список подписей на ящиках картотеки</strong>. Представьте шкаф с ящиками, на каждом наклейка: «name», «age», «email». <code>keyof</code> берёт тип-объект и выдаёт <strong>объединение имён всех его ключей</strong> — как строковые литералы. Не сами значения из ящиков, а именно <em>перечень наклеек</em>. И, что критично, работает это в <strong>мире типов</strong> (на этапе компиляции): в собранном JavaScript никакого <code>keyof</code> нет.</p>
+
+<section class="doc__section">
+  <h2>Зачем нужен <code>keyof</code></h2>
+  <p>Начнём с боли, которую <code>keyof</code> лечит. Часто рядом с типом нужен <em>перечень его допустимых полей</em>: например, функция сортировки должна принимать только реальное имя колонки, а не любую строку. Напрашивается решение — выписать имена ключей руками, как <a routerLink="/typescript/unions-narrowing/union">объединение</a> строковых <a routerLink="/typescript/basic-types/literal-types">литералов</a>. Но такой список живёт <em>отдельно</em> от самого типа и быстро с ним «расходится».</p>
+  <app-code-block [code]="painNoKeyof" lang="typescript" />
+  <p>Проблема ручного списка в том, что компилятор не видит связи между ним и типом <code>Product</code>. Добавили поле — список устарел, и никто об этом не предупредит. <code>keyof</code> убирает дублирование: он всегда берёт <strong>актуальный</strong> набор ключей прямо из типа-источника. Один источник правды вместо двух.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Базово: <code>keyof User</code> = <code>'name' | 'age'</code></h2>
+  <p><code>keyof</code> — это <strong>оператор над типами</strong>. Слева от него не значение, а тип: <code>keyof SomeType</code>. Результат — <strong>объединение</strong> строковых литералов, по одному на каждый ключ. Для типа с полями <code>name</code> и <code>age</code> получаем ровно <code>'name' | 'age'</code>.</p>
+  <app-code-block [code]="keyofUser" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 250" width="100%" role="img" aria-label="keyof берёт тип-объект User и возвращает объединение имён его ключей: name, age, email">
+      <rect x="36" y="52" width="230" height="150" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="151" y="80" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">interface User</text>
+      <line x1="60" y1="92" x2="242" y2="92" stroke="var(--border)" stroke-width="1" />
+      <text x="66" y="120" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">name: string</text>
+      <text x="66" y="150" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">age: number</text>
+      <text x="66" y="180" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">email: string</text>
+
+      <text x="325" y="114" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">keyof</text>
+      <line x1="272" y1="127" x2="368" y2="127" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="368,121 382,127 368,133" fill="var(--muted)" />
+
+      <rect x="398" y="56" width="206" height="40" rx="9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="501" y="81" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">'name'</text>
+      <rect x="398" y="107" width="206" height="40" rx="9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="501" y="132" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">'age'</text>
+      <rect x="398" y="158" width="206" height="40" rx="9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="501" y="183" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">'email'</text>
+      <text x="501" y="228" text-anchor="middle" fill="var(--muted)" font-size="12">объединение строковых литералов</text>
+    </svg>
+    <figcaption>Слева — тип-объект с тремя полями. <code>keyof</code> превращает его в <code>'name' | 'age' | 'email'</code>: три отдельных ключа-наклейки, соединённых в одно объединение.</figcaption>
+  </figure>
+  <p>Держите в голове главную опору всего раздела: <a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>. Тип <code>UserKey</code> — это множество из трёх строк <code>'name'</code>, <code>'age'</code>, <code>'email'</code>. Значение подходит под этот тип тогда и только тогда, когда оно равно одной из этих трёх строк. Ничего «магического» — просто множество допустимых имён.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>keyof</code> — это объединение литералов</h2>
+  <p>Раз результат <code>keyof</code> — обычное <a routerLink="/typescript/unions-narrowing/union">объединение</a> строковых литералов, к нему применимы все привычные операции над объединениями: можно исключить член через <code>Exclude</code>, оставить пересечение через <code>Extract</code>, использовать его в <a routerLink="/typescript/unions-narrowing/narrowing">сужении</a>. Это не какая-то особая сущность, а такой же union, как <code>'left' | 'right'</code>.</p>
+  <app-code-block [code]="keyofUnion" lang="typescript" />
+  <p>Такой приём удобен, когда из полного набора полей нужно оставить «публичные» (без секретных) или, наоборот, только редактируемые. Вместо того чтобы переписывать список имён руками, вы получаете его из типа и уточняете операциями над объединениями.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>keyof</code> с индексной сигнатурой</h2>
+  <p>Не у каждого типа есть фиксированный набор полей. Бывает <strong>индексная сигнатура</strong> — «любой строковый ключ ведёт к значению такого-то типа», например словарь очков игроков. Конкретных имён-ключей тут нет вовсе, поэтому <code>keyof</code> возвращает не список литералов, а <code>string | number</code>.</p>
+  <app-code-block [code]="keyofIndexSig" lang="typescript" />
+  <p class="note"><strong>Почему <code>number</code>, а не только <code>string</code>?</strong> В JavaScript ключи объекта — всегда строки, но обратиться можно и по числу: <code>obj[1]</code> под капотом превращается в <code>obj['1']</code>. Поэтому для сигнатуры <code>&#123; [k: string]: number &#125;</code> компилятор считает допустимыми и строковые, и числовые ключи — отсюда <code>string | number</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>keyof</code> от объединения: только общие ключи</h2>
+  <p>А что, если применить <code>keyof</code> не к одному типу, а к <a routerLink="/typescript/unions-narrowing/union">объединению</a> типов? Здравый смысл подсказывает верный ответ. Если значение — это «<code>Article</code> <em>или</em> <code>Video</code>», то мы заранее не знаем, что именно перед нами. Безопасно обращаться можно лишь к тем ключам, которые есть у <strong>обоих</strong> — иначе на статье не окажется поля <code>durationSec</code>, а на видео — поля <code>body</code>. Поэтому <code>keyof (A | B)</code> оставляет только <strong>общие</strong> ключи.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 380" width="100%" role="img" aria-label="keyof от объединения Article и Video оставляет только общие ключи id и title">
+      <text x="175" y="34" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">Article</text>
+      <text x="485" y="34" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">Video</text>
+
+      <ellipse cx="255" cy="160" rx="175" ry="110" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="2" />
+      <ellipse cx="405" cy="160" rx="175" ry="110" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="2" />
+
+      <text x="150" y="152" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">body</text>
+      <text x="150" y="174" text-anchor="middle" fill="var(--red)" font-size="11">только Article</text>
+
+      <text x="512" y="152" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">durationSec</text>
+      <text x="512" y="174" text-anchor="middle" fill="var(--red)" font-size="11">только Video</text>
+
+      <text x="330" y="128" text-anchor="middle" fill="var(--muted)" font-size="11">общие ключи</text>
+      <text x="330" y="158" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="15">'id'</text>
+      <text x="330" y="184" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="15">'title'</text>
+
+      <line x1="330" y1="272" x2="330" y2="300" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="324,300 330,314 336,300" fill="var(--muted)" />
+
+      <rect x="150" y="320" width="360" height="46" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="330" y="348" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">keyof (Article | Video) = 'id' | 'title'</text>
+    </svg>
+    <figcaption>Пересечение двух наборов ключей. В центре — общие для обоих типов <code>'id'</code> и <code>'title'</code>; уникальные <code>body</code> и <code>durationSec</code> в результат не попадают.</figcaption>
+  </figure>
+  <app-code-block [code]="keyofUnionObjects" lang="typescript" />
+  <p class="note"><strong>Легко перепутать.</strong> Объединение <em>типов</em> сужает набор ключей (остаётся пересечение), хотя само множество значений — расширяется. Это кажется парадоксом, но всё сходится: чем больше вариантов значения, тем меньше того, что гарантированно есть у каждого. Модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество</a>» помогает не запутаться.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: типобезопасный доступ и перебор ключей</h2>
+  <p>Самое частое применение <code>keyof</code> — вместе с дженериками. Классика — функция «достать поле объекта по имени», которая должна принимать только <em>существующие</em> ключи и возвращать <em>правильный</em> тип поля. Ключ ограничивают через <code>K extends keyof T</code> (это мостик к <a routerLink="/typescript/generics/constraints">ограничениям <code>extends</code></a>), а тип результата описывают <a routerLink="/typescript/advanced-types/indexed-access">индексным доступом</a> <code>T[K]</code>.</p>
+  <app-code-block [code]="getProp" lang="typescript" />
+  <p>Обратите внимание: тип результата <em>меняется в зависимости от ключа</em>. Для <code>'name'</code> вернётся <code>string</code>, для <code>'age'</code> — <code>number</code>. А несуществующий ключ <code>'phone'</code> отсекается ещё на компиляции. Всё это — без единого <a routerLink="/typescript/generics/basics"><code>any</code></a> и без ручных проверок в рантайме.</p>
+
+  <h3 class="doc__subtitle">Перебор ключей: <code>keyof</code> против <code>Object.keys</code></h3>
+  <p>Новичков часто смущает вопрос: «Если <code>keyof</code> даёт ключи, почему <code>Object.keys(obj)</code> возвращает просто <code>string[]</code>, а не точный набор?» Ответ снова упирается в разделение миров: <code>keyof</code> живёт в <strong>мире типов</strong> (компиляция), а <code>Object.keys</code> — это настоящая функция, работающая со <strong>значениями</strong> в рантайме.</p>
+  <app-code-block [code]="iterateKeys" lang="typescript" />
+  <p class="note"><strong>Почему <code>Object.keys</code> шире.</strong> Из-за структурной типизации в переменную типа <code>settings</code> мог попасть объект и с <em>лишними</em> полями. Тогда точный набор ключей был бы неправдой, поэтому TypeScript намеренно возвращает <code>string[]</code>. Приведение <code>as (keyof typeof settings)[]</code> — это ваше обещание компилятору, что лишних полей нет; проверять его правдивость он не станет.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>keyof</code> вместе с <code>typeof</code></h2>
+  <p>Часто ключи нужны не от объявленного <em>типа</em>, а от уже существующего <em>значения</em> — объекта с настройками, картой роутов, конфигом. Тут в дело вступает <a routerLink="/typescript/advanced-types/typeof">оператор <code>typeof</code></a> в позиции типа: он берёт тип <em>из значения</em>. А дальше к этому типу применяют <code>keyof</code>. Читается справа налево: <code>keyof typeof routes</code> — «ключи типа значения <code>routes</code>».</p>
+  <app-code-block [code]="keyofTypeof" lang="typescript" />
+  <p>Это один из самых полезных приёмов: единственный источник правды — сам объект <code>routes</code>, а тип имён выводится из него автоматически. Добавите роут — тип <code>RouteName</code> расширится сам. Тот же паттерн лежит в основе <a routerLink="/typescript/enums/alternatives">альтернативы enum через <code>as const</code></a>.</p>
+  <p class="note"><strong>Два разных <code>typeof</code>.</strong> Здесь <code>typeof</code> стоит <em>в позиции типа</em> и достаёт тип из значения — это операция в мире типов. Не путайте с рантайм-оператором <code>typeof x === 'string'</code> в обычном выражении: тот возвращает строку и работает со значениями. Одинаковое слово, разные миры. Подробнее — на странице <a routerLink="/typescript/advanced-types/typeof">оператор <code>typeof</code></a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><code>keyof T</code> — оператор в <strong>мире типов</strong>: берёт тип-объект и возвращает <strong>объединение имён его ключей</strong> как строковые литералы. «Оглавление типа».</li>
+    <li>Для <code>interface User &#123; name: string; age: number &#125;</code> результат — <code>'name' | 'age'</code>. Это <em>тип</em>, а не значение: в рантайме его нет.</li>
+    <li>Результат — обычное <strong>объединение литералов</strong>, поэтому с ним работают приёмы объединений: <code>Exclude</code>, <code>Extract</code>, сужение.</li>
+    <li>Для индексной сигнатуры <code>&#123; [k: string]: number &#125;</code> получаем <code>string | number</code> (числовой ключ тоже допустим).</li>
+    <li><code>keyof (A | B)</code> оставляет только <strong>общие</strong> ключи обоих типов — то, к чему безопасно обращаться в любом случае.</li>
+    <li>Главный практический приём — <code>K extends keyof T</code> для типобезопасного доступа к полю с типом результата <code>T[K]</code>.</li>
+    <li><code>keyof</code> на уровне типов ≠ <code>Object.keys</code> в рантайме: последний возвращает <code>string[]</code>, потому что не гарантирует точный набор ключей.</li>
+    <li>Связка <code>keyof typeof value</code> достаёт имена ключей из готового значения — очень частый паттерн для конфигов и роутов.</li>
+  </ul>
+  <p class="note">Дальше по разделу: <a routerLink="/typescript/advanced-types/indexed-access">индексный доступ <code>T[K]</code></a> (достать тип по ключу), <a routerLink="/typescript/advanced-types/mapped">отображённые типы</a> (пройтись <code>&#123; [K in keyof T]: ... &#125;</code> по всем ключам), <a routerLink="/typescript/advanced-types/typeof">оператор <code>typeof</code></a> и <a routerLink="/typescript/advanced-types/pitfalls">нюансы и подводные камни</a>. Опора всего раздела — <a routerLink="/typescript/basic-types/subtypes-supertypes">тип как множество значений</a> и <a routerLink="/typescript/generics/basics">дженерики</a>.</p>
+</section>
+</article>

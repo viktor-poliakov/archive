@@ -1,0 +1,173 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/advanced-types">Продвинутые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Условные типы</span></nav>
+
+<h1 class="doc__title">Условные типы</h1>
+<p class="doc__lead">Условный тип <code>T extends U ? X : Y</code> — это <strong>тернарный «if», но для типов</strong>. Компилятор смотрит, подходит ли <code>T</code> под форму <code>U</code> (является ли подтипом), и выбирает одну из двух веток. Как <strong>сортировщик на почте</strong>: подходит письмо под условие — уезжает в одну корзину, не подходит — в другую. Важно с самого начала: вся эта «сортировка» происходит в <strong>мире типов, на этапе компиляции</strong> — в собранном JavaScript от неё не остаётся ни строчки.</p>
+
+<section class="doc__section">
+  <h2>Синтаксис: <code>T extends U ? X : Y</code></h2>
+  <p>Если вы уже писали тернарный оператор в обычном коде — <code>условие ? тогда : иначе</code>, — то синтаксис вам знаком один в один. Разница только в том, что здесь и «условие», и обе ветки — это <strong>типы</strong>, а не значения. Компилятор задаёт ровно один вопрос: «<em>является ли <code>T</code> подтипом <code>U</code></em>?» Если да — весь условный тип превращается в <code>X</code>, если нет — в <code>Y</code>.</p>
+  <p>Слово <code>extends</code> здесь читается не как «наследует», а как «<strong>подходит под форму / является подтипом</strong>». Это ровно та модель «тип — это множество значений», о которой шла речь на странице <a routerLink="/typescript/basic-types/subtypes-supertypes">Подтипы и супертипы</a>: <code>'привет'</code> входит во множество <code>string</code>, поэтому <code>'привет' extends string</code> истинно, а <code>number extends string</code> — ложно.</p>
+  <app-code-block [code]="anatomy" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 280" width="100%" role="img" aria-label="Условный тип как сортировщик: T extends U подходит — ветка X слева, не подходит — ветка Y справа">
+      <text x="320" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">как сортировщик на почте: подходит — в одну корзину, нет — в другую</text>
+
+      <rect x="225" y="44" width="190" height="56" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="320" y="79" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">T extends U ?</text>
+
+      <line x1="320" y1="100" x2="159" y2="172" stroke="var(--green)" stroke-width="2" />
+      <polygon points="154,172 164,172 159,181" fill="var(--green)" />
+      <text x="212" y="140" text-anchor="middle" fill="var(--green)" font-size="13">да</text>
+
+      <line x1="320" y1="100" x2="481" y2="172" stroke="var(--red)" stroke-width="2" />
+      <polygon points="476,172 486,172 481,181" fill="var(--red)" />
+      <text x="428" y="140" text-anchor="middle" fill="var(--red)" font-size="13">нет</text>
+
+      <rect x="44" y="181" width="230" height="66" rx="12" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="159" y="211" text-anchor="middle" fill="var(--fg)" font-size="14">X — тип-ответ «да»</text>
+      <text x="159" y="232" text-anchor="middle" fill="var(--muted)" font-size="12">T подходит под U</text>
+
+      <rect x="366" y="181" width="230" height="66" rx="12" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="481" y="211" text-anchor="middle" fill="var(--fg)" font-size="14">Y — тип-ответ «нет»</text>
+      <text x="481" y="232" text-anchor="middle" fill="var(--muted)" font-size="12">T не подходит под U</text>
+    </svg>
+    <figcaption>Компилятор проверяет <code>T extends U</code> и выбирает одну ветку. Результат условного типа — это <code>X</code> либо <code>Y</code>, но никогда обе сразу (пока речь об одном конкретном <code>T</code>).</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Простые примеры: <code>IsString</code> и <code>IsArray</code></h2>
+  <p>Самый частый шаблон условного типа — вернуть литерал <code>true</code> или <code>false</code>, то есть сделать «типовую проверку», отвечающую да/нет. Такие типы обычно называют с приставкой <code>Is…</code>. Посмотрим на пару штук: проверку «строка ли <code>T</code>» и «массив ли <code>T</code>».</p>
+  <app-code-block [code]="simpleExamples" lang="typescript" />
+  <p>Обратите внимание: условие <code>U</code> может быть какой угодно «формой» — примитивом (<code>string</code>), формой массива (<code>unknown[]</code>), формой функции (<code>(...args: any[]) =&gt; any</code>). Мы каждый раз спрашиваем одно и то же: входит ли <code>T</code> во множество, которое описывает <code>U</code>. Пока мы подставляем <em>одиночные</em> типы вроде <code>number[]</code> или <code>string</code>, всё предсказуемо. Но стоит подставить <a routerLink="/typescript/unions-narrowing/union">объединение</a> — и начинается самое интересное.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Главное и коварное: распределение (distributive)</h2>
+  <p>Это тот механизм, из-за которого новички теряют полдня, не понимая, «почему тип получился не такой». Правило звучит так: <strong>если слева от <code>extends</code> стоит «голый» параметр <code>T</code> (просто <code>T</code>, ничем не обёрнутый), и в него подставили объединение — условие применяется к <em>каждому члену объединения по отдельности</em></strong>, а результаты снова собираются в объединение.</p>
+  <app-code-block [code]="distributiveToArray" lang="typescript" />
+  <p>Смотрите, что получилось: <code>ToArray&lt;string | number&gt;</code> дал <code>string[] | number[]</code> — «массив строк <em>или</em> массив чисел», а вовсе не <code>(string | number)[]</code> — «массив из строк-или-чисел». Это <strong>разные типы</strong>, и разница возникла именно из-за распределения. Разберём по шагам, что сделал компилятор.</p>
+  <app-code-block [code]="distributiveExplain" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 720 300" width="100%" role="img" aria-label="Распределение: объединение string и number заходит в ToArray, разбивается почленно на string и number, к каждому применяется T в квадратных скобках, на выходе объединение массивов">
+      <text x="360" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">«голый» T + объединение → условие применяется ПОЧЛЕННО</text>
+
+      <rect x="20" y="120" width="150" height="56" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="95" y="153" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string | number</text>
+
+      <line x1="170" y1="148" x2="246" y2="102" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="240,96 250,100 243,108" fill="var(--muted)" />
+      <line x1="170" y1="148" x2="246" y2="194" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="240,190 250,194 243,202" fill="var(--muted)" />
+      <text x="200" y="118" text-anchor="middle" fill="var(--muted)" font-size="11">разбить</text>
+
+      <rect x="250" y="78" width="120" height="48" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="310" y="108" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string</text>
+      <rect x="250" y="170" width="120" height="48" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="310" y="200" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">number</text>
+
+      <line x1="370" y1="102" x2="428" y2="102" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="428,96 438,102 428,108" fill="var(--muted)" />
+      <text x="399" y="92" text-anchor="middle" fill="var(--accent)" font-size="11">T[ ]</text>
+      <line x1="370" y1="194" x2="428" y2="194" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="428,188 438,194 428,200" fill="var(--muted)" />
+      <text x="399" y="184" text-anchor="middle" fill="var(--accent)" font-size="11">T[ ]</text>
+
+      <rect x="440" y="78" width="130" height="48" rx="8" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="505" y="108" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">string[ ]</text>
+      <rect x="440" y="170" width="130" height="48" rx="8" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="505" y="200" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">number[ ]</text>
+
+      <line x1="570" y1="102" x2="606" y2="138" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="601,133 610,140 602,145" fill="var(--muted)" />
+      <line x1="570" y1="194" x2="606" y2="162" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="601,167 610,160 604,155" fill="var(--muted)" />
+
+      <rect x="600" y="122" width="112" height="56" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="656" y="147" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">string[ ] |</text>
+      <text x="656" y="167" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">number[ ]</text>
+
+      <text x="360" y="285" text-anchor="middle" fill="var(--red)" font-size="12">итог: string[ ] | number[ ] — а НЕ (string | number)[ ]</text>
+    </svg>
+    <figcaption>Объединение заходит в <code>ToArray</code>, <strong>разбивается</strong> на <code>string</code> и <code>number</code>, к каждому применяется <code>T[]</code>, и на выходе снова <strong>объединение</strong> — <code>string[] | number[]</code>.</figcaption>
+  </figure>
+  <p>Удобно держать в голове табличку: как ведёт себя одна и та же логика в «голой» и в «завёрнутой» записи (о второй — в следующей секции).</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Запись условия</th>
+          <th>Распределяется по объединению?</th>
+          <th><code>ToArray&lt;string | number&gt;</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Голый параметр: <code>T extends U ? …</code></td>
+          <td class="yes">✅ да, почленно</td>
+          <td><code>string[] | number[]</code></td>
+        </tr>
+        <tr>
+          <td>В кортеже: <code>[T] extends [U] ? …</code></td>
+          <td class="no">❌ нет, целиком</td>
+          <td><code>(string | number)[]</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Почему так.</strong> Распределение — не каприз, а полезное поведение: чаще всего мы и хотим «применить преобразование к каждому варианту объединения». Именно на нём построены встроенные утилиты вроде <code>NonNullable</code> и <code>Extract</code>. Главное — <em>знать</em>, что оно включается, и уметь его выключить, когда объединение нужно рассмотреть целиком.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>never</code> распределяется в <code>never</code></h2>
+  <p>Есть один пограничный случай, который стабильно ставит новичков в тупик. Вспомним модель «тип — это множество»: <code>never</code> — это <strong>пустое множество</strong>, объединение вообще без членов. А раз членов ноль, то и распределять условие не по чему: цикл «пройтись по каждому варианту» делает ноль шагов и сразу отдаёт пустой результат — то есть снова <code>never</code>. Ветки условия при этом даже не рассматриваются.</p>
+  <app-code-block [code]="neverDistribute" lang="typescript" />
+  <p>Отсюда неинтуитивный итог: <code>ToArray&lt;never&gt;</code> — это <code>never</code>, а не <code>never[]</code>. Если вам нужно поймать именно <code>never</code> и обработать его особо, распределение придётся отключить — как раз об этом следующая секция.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как отключить распределение: <code>[T] extends [U]</code></h2>
+  <p>Распределение срабатывает <em>только</em> для «голого» параметра — когда слева от <code>extends</code> стоит буквально <code>T</code>. Значит, чтобы его выключить, надо сделать так, чтобы <code>T</code> перестал быть «голым»: спрятать его внутрь чего-нибудь. Классический приём — <strong>обернуть обе стороны в кортеж из одного элемента</strong>: <code>[T] extends [U]</code>. Теперь слева не <code>T</code>, а <code>[T]</code>, и объединение проверяется <strong>целиком, как единый неделимый тип</strong>.</p>
+  <app-code-block [code]="disableDistribution" lang="typescript" />
+  <p>Сравните две версии на одном и том же входе <code>string | number</code>: распределяющая даёт <code>string[] | number[]</code>, а обёрнутая — <code>(string | number)[]</code>. Тот же приём <code>[T] extends [never]</code> — единственный надёжный способ проверить, «пустой ли тип»: без обёртки условие с <code>never</code> просто вернуло бы <code>never</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>boolean</code> распределяется как <code>true | false</code></h2>
+  <p>А это — любимая «загадка» на собеседованиях. Под капотом <code>boolean</code> в TypeScript устроен как объединение двух <a routerLink="/typescript/basic-types/literal-types">литеральных типов</a>: <code>true | false</code>. И раз это объединение, «голый» <code>boolean</code> в условном типе ведёт себя точно так же, как любой другой union — <strong>распределяется</strong>.</p>
+  <app-code-block [code]="booleanDistribute" lang="typescript" />
+  <p>Поэтому <code>Flip&lt;boolean&gt;</code> — это не одно значение, а <code>'yes' | 'no'</code>: условие сработало и для <code>true</code>, и для <code>false</code>, а результаты объединились. Если вы ждали единственный ответ, а получили объединение из двух — почти наверняка виноват вот этот скрытый <code>true | false</code> внутри <code>boolean</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: чистим объединение и выбираем тип по флагу</h2>
+  <p>Теперь два по-настоящему полезных кейса, которые встречаются в реальном коде каждый день.</p>
+
+  <h3 class="doc__subtitle">Убрать <code>null</code> и <code>undefined</code> из объединения</h3>
+  <p>Частая задача: пришло значение типа <code>string | null | number | undefined</code>, а нам нужен «тот же тип, но без пустых значений». Условный тип с распределением делает это в одну строку — так устроен встроенный <code>NonNullable&lt;T&gt;</code>.</p>
+  <app-code-block [code]="nonNullable" lang="typescript" />
+  <p>Здесь работают сразу два знакомых механизма: распределение проходит по каждому члену объединения, а те члены, что провалились в ветку <code>never</code>, просто <strong>исчезают</strong> — ведь <code>never</code> в объединении растворяется (пустое множество ничего не добавляет). На выходе остаётся <code>string | number</code>.</p>
+
+  <h3 class="doc__subtitle">Выбрать целый тип по флагу</h3>
+  <p>Условие <code>U</code> не обязано быть примитивом — и ветки не обязаны быть <code>true</code>/<code>false</code>. Можно выбирать <strong>целую форму объекта</strong> в зависимости от параметра-флага. Классика — ответ API, форма которого зависит от режима «подробно / кратко».</p>
+  <app-code-block [code]="selectByFlag" lang="typescript" />
+  <p>А если в такой тип передать сам <code>boolean</code> (а не конкретный <code>true</code>/<code>false</code>), то по уже знакомому правилу он распределится и вернёт <strong>оба варианта сразу</strong> — <code>ApiUser&lt;true&gt; | ApiUser&lt;false&gt;</code>. Ещё раз подчеркнём: и выбор ветки, и вычисление итоговой формы происходят в <strong>мире типов на этапе компиляции</strong>; в рантайме останется обычный объект без единого следа этих вычислений.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <p>Условные типы редко работают в одиночку. Чаще всего их включают, чтобы применить <a routerLink="/typescript/advanced-types/infer">infer</a> — он позволяет прямо в ветке «да» <strong>поймать</strong> тип, спрятанный внутри проверяемого (тип элемента массива, тип возврата функции, содержимое <code>Promise</code>). Небольшой тизер:</p>
+  <app-code-block [code]="inferTeaser" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Условный тип</strong> <code>T extends U ? X : Y</code> — тернарник в мире типов: подходит <code>T</code> под <code>U</code> (является подтипом) — берётся <code>X</code>, нет — <code>Y</code>. Всё это на этапе компиляции.</li>
+    <li><code>extends</code> здесь = «<strong>является подтипом / подходит под форму</strong>» (модель <a routerLink="/typescript/basic-types/subtypes-supertypes">множеств</a>), а не наследование классов.</li>
+    <li><strong>Распределение (distributive).</strong> Голый параметр + объединение → условие применяется <em>почленно</em>: <code>ToArray&lt;string | number&gt;</code> = <code>string[] | number[]</code>, а не <code>(string | number)[]</code>.</li>
+    <li><code>never</code> — пустое объединение: распределять не по чему, поэтому <code>ToArray&lt;never&gt;</code> = <code>never</code>.</li>
+    <li><strong>Отключить распределение</strong> — обернуть обе стороны в кортеж: <code>[T] extends [U]</code>; тогда объединение проверяется целиком.</li>
+    <li><code>boolean</code> — это <code>true | false</code>, поэтому тоже <strong>распределяется</strong>: <code>Flip&lt;boolean&gt;</code> = <code>'yes' | 'no'</code>.</li>
+    <li><strong>Практика:</strong> чистка объединения (<code>NonNullable</code> убирает <code>null</code>/<code>undefined</code>) и выбор целой формы типа по флагу.</li>
+  </ul>
+  <p class="note">Дальше по теме: <a routerLink="/typescript/advanced-types/infer">infer</a> (ловим типы в ветке «да»), <a routerLink="/typescript/advanced-types/mapped">отображённые типы</a> и <a routerLink="/typescript/advanced-types/template-literals">шаблонные литеральные типы</a> — их часто комбинируют с условными. Полезно освежить фундамент: <a routerLink="/typescript/generics/basics">дженерики</a>, <a routerLink="/typescript/generics/constraints">ограничения <code>extends</code></a>, <a routerLink="/typescript/unions-narrowing/union">объединения</a> и модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>». Типичные ошибки собраны в разделе <a routerLink="/typescript/advanced-types/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+</article>

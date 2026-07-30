@@ -1,0 +1,136 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/advanced-types">Продвинутые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Оператор typeof</span></nav>
+
+<h1 class="doc__title">Оператор typeof</h1>
+<p class="doc__lead"><code>typeof</code> в позиции ТИПА — это <strong>«снять мерку с готовой вещи»</strong>: у нас уже есть <em>значение</em> (например, объект настроек), и мы хотим получить его <em>тип</em>, не выписывая его руками. Портной не придумывает размеры из головы — он прикладывает сантиметр к тому, что уже сшито. Так и здесь: тип не сочиняют заново, а «снимают» с существующего значения. И, что важно, снимают на этапе компиляции — в готовой программе этой операции уже нет.</p>
+
+<section class="doc__section">
+  <h2>Главное различие: два разных <code>typeof</code></h2>
+  <p>Прежде чем что-то делать, разведём по углам две вещи, которые пишутся одним словом и потому вечно путаются. В TypeScript слово <code>typeof</code> означает <strong>два совершенно разных инструмента</strong>, и они живут в разных мирах.</p>
+  <p><strong>Первый</strong> — знакомый по обычному JavaScript <em>рантайм-оператор</em>. Он стоит внутри <em>выражения</em> (там, где вычисляются значения) и во время работы программы возвращает <strong>строку</strong>: <code>'string'</code>, <code>'number'</code>, <code>'object'</code> и так далее. Это код, который реально исполняется в браузере.</p>
+  <p><strong>Второй</strong> — <em>typeof в позиции типа</em> (его называют «запрос типа», type query). Он стоит там, где ожидается тип: после <code>type</code>, после двоеточия в аннотации. Он не исполняется никогда — он работает только для компилятора и возвращает <strong>тип</strong>. Именно про него вся эта страница.</p>
+  <app-code-block [code]="twoTypeofs" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 700 330" width="100%" role="img" aria-label="Одно слово typeof живёт в двух разных мирах: в мире значений оно возвращает строку, в мире типов — тип">
+      <text x="350" y="26" text-anchor="middle" fill="var(--fg)" font-size="15">Одно слово <tspan font-family="monospace">typeof</tspan> — два разных инструмента</text>
+
+      <rect x="300" y="44" width="100" height="42" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="350" y="71" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="16">typeof</text>
+
+      <line x1="322" y1="86" x2="185" y2="120" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="182,113 174,124 190,125" fill="var(--muted)" />
+      <line x1="378" y1="86" x2="515" y2="120" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="518,113 526,125 510,124" fill="var(--muted)" />
+
+      <rect x="34" y="126" width="292" height="168" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="180" y="152" text-anchor="middle" fill="var(--fg)" font-size="13">мир ЗНАЧЕНИЙ · рантайм</text>
+      <rect x="54" y="168" width="252" height="40" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="180" y="193" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">typeof x === 'string'</text>
+      <text x="180" y="238" text-anchor="middle" fill="var(--muted)" font-size="12">исполняется в браузере</text>
+      <text x="180" y="262" text-anchor="middle" fill="var(--green)" font-size="12">даёт СТРОКУ 'string'</text>
+
+      <rect x="374" y="126" width="292" height="168" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="520" y="152" text-anchor="middle" fill="var(--fg)" font-size="13">мир ТИПОВ · компиляция</text>
+      <rect x="394" y="168" width="252" height="40" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="520" y="193" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">type T = typeof x</text>
+      <text x="520" y="238" text-anchor="middle" fill="var(--muted)" font-size="12">только для компилятора</text>
+      <text x="520" y="262" text-anchor="middle" fill="var(--green)" font-size="12">даёт ТИП значения x</text>
+    </svg>
+    <figcaption>Слева — <code>typeof</code> из выражения (мир значений): вернёт строку в рантайме. Справа — <code>typeof</code> в позиции типа (мир типов): вернёт тип на компиляции. Одно слово, две вселенные.</figcaption>
+  </figure>
+  <p class="note"><strong>Как отличить с одного взгляда.</strong> Смотрите, <em>где</em> стоит <code>typeof</code>. Если он в выражении и рядом сравнение (<code>typeof x === '...'</code>) — это рантайм-оператор, результат строка. Если он после <code>type</code> или после двоеточия в аннотации типа — это запрос типа, результат тип. Дальше на странице речь <strong>только</strong> о втором.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Базовое использование: тип из значения</h2>
+  <p>Начнём с самого простого случая — с объекта. Пусть у нас уже есть значение: пользователь с именем и возрастом. Мы не хотим отдельно, руками, описывать его тип — пусть компилятор «снимет мерку» сам.</p>
+  <app-code-block [code]="basicTypeQuery" lang="typescript" />
+  <p>Здесь <code>type User = typeof user</code> читается как «пусть <code>User</code> будет типом значения <code>user</code>». Компилятор смотрит на объект и выводит тип <code>&#123; name: string; age: number &#125;</code>. Литеральная строка <code>'Анна'</code> при этом <a routerLink="/typescript/basic-types/literal-types">расширяется</a> до <code>string</code>, а число <code>30</code> — до <code>number</code>: у обычного <code>const</code>-объекта поля можно переприсваивать, поэтому их типы берутся широкими.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 300" width="100%" role="img" aria-label="Значение user превращается оператором typeof в тип с теми же полями: строка становится string, число становится number">
+      <text x="150" y="40" text-anchor="middle" fill="var(--muted)" font-size="13">ЗНАЧЕНИЕ (есть у нас)</text>
+      <rect x="30" y="58" width="250" height="180" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="52" y="98" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">const user = &#123;</text>
+      <text x="70" y="126" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">name: 'Анна',</text>
+      <text x="70" y="154" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">age: 30,</text>
+      <text x="52" y="182" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">&#125;</text>
+
+      <line x1="290" y1="148" x2="432" y2="148" stroke="var(--accent)" stroke-width="2.5" />
+      <polygon points="432,141 446,148 432,155" fill="var(--accent)" />
+      <text x="368" y="132" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">typeof</text>
+      <text x="368" y="176" text-anchor="middle" fill="var(--muted)" font-size="12">снимаем мерку</text>
+
+      <text x="575" y="40" text-anchor="middle" fill="var(--muted)" font-size="13">ТИП (получаем)</text>
+      <rect x="450" y="58" width="250" height="180" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="472" y="98" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">type User = &#123;</text>
+      <text x="490" y="126" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">name: string;</text>
+      <text x="490" y="154" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">age: number;</text>
+      <text x="472" y="182" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">&#125;</text>
+      <text x="575" y="220" text-anchor="middle" fill="var(--muted)" font-size="11">'Анна' → string, 30 → number</text>
+    </svg>
+    <figcaption>Оператор <code>typeof</code> берёт готовое значение <code>user</code> и возвращает его тип. Конкретные значения полей превращаются в свои широкие типы.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Зачем это нужно: единый источник правды</h2>
+  <p>Настоящая польза <code>typeof</code> раскрывается, когда одно и то же приходится описывать дважды — как <em>значение</em> и как <em>тип</em>. Классика жанра — объект конфигурации. Сначала посмотрим на боль ручного дублирования.</p>
+  <app-code-block [code]="singleSourcePain" lang="typescript" />
+  <p>Две отдельные сущности — объект <code>config</code> и интерфейс <code>ConfigManual</code> — описывают одно и то же, но живут порознь. Стоит добавить поле в объект и забыть про интерфейс (а это происходит постоянно), как значение и тип «разъезжаются», и компилятор об этом даже не подскажет: с его точки зрения обе записи корректны.</p>
+  <p>Решение — сделать значение <strong>единственным источником правды</strong>, а тип вывести из него через <code>typeof</code>:</p>
+  <app-code-block [code]="singleSourceFix" lang="typescript" />
+  <p>Теперь описание одно. Изменили объект — тип обновился <em>сам</em>, автоматически, потому что он и есть «мерка», снятая с объекта. Дублирование исчезло, а вместе с ним — и целый класс ошибок рассинхрона.</p>
+  <p class="note"><strong>Направление важно.</strong> Обычно мы идём от типа к значению: сначала описываем <code>interface</code>, потом создаём объекты под него. <code>typeof</code> разворачивает стрелку — мы идём <em>от значения к типу</em>. Это удобно, когда «настоящий» источник данных — именно конкретное значение (конфиг, справочник, набор констант), а тип нужен лишь как его отражение.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Связка <code>keyof typeof</code>: имена ключей значения</h2>
+  <p>Очень часто <code>typeof</code> идёт в паре с <a routerLink="/typescript/advanced-types/keyof"><code>keyof</code></a>. Логика простая: сначала <code>typeof</code> поднимает нас от значения к его типу, а затем <code>keyof</code> достаёт из этого типа <strong>имена ключей</strong> в виде <a routerLink="/typescript/unions-narrowing/union">объединения</a> строк. Разберём по шагам.</p>
+  <app-code-block [code]="keyofTypeof" lang="typescript" />
+  <p>Запись <code>keyof typeof user</code> читается справа налево: <code>typeof user</code> даёт тип <code>&#123; name: string; age: number &#125;</code>, а <code>keyof</code> от него — объединение <code>'name' | 'age'</code>. Получилось множество допустимых имён ключей, вычисленное прямо из значения.</p>
+  <p>Зачем это на практике? Чтобы функция или переменная принимала <strong>только реально существующий ключ</strong>, а любую опечатку компилятор ловил сразу:</p>
+  <app-code-block [code]="keyofTypeofUse" lang="typescript" />
+  <p>Мы нигде не выписывали список ключей руками — он вычислен из объекта <code>settings</code>. Добавится новая настройка — множество допустимых ключей расширится само. Про сам оператор <code>keyof</code> подробнее — на соседней странице; здесь важно увидеть именно <em>связку</em> с <code>typeof</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>typeof</code> для функций и массивов</h2>
+  <p><code>typeof</code> снимает мерку не только с объектов. Справа от него может стоять любое значение — в том числе функция или массив.</p>
+  <h3 class="doc__subtitle">Тип функции</h3>
+  <p>Иногда нужно объявить переменную «такого же типа, как вот эта функция», или переиспользовать её сигнатуру. Выписывать её руками (перечислять параметры и возвращаемый тип) — та же копипаста. <code>typeof</code> избавляет от неё:</p>
+  <app-code-block [code]="typeofFunction" lang="typescript" />
+  <p>Тип <code>CreateUserFn</code> — это полная сигнатура функции, включая выведенный тип возвращаемого объекта. Если позже поменяется тело <code>createUser</code>, тип подхватит изменения сам. Достать из этой сигнатуры отдельно тип результата или параметров помогают <a routerLink="/typescript/advanced-types/infer"><code>infer</code></a> и утилиты вроде <a routerLink="/typescript/utility-types/function-types">ReturnType и Parameters</a>.</p>
+  <h3 class="doc__subtitle">Тип массива и его элемента</h3>
+  <p>С массивом-значением <code>typeof</code> даёт тип массива, а тип <em>элемента</em> вытаскивают <a routerLink="/typescript/advanced-types/indexed-access">индексным доступом</a> <code>[number]</code>:</p>
+  <app-code-block [code]="typeofArray" lang="typescript" />
+  <p>Пока массив объявлен обычным <code>const</code>, его элемент — широкий <code>string</code>. Чтобы получить именно литералы <code>'admin' | 'editor' | 'viewer'</code>, нужен <code>as const</code> — об этом следующий раздел.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Мостик к «справочникам»: <code>as const</code> + <code>typeof</code></h2>
+  <p>Один из самых полезных паттернов в TypeScript — заменять <code>enum</code> обычным объектом или массивом, «замороженным» через <a routerLink="/typescript/assertions/as-const"><code>as const</code></a>. Здесь <code>typeof</code> — главный рабочий инструмент. Модификатор <code>as const</code> фиксирует значения как литералы (а не расширяет их до <code>string</code>/<code>number</code>), и тогда <code>typeof</code> «снимает» с них точную, литеральную мерку.</p>
+  <app-code-block [code]="asConstBridge" lang="typescript" />
+  <p>Комбинация <code>(typeof Status)[keyof typeof Status]</code> выглядит как матрёшка, но собирается из уже знакомых деталей: <code>typeof Status</code> — тип объекта, <code>keyof typeof Status</code> — его ключи, а <a routerLink="/typescript/advanced-types/indexed-access">индексный доступ</a> по всем ключам достаёт объединение всех <em>значений</em>. Целиком этот приём (as const как замена enum) разобран на странице <a routerLink="/typescript/enums/alternatives">Альтернативы enum</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Частая ошибка: <code>typeof</code> ждёт значение, а не тип</h2>
+  <p>Раз <code>typeof</code> «снимает мерку», то снимать её нужно с <strong>вещи</strong> — то есть со значения: переменной, функции, объекта. С <em>типа</em> мерку не снять, ведь у типа нет физического носителя. Поэтому справа от <code>typeof</code> должно стоять <em>значение</em>, а не имя типа.</p>
+  <app-code-block [code]="valueNotType" lang="typescript" />
+  <p>Это прямое следствие модели «два мира». <code>typeof</code> в позиции типа — мостик <strong>из мира значений в мир типов</strong>: он берёт значение и отдаёт тип. Значит, на входе ему нужно именно значение. Развёрнуто эти и другие тонкости собраны на странице <a routerLink="/typescript/advanced-types/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Два разных <code>typeof</code>.</strong> В выражении (<code>typeof x === 'string'</code>) — рантайм-оператор, даёт <em>строку</em>. В позиции типа (<code>type T = typeof x</code>) — запрос типа, даёт <em>тип</em>. Разные миры, одно слово.</li>
+    <li><strong>Суть — «снять мерку».</strong> <code>typeof</code> в позиции типа берёт готовое <em>значение</em> и возвращает его <em>тип</em>. Работает на этапе компиляции; в рантайме этой операции нет.</li>
+    <li><strong>Единый источник правды.</strong> Опишите значение один раз, а тип выведите через <code>typeof</code> — тип обновится сам при изменении значения.</li>
+    <li><strong>Связка <code>keyof typeof</code>.</strong> <code>typeof</code> даёт тип значения, <code>keyof</code> — имена его ключей: <code>keyof typeof user</code> = <code>'name' | 'age'</code>.</li>
+    <li><strong>Работает над функциями и массивами.</strong> <code>typeof fn</code> — сигнатура функции; <code>(typeof arr)[number]</code> — тип элемента массива.</li>
+    <li><strong>Паттерн-справочник.</strong> <code>as const</code> фиксирует литералы, а <code>(typeof Obj)[keyof typeof Obj]</code> собирает из них объединение значений — удобная замена <code>enum</code>.</li>
+    <li><strong>Справа только значение.</strong> <code>typeof</code> применяется к переменной/функции/объекту, но не к типу: <code>typeof SomeType</code> — ошибка.</li>
+  </ul>
+  <p class="note">Дальше по разделу: <a routerLink="/typescript/advanced-types/keyof">keyof</a> (имена ключей), <a routerLink="/typescript/advanced-types/indexed-access">индексный доступ</a> (тип по ключу), <a routerLink="/typescript/advanced-types/mapped">отображённые типы</a> и <a routerLink="/typescript/advanced-types/conditional">условные типы</a>. Практическое применение связки <code>as const</code> + <code>typeof</code> — на странице <a routerLink="/typescript/enums/alternatives">Альтернативы enum</a>. А общая опора всего раздела — модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>».</p>
+</section>
+</article>

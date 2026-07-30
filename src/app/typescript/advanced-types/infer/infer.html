@@ -1,0 +1,115 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/advanced-types">Продвинутые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">infer</span></nav>
+
+<h1 class="doc__title">infer</h1>
+<p class="doc__lead"><code>infer</code> — это <strong>«переменная-ловушка» внутри шаблона</strong>. Представьте, что вы разбираете строку по образцу и говорите: «вот здесь будет что-то, а я заранее назову его <code>X</code> и поймаю». Точно так же <code>infer U</code> ставит ловушку прямо в описании типа: <strong>«поймай сюда тип, что окажется на этом месте»</strong>. Компилятор приложит реальный тип к образцу, увидит, что стоит на месте ловушки, и вернёт пойманное. Важнейшая оговорка: ловушка работает <strong>только внутри <a routerLink="/typescript/advanced-types/conditional">условного типа</a></strong> — и всё это происходит в мире типов, на этапе компиляции, а не с реальными значениями в рантайме.</p>
+
+<section class="doc__section">
+  <h2>Идея: ловушка внутри условия</h2>
+  <p>Вспомним <a routerLink="/typescript/advanced-types/conditional">условный тип</a>: <code>T extends ШАБЛОН ? X : Y</code> — это «тернарник для типов», он проверяет, подходит ли <code>T</code> под шаблон. Обычно в шаблоне пишут <em>конкретный</em> тип. Но часто хочется не просто проверить форму, а <strong>вытащить кусок изнутри</strong> — например, «если это массив, дай мне тип его элемента». Вот тут и нужен <code>infer</code>: вместо конкретного типа мы ставим в шаблон ловушку <code>infer U</code>, и компилятор сам подставит в неё найденное.</p>
+  <app-code-block [code]="inferIdea" lang="typescript" />
+  <p>Ключевая мысль: <code>infer U</code> — это <strong>объявление новой переменной типа</strong> прямо посреди шаблона. Мы как бы говорим: «я не знаю, что тут будет, но назову это <code>U</code> и поймаю». Если <code>T</code> подошёл под образец — в ветке «да» переменная <code>U</code> уже содержит пойманный тип; можно вернуть её саму или что-то на её основе.</p>
+  <p>И сразу важное ограничение. Ловушку <strong>нельзя</strong> поставить где угодно — только в части <code>extends ШАБЛОН</code> условного типа. Вне условного типа <code>infer</code> не имеет смысла (ловить не из чего) и вызывает ошибку:</p>
+  <app-code-block [code]="inferOnlyConditional" lang="typescript" />
+  <p class="note"><strong>Держите в голове модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество</a>».</strong> Проверка <code>T extends ШАБЛОН</code> спрашивает «входит ли множество <code>T</code> в множество, описанное шаблоном». Ловушка <code>infer</code> при этом ещё и запоминает, <em>какой именно</em> подтип встал на её место. Никаких вычислений со значениями не происходит — это чистая работа с типами во время компиляции.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Тип элемента массива</h2>
+  <p>Самый наглядный пример — вытащить тип элемента из массива. Образец «массив из чего-то» записывается как <code>(infer U)[]</code>: скобки говорят «сначала поймай элемент в <code>U</code>, а <code>[]</code> — что это массив таких элементов». Прикладываем реальный тип к образцу — и в <code>U</code> оказывается тип элемента.</p>
+  <app-code-block [code]="elementType" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 210" width="100%" role="img" aria-label="Тип string array прикладывается к образцу (infer U) array, и U ловит string">
+      <text x="330" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">образец <tspan font-family="monospace">(infer U)[]</tspan> прикладываем к типу — <tspan font-family="monospace">U</tspan> ловит то, что на его месте</text>
+
+      <rect x="24" y="92" width="150" height="56" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="99" y="126" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">string[]</text>
+
+      <line x1="174" y1="120" x2="240" y2="120" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="240,114 254,120 240,126" fill="var(--muted)" />
+
+      <rect x="262" y="80" width="188" height="80" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="356" y="114" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">(infer U)[]</text>
+      <text x="356" y="138" text-anchor="middle" fill="var(--muted)" font-size="12">образец-ловушка</text>
+
+      <line x1="450" y1="120" x2="516" y2="120" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="516,114 530,120 516,126" fill="var(--muted)" />
+
+      <rect x="538" y="92" width="98" height="56" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="587" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">U = string</text>
+      <text x="587" y="137" text-anchor="middle" fill="var(--green)" font-size="11">поймали</text>
+    </svg>
+    <figcaption>Тип <code>string[]</code> сопоставляется с образцом <code>(infer U)[]</code>; на месте <code>U</code> оказывается <code>string</code> — его и возвращает ветка «да».</figcaption>
+  </figure>
+  <p>Если тип <strong>не</strong> подходит под образец (например, <code>number</code> — не массив), срабатывает ветка «иначе», и здесь мы вернули <code>never</code> — «такого элемента нет». А для «массива массивов» <code>string[][]</code> элементом будет <code>string[]</code>: ловушка <code>U</code> хватает <em>внешний</em> уровень, ровно то, что стоит перед <code>[]</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Тип возврата функции</h2>
+  <p>Ту же ловушку можно поставить в шаблон функции — на место типа результата, сразу после <code>=&gt;</code>. Аргументы нас сейчас не интересуют, поэтому в образце пишем <code>(...args: any[])</code> — «функция с любыми аргументами». А тип возврата ловим в <code>infer R</code>:</p>
+  <app-code-block [code]="returnTypeInfer" lang="typescript" />
+  <p>Это, по сути, <strong>ручная версия встроенной утилиты <code>ReturnType</code></strong>. Внутри стандартной библиотеки <code>ReturnType&lt;T&gt;</code> устроена почти так же — через <code>infer</code> на месте результата. То есть, разобравшись с этой строкой, вы уже понимаете, как работает готовый <a routerLink="/typescript/utility-types/function-types">ReturnType</a> «под капотом».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Распаковка Promise</h2>
+  <p>Асинхронный код повсюду возвращает <code>Promise&lt;чего-то&gt;</code>, а нам часто нужен тип <em>внутри</em> обёртки — то, чем промис в итоге разрешится. Ставим ловушку внутрь <code>Promise&lt;...&gt;</code>. Обратите внимание на ветку «иначе»: если пришёл <strong>не</strong> промис, распаковывать нечего — честно возвращаем сам <code>T</code>, а не <code>never</code>.</p>
+  <app-code-block [code]="unwrapPromise" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 680 210" width="100%" role="img" aria-label="Тип Promise of User прикладывается к образцу Promise of infer U, и U ловит User">
+      <text x="340" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">снимаем обёртку <tspan font-family="monospace">Promise&lt;...&gt;</tspan> — внутри ждёт ловушка <tspan font-family="monospace">U</tspan></text>
+
+      <rect x="20" y="92" width="176" height="56" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="108" y="126" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">Promise&lt;User&gt;</text>
+
+      <line x1="196" y1="120" x2="258" y2="120" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="258,114 272,120 258,126" fill="var(--muted)" />
+
+      <rect x="280" y="80" width="216" height="80" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="388" y="114" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">Promise&lt;infer U&gt;</text>
+      <text x="388" y="138" text-anchor="middle" fill="var(--muted)" font-size="12">образец-ловушка</text>
+
+      <line x1="496" y1="120" x2="558" y2="120" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="558,114 572,120 558,126" fill="var(--muted)" />
+
+      <rect x="580" y="92" width="84" height="56" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="622" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">U = User</text>
+      <text x="622" y="137" text-anchor="middle" fill="var(--green)" font-size="11">поймали</text>
+    </svg>
+    <figcaption>Из <code>Promise&lt;User&gt;</code> ловушка достаёт <code>User</code>. Не-промис (например, <code>number</code>) под образец не подходит и возвращается как есть.</figcaption>
+  </figure>
+  <p>Наша <code>UnwrapPromise</code> — это упрощённая <strong>ручная версия встроенного <a routerLink="/typescript/utility-types/function-types">Awaited</a></strong> (настоящий <code>Awaited</code> ещё и разворачивает вложенные промисы до самого дна). Снова тот же вывод: <code>infer</code> — это механизм, на котором держатся многие «магические» утилиты стандартной библиотеки.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Несколько ловушек сразу</h2>
+  <p>В одном шаблоне можно объявить <strong>сразу несколько</strong> <code>infer</code>-переменных — по одной на каждое интересное место. Классика — разобрать кортеж на «голову» (первый элемент) и «хвост» (все остальные) с помощью двух ловушек и spread-паттерна <code>...infer</code>:</p>
+  <app-code-block [code]="multiInfer" lang="typescript" />
+  <p>Здесь <code>Head</code> ловит первый тип кортежа, а <code>Tail</code> — кортеж из оставшихся. Обе ловушки заполняются за один проход сопоставления с образцом <code>[infer Head, ...infer Tail]</code>. Такой приём — фундамент рекурсивных типов над кортежами (разобрал голову, применил тот же тип к хвосту, и так до конца).</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: пишем свои утилиты</h2>
+  <p>Соберём несколько маленьких, но полезных типов на реальных задачах. Первый — вытащить тип <strong>первого аргумента</strong> функции (пригодится, например, чтобы узнать тип события у обработчика). Ловушку ставим на место первого параметра, а хвост параметров глотаем через <code>...rest: any[]</code>:</p>
+  <app-code-block [code]="firstArg" lang="typescript" />
+  <p>Второй — достать тип элемента из <strong>вложенной формы</strong>. Ответы API часто имеют вид <code>&#123; data: T[] &#125;</code>, и нам нужен тип одного элемента списка. Ловушку прячем глубоко — внутри массива, который внутри поля <code>data</code>:</p>
+  <app-code-block [code]="nestedInfer" lang="typescript" />
+  <p>И главный практический вывод: очень многое из этого <strong>уже написано за вас</strong>. Разобранные выше <code>MyReturnType</code> и <code>UnwrapPromise</code> — это встроенные <code>ReturnType</code> и <code>Awaited</code>. Свой <code>infer</code>-тип стоит писать, только когда готовой утилиты не хватает; всё остальное время — брать готовое:</p>
+  <app-code-block [code]="builtinBridge" lang="typescript" />
+  <p class="note"><strong>Мостик к утилитам.</strong> Готовые <code>ReturnType</code>, <code>Parameters</code>, <code>Awaited</code> и родственные типы разбираются на странице <a routerLink="/typescript/utility-types/function-types">ReturnType/Parameters</a>. Понимание <code>infer</code> — ключ к тому, чтобы читать их исходники и не бояться «магии».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>infer U</code> — переменная-ловушка</strong>: она объявляет новый тип-параметр прямо в шаблоне и ловит в него то, что окажется на этом месте.</li>
+    <li>Работает <strong>только внутри условного типа</strong>, в части <code>extends ШАБЛОН</code>. Вне <code>T extends ... ? ... : ...</code> — ошибка компиляции.</li>
+    <li>Тип элемента массива: <code>T extends (infer U)[] ? U : never</code> → <code>ElementType&lt;string[]&gt;</code> = <code>string</code>.</li>
+    <li>Тип возврата функции: <code>T extends (...args: any[]) =&gt; infer R ? R : never</code> → <code>MyReturnType&lt;() =&gt; number&gt;</code> = <code>number</code>. Это ручной <a routerLink="/typescript/utility-types/function-types">ReturnType</a>.</li>
+    <li>Распаковка промиса: <code>T extends Promise&lt;infer U&gt; ? U : T</code> → <code>UnwrapPromise&lt;Promise&lt;string&gt;&gt;</code> = <code>string</code>, а <code>UnwrapPromise&lt;number&gt;</code> = <code>number</code> (ветка «иначе»). Это ручной <a routerLink="/typescript/utility-types/function-types">Awaited</a>.</li>
+    <li>В одном шаблоне можно поставить <strong>несколько ловушек</strong> сразу (<code>[infer Head, ...infer Tail]</code>).</li>
+    <li>Всё это — работа в <strong>мире типов на этапе компиляции</strong>; в рантайме от <code>infer</code> не остаётся ни следа.</li>
+  </ul>
+  <p class="note">Рядом стоит посмотреть <a routerLink="/typescript/advanced-types/conditional">условные типы</a> (без них <code>infer</code> не существует), <a routerLink="/typescript/advanced-types/mapped">отображённые типы</a> и <a routerLink="/typescript/advanced-types/template-literals">шаблонные литеральные типы</a>. Готовые утилиты на базе <code>infer</code> — на странице <a routerLink="/typescript/utility-types/function-types">ReturnType/Parameters</a>. Типичные ошибки собраны в разделе <a routerLink="/typescript/advanced-types/pitfalls">нюансы и подводные камни</a>. Базовую опору «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>» всегда можно освежить.</p>
+</section>
+</article>

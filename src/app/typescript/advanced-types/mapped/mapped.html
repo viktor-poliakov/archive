@@ -1,0 +1,132 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/advanced-types">Продвинутые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Отображённые типы (mapped)</span></nav>
+
+<h1 class="doc__title">Отображённые типы (mapped)</h1>
+<p class="doc__lead"><strong>Отображённый (mapped) тип <code>&#123; [K in keyof T]: ... &#125;</code> — это «конвейер по ключам»</strong>: берём каждый ключ исходного типа и по одному правилу штампуем из него поле нового типа. Как пройтись по всем ящикам картотеки и на каждый повесить свежую бирку по единому образцу. Важно с самого начала: вся эта работа идёт <strong>в мире типов, на этапе компиляции</strong> — в готовом JavaScript от неё не остаётся ни следа, никакого «прохода по ключам» в рантайме нет.</p>
+
+<section class="doc__section">
+  <h2>Идея и синтаксис: <code>&#123; [K in keyof T]: T[K] &#125;</code></h2>
+  <p>Прежде чем собирать конвейер, посмотрим на две детали, из которых он состоит. Первая — <a routerLink="/typescript/advanced-types/keyof"><code>keyof T</code></a>: это <strong>объединение имён всех ключей</strong> типа. Вторая — <a routerLink="/typescript/advanced-types/indexed-access">индексный доступ</a> <code>T[K]</code>: он достаёт <strong>тип значения</strong> по ключу (ровно как <code>obj[key]</code> достаёт значение, только в мире типов).</p>
+  <app-code-block [code]="pieces" lang="typescript" />
+  <p>Теперь соединяем их. Запись <code>[K in keyof T]</code> читается как «пробегись переменной <code>K</code> по всем ключам из <code>keyof T</code>». Для каждого такого <code>K</code> мы описываем одно поле: слева — имя <code>K</code>, справа от двоеточия — тип этого поля. Если справа поставить <code>T[K]</code> («тот же тип, что был»), получится точная копия исходного типа — самый простой mapped-тип на свете:</p>
+  <app-code-block [code]="copy" lang="typescript" />
+  <p>Сравните с обычным <a routerLink="/typescript/generics/basics">дженериком</a>: там буква <code>T</code> — заглушка под <em>целый тип</em>, а здесь <code>K</code> — заглушка под <em>каждый ключ по очереди</em>. Копия сама по себе бесполезна, но она — чистый бланк: всё интересное начинается, когда мы вмешиваемся в правило справа или навешиваем на поля модификаторы.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 740 300" width="100%" role="img" aria-label="Конвейер по ключам: каждый ключ исходного типа User проходит через правило со скобками K in keyof T и превращается в поле нового типа с модификатором readonly">
+      <text x="370" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">для каждого ключа исходного типа одно правило штампует поле нового типа</text>
+
+      <rect x="24" y="64" width="200" height="168" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="124" y="52" text-anchor="middle" fill="var(--muted)" font-size="12">исходный тип User</text>
+      <text x="40" y="106" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">name: string</text>
+      <text x="40" y="146" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">age: number</text>
+      <text x="40" y="186" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">admin: boolean</text>
+
+      <line x1="224" y1="148" x2="254" y2="148" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="254,142 268,148 254,154" fill="var(--muted)" />
+
+      <rect x="274" y="78" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="370" y="114" text-anchor="middle" fill="var(--muted)" font-size="12">для каждого ключа K</text>
+      <text x="370" y="146" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">[K in keyof T]</text>
+      <text x="370" y="178" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13">+ readonly</text>
+
+      <line x1="466" y1="148" x2="496" y2="148" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="496,142 510,148 496,154" fill="var(--muted)" />
+
+      <rect x="516" y="64" width="200" height="168" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="616" y="52" text-anchor="middle" fill="var(--muted)" font-size="12">новый тип</text>
+      <text x="532" y="106" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">readonly name: string</text>
+      <text x="532" y="146" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">readonly age: number</text>
+      <text x="532" y="186" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">readonly admin: boolean</text>
+    </svg>
+    <figcaption>Слева — ключи исходного <code>User</code>. В центре — правило <code>[K in keyof T]</code>, которое обходит их по одному и добавляет <code>readonly</code>. Справа — готовый новый тип. Всё вычисляется компилятором, до запуска.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Модификаторы <code>readonly</code> и <code>?</code> — добавляют</h2>
+  <p>Первое, ради чего вообще нужны mapped-типы, — навесить один и тот же модификатор сразу на <em>все</em> поля, не переписывая тип руками. Модификатор ставится прямо перед скобкой <code>[K in keyof T]</code> (для <code>readonly</code>) или сразу после неё (для <code>?</code>). Начнём с <code>readonly</code> — сделаем все поля доступными только для чтения:</p>
+  <app-code-block [code]="myReadonly" lang="typescript" />
+  <p>Одна строчка правила — и <code>name</code>, <code>age</code>, <code>admin</code> разом стали неизменяемыми. Не пришлось трижды писать <code>readonly</code> вручную, а если завтра в <code>User</code> добавится четвёртое поле — оно автоматически подхватит модификатор. Точно так же добавляется необязательность через <code>?</code>:</p>
+  <app-code-block [code]="myPartial" lang="typescript" />
+  <p class="note"><strong>Где это встречается на практике.</strong> «Патч» настроек или объекта пользователя — очень частый кейс: у вас есть полный тип <code>User</code>, но функция обновления принимает <em>любое подмножество</em> его полей. Вместо ручного дублирования всех полей со знаком <code>?</code> вы описываете правило один раз — и оно работает для типа любого размера.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Снятие модификаторов: <code>-readonly</code> и <code>-?</code></h2>
+  <p>Раз модификаторы можно добавлять, логично уметь их и <strong>снимать</strong>. Для этого перед модификатором ставят знак «минус»: <code>-readonly</code> убирает «только для чтения», а <code>-?</code> убирает необязательность (делает поле обязательным). Это зеркальные операции к прошлой секции.</p>
+  <p>Сначала «разморозим» тип, у которого все поля были <code>readonly</code>, — уберём защиту модификатором <code>-readonly</code>:</p>
+  <app-code-block [code]="mutable" lang="typescript" />
+  <p>А теперь противоположность <code>MyPartial</code>: возьмём тип с необязательными полями и сделаем их все обязательными через <code>-?</code>. Полезно, когда «сырой» конфиг с кучей опциональных полей нужно превратить в гарантированно заполненный:</p>
+  <app-code-block [code]="myRequired" lang="typescript" />
+  <p class="note"><strong>Запомнить легко.</strong> Голый <code>readonly</code> / <code>?</code> — <em>добавляют</em> модификатор; тот же модификатор со знаком минус (<code>-readonly</code> / <code>-?</code>) — <em>снимают</em> его. Знака «плюс» писать не нужно — добавление и так подразумевается по умолчанию.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Изменение типа значений</h2>
+  <p>До сих пор мы трогали только модификаторы, а тип значения копировали как есть — <code>T[K]</code>. Но справа от двоеточия может стоять <strong>что угодно</strong>: правило-то наше. Заменив <code>T[K]</code> на другой тип, мы разом переделаем типы всех полей. Классический приём — превратить каждое поле в булев флаг:</p>
+  <app-code-block [code]="flags" lang="typescript" />
+  <p>Ключи и их набор сохранились один в один, а вот типы значений у всех стали <code>boolean</code>. Такой «слепок формы» встречается сплошь и рядом: карта «какие поля уже трогали», «какие поля с ошибкой» и т. п. Тип значения можно не только заменять целиком, но и <strong>расширять</strong> — например, разрешить каждому полю быть <code>null</code>, оставив исходный тип через <code>T[K]</code>:</p>
+  <app-code-block [code]="nullable" lang="typescript" />
+  <p>Обратите внимание: в <code>T[K] | null</code> мы всё ещё опираемся на исходный тип поля (<code>T[K]</code>) и лишь дописываем к нему <a routerLink="/typescript/unions-narrowing/union">объединение</a> с <code>null</code>. Значит, у <code>name</code> получится <code>string | null</code>, а у <code>age</code> — <code>number | null</code>: каждое поле сохраняет свою «родную» часть типа.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ремаппинг ключей через <code>as</code></h2>
+  <p>Мы научились менять модификаторы и типы значений. Осталось самое мощное — переписывать <strong>сами имена ключей</strong>. Для этого после <code>[K in keyof T]</code> добавляют слово <code>as</code> и указывают, во что превратить ключ. Новое имя обычно собирают <a routerLink="/typescript/advanced-types/template-literals">шаблонным литеральным типом</a>: например, к каждому ключу приписать <code>get</code> и сделать первую букву заглавной. Заглавную даёт встроенная утилита <code>Capitalize</code>:</p>
+  <app-code-block [code]="getters" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 760 240" width="100%" role="img" aria-label="Ремаппинг ключей через as: ключ name превращается в getName, ключ age в getAge с помощью шаблона get плюс Capitalize от ключа">
+      <text x="380" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">ремаппинг: старое имя ключа переписываем шаблоном в новое</text>
+
+      <rect x="30" y="60" width="150" height="54" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="105" y="93" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">name</text>
+      <rect x="30" y="140" width="150" height="54" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="105" y="173" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">age</text>
+
+      <line x1="180" y1="87" x2="296" y2="102" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="286,96 298,103 285,108" fill="var(--muted)" />
+      <line x1="180" y1="167" x2="296" y2="150" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="285,144 298,150 286,157" fill="var(--muted)" />
+
+      <rect x="300" y="66" width="200" height="112" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="400" y="104" text-anchor="middle" fill="var(--muted)" font-size="12">новый ключ =</text>
+      <text x="400" y="134" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">get$&#123;Capitalize&lt;K&gt;&#125;</text>
+      <text x="400" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">K — имя ключа</text>
+
+      <line x1="500" y1="102" x2="576" y2="87" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="566,81 578,87 566,93" fill="var(--muted)" />
+      <line x1="500" y1="150" x2="576" y2="167" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="566,161 578,167 566,173" fill="var(--muted)" />
+
+      <rect x="580" y="60" width="150" height="54" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="655" y="93" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">getName</text>
+      <rect x="580" y="140" width="150" height="54" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="655" y="173" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">getAge</text>
+    </svg>
+    <figcaption>Каждый ключ проходит через шаблон <code>get$&#123;Capitalize&lt;K&gt;&#125;</code>: <code>name</code> становится <code>getName</code>, <code>age</code> — <code>getAge</code>. Тип значения при этом мы заодно поменяли на функцию <code>() =&gt; T[K]</code>.</figcaption>
+  </figure>
+  <p>Одна тонкость, на которой спотыкаются все. В шаблоне мы пишем <code>Capitalize&lt;string &amp; K&gt;</code>, а не просто <code>Capitalize&lt;K&gt;</code>. Причина: ключ <code>K</code> по типу может быть <code>string | number | symbol</code>, а <code>Capitalize</code> умеет работать <strong>только со строками</strong>. Пересечение <code>string &amp; K</code> отбрасывает <code>number</code> и <code>symbol</code>, оставляя лишь строковую часть. Без него компилятор ругнётся:</p>
+  <p class="note"><code>❌ Type 'K' does not satisfy the constraint 'string'.</code> — именно поэтому в реальном коде ремаппинга почти всегда встретите приём <code>string &amp; K</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Это фундамент утилитарных типов</h2>
+  <p>Возможно, вы уже пользовались готовыми <code>Partial&lt;User&gt;</code>, <code>Readonly&lt;User&gt;</code>, <code>Required&lt;Options&gt;</code> и считали их «встроенной магией». Раскроем секрет: это ровно те mapped-типы, что мы только что написали своими руками. Вот их подлинные определения из стандартной библиотеки:</p>
+  <app-code-block [code]="stdlib" lang="typescript" />
+  <p>Сравните построчно: <code>Partial</code> — это наш <code>MyPartial</code> (добавили <code>?</code>), <code>Readonly</code> — наш <code>MyReadonly</code> (добавили <code>readonly</code>), <code>Required</code> — наш <code>MyRequired</code> (сняли <code>?</code> через <code>-?</code>). Никакой особой магии внутри нет — тот же самый конвейер по ключам.</p>
+  <p>Отсюда важный вывод: разобравшись в mapped-типах, вы одновременно поняли устройство почти всего набора утилит. За подробным разбором отдельных инструментов загляните к соседям: <a routerLink="/typescript/utility-types/partial-required-readonly">Partial / Required / Readonly</a>, <a routerLink="/typescript/utility-types/pick-omit">Pick / Omit</a>. А «топливо» для mapped-типов — это <a routerLink="/typescript/advanced-types/keyof"><code>keyof</code></a>, <a routerLink="/typescript/advanced-types/indexed-access">индексный доступ</a> <code>T[K]</code> и <a routerLink="/typescript/advanced-types/template-literals">шаблонные литеральные типы</a> для ремаппинга.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Mapped-тип</strong> <code>&#123; [K in keyof T]: T[K] &#125;</code> — «конвейер по ключам»: пробегает переменной <code>K</code> по всем ключам <code>keyof T</code> и для каждого штампует поле по одному правилу. Работает <strong>в мире типов</strong>, на компиляции.</li>
+    <li><strong>Правая часть</strong> (после двоеточия) — это тип значения. Оставили <code>T[K]</code> — копия; поставили <code>boolean</code> — все поля стали флагами; <code>T[K] | null</code> — все поля стали обнуляемыми.</li>
+    <li><strong>Модификаторы добавляют:</strong> <code>readonly [K in keyof T]</code> делает поля неизменяемыми, <code>[K in keyof T]?</code> — необязательными.</li>
+    <li><strong>Знак минус снимает:</strong> <code>-readonly</code> убирает «только для чтения», <code>-?</code> делает поля обязательными.</li>
+    <li><strong>Ремаппинг ключей</strong> — через <code>as</code>: <code>[K in keyof T as ...]</code>. Новое имя удобно собирать шаблоном, например <code>get$&#123;Capitalize&lt;string &amp; K&gt;&#125;</code>. Пересечение <code>string &amp; K</code> обязательно — иначе <code>Capitalize</code> подавится ключом-числом/символом.</li>
+    <li><strong>Утилиты — это mapped-типы.</strong> <code>Partial</code>, <code>Readonly</code>, <code>Required</code> из стандартной библиотеки устроены буква в букву так, как мы их написали сами.</li>
+  </ul>
+  <p class="note">Рядом полезно освежить «топливо» конвейера: <a routerLink="/typescript/advanced-types/keyof">keyof</a>, <a routerLink="/typescript/advanced-types/indexed-access">индексный доступ</a> и <a routerLink="/typescript/advanced-types/template-literals">шаблонные литеральные типы</a>. Дальше — <a routerLink="/typescript/advanced-types/conditional">условные типы</a> и <a routerLink="/typescript/advanced-types/infer">infer</a>, а типичные ошибки собраны в разделе <a routerLink="/typescript/advanced-types/pitfalls">нюансы и подводные камни</a>. Базовая опора всего раздела — модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>».</p>
+</section>
+</article>

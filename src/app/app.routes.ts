@@ -156,6 +156,30 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     ),
   'typescript/classes/pitfalls': () =>
     import('./typescript/classes/pitfalls/pitfalls').then((m) => m.TypescriptClassesPitfalls),
+  'typescript/advanced-types/keyof': () =>
+    import('./typescript/advanced-types/keyof/keyof').then((m) => m.TypescriptAdvancedTypesKeyof),
+  'typescript/advanced-types/typeof': () =>
+    import('./typescript/advanced-types/typeof/typeof').then((m) => m.TypescriptAdvancedTypesTypeof),
+  'typescript/advanced-types/indexed-access': () =>
+    import('./typescript/advanced-types/indexed-access/indexed-access').then(
+      (m) => m.TypescriptAdvancedTypesIndexedAccess,
+    ),
+  'typescript/advanced-types/conditional': () =>
+    import('./typescript/advanced-types/conditional/conditional').then(
+      (m) => m.TypescriptAdvancedTypesConditional,
+    ),
+  'typescript/advanced-types/infer': () =>
+    import('./typescript/advanced-types/infer/infer').then((m) => m.TypescriptAdvancedTypesInfer),
+  'typescript/advanced-types/mapped': () =>
+    import('./typescript/advanced-types/mapped/mapped').then((m) => m.TypescriptAdvancedTypesMapped),
+  'typescript/advanced-types/template-literals': () =>
+    import('./typescript/advanced-types/template-literals/template-literals').then(
+      (m) => m.TypescriptAdvancedTypesTemplateLiterals,
+    ),
+  'typescript/advanced-types/pitfalls': () =>
+    import('./typescript/advanced-types/pitfalls/pitfalls').then(
+      (m) => m.TypescriptAdvancedTypesPitfalls,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

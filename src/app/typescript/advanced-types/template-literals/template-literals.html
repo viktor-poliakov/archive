@@ -1,0 +1,157 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/advanced-types">Продвинутые типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Шаблонные литеральные типы</span></nav>
+
+<h1 class="doc__title">Шаблонные литеральные типы</h1>
+<p class="doc__lead">Шаблонный литеральный <strong>тип</strong> — это <strong>«трафарет для строк»</strong>. Вспомните шаблонную строку в рантайме: <code>&#96;Привет, $&#123;имя&#125;&#96;</code> склеивает готовую строку из кусочков и значений. Тот же приём переносится в <strong>мир типов</strong>: только там мы задаём не значение, а <strong>форму</strong> строки — например «строка, которая начинается с <code>Hello, </code>». Всё это происходит на этапе компиляции: в собранном JavaScript таких типов уже нет. В основе лежат <a routerLink="/typescript/basic-types/literal-types">литеральные типы</a> — если <code>'click'</code> как отдельный тип пока в новинку, загляните туда сначала.</p>
+
+<section class="doc__section">
+  <h2>Идея: тип-строка по шаблону с <code>$&#123;...&#125;</code></h2>
+  <p>Начнём с самого важного различия, которое путает новичков. В JavaScript есть <strong>два разных мира</strong>, и слово «шаблон» живёт в обоих, но означает разное.</p>
+  <p>В <strong>мире значений</strong> (то, что реально выполняется в браузере) шаблонная строка склеивает <em>значения переменных</em> в одну готовую строку. В <strong>мире типов</strong> (то, что существует только для проверок компилятора) шаблонный литеральный тип склеивает <em>типы</em> и описывает <strong>множество строк определённой формы</strong>. Тип — это всегда <a routerLink="/typescript/basic-types/subtypes-supertypes">множество значений</a>, и шаблон задаёт, какие именно строки в это множество попадают.</p>
+  <app-code-block [code]="runtimeVsType" lang="typescript" />
+  <p>Ключевое место — «окошко» <code>$&#123;...&#125;</code>. В рантайме внутрь ставят <em>значение</em> (<code>city</code>), а в типе — <em>тип</em> (<code>string</code>). Тип <code>string</code> в окошке означает «здесь может стоять любой текст». Получается <strong>трафарет</strong>: фиксированные буквы <code>Hello, </code> прибиты гвоздями, а на месте окошка — прорезь, куда подойдёт что угодно.</p>
+  <app-code-block [code]="greetingPattern" lang="typescript" />
+  <p>Строка <code>'Hello, world'</code> совпала с трафаретом и потому годится в тип <code>Greeting</code>. А <code>'Hi'</code> не начинается с <code>Hello, </code> — форма не та, и компилятор отвергает присваивание <strong>ещё до запуска</strong>. Заметьте: никакой проверки в рантайме нет, это чистая работа системы типов.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Трафарет Hello, плюс строка: строка Hello, world проходит проверку, строка Hi не проходит">
+      <text x="310" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">трафарет: строка обязана начинаться с «Hello, »</text>
+
+      <rect x="175" y="40" width="270" height="52" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="72" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">Hello, $&#123;string&#125;</text>
+
+      <line x1="310" y1="92" x2="310" y2="118" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="304,118 310,130 316,118" fill="var(--muted)" />
+
+      <rect x="120" y="132" width="380" height="44" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="146" y="159" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">'Hello, world'</text>
+      <text x="480" y="159" text-anchor="end" fill="var(--green)" font-size="13">✓ подходит</text>
+
+      <rect x="120" y="192" width="380" height="44" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="146" y="219" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">'Hi'</text>
+      <text x="480" y="219" text-anchor="end" fill="var(--red)" font-size="13">✗ форма не та</text>
+    </svg>
+    <figcaption>Трафарет <code>Hello, $&#123;string&#125;</code> пропускает любую строку, начинающуюся с <code>Hello, </code>, и отвергает <code>'Hi'</code>. Проверка — на этапе компиляции.</figcaption>
+  </figure>
+  <p class="note"><strong>Держите в голове границу миров.</strong> Символ <code>$&#123;&#125;</code> в шаблонной строке (в обычном коде) подставляет <em>значение</em> и работает в рантайме. Тот же символ в шаблонном <em>типе</em> (после <code>type ... =</code>, между обратными кавычками) подставляет <em>тип</em> и работает только у компилятора. Одинаковый значок — два совершенно разных мира.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Подстановка объединений: декартово произведение</h2>
+  <p>Пока в окошке стоял широкий <code>string</code> («любой текст»). Но туда можно подставить <a routerLink="/typescript/unions-narrowing/union">объединение</a> из нескольких литералов — например <code>'a' | 'b'</code>. И вот тут происходит самое интересное: если окошек несколько и в каждом объединение, TypeScript перебирает <strong>все возможные сочетания</strong>. Как в таблице умножения — каждое значение слева комбинируется с каждым значением сверху.</p>
+  <p>Математики называют это <strong>декартовым произведением</strong>. Бытовая аналогия — меню в кафе: 2 вида булочек и 2 вида начинок дают 2 × 2 = 4 разных бургера. Так же и здесь.</p>
+  <app-code-block [code]="cartesian" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 620 320" width="100%" role="img" aria-label="Декартово произведение: набор a b умножается на набор 1 2 и даёт четыре строки a-1, a-2, b-1, b-2">
+      <text x="310" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">каждое значение слева сочетается с каждым сверху — все пары</text>
+      <text x="310" y="50" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">$&#123;'a' | 'b'&#125;-$&#123;'1' | '2'&#125;</text>
+
+      <rect x="350" y="76" width="120" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="410" y="101" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">'1'</text>
+      <rect x="480" y="76" width="120" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="540" y="101" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">'2'</text>
+
+      <rect x="30" y="126" width="90" height="70" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="75" y="167" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">'a'</text>
+      <rect x="30" y="206" width="90" height="70" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="75" y="247" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">'b'</text>
+
+      <rect x="350" y="126" width="120" height="70" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="410" y="167" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">'a-1'</text>
+      <rect x="480" y="126" width="120" height="70" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="540" y="167" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">'a-2'</text>
+      <rect x="350" y="206" width="120" height="70" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="410" y="247" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">'b-1'</text>
+      <rect x="480" y="206" width="120" height="70" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="540" y="247" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="15">'b-2'</text>
+
+      <text x="310" y="302" text-anchor="middle" fill="var(--muted)" font-size="13">2 × 2 = 4 строки в итоговом объединении</text>
+    </svg>
+    <figcaption>Набор <code>'a' | 'b'</code> (слева) на набор <code>'1' | '2'</code> (сверху) даёт 4 строки: <code>'a-1' | 'a-2' | 'b-1' | 'b-2'</code>.</figcaption>
+  </figure>
+  <p class="note"><strong>Осторожно с размером.</strong> Число вариантов — это произведение размеров всех окошек. Два окошка по 2 значения — это 4 строки, а вот три окошка по 10 значений — уже 1000. Компилятор считает их на этапе сборки, и на больших объединениях это заметно замедляет проверку типов. Подставляйте в шаблон компактные наборы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Встроенные утилиты регистра</h2>
+  <p>Часто нужно не просто склеить строки, а изменить их <strong>регистр</strong>: сделать первую букву заглавной, всё превратить в верхний регистр и так далее. Для этого в TypeScript встроены четыре готовые утилиты, которые работают именно с литеральными типами-строками.</p>
+  <app-code-block [code]="caseUtils" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Утилита</th>
+          <th>Что делает</th>
+          <th>Пример</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Uppercase&lt;S&gt;</code></td>
+          <td>все буквы в верхний регистр</td>
+          <td><code>'abc'</code> → <code>'ABC'</code></td>
+        </tr>
+        <tr>
+          <td><code>Lowercase&lt;S&gt;</code></td>
+          <td>все буквы в нижний регистр</td>
+          <td><code>'ABC'</code> → <code>'abc'</code></td>
+        </tr>
+        <tr>
+          <td><code>Capitalize&lt;S&gt;</code></td>
+          <td>первую букву — заглавной</td>
+          <td><code>'hello'</code> → <code>'Hello'</code></td>
+        </tr>
+        <tr>
+          <td><code>Uncapitalize&lt;S&gt;</code></td>
+          <td>первую букву — строчной</td>
+          <td><code>'Hello'</code> → <code>'hello'</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Эти утилиты особенно полезны в паре с шаблонами: вы берёте имя действия и на лету собираете из него другое имя в нужном регистре — как раз это делает следующий пример с событиями.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: события, эндпоинты, CSS-переменные</h2>
+  <p>Теперь соберём всё вместе на реальных задачах. Шаблонные типы редко нужны сами по себе — их сила в том, чтобы <strong>гарантировать форму строки</strong> там, где раньше был просто <code>string</code> и легко было опечататься.</p>
+
+  <h3 class="doc__subtitle">Имена обработчиков событий</h3>
+  <p>Классический кейс из фронтенда: есть набор событий (<code>'click'</code>, <code>'hover'</code>), и по каждому нужно имя обработчика вида <code>onClick</code>, <code>onHover</code>. Собираем его шаблоном, а <code>Capitalize</code> ставит заглавную букву. Поскольку внутри стоит объединение, регистр применится <strong>к каждому члену по отдельности</strong> (это называется распределением):</p>
+  <app-code-block [code]="eventNames" lang="typescript" />
+  <p>Из двух строк на входе получили ровно два корректных имени обработчиков — без ручного перечисления и без риска написать <code>onclick</code> с маленькой буквы.</p>
+
+  <h3 class="doc__subtitle">Типобезопасные HTTP-эндпоинты</h3>
+  <p>Другой частый случай — описать разрешённые запросы к API как «метод + путь». Перечислять руками все сочетания скучно и легко забыть одно. Шаблон с двумя окнами делает это сам через декартово произведение:</p>
+  <app-code-block [code]="endpoints" lang="typescript" />
+  <p>Теперь строка <code>'GET /orders'</code> не пройдёт: такой комбинации в типе нет, и компилятор поймает опечатку в маршруте. Строковый <code>string</code> позволил бы что угодно — шаблон сузил множество до четырёх допустимых значений.</p>
+
+  <h3 class="doc__subtitle">Имена CSS-переменных</h3>
+  <p>И ещё один прикладной пример — имена CSS-переменных. Пусть в дизайн-системе есть размеры <code>sm</code>, <code>md</code>, <code>lg</code>, а переменные называются по шаблону <code>--size-*</code>. Опишем это типом, чтобы нельзя было передать несуществующее имя:</p>
+  <app-code-block [code]="cssVars" lang="typescript" />
+  <p>Тот же приём подходит для ключей роутов, префиксов в хранилище (<code>localStorage</code>), имён полей формы — везде, где строка обязана соответствовать заранее известной форме.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Связка с mapped-типами: переименование ключей</h2>
+  <p>Самая мощная область применения шаблонных типов открывается, когда их соединяют с <a routerLink="/typescript/advanced-types/mapped">отображёнными (mapped) типами</a>. Отображённый тип умеет пройтись по всем ключам объекта, а шаблон — переименовать каждый ключ в новую строку. Вместе они генерируют целые формы объектов из одной исходной.</p>
+  <p>Сначала научимся собирать имя из одного ключа. Шаблон принимает <a routerLink="/typescript/generics/basics">параметр типа</a> <code>K</code> и приклеивает к нему приставку <code>get</code>, попутно делая первую букву заглавной:</p>
+  <app-code-block [code]="getterOne" lang="typescript" />
+  <p>А теперь применим это к <strong>каждому</strong> ключу объекта. В отображённом типе есть конструкция <code>as</code> — «переименовать ключ»: вместо старого имени ставим строку, собранную шаблоном. Так из интерфейса <code>User</code> с полями <code>name</code>/<code>age</code> получается тип с методами <code>getName</code>/<code>getAge</code>:</p>
+  <app-code-block [code]="gettersMapped" lang="typescript" />
+  <p>Обратите внимание на <code>Capitalize&lt;string &amp; K&gt;</code>. Ключ объекта в общем случае бывает не только строкой, но и <code>number</code> или <code>symbol</code>, а <code>Capitalize</code> работает только со строками. Пересечение <code>string &amp; K</code> оставляет от ключа только его строковую часть — иначе была бы ошибка. Механику самого перебора ключей и модификаторов <code>readonly</code>/<code>?</code> подробно разбирает страница <a routerLink="/typescript/advanced-types/mapped">отображённых типов</a>.</p>
+  <p class="note"><strong>Зачем это на практике.</strong> Из одного описания данных (<code>User</code>) автоматически рождаются связанные формы: набор геттеров, набор обработчиков <code>onNameChange</code>/<code>onAgeChange</code>, объект флагов и так далее. Меняете исходный интерфейс — все производные типы обновляются сами. Это и есть программирование на уровне типов: пишем не значения, а правила, по которым компилятор строит типы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Шаблонный литеральный тип</strong> — «трафарет для строк»: фиксированные куски плюс окна <code>$&#123;...&#125;</code>. Он описывает <em>множество</em> строк заданной формы и живёт только в мире типов (на компиляции).</li>
+    <li>В окно можно поставить широкий тип (<code>$&#123;string&#125;</code> — любой текст) или объединение литералов. Строка проходит проверку, только если совпала форма: <code>'Hello, world'</code> подходит под <code>&#96;Hello, $&#123;string&#125;&#96;</code>, а <code>'Hi'</code> — нет.</li>
+    <li><strong>Объединение в окне даёт декартово произведение</strong>: <code>&#96;$&#123;'a' | 'b'&#125;-$&#123;'1' | '2'&#125;&#96;</code> = <code>'a-1' | 'a-2' | 'b-1' | 'b-2'</code> (2 × 2 = 4). Число вариантов — произведение размеров окон, следите за ростом.</li>
+    <li><strong>Утилиты регистра</strong>: <code>Uppercase</code>, <code>Lowercase</code>, <code>Capitalize</code>, <code>Uncapitalize</code> меняют регистр литеральных строк на уровне типов.</li>
+    <li><strong>Практика</strong>: имена событий (<code>&#96;on$&#123;Capitalize&lt;...&gt;&#125;&#96;</code> = <code>'onClick' | 'onHover'</code>), типобезопасные эндпоинты, ключи, пути и CSS-переменные.</li>
+    <li><strong>Связка с mapped</strong>: <code>[K in keyof T as &#96;get$&#123;Capitalize&lt;string &amp; K&gt;&#125;&#96;]</code> переименовывает ключи и генерирует новые формы объектов из одной исходной.</li>
+  </ul>
+  <p class="note">Дальше по теме: <a routerLink="/typescript/advanced-types/mapped">отображённые (mapped) типы</a> — как перебирать ключи и снимать/ставить модификаторы; <a routerLink="/typescript/advanced-types/conditional">условные типы</a> и <a routerLink="/typescript/advanced-types/infer">infer</a> — как разбирать строки на части; <a routerLink="/typescript/advanced-types/keyof">keyof</a> — откуда берутся имена ключей. Тонкие места собраны в разделе <a routerLink="/typescript/advanced-types/pitfalls">нюансы и подводные камни</a>. Опора всего раздела — модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>».</p>
+</section>
+</article>
