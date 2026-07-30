@@ -29,7 +29,7 @@ let b: Status = -5;
 let c: Status = 1; // ✅ ошибки нет — это молча стало Status.Paid
 
 // А вот и сама дыра: ЛЮБОЙ обычный number проходит БЕЗ проверки.
-declare const fromApi: number; // например, распарсили из JSON
+const fromApi: number = JSON.parse('500'); // например, распарсили из JSON
 let d: Status = fromApi;
 // ✅ ошибки НЕТ — хотя внутри fromApi может лежать 500 или -1
 

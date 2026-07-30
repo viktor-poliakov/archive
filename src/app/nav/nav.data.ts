@@ -480,6 +480,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         label: 'Модули и типы',
         children: [
           { id: 'import-export', label: 'Импорт и экспорт типов' },
+          { id: 'declare', label: 'Ключевое слово declare' },
           { id: 'declaration-files', label: 'Файлы объявлений (.d.ts)' },
           { id: 'third-party', label: 'Типы библиотек (@types)' },
           { id: 'declaration-merging', label: 'Слияние объявлений' },

@@ -33,11 +33,11 @@ function longest<T extends { length: number }>(a: T, b: T): T {
 // уметь X». Требование сужает круг подходящих типов — но не до одного,
 // а до всех, кто «умеет length».`;
 
-  protected readonly constraintCalls = `longest('корова', 'кот');
-// ✅ у строки есть length → T = string, тип результата: string
+  protected readonly constraintCalls = `longest<string>('корова', 'кот');
+// ✅ у строки есть length → тип результата: string
 
-longest([1, 2, 3], [9, 8]);
-// ✅ у массива есть length → T = number[], тип результата: number[]
+longest<number[]>([1, 2, 3], [9, 8]);
+// ✅ у массива есть length → тип результата: number[]
 
 longest(10, 20);
 // ❌ Argument of type 'number' is not assignable to parameter
@@ -51,7 +51,7 @@ longest(10, 20);
 const spichka = { length: 3, note: 'спичка' };
 const palka = { length: 10, note: 'палка' };
 
-longest(spichka, palka);
+longest<typeof spichka>(spichka, palka);
 // ✅ форма совпала: у обоих объектов есть length: number.
 // Наследование ни при чём — важна лишь СТРУКТУРА, а не родословная.`;
 
@@ -125,7 +125,7 @@ function merge<T extends object, U extends object>(a: T, b: U): T & U {
   return { ...a, ...b };
 }
 
-const merged = merge({ id: 1 }, { title: 'Задача' });
+const merged = merge<{ id: number }, { title: string }>({ id: 1 }, { title: 'Задача' });
 merged.id;    // ✅ есть — пришло из первого объекта (тип number)
 merged.title; // ✅ есть — пришло из второго объекта (тип string)
 
@@ -150,7 +150,7 @@ const tasks: Task[] = [
   { id: 2, title: 'B', done: false },
 ];
 
-updateById(tasks, { id: 2, title: 'B', done: true });
+updateById<Task>(tasks, { id: 2, title: 'B', done: true });
 // ✅ у Task есть id → требование пройдено
 
 // А объект БЕЗ поля id требование не проходит:

@@ -25,7 +25,7 @@ Object.keys(Status);
 // ['0','1','2','3','Created','Paid','Shipped','Cancelled'] — 8 ключей!
 
 // 2) Дыра в безопасности: почти любое число молча становится статусом.
-declare const fromApi: number; // пришло с сервера, значение неизвестно
+const fromApi: number = JSON.parse('777'); // пришло с сервера, значение неизвестно
 let s: Status = fromApi;        // ✅ ошибки НЕТ, хотя там могло быть 777
 
 s = 99;

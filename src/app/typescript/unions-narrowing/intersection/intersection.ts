@@ -48,17 +48,19 @@ interface Bird {
 }
 
 // Пересечение (&): у значения есть ВСЕ члены обоих типов
-declare const chimera: Cat & Bird;
-chimera.meow(); // ✅
-chimera.fly();  // ✅
-chimera.legs;   // ✅
+function useBoth(chimera: Cat & Bird): void {
+  chimera.meow(); // ✅
+  chimera.fly();  // ✅
+  chimera.legs;   // ✅
+}
 
 // Объединение (|): доступно только ОБЩЕЕ — то, что есть в каждом члене
-declare const catOrBird: Cat | Bird;
-catOrBird.legs; // ✅ legs есть и у Cat, и у Bird
-catOrBird.meow();
-// ❌ Property 'meow' does not exist on type 'Cat | Bird'.
-//    Property 'meow' does not exist on type 'Bird'.`;
+function useEither(catOrBird: Cat | Bird): void {
+  catOrBird.legs; // ✅ legs есть и у Cat, и у Bird
+  catOrBird.meow();
+  // ❌ Property 'meow' does not exist on type 'Cat | Bird'.
+  //    Property 'meow' does not exist on type 'Bird'.
+}`;
 
   protected readonly intersectSubtype = `interface HasId {
   id: string;

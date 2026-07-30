@@ -46,7 +46,7 @@ bad.value.toUpperCase();
 class Box<T> {
   constructor(public value: T) {}
 }
-const good = new Box(5); // тип: Box<number>, значит value: number
+const good = new Box<number>(5); // тип: Box<number>, значит value: number
 good.value.toUpperCase();
 // ❌ Property 'toUpperCase' does not exist on type 'number'.
 // Компилятор помнит: внутри число — и ловит ошибку сразу, на компиляции`;

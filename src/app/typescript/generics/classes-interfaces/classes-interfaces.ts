@@ -254,7 +254,7 @@ const x = s.pop(); // тип: string | undefined`;
   }
 }
 
-const b = Box.of(42); // тип: Box<number> — U вывелся из аргумента`;
+const b = Box.of<number>(42); // тип: Box<number>`;
 
   protected readonly genericMethod = `class Box<T> {
   constructor(private content: T) {}
@@ -264,15 +264,15 @@ const b = Box.of(42); // тип: Box<number> — U вывелся из аргу�
   }
 
   // Метод со СВОИМ параметром типа U: превращает Box<T> в Box<U>,
-  // применив функцию-преобразователь. U выводится из результата fn.
+  // применив функцию-преобразователь. U указываем в <> при вызове.
   map<U>(fn: (value: T) => U): Box<U> {
     return new Box(fn(this.content));
   }
 }
 
-const numBox = new Box(5);                    // Box<number>
-const strBox = numBox.map((n) => \`#\${n}\`);    // тип: Box<string>
-const lenBox = strBox.map((s) => s.length);   // тип: Box<number>
+const numBox = new Box<number>(5); // Box<number>
+const strBox = numBox.map<string>((n) => \`#\${n}\`); // тип: Box<string>
+const lenBox = strBox.map<number>((s) => s.length); // тип: Box<number>
 
 strBox.value.toUpperCase(); // ✅ внутри уже точно string`;
 }

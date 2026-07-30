@@ -46,9 +46,10 @@ const str: string = literal; // ✅ "red" → string (кладём в более
 const top: unknown = str;    // ✅ string → unknown (в самый широкий тип)
 
 // И never ⊂ любой тип, включая всю эту цепочку:
-declare const bottom: never;
-const asLiteral: 'red' = bottom; // ✅
-const asString: string = bottom; // ✅`;
+function useNever(bottom: never): void {
+  const asLiteral: 'red' = bottom; // ✅
+  const asString: string = bottom; // ✅
+}`;
 
   protected readonly narrowingExample = `function printId(id: string | number): void {
   // тип id — это string | number, то есть супертип string.
@@ -99,7 +100,7 @@ id = 'abc'; // ✅ string влезает в string | number
 id = 42;    // ✅ number тоже влезает
 
 // Обратно — из объединения в один его член — нельзя:
-declare const mixed: string | number;
+const mixed: string | number = 42;
 const onlyString: string = mixed;
 // ❌ Type 'string | number' is not assignable to type 'string'
 // В mixed может лежать число — использовать его как string небезопасно`;
@@ -120,11 +121,11 @@ if (typeof box === 'number') {
 }`;
 
   protected readonly neverBottom = `// never — подтип ВСЕХ типов (bottom type): пустое множество влезает куда угодно
-declare const nothing: never;
-
-const a: string = nothing;  // ✅
-const b: number = nothing;  // ✅
-const c: boolean = nothing; // ✅
+function useNothing(nothing: never): void {
+  const a: string = nothing;  // ✅
+  const b: number = nothing;  // ✅
+  const c: boolean = nothing; // ✅
+}
 // Значения типа never не существует, поэтому «подставлять» на деле нечего —
 // но по правилам системы типов never присваивается любому типу`;
 

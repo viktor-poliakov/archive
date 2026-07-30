@@ -90,14 +90,14 @@ function isDog(a: Animal): a is Dog {
 }
 // ↑ вернёт то же true/false, НО ещё и сообщает компилятору: "если true — это Dog"
 
-declare const pet: Animal;
+function compare(pet: Animal): void {
+  if (looksLikeDog(pet)) {
+    pet; // тип по-прежнему Cat | Dog — не сузился
+  }
 
-if (looksLikeDog(pet)) {
-  pet; // тип по-прежнему Cat | Dog — не сузился
-}
-
-if (isDog(pet)) {
-  pet; // тип Dog — сузился ✅
+  if (isDog(pet)) {
+    pet; // тип Dog — сузился ✅
+  }
 }`;
 
   protected readonly isStringIsNumber = `// Крошечные переиспользуемые guard'ы удобно держать в utils.
@@ -200,20 +200,31 @@ function walk(animal: Animal): void {
   animal.bark(); // ✅ animal: Dog
 }`;
 
-  protected readonly assertVsGuard = `declare const pet: Animal;
-declare function isDog(a: Animal): a is Dog;
-declare function assertIsDog(a: Animal): asserts a is Dog;
+  protected readonly assertVsGuard = `type Cat = { kind: 'cat'; meow(): void };
+type Dog = { kind: 'dog'; bark(): void };
+type Animal = Cat | Dog;
+
+function isDog(a: Animal): a is Dog {
+  return a.kind === 'dog';
+}
+function assertIsDog(a: Animal): asserts a is Dog {
+  if (a.kind !== 'dog') throw new Error('ожидалась собака');
+}
 
 // guard задаёт ВОПРОС — обычно внутри if. Доступны обе ветки:
-if (isDog(pet)) {
-  pet.bark(); // ветка "да, собака"
-} else {
-  pet.meow(); // ветка "нет, кот" — тоже рабочая
+function withGuard(pet: Animal): void {
+  if (isDog(pet)) {
+    pet.bark(); // ветка "да, собака"
+  } else {
+    pet.meow(); // ветка "нет, кот" — тоже рабочая
+  }
 }
 
 // assert ставит ТРЕБОВАНИЕ. Ветки "нет" не существует:
-assertIsDog(pet);
-pet.bark(); // сюда мы дошли ⇒ pet точно Dog; иначе assert бросил бы ошибку выше`;
+function withAssert(pet: Animal): void {
+  assertIsDog(pet);
+  pet.bark(); // сюда мы дошли ⇒ pet точно Dog; иначе assert бросил бы ошибку выше
+}`;
 
   protected readonly unsoundGuard = `// ⚠️ Компилятор НЕ проверяет тело guard'а на честность — верит предикату на слово.
 function isString(value: unknown): value is string {

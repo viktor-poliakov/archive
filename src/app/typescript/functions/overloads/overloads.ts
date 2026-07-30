@@ -93,10 +93,10 @@ interface Calc {
   run(a: string, b: string): string; // склеить две строки
 }
 
-declare const calc: Calc;
-
-const sum = calc.run(2, 3);      // ✅ тип: number
-const text = calc.run('a', 'b'); // ✅ тип: string
+function useCalc(calc: Calc): void {
+  const sum = calc.run(2, 3);      // ✅ тип: number
+  const text = calc.run('a', 'b'); // ✅ тип: string
+}
 
 // То же в псевдониме типа — перегрузки описывают через форму вызова:
 type Merge = {

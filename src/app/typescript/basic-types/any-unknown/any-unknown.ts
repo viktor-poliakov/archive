@@ -149,7 +149,7 @@ function greetOk(name: string) {
 let legacy: any = oldGlobalThing;
 
 // 2) Нетипизированная библиотека без описаний типов (.d.ts):
-declare const analytics: any;
+const analytics: any = { track() {} };
 analytics.track('click', { id: 42 });
 
 // Это осознанные, точечные исключения. По умолчанию, когда тип заранее

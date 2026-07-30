@@ -130,13 +130,13 @@ function readCacheSafe(config: Config): boolean {
 type StringFn = (x: string) => void;
 type NumberFn = (x: number) => void;
 
-declare const fn: StringFn | NumberFn;
-
-// Каким аргументом позвать fn, чтобы подошло ОБОИМ вариантам сразу?
-fn('hello');
-// ❌ Argument of type 'string' is not assignable to parameter of type 'never'.
-fn(42);
-// ❌ то же самое
+function callEither(fn: StringFn | NumberFn): void {
+  // Каким аргументом позвать fn, чтобы подошло ОБОИМ вариантам сразу?
+  fn('hello');
+  // ❌ Argument of type 'string' is not assignable to parameter of type 'never'.
+  fn(42);
+  // ❌ то же самое
+}
 
 // Параметр стал (string & number) = never: значения, годного одновременно
 // и для StringFn, и для NumberFn, не существует. Сначала сузьте union
@@ -187,6 +187,10 @@ async function loadUser(): Promise<void> {
   }
 }
 
-declare function fetchJson(): Promise<unknown>;
-declare function isApiUser(v: unknown): v is ApiUser;`;
+async function fetchJson(): Promise<unknown> {
+  return JSON.parse('{"id":1,"name":"Анна"}');
+}
+function isApiUser(v: unknown): v is ApiUser {
+  return typeof v === 'object' && v !== null && 'id' in v && 'name' in v;
+}`;
 }

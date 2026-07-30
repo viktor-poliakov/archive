@@ -179,7 +179,9 @@ value.toUpperCase();
 
   protected readonly earlyReturn = `type User = { name: string; email?: string };
 
-declare function sendMail(to: string): void;
+function sendMail(to: string): void {
+  console.log('отправляем письмо на', to);
+}
 
 // Без early return — «лесенка» вложенных if, читать тяжело
 function notifyBad(user: User | null): void {

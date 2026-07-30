@@ -96,10 +96,10 @@ function first<T>(arr: T[]): T | undefined {
 }
 
 const nums = [10, 20, 30];
-const firstNum = first(nums); // T = number → тип: number | undefined
+const firstNum = first<number>(nums); // T = number → тип: number | undefined
 
 const words = ['a', 'b', 'c'];
-const firstWord = first(words); // T = string → тип: string | undefined
+const firstWord = first<string>(words); // T = string → тип: string | undefined
 
 // Тип элемента «протаскивается» из массива прямо в результат —
 // без any и без отдельной копии функции под каждый вид списка.`;
@@ -115,8 +115,8 @@ function makeBox<T>(value: T): Box<T> {
   return { value };
 }
 
-const numberBox = makeBox(42);       // Box<number> — этикетку заполнило число
-const stringBox = makeBox('привет'); // Box<string> — этикетку заполнила строка
+const numberBox = makeBox<number>(42);       // Box<number> — этикетку заполнило число
+const stringBox = makeBox<string>('привет'); // Box<string> — этикетку заполнила строка
 
 numberBox.value.toFixed(1);    // ✅ value — число
 stringBox.value.toUpperCase(); // ✅ value — строка
@@ -139,7 +139,7 @@ wrapAny(value).toUpperCase();
 // ✅ ошибки НЕТ — any «согласен» на что угодно. Но это ЛОЖНОЕ спокойствие:
 //    в рантайме упадёт, ведь у числа нет метода toUpperCase.
 
-wrap(value).toUpperCase();
+wrap<number>(value).toUpperCase();
 // ❌ Property 'toUpperCase' does not exist on type 'number'.
 //    Дженерик ЗАПОМНИЛ: положили число — значит и на выходе число.
 //    Опечатку поймали на этапе компиляции, до запуска. В этом вся разница.`;
@@ -152,7 +152,7 @@ function pair<K, V>(key: K, value: V): [K, V] {
   return [key, value];
 }
 
-const entry = pair('age', 30); // K = string, V = number → тип: [string, number]
+const entry = pair<string, number>('age', 30); // K = string, V = number → тип: [string, number]
 
 // Но имена можно делать ОСМЫСЛЕННЫМИ — так код читается лучше.
 // Частая конвенция — префикс T: TItem, TValue, TTask.
@@ -160,5 +160,18 @@ function firstOrNull<TItem>(list: TItem[]): TItem | null {
   return list.length > 0 ? list[0] : null;
 }
 
-const found = firstOrNull([1, 2, 3]); // TItem = number → тип: number | null`;
+const found = firstOrNull<number>([1, 2, 3]); // TItem = number → тип: number | null`;
+
+  protected readonly pairExplicit = `// У «явной» формы с несколькими параметрами есть пара правил.
+
+// Правило «всё или ничего»: указываете типы явно — перечисляйте ВСЕ по порядку.
+pair<string, number>('age', 30); // ✅ оба типа на месте
+pair<string>('age', 30);
+// ❌ Expected 2 type arguments, but got 1. (у V нет значения по умолчанию)
+
+// Иногда типы пишут, даже когда вывод справился бы, — чтобы РАСШИРИТЬ
+// выведенный тип. Тут значение делаем number | null, а не просто number:
+const port = pair<string, number | null>('port', 8080);
+// без <...> тип был бы [string, number]; с ними в значение можно положить null:
+port[1] = null; // ✅`;
 }

@@ -17,13 +17,12 @@ function identity<T>(x: T): T {
   return x;
 }
 
-const s: string = identity('привет'); // ✅ T = string, вернулась строка
-const n: number = identity(42);        // ✅ T = number, вернулось число
+// Тип пишем явно — в угловых скобках перед аргументами:
+const s = identity<string>('привет'); // ✅ T = string, вернулась строка
+const n = identity<number>(42); // ✅ T = number, вернулось число
 
-// Тип можно указать и явно — в угловых скобках перед аргументами:
-const explicit = identity<string>('привет'); // тип: string
-
-// Но обычно этого не нужно: компилятор сам «считывает» тип аргумента.`;
+// <string>/<number> можно и опустить — компилятор сам «считывает» тип
+// аргумента. Но в примерах раздела мы пишем их явно, для наглядности.`;
 
   protected readonly pairExample = `// Параметров типа может быть НЕСКОЛЬКО. Здесь их два:
 // K — для ключа, V — для значения. Они независимы и не обязаны совпадать.
@@ -31,11 +30,11 @@ function pair<K, V>(key: K, value: V): [K, V] {
   return [key, value];
 }
 
-const p1 = pair('id', 42);       // тип: [string, number]
-const p2 = pair('active', true); // тип: [string, boolean]
-const p3 = pair(1, ['a', 'b']);  // тип: [number, string[]]
+const p1 = pair<string, number>('id', 42); // тип: [string, number]
+const p2 = pair<string, boolean>('active', true); // тип: [string, boolean]
+const p3 = pair<number, string[]>(1, ['a', 'b']); // тип: [number, string[]]
 
-// K вывелся из первого аргумента, V — из второго, каждый сам по себе.
+// K и V задаём явно: первый параметр — тип ключа, второй — тип значения.
 // Это готовая типобезопасная «пара ключ-значение».`;
 
   protected readonly inferByPosition = `// Компилятор смотрит на АРГУМЕНТЫ по позициям и подставляет типы —
@@ -54,7 +53,9 @@ interface Task {
   title: string;
   done: boolean;
 }
-declare function map<T, U>(arr: T[], fn: (x: T) => U): U[];
+function map<T, U>(arr: T[], fn: (x: T) => U): U[] {
+  return arr.map(fn);
+}
 
 const tasks: Task[] = [{ title: 'Купить хлеб', done: false }];
 const titles = map(tasks, (t) => t.title);
@@ -83,12 +84,12 @@ const tasks: Task[] = [
   { title: 'Позвонить маме', done: true, priority: 2 },
 ];
 
-const titles = map(tasks, (t) => t.title);        // тип: string[]
-const flags = map(tasks, (t) => t.done);          // тип: boolean[]
-const nums = map(tasks, (t) => t.priority * 10);  // тип: number[]
+const titles = map<Task, string>(tasks, (t) => t.title); // тип: string[]
+const flags = map<Task, boolean>(tasks, (t) => t.done); // тип: boolean[]
+const nums = map<Task, number>(tasks, (t) => t.priority * 10); // тип: number[]
 
-// Один и тот же map выдаёт РАЗНЫЙ тип результата — по правилу переработки.
-// U не задаётся заранее: он вычисляется из того, что вернул колбэк.`;
+// Один и тот же map даёт РАЗНЫЙ тип результата — его задаёт второй параметр U.
+// (U можно и опустить — компилятор выведет из колбэка; но мы пишем явно.)`;
 
   protected readonly filterExample = `// filter — «сито»: часть элементов оставляем, часть выбрасываем.
 // Тип при этом НЕ меняется: на входе T[], на выходе тоже T[].
@@ -111,8 +112,8 @@ const tasks: Task[] = [
   { title: 'B', done: true },
 ];
 
-const active = filter(tasks, (t) => !t.done);  // тип: Task[] — сорт не поменялся
-const strs = filter(['a', 'bb', 'ccc'], (s) => s.length > 1); // тип: string[]
+const active = filter<Task>(tasks, (t) => !t.done);  // тип: Task[] — сорт не поменялся
+const strs = filter<string>(['a', 'bb', 'ccc'], (s) => s.length > 1); // тип: string[]
 
 // Сравните с map: map МЕНЯЕТ тип (T → U), filter СОХРАНЯЕТ (T → T).`;
 
@@ -129,8 +130,8 @@ interface Task {
 
 const tasks: Task[] = [{ title: 'A', done: false }];
 
-const titles = pluck(tasks, 'title'); // тип: unknown[] — точный тип поля потерян
-const oops = pluck(tasks, 'titl');    // опечатку в ключе компилятор НЕ поймал
+const titles = pluck<Task>(tasks, 'title'); // тип: unknown[] — точный тип поля потерян
+const oops = pluck<Task>(tasks, 'titl');    // опечатку в ключе компилятор НЕ поймал
 
 // Проблема: string как ключ слишком широк — TS не связал ключ с полем.
 // Типобезопасная версия (ключ только из полей объекта, а результат —
@@ -142,8 +143,8 @@ const oops = pluck(tasks, 'titl');    // опечатку в ключе комп
 // Здесь <T> стоит ПЕРЕД списком аргументов, прямо внутри типа:
 const identity: <T>(x: T) => T = (x) => x;
 
-const s = identity('привет'); // тип: string
-const n = identity(42);        // тип: number
+const s = identity<string>('привет'); // тип: string
+const n = identity<number>(42);        // тип: number
 
 // Функция осталась ОДНА, но по-прежнему работает для любого типа:
 // T подставляется в каждом вызове отдельно.`;
@@ -160,7 +161,9 @@ const len = toLength('hello'); // тип: number → 5
 
 // И это ровно тип второго аргумента нашего map: (x: T) => U.
 // Можно даже переписать сигнатуру map через Mapper:
-declare function map<T, U>(arr: T[], fn: Mapper<T, U>): U[];`;
+function map<T, U>(arr: T[], fn: Mapper<T, U>): U[] {
+  return arr.map(fn);
+}`;
 
   protected readonly collectNever = `interface Task {
   title: string;
@@ -243,8 +246,8 @@ function first<T>(arr: T[]): T | undefined {
   return arr[0];
 }
 
-const a = first(['a', 'b']); // тип: string | undefined
-const b = first([1, 2, 3]);  // тип: number | undefined
+const a = first<string>(['a', 'b']); // тип: string | undefined
+const b = first<number>([1, 2, 3]);  // тип: number | undefined
 
 // Важно: дженерик — замена перегрузкам ТОЛЬКО когда нет разного
 // поведения по типу. Если результат по-настоящему зависит от того,
