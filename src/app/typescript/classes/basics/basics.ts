@@ -42,7 +42,7 @@ const callMom = new Task('Позвонить маме', true);
 buyBread.title; // 'Купить хлеб'
 callMom.title; // 'Позвонить маме'
 
-buyBread.toggle(); // переключили именно эту задачу
+buyBread.toggle(); // переключили именно этот объект
 buyBread.done; // ✅ true — метод изменил данные ЭТОГО объекта
 callMom.done; // ✅ true — второй объект не затронут, у него своё состояние`;
 
