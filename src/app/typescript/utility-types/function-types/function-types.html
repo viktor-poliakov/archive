@@ -1,0 +1,137 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/utility-types">Утилитарные типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">ReturnType, Parameters</span></nav>
+
+<h1 class="doc__title">ReturnType, Parameters</h1>
+<p class="doc__lead"><code>ReturnType</code> и <code>Parameters</code> — это <strong>рентген для функции</strong>. Представьте, что у вас уже есть готовая функция, и вам нужно узнать про неё две вещи: <strong>что она возвращает</strong> и <strong>какие аргументы принимает</strong>. Вместо того чтобы переписывать эти типы руками (и рисковать ошибиться), вы «просвечиваете» функцию насквозь и <strong>считываете типы прямо с неё</strong>. <code>ReturnType</code> читает тип результата, <code>Parameters</code> — типы аргументов. Как на медосмотре: не гадаем, что внутри, а смотрим на снимок.</p>
+
+<section class="doc__section">
+  <h2>Боль: типы, которые «разъезжаются»</h2>
+  <p>Начнём с проблемы, которую эти утилитарные типы решают. Слово <strong>утилитарный тип</strong> (utility type) означает просто «готовый вспомогательный тип, встроенный в TypeScript»: вы даёте ему на вход другой тип, а он возвращает новый, как-то преобразованный. <code>ReturnType</code> и <code>Parameters</code> — два таких помощника, и оба работают <em>с функциями</em>.</p>
+  <p>Вообразим типичную ситуацию. У нас есть функция-<strong>фабрика</strong> (так называют функцию, чья задача — собрать и вернуть готовый объект). Она создаёт пользователя. А в другом месте программы нам понадобился <em>тип</em> этого пользователя. Первый порыв — описать его руками, заново:</p>
+  <app-code-block [code]="painManual" lang="typescript" />
+  <p>На первый взгляд всё хорошо. Но приглядитесь: теперь у нас <strong>два источника правды</strong> об одном и том же объекте — тело функции <code>makeUser</code> и отдельный <code>interface User</code>. Стоит завтра добавить в фабрику поле <code>email</code>, а в интерфейсе про него забыть — и типы <strong>«разъедутся»</strong> (по-английски это называют <em>drift</em>, дрейф). Компилятор не подскажет, потому что для него это два независимых, ничем не связанных типа. Именно такие тихие рассинхроны и ловят наши «рентгены».</p>
+  <p class="note"><strong>Главная идея страницы — DRY.</strong> DRY расшифровывается как <em>Don't Repeat Yourself</em> — «не повторяйся». Если один и тот же тип описан в двух местах, рано или поздно они разойдутся. <code>ReturnType</code> и <code>Parameters</code> позволяют держать <strong>один источник правды</strong> — саму функцию — и выводить все остальные типы из неё.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>ReturnType&lt;F&gt;</code>: считываем, что функция возвращает</h2>
+  <p>Первый рентген — <code>ReturnType</code>. Вы передаёте ему <em>тип функции</em>, а он достаёт из него <strong>тип возвращаемого значения</strong>. Ничего переписывать не нужно: тип «считывается» с уже существующей функции.</p>
+  <app-code-block [code]="returnTypeFirst" lang="typescript" />
+  <p>Обратите внимание на разницу с предыдущим разделом. Там <code>User</code> был <em>копией</em>, которую мы поддерживали вручную. Здесь <code>User</code> — это <strong>производная</strong> от <code>makeUser</code>: они связаны навсегда. Добавите в фабрику новое поле — тип <code>User</code> подхватит его сам, без единой правки. Один источник правды, никакого дрейфа.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ключевой шаг: маленькое слово <code>typeof</code></h2>
+  <p>В примере выше вы наверняка заметили странное слово <code>typeof</code> перед <code>makeUser</code>. Это <strong>самый важный и самый спотыкательный момент</strong> всей темы, поэтому разберём его медленно.</p>
+  <p>В TypeScript есть два разных мира: мир <strong>значений</strong> и мир <strong>типов</strong>. <code>makeUser</code> — это <em>значение</em>: конкретная функция, которую можно вызвать, передать в переменную, положить в массив. А <code>ReturnType</code> в угловых скобках ждёт не значение, а <em>тип</em>. Просто написать <code>ReturnType&lt;makeUser&gt;</code> нельзя — это всё равно что передать саму коробку туда, где просят прочитать этикетку с неё.</p>
+  <p>Мостик между двумя мирами и есть оператор <code>typeof</code>. Он берёт значение и отвечает на вопрос «какого ты типа?» — то есть возвращает <strong>тип этого значения</strong>. Для функции это будет её сигнатура: какие аргументы, что возвращает.</p>
+  <app-code-block [code]="typeofStep" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 200" width="100%" role="img" aria-label="typeof переводит функцию-значение в тип функции, из которого ReturnType достаёт результат">
+      <rect x="20" y="80" width="150" height="54" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="95" y="105" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">makeUser</text>
+      <text x="95" y="123" text-anchor="middle" fill="var(--muted)" font-size="11">значение (функция)</text>
+
+      <line x1="170" y1="107" x2="242" y2="107" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="242,101 256,107 242,113" fill="var(--muted)" />
+      <text x="213" y="97" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">typeof</text>
+
+      <rect x="262" y="72" width="176" height="70" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="350" y="102" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">typeof makeUser</text>
+      <text x="350" y="124" text-anchor="middle" fill="var(--muted)" font-size="11">ТИП функции</text>
+
+      <line x1="438" y1="107" x2="510" y2="107" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="510,101 524,107 510,113" fill="var(--muted)" />
+      <text x="481" y="97" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="11">ReturnType</text>
+
+      <rect x="530" y="80" width="94" height="54" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="577" y="105" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">User</text>
+      <text x="577" y="123" text-anchor="middle" fill="var(--muted)" font-size="11">результат</text>
+    </svg>
+    <figcaption>Два шага: <code>typeof</code> превращает функцию-значение в тип функции, а <code>ReturnType</code> достаёт из этого типа результат.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Типичная ошибка: забыли <code>typeof</code></h2>
+  <p>Раз уж <code>typeof</code> так легко упустить, посмотрим на ошибку в лицо — чтобы потом сразу её узнавать. Если написать имя функции без <code>typeof</code>, компилятор споткнётся: он ждал тип, а получил значение.</p>
+  <app-code-block [code]="forgotTypeof" lang="typescript" />
+  <p>Сообщение <em>«'makeUser' refers to a value, but is being used as a type here»</em> («'makeUser' — это значение, но используется как тип») — прямой намёк, что вы забыли <code>typeof</code>. TypeScript даже подсказывает готовое исправление: <em>«Did you mean 'typeof makeUser'?»</em>. Запомните простое правило-мнемонику: <strong>функция — это значение; чтобы получить её тип, ставим перед ней <code>typeof</code></strong>.</p>
+  <p class="note"><strong>Когда <code>typeof</code> НЕ нужен.</strong> Если у вас уже есть именно <em>тип</em> функции (например, <code>type Fn = (x: number) =&gt; string</code>), то писать <code>typeof</code> не надо — он нужен только чтобы превратить <em>значение</em> (реальную функцию) в тип. Пишете <code>ReturnType&lt;Fn&gt;</code> напрямую. А вот из живой функции <code>makeUser</code> тип добывается только через <code>typeof makeUser</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>Parameters&lt;F&gt;</code>: считываем типы аргументов</h2>
+  <p>Второй рентген — <code>Parameters</code>. Он смотрит на функцию и возвращает типы её <strong>аргументов</strong>, собранные в <strong>кортеж</strong>. Кортеж (tuple) — это массив фиксированной длины, где у каждой позиции свой тип: первый элемент одного типа, второй — другого. Как раз то, что нужно, чтобы описать список аргументов «по порядку».</p>
+  <app-code-block [code]="parametersFirst" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 240" width="100%" role="img" aria-label="Функция как коробка: слева входят Parameters — кортеж аргументов, справа выходит ReturnType">
+      <text x="320" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">одна функция — два «снимка»: аргументы слева, результат справа</text>
+
+      <rect x="40" y="66" width="150" height="30" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="115" y="86" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">name: string</text>
+      <rect x="40" y="106" width="150" height="30" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="115" y="126" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">age: number</text>
+      <rect x="40" y="146" width="150" height="30" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="115" y="166" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">isAdmin: boolean</text>
+      <text x="115" y="200" text-anchor="middle" fill="var(--accent)" font-size="12">Parameters (кортеж аргументов)</text>
+
+      <line x1="196" y1="121" x2="258" y2="121" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="258,115 272,121 258,127" fill="var(--muted)" />
+
+      <rect x="278" y="86" width="128" height="70" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="342" y="118" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">createUser</text>
+      <text x="342" y="138" text-anchor="middle" fill="var(--muted)" font-size="11">функция</text>
+
+      <line x1="406" y1="121" x2="468" y2="121" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="468,115 482,121 468,127" fill="var(--muted)" />
+
+      <rect x="488" y="94" width="132" height="54" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="554" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#123; ...user &#125;</text>
+      <text x="554" y="200" text-anchor="middle" fill="var(--green)" font-size="12">ReturnType (что вернёт)</text>
+    </svg>
+    <figcaption>Функция — это коробка. Слева в неё входят аргументы (их читает <code>Parameters</code>), справа выходит результат (его читает <code>ReturnType</code>).</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Достаём один аргумент: индексация кортежа</h2>
+  <p>Раз <code>Parameters</code> возвращает кортеж, из него можно взять <strong>тип отдельного аргумента</strong> — по его номеру (индексу). Индексы начинаются с нуля: <code>[0]</code> — первый аргумент, <code>[1]</code> — второй, и так далее. Синтаксис такой же, как при обращении к элементу массива, только применяется он <em>к типу</em>.</p>
+  <app-code-block [code]="parametersIndex" lang="typescript" />
+  <p>Это очень удобно на практике. Допустим, у вас есть отдельная функция, которая проверяет только имя пользователя. Вместо того чтобы гадать «а какого типа должно быть имя?», вы берёте этот тип <strong>прямо у источника</strong> — <code>Parameters&lt;typeof createUser&gt;[0]</code>. Если сигнатуру <code>createUser</code> когда-нибудь изменят, ваша проверка обновится автоматически.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: один источник правды для формы</h2>
+  <p>Сложим оба рентгена вместе на реалистичном примере — форме профиля. Одна фабрика <code>buildProfile</code> описывает, из чего состоит профиль. А все производные типы — и тип готового объекта, и тип набора полей — мы <strong>выводим из неё</strong>, не дублируя ничего руками.</p>
+  <app-code-block [code]="dryUser" lang="typescript" />
+  <p>Заметьте, как красиво всё сходится: <code>saveProfile</code> принимает <code>Profile</code>, а <code>buildProfile</code> возвращает ровно такой же тип — потому что <code>Profile</code> и есть его <code>ReturnType</code>. Они <strong>физически не могут разойтись</strong>. Это и есть сила подхода: меняете фабрику в одном месте — вся цепочка типов подстраивается сама.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: тип действия из его создателя</h2>
+  <p>Ещё один очень частый приём — вывести тип «действия» (action) из функции, которая его создаёт. Это классика стейт-менеджеров вроде Redux, но идея универсальна: есть функция-создатель, и мы хотим тип того, что она производит, — не описывая его отдельно.</p>
+  <app-code-block [code]="actionCreator" lang="typescript" />
+  <p>Здесь <code>cartReducer</code> всегда работает с типом, синхронным с <code>addToCart</code>. Добавите в создатель новое поле — тип действия обновится, и редьюсер сразу увидит новое поле. Никакого ручного дублирования структуры действия.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Подводный камень: асинхронные функции</h2>
+  <p>Последнее, о чём важно предупредить заранее. Если функция <strong>асинхронная</strong> (объявлена через <code>async</code>), она всегда возвращает <code>Promise</code> — «обещание» будущего значения. Поэтому <code>ReturnType</code> честно достанет именно <code>Promise</code>, а не тот объект, что лежит внутри него.</p>
+  <app-code-block [code]="asyncTeaser" lang="typescript" />
+  <p>Чтобы «развернуть» <code>Promise</code> и добраться до типа <em>внутри</em> него, есть отдельный утилитарный тип <code>Awaited</code>. Его удобно надеть поверх <code>ReturnType</code>: сначала <code>ReturnType</code> достаёт <code>Promise&lt;...&gt;</code>, а <code>Awaited</code> снимает обёртку. Подробнее — на странице про <a routerLink="/typescript/utility-types/awaited">Awaited</a>.</p>
+  <p class="note"><strong>Как это устроено внутри.</strong> И <code>ReturnType</code>, и <code>Parameters</code> — не магия компилятора, а обычные типы, написанные через <a routerLink="/typescript/advanced-types/conditional">условные типы</a> и ключевое слово <code>infer</code> («вывести» тип из шаблона). Знать это для использования не обязательно, но если захочется заглянуть «под капот» — загляните туда (по желанию).</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>ReturnType&lt;F&gt;</code></strong> — «рентген результата»: достаёт тип того, что функция <em>возвращает</em>. <code>type User = ReturnType&lt;typeof makeUser&gt;</code>.</li>
+    <li><strong><code>Parameters&lt;F&gt;</code></strong> — «рентген аргументов»: возвращает <em>кортеж</em> типов аргументов. Отдельный аргумент берут по индексу: <code>Parameters&lt;typeof fn&gt;[0]</code>.</li>
+    <li><strong>Всегда через <code>typeof</code>.</strong> Функция — это <em>значение</em>; чтобы отдать её <em>тип</em> в угловые скобки, пишем <code>typeof fn</code>. Забыли <code>typeof</code> — получите ошибку «refers to a value, but is being used as a type».</li>
+    <li><strong>Смысл — DRY.</strong> Оба типа выводятся из самой функции, поэтому производные типы <em>не могут разойтись</em> с ней. Один источник правды вместо ручных копий.</li>
+    <li><strong>Асинхронность.</strong> У <code>async</code>-функции <code>ReturnType</code> вернёт <code>Promise&lt;...&gt;</code>; чтобы снять обёртку, оберните результат в <code>Awaited</code>.</li>
+  </ul>
+  <p class="note">Оба типа стоят на фундаменте <a routerLink="/typescript/generics/basics">дженериков</a> — если <code>&lt;F&gt;</code> в угловых скобках выглядит незнакомо, начните оттуда. Внутри они устроены через <a routerLink="/typescript/advanced-types/conditional">условные типы</a> с <code>infer</code>. А для асинхронных функций дальше по программе — <a routerLink="/typescript/utility-types/awaited">Awaited</a>, который снимает с результата обёртку <code>Promise</code>.</p>
+</section>
+</article>

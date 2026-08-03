@@ -1,0 +1,197 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/utility-types">Утилитарные типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Exclude, Extract, NonNullable</span></nav>
+
+<h1 class="doc__title">Exclude, Extract, NonNullable</h1>
+<p class="doc__lead">Представьте <strong>мешок с разноцветными шариками</strong>. В программировании такой мешок — это <strong>объединение типов</strong> (union): запись вида <code>'idle' | 'loading' | 'done'</code>, где каждый вариант через чёрточку <code>|</code> — это отдельный шарик. Три утилиты на этой странице — это три простых действия с таким мешком. <code>Exclude</code> — это <strong>вычитание</strong>: достать из мешка и выбросить некоторые шарики. <code>Extract</code> — это <strong>фильтр</strong>: оставить в мешке только подходящие шарики, а остальные выкинуть. <code>NonNullable</code> — это тот же <code>Exclude</code>, но с одной конкретной задачей: выбросить два особых «пустых» шарика — <code>null</code> и <code>undefined</code>. Всё это — <strong>операции над множеством</strong>, и работают они <strong>по одному шарику за раз</strong>.</p>
+
+<section class="doc__section">
+  <h2>Сначала вспомним, что такое union</h2>
+  <p>Чтобы уверенно работать с этими тремя утилитами, нужно чётко видеть в голове одну картинку: <strong>union — это набор вариантов</strong>, мешок с шариками. Тип <code>'idle' | 'loading' | 'done'</code> означает буквально «значение может быть <em>либо</em> строкой <code>'idle'</code>, <em>либо</em> <code>'loading'</code>, <em>либо</em> <code>'done'</code> — и ничем другим». Каждая часть до и после чёрточки <code>|</code> — это отдельный <em>член</em> объединения, наш отдельный шарик.</p>
+  <app-code-block [code]="unionAsBag" lang="typescript" />
+  <p>Запомните это слово — <strong>член</strong> (по-английски <em>member</em>). Все три утилиты, которые мы разберём, перебирают члены union <strong>по одному</strong> и решают судьбу каждого: оставить или выбросить. Именно поэтому говорят, что это <em>операции над множеством</em> — они работают с мешком как с набором элементов. Если само понятие «тип — это множество значений» пока смутное, его подробно разбирает страница <a routerLink="/typescript/generics/basics">основы дженериков</a> и раздел о подтипах — но для этой страницы достаточно картинки с мешком.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>Exclude&lt;T, U&gt;</code> — вычитание из мешка</h2>
+  <p>Первая утилита — <code>Exclude</code> (буквально «исключить»). Её работа проще некуда: <strong>взять мешок <code>T</code>, пройтись по всем шарикам и выбросить те, что перечислены в <code>U</code></strong>. Что осталось в мешке — то и есть новый тип. Здесь <code>T</code> — исходный мешок, а <code>U</code> — «список на выброс».</p>
+  <app-code-block [code]="excludeFirst" lang="typescript" />
+  <p>Обратите внимание: результат <code>Exclude</code> — это снова <strong>union, просто поменьше</strong>. Был мешок из трёх шариков, выбросили один — остался мешок из двух. Ничего волшебного: то же самое можно было бы написать руками как <code>'idle' | 'done'</code>. Но <code>Exclude</code> избавляет от ручной переписки и, что важнее, <strong>сам подхватит изменения</strong> исходного типа, если тот когда-нибудь дополнят.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 250" width="100%" role="img" aria-label="Exclude выбрасывает из мешка шарик loading, оставляя idle и done">
+      <text x="320" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Exclude&lt;Status, 'loading'&gt; — выкидываем один шарик</text>
+
+      <text x="120" y="62" text-anchor="middle" fill="var(--muted)" font-size="12">было: мешок из трёх</text>
+      <rect x="34" y="74" width="86" height="40" rx="20" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="77" y="99" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">idle</text>
+      <rect x="34" y="122" width="86" height="40" rx="20" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="77" y="147" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">loading</text>
+      <rect x="34" y="170" width="86" height="40" rx="20" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="77" y="195" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">done</text>
+
+      <text x="245" y="132" text-anchor="middle" fill="var(--red)" font-size="12">убрать</text>
+      <text x="245" y="150" text-anchor="middle" fill="var(--red)" font-size="12">'loading'</text>
+      <line x1="200" y1="142" x2="300" y2="142" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="300,136 314,142 300,148" fill="var(--muted)" />
+
+      <text x="500" y="62" text-anchor="middle" fill="var(--green)" font-size="12">стало: idle | done</text>
+      <rect x="440" y="98" width="120" height="40" rx="20" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="500" y="123" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">idle</text>
+      <rect x="440" y="146" width="120" height="40" rx="20" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="500" y="171" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">done</text>
+    </svg>
+    <figcaption>Шарик <code>'loading'</code> нашли в списке на выброс — и удалили. Остальные остались нетронутыми.</figcaption>
+  </figure>
+
+  <p>Выбрасывать можно и <strong>сразу несколько</strong> шариков. Для этого во втором аргументе <code>U</code> просто перечисляют их через <code>|</code> — ведь <code>U</code> это тоже мешок, «список того, что надо убрать»:</p>
+  <app-code-block [code]="excludeMany" lang="typescript" />
+  <p class="note"><strong>А если убрать то, чего нет?</strong> Ничего страшного не случится. Если во втором аргументе указать значение, которого в исходном мешке и не было, <code>Exclude</code> просто не найдёт, что удалять, — и вернёт мешок целиком, без ошибок. Это удобно для перестраховки.</p>
+  <app-code-block [code]="excludeNoMatch" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2><code>Extract&lt;T, U&gt;</code> — фильтр, оставляющий совпадения</h2>
+  <p>Вторая утилита — <code>Extract</code> (буквально «извлечь») — это <strong>зеркальное отражение</strong> <code>Exclude</code>. Если <code>Exclude</code> говорит «выброси совпадения», то <code>Extract</code> говорит наоборот: «<strong>оставь только совпадения, а всё остальное выброси</strong>». Это фильтр: он проходит по шарикам мешка <code>T</code> и оставляет лишь те, что нашлись и в <code>U</code>.</p>
+  <app-code-block [code]="extractFirst" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 280" width="100%" role="img" aria-label="Extract оставляет только шарики done и error, отсеивая idle и loading">
+      <text x="320" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Extract&lt;Status, 'done' | 'error'&gt; — оставляем только совпадения</text>
+
+      <text x="115" y="60" text-anchor="middle" fill="var(--muted)" font-size="12">мешок из четырёх</text>
+      <rect x="34" y="72" width="86" height="36" rx="18" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4" />
+      <text x="77" y="95" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">idle</text>
+      <rect x="34" y="116" width="86" height="36" rx="18" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4" />
+      <text x="77" y="139" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">loading</text>
+      <rect x="34" y="160" width="86" height="36" rx="18" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="77" y="183" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">done</text>
+      <rect x="34" y="204" width="86" height="36" rx="18" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="77" y="227" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">error</text>
+
+      <rect x="250" y="120" width="140" height="72" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="320" y="150" text-anchor="middle" fill="var(--accent)" font-size="12">фильтр</text>
+      <text x="320" y="170" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'done' | 'error'</text>
+      <line x1="120" y1="156" x2="248" y2="156" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="248,150 262,156 248,162" fill="var(--muted)" opacity="0" />
+      <line x1="390" y1="156" x2="470" y2="156" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="470,150 484,156 470,162" fill="var(--muted)" />
+
+      <text x="560" y="60" text-anchor="middle" fill="var(--green)" font-size="12">прошли фильтр</text>
+      <rect x="500" y="120" width="120" height="34" rx="17" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="560" y="142" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">done</text>
+      <rect x="500" y="162" width="120" height="34" rx="17" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="560" y="184" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">error</text>
+    </svg>
+    <figcaption>Пунктирные <code>idle</code> и <code>loading</code> не совпали с фильтром и отсеялись. Прошли только <code>done</code> и <code>error</code>.</figcaption>
+  </figure>
+
+  <p>И у <code>Extract</code> есть та же приятная особенность: <strong>лишние значения в фильтре просто игнорируются</strong>. В результат попадёт только то, что есть <em>и</em> в мешке, <em>и</em> в фильтре одновременно — то есть их <strong>пересечение</strong>:</p>
+  <app-code-block [code]="extractExtra" lang="typescript" />
+  <p>Из этого вытекает красивая симметрия. <code>Exclude</code> и <code>Extract</code> — две половинки одного мешка: то, что одна выбрасывает, другая оставляет. Вместе они умеют <strong>аккуратно разрезать</strong> union на две непересекающиеся части:</p>
+  <app-code-block [code]="excludeExtractPair" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2><code>NonNullable&lt;T&gt;</code> — убрать <code>null</code> и <code>undefined</code></h2>
+  <p>Третья утилита — <code>NonNullable</code> («не-пустой») — это тот же <code>Exclude</code>, но заранее настроенный на одну очень частую задачу. Она выбрасывает из мешка ровно <strong>два особых шарика: <code>null</code> и <code>undefined</code></strong> — те самые «пустые» значения, которые означают «данных здесь нет». По сути это сокращение для <code>Exclude&lt;T, null | undefined&gt;</code>, только с коротким и понятным именем.</p>
+  <app-code-block [code]="nonNullableFirst" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 190" width="100%" role="img" aria-label="NonNullable убирает шарики null и undefined, оставляя string">
+      <text x="310" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">NonNullable&lt;string | null | undefined&gt;</text>
+
+      <rect x="24" y="66" width="96" height="40" rx="20" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="72" y="91" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">string</text>
+      <rect x="132" y="66" width="96" height="40" rx="20" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="180" y="91" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">null</text>
+      <rect x="240" y="66" width="124" height="40" rx="20" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="302" y="91" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">undefined</text>
+
+      <line x1="378" y1="86" x2="452" y2="86" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="452,80 466,86 452,92" fill="var(--muted)" />
+      <text x="415" y="74" text-anchor="middle" fill="var(--red)" font-size="11">выкинули пустые</text>
+
+      <rect x="478" y="66" width="118" height="40" rx="20" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="537" y="91" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">string</text>
+      <text x="537" y="132" text-anchor="middle" fill="var(--green)" font-size="12">осталось только значение</text>
+    </svg>
+    <figcaption>Два пунктирных «пустых» шарика — <code>null</code> и <code>undefined</code> — удаляются. Остаётся гарантированно настоящее значение.</figcaption>
+  </figure>
+
+  <p>Зачем это нужно на практике? Постоянно! Значения то и дело приходят в форме «может быть, а может и нет»: поле формы ещё не заполнено, ответ сервера мог не содержать нужных данных, у объекта необязательное поле. Сначала мы проверяем, что значение <em>есть</em>, а <code>NonNullable</code> помогает описать тип уже <strong>после</strong> проверки — когда пустоты точно позади:</p>
+  <app-code-block [code]="nonNullableWhy" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Практика: три реальных сценария</h2>
+  <p>Соберём всё вместе на приземлённых задачах, какие встречаются в обычном коде каждый день.</p>
+  <p><strong>Сценарий 1 — вычесть события, которые обрабатывает кто-то другой.</strong> Есть длинный union всех событий приложения. Часть уходит в отдельный модуль, а нам достаются все остальные. Вместо ручной переписки — вычитаем ненужное:</p>
+  <app-code-block [code]="eventsExclude" lang="typescript" />
+  <p><strong>Сценарий 2 — извлечь только «клик-подобные» события.</strong> Из того же мешка фильтром <code>Extract</code> оставляем ровно то, что нам интересно обрабатывать в конкретном месте:</p>
+  <app-code-block [code]="eventsExtract" lang="typescript" />
+  <p><strong>Сценарий 3 — описать тип очищенного массива.</strong> После того как массив отфильтровали от <code>null</code>, <code>NonNullable</code> помогает выразить тип уже чистых элементов:</p>
+  <app-code-block [code]="nonNullableArray" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Главная ловушка: это не ключи объекта!</h2>
+  <p>А теперь — <strong>самое важное предупреждение на всей странице</strong>. Если вы запомните из неё только один абзац, пусть это будет этот. Начинающие постоянно путают две совершенно разные вещи, потому что имена похожи и все они «утилитарные типы».</p>
+  <p><code>Exclude</code> и <code>Extract</code> работают с <strong>членами union</strong> — с шариками в мешке. Они <strong>ничего не знают про объекты и их поля</strong>. Если попытаться передать в <code>Exclude</code> тип объекта, надеясь «убрать поле <code>email</code>», — не выйдет ровным счётом ничего: объект не мешок вариантов, перебирать в нём по членам нечего.</p>
+  <app-code-block [code]="notObjectKeys" lang="typescript" />
+  <p>Чтобы убрать или оставить <strong>ключи объекта</strong>, есть отдельная пара утилит — <a routerLink="/typescript/utility-types/pick-omit"><code>Pick</code> и <code>Omit</code></a>. Держите в голове простую табличку соответствия:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Что вы хотите сделать</th>
+          <th>С union (мешок значений)</th>
+          <th>С ключами объекта</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Убрать (выбросить) варианты</td>
+          <td class="yes">✅ <code>Exclude&lt;T, U&gt;</code></td>
+          <td class="no">❌ не для этого — берите <code>Omit</code></td>
+        </tr>
+        <tr>
+          <td>Оставить только некоторые варианты</td>
+          <td class="yes">✅ <code>Extract&lt;T, U&gt;</code></td>
+          <td class="no">❌ не для этого — берите <code>Pick</code></td>
+        </tr>
+        <tr>
+          <td>Убрать поле объекта по имени</td>
+          <td class="no">❌ <code>Exclude</code> не тронет объект</td>
+          <td class="yes">✅ <code>Omit&lt;T, K&gt;</code></td>
+        </tr>
+        <tr>
+          <td>Оставить только некоторые поля объекта</td>
+          <td class="no">❌ <code>Extract</code> не тронет объект</td>
+          <td class="yes">✅ <code>Pick&lt;T, K&gt;</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Как их различать на глаз.</strong> Спросите себя: «Мой тип — это <em>мешок вариантов</em> через <code>|</code> (например, статусы, роли, имена событий) или это <em>объект</em> с полями <code>&#123; ... &#125;</code>?» Мешок вариантов — <code>Exclude</code> / <code>Extract</code>. Объект — <code>Omit</code> / <code>Pick</code>. Эти инструменты живут в разных мирах и не заменяют друг друга.</p>
+  <p>Есть, впрочем, красивый мостик между мирами. Оператор <a routerLink="/typescript/advanced-types/keyof"><code>keyof</code></a> превращает ключи объекта в <em>настоящий</em> union строк — и вот по этому мешку <code>Exclude</code> уже работает как надо. Именно так <code>Omit</code> и устроен внутри:</p>
+  <app-code-block [code]="keysThenExclude" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Как это работает под капотом (для любопытных)</h2>
+  <p>Знать это необязательно, чтобы пользоваться утилитами, — можно смело пропустить абзац. Но если интересно: все три типа построены на <strong>условных типах</strong> (conditional types). Грубо говоря, <code>Exclude</code> для каждого шарика мешка задаёт вопрос «этот шарик есть в <code>U</code>? если да — выброси (стань <code>never</code>), если нет — оставь». Именно способность перебирать члены union по одному и делает эти операции «операциями над множеством». Если захочется заглянуть глубже, загляните на страницу про <a routerLink="/typescript/advanced-types/conditional">условные типы</a> — но, повторим, для повседневного использования <code>Exclude</code>, <code>Extract</code> и <code>NonNullable</code> это не требуется.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>union — это мешок вариантов</strong> (<code>'a' | 'b' | 'c'</code>), а каждый вариант — отдельный <em>член</em> (шарик). Все три утилиты перебирают члены <strong>по одному</strong>.</li>
+    <li><strong><code>Exclude&lt;T, U&gt;</code> — вычитание.</strong> Выбрасывает из мешка <code>T</code> все члены, что есть в <code>U</code>. <code>Exclude&lt;'a'|'b'|'c', 'b'&gt;</code> = <code>'a' | 'c'</code>.</li>
+    <li><strong><code>Extract&lt;T, U&gt;</code> — фильтр.</strong> Оставляет из <code>T</code> только члены, что есть и в <code>U</code> (пересечение). <code>Extract&lt;'a'|'b'|'c', 'a'|'x'&gt;</code> = <code>'a'</code>.</li>
+    <li><strong><code>NonNullable&lt;T&gt;</code></strong> — частный <code>Exclude</code>: убирает ровно <code>null</code> и <code>undefined</code>. <code>NonNullable&lt;string | null | undefined&gt;</code> = <code>string</code>.</li>
+    <li><strong>Лишние значения безопасны:</strong> просить убрать/оставить то, чего в мешке нет, — не ошибка, такие значения просто игнорируются.</li>
+    <li><strong>Главное правило.</strong> Это операции над <em>членами union</em>, а НЕ над ключами объекта. Для полей объекта берите <a routerLink="/typescript/utility-types/pick-omit"><code>Pick</code> и <code>Omit</code></a>.</li>
+  </ul>
+  <p class="note">Дальше логично разобрать <a routerLink="/typescript/utility-types/pick-omit">Pick и Omit</a> — их близнецов для ключей объекта, чтобы окончательно закрепить разницу. Фундамент всех утилитарных типов — <a routerLink="/typescript/generics/basics">дженерики</a>; мостик от объектов к union строит <a routerLink="/typescript/advanced-types/keyof">keyof</a> и <a routerLink="/typescript/advanced-types/mapped">сопоставленные типы</a>; а механику «под капотом» раскрывают <a routerLink="/typescript/advanced-types/conditional">условные типы</a>.</p>
+</section>
+</article>

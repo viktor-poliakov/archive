@@ -180,6 +180,50 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./typescript/advanced-types/pitfalls/pitfalls').then(
       (m) => m.TypescriptAdvancedTypesPitfalls,
     ),
+  'typescript/utility-types/partial-required-readonly': () =>
+    import('./typescript/utility-types/partial-required-readonly/partial-required-readonly').then(
+      (m) => m.TypescriptUtilityTypesPartialRequiredReadonly,
+    ),
+  'typescript/utility-types/pick-omit': () =>
+    import('./typescript/utility-types/pick-omit/pick-omit').then(
+      (m) => m.TypescriptUtilityTypesPickOmit,
+    ),
+  'typescript/utility-types/record': () =>
+    import('./typescript/utility-types/record/record').then((m) => m.TypescriptUtilityTypesRecord),
+  'typescript/utility-types/exclude-extract': () =>
+    import('./typescript/utility-types/exclude-extract/exclude-extract').then(
+      (m) => m.TypescriptUtilityTypesExcludeExtract,
+    ),
+  'typescript/utility-types/function-types': () =>
+    import('./typescript/utility-types/function-types/function-types').then(
+      (m) => m.TypescriptUtilityTypesFunctionTypes,
+    ),
+  'typescript/utility-types/awaited': () =>
+    import('./typescript/utility-types/awaited/awaited').then(
+      (m) => m.TypescriptUtilityTypesAwaited,
+    ),
+  'typescript/assertions/as': () =>
+    import('./typescript/assertions/as/as').then((m) => m.TypescriptAssertionsAs),
+  'typescript/assertions/as-const': () =>
+    import('./typescript/assertions/as-const/as-const').then(
+      (m) => m.TypescriptAssertionsAsConst,
+    ),
+  'typescript/assertions/non-null': () =>
+    import('./typescript/assertions/non-null/non-null').then(
+      (m) => m.TypescriptAssertionsNonNull,
+    ),
+  'typescript/assertions/user-type-guards': () =>
+    import('./typescript/assertions/user-type-guards/user-type-guards').then(
+      (m) => m.TypescriptAssertionsUserTypeGuards,
+    ),
+  'typescript/assertions/assertion-functions': () =>
+    import('./typescript/assertions/assertion-functions/assertion-functions').then(
+      (m) => m.TypescriptAssertionsAssertionFunctions,
+    ),
+  'typescript/assertions/pitfalls': () =>
+    import('./typescript/assertions/pitfalls/pitfalls').then(
+      (m) => m.TypescriptAssertionsPitfalls,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

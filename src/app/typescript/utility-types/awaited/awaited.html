@@ -1,0 +1,178 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/utility-types">Утилитарные типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Awaited</span></nav>
+
+<h1 class="doc__title">Awaited</h1>
+<p class="doc__lead"><code>Awaited&lt;T&gt;</code> — это <strong>распаковка посылки на уровне типов</strong>. Представьте <code>Promise&lt;User&gt;</code> как <strong>заклеенную коробку, внутри которой однажды окажется <code>User</code></strong>. Точно так же, как ключевое слово <code>await</code> вскрывает эту коробку <strong>в момент выполнения программы</strong> и достаёт из неё значение, <code>Awaited</code> вскрывает её <strong>в мире типов</strong> и достаёт <em>тип</em> того, что лежит внутри. Дали ему <code>Promise&lt;User&gt;</code> — он вернёт <code>User</code>. Он даже умеет разворачивать <strong>коробку внутри коробки</strong> до самого конца.</p>
+
+<section class="doc__section">
+  <h2>Сначала вспомним: что такое <code>Promise</code></h2>
+  <p>Чтобы говорить о распаковке, нужно сперва понять, что мы распаковываем. <code>Promise&lt;T&gt;</code> (по-русски — «обещание») — это <strong>коробка, внутри которой <em>когда-нибудь</em> появится значение типа <code>T</code></strong>. Прямо сейчас значения в ней может не быть: данные ещё летят с сервера, файл ещё читается с диска. Но коробка уже у вас в руках, и на её этикетке честно написано, что внутри будет лежать значение типа <code>T</code>.</p>
+  <app-code-block [code]="promiseRecap" lang="typescript" />
+  <p>Запомните главное различие, вокруг которого крутится вся страница: <strong>сама коробка — это не то, что лежит внутри</strong>. <code>Promise&lt;User&gt;</code> — это <em>обёртка</em>, а не <code>User</code>. Пока коробку не распаковали, поле <code>name</code> у неё не достать — у коробки нет полей пользователя, они спрятаны внутри.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 210" width="100%" role="img" aria-label="Коробка Promise User: снаружи обёртка Promise, внутри лежит значение типа User">
+      <text x="320" y="30" text-anchor="middle" fill="var(--muted)" font-size="13">Promise&lt;User&gt; — это коробка (обёртка), а не сам User</text>
+
+      <rect x="180" y="56" width="280" height="120" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="320" y="82" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">Promise&lt;...&gt;</text>
+      <text x="320" y="100" text-anchor="middle" fill="var(--muted)" font-size="11">внешняя обёртка</text>
+
+      <rect x="238" y="112" width="164" height="48" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="320" y="141" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">User</text>
+    </svg>
+    <figcaption>Снаружи — обёртка <code>Promise&lt;...&gt;</code>, внутри — само значение <code>User</code>. Задача <code>Awaited</code> — снять обёртку и добраться до внутренней части.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Как коробку вскрывают в рантайме: <code>await</code></h2>
+  <p>Вы наверняка уже видели ключевое слово <code>await</code>. Оно работает со <strong>значениями во время выполнения программы</strong>: ставит выполнение на паузу, дожидается, пока в коробке появится значение, и отдаёт вам это значение — уже <em>без обёртки</em>.</p>
+  <app-code-block [code]="awaitRuntime" lang="typescript" />
+  <p>Смотрите на две строки внутри <code>show</code>. Переменная <code>box</code> — это ещё запакованная коробка <code>Promise&lt;User&gt;</code>. А после <code>await box</code> в переменной <code>user</code> лежит уже <em>распакованный</em> <code>User</code>, у которого можно спокойно читать поле <code>name</code>. Слово <code>await</code> сделало свою работу — сняло обёртку.</p>
+  <p class="note"><strong>Здесь и рождается вопрос.</strong> <code>await</code> распаковывает <em>значение</em>, и только внутри <code>async</code>-функции, только когда программа уже бежит. А как проделать то же самое с <em>типом</em> — заранее, до запуска, прямо когда мы описываем типы? Ведь тип коробки — <code>Promise&lt;User&gt;</code>, а нам в описаниях часто нужен именно <code>User</code>. Вот для этого и существует <code>Awaited</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>Awaited&lt;T&gt;</code> — это <code>await</code> для типов</h2>
+  <p><code>Awaited&lt;T&gt;</code> берёт <strong>тип</strong> коробки-обещания и возвращает <strong>тип</strong> того, что лежит внутри. Он снимает обёртку <code>Promise&lt;...&gt;</code> — ровно то же, что делает <code>await</code>, только не со значением, а с типом, и не в рантайме, а на этапе проверки типов.</p>
+  <app-code-block [code]="awaitedFirst" lang="typescript" />
+  <p>Прочитайте примеры как «слева коробка — справа её содержимое». <code>Awaited&lt;Promise&lt;string&gt;&gt;</code> — это <code>string</code>. <code>Awaited&lt;Promise&lt;User&gt;&gt;</code> — это <code>User</code>. Никаких вызовов функций, никакого ожидания: всё вычисляется в голове у компилятора, ещё до того, как программа запустится. <code>Awaited</code> просто <strong>заглядывает в коробку</strong> и сообщает, какой тип там лежит.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 200" width="100%" role="img" aria-label="Awaited снимает обёртку Promise: из Promise User получается User">
+      <rect x="20" y="70" width="200" height="60" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="120" y="98" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">Promise&lt;User&gt;</text>
+      <text x="120" y="117" text-anchor="middle" fill="var(--muted)" font-size="11">коробка запакована</text>
+
+      <line x1="228" y1="100" x2="368" y2="100" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="368,94 382,100 368,106" fill="var(--muted)" />
+      <text x="305" y="90" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">Awaited&lt;...&gt;</text>
+      <text x="305" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">снимаем обёртку</text>
+
+      <rect x="392" y="70" width="200" height="60" rx="12" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="492" y="98" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">User</text>
+      <text x="492" y="117" text-anchor="middle" fill="var(--muted)" font-size="11">распаковано ✓</text>
+    </svg>
+    <figcaption><code>Awaited</code> — это «отклеить скотч и достать содержимое». На входе тип коробки <code>Promise&lt;User&gt;</code>, на выходе — тип её содержимого <code>User</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Коробка внутри коробки и «неупакованные» типы</h2>
+  <p>Иногда обещания вкладывают друг в друга: <code>Promise&lt;Promise&lt;X&gt;&gt;</code> — коробка внутри коробки. В рантайме <code>await</code> разворачивает такое до самого конца («промисы сплющиваются»). <code>Awaited</code> ведёт себя точно так же: снимает <strong>все</strong> обёртки разом, сколько бы их ни было вложено. Это свойство называют <strong>рекурсивной распаковкой</strong>.</p>
+  <app-code-block [code]="awaitedNested" lang="typescript" />
+  <p>Сколько коробок ни вложи — <code>Awaited</code> дойдёт до самого «ядра» и вернёт тип значения, которое лежит на дне. А что, если в <code>Awaited</code> передать тип, который <strong>вообще не коробка</strong> — например, обычное число? Тогда разворачивать нечего, и <code>Awaited</code> просто возвращает тот же тип без изменений:</p>
+  <app-code-block [code]="awaitedNonPromise" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 210" width="100%" role="img" aria-label="Вложенные промисы схлопываются в один тип: Promise Promise number превращается в number">
+      <rect x="20" y="60" width="250" height="90" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="145" y="86" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">Promise&lt;Promise&lt;...&gt;&gt;</text>
+      <rect x="70" y="98" width="150" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="145" y="123" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">number</text>
+
+      <line x1="278" y1="105" x2="392" y2="105" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="392,99 406,105 392,111" fill="var(--muted)" />
+      <text x="335" y="95" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">Awaited&lt;...&gt;</text>
+      <text x="335" y="127" text-anchor="middle" fill="var(--muted)" font-size="11">снимает все обёртки</text>
+
+      <rect x="416" y="78" width="200" height="54" rx="12" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="516" y="110" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">number</text>
+    </svg>
+    <figcaption>Две обёртки, три, десять — неважно. <code>Awaited</code> схлопывает всю «матрёшку» промисов до одного внутреннего типа. А если обёртки нет, он вернёт тип как есть.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Зачем это нужно: <code>async</code> всегда прячет результат в коробку</h2>
+  <p>Теперь — самое важное, ради чего <code>Awaited</code> и придумали. Есть железное правило: <strong>асинхронная функция всегда возвращает <code>Promise</code></strong>. Даже если в теле вы пишете <code>return</code> обычного объекта, слово <code>async</code> незаметно заворачивает результат в коробку <code>Promise&lt;...&gt;</code>.</p>
+  <app-code-block [code]="asyncReturnsPromise" lang="typescript" />
+  <p>Мы будто отдаём <code>User</code> напрямую — а фактический тип того, что вернёт <code>fetchUser</code>, всё равно <code>Promise&lt;User&gt;</code>. Это и создаёт неудобство, когда мы хотим <strong>вытащить тип результата функции</strong>. Вспомним утилиту <a routerLink="/typescript/utility-types/function-types"><code>ReturnType&lt;T&gt;</code></a> — она достаёт тип результата функции. Применим её к нашей асинхронной <code>fetchUser</code>:</p>
+  <app-code-block [code]="returnTypeAlone" lang="typescript" />
+  <p>Видите разочарование? <code>ReturnType</code> честно вернул то, что отдаёт функция, — а отдаёт она <strong>коробку</strong> <code>Promise&lt;User&gt;</code>, а не <code>User</code>. Утилита довела нас до коробки, но не распаковала её. Работу нужно <em>докончить</em>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Связка, которую все используют: <code>Awaited&lt;ReturnType&lt;...&gt;&gt;</code></h2>
+  <p>Решение напрашивается само: возьмём результат <code>ReturnType</code> (это <code>Promise&lt;User&gt;</code>) и обернём его в <code>Awaited</code>, чтобы снять обёртку. Две утилиты в паре делают ровно то, что нужно, — «взять результат функции и <strong>распаковать</strong> его».</p>
+  <app-code-block [code]="awaitedReturnType" lang="typescript" />
+  <p>Читать такую запись удобно <strong>изнутри наружу</strong>, слой за слоем. Сначала <code>typeof fetchUser</code> даёт тип самой функции. Потом <code>ReturnType&lt;...&gt;</code> достаёт её результат — <code>Promise&lt;User&gt;</code>. И наконец <code>Awaited&lt;...&gt;</code> снимает обёртку — остаётся чистый <code>User</code>. Именно так этот приём и живёт в реальных проектах.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Три шага: typeof даёт тип функции, ReturnType даёт Promise User, Awaited даёт User">
+      <rect x="30" y="40" width="600" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="52" y="65" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">1. typeof fetchUser</text>
+      <text x="608" y="65" text-anchor="end" fill="var(--muted)" font-size="12">тип функции</text>
+
+      <line x1="330" y1="80" x2="330" y2="100" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="324,100 330,114 336,100" fill="var(--muted)" />
+
+      <rect x="30" y="116" width="600" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="52" y="141" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">2. ReturnType&lt;...&gt;</text>
+      <text x="608" y="141" text-anchor="end" fill="var(--accent)" font-family="monospace" font-size="13">Promise&lt;User&gt;</text>
+
+      <line x1="330" y1="156" x2="330" y2="176" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="324,176 330,190 336,176" fill="var(--muted)" />
+
+      <rect x="30" y="192" width="600" height="40" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="52" y="217" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">3. Awaited&lt;...&gt;</text>
+      <text x="608" y="217" text-anchor="end" fill="var(--green)" font-family="monospace" font-size="13">User ✓</text>
+    </svg>
+    <figcaption>Конвейер из трёх шагов, читаемый изнутри наружу: тип функции → её результат <code>Promise&lt;User&gt;</code> → распакованный <code>User</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: типы, которые «следуют» за функцией</h2>
+  <p>Возникает законный вопрос новичка: «Зачем эти утилиты, если можно просто написать интерфейс <code>User</code> руками?» Ответ — в <strong>связи</strong>. Когда тип выведен из функции, он <em>привязан</em> к ней. Стоит функции начать возвращать новое поле — и выведенный тип обновится <strong>сам</strong>, его не придётся править в двух местах и невозможно забыть синхронизировать.</p>
+  <app-code-block [code]="practicalWhyBother" lang="typescript" />
+  <p>Здесь у <code>fetchProfile</code> нет ручной аннотации результата — тип полностью выводится из <code>return</code>. Значит, <code>Profile</code> всегда точно описывает то, что реально отдаёт функция. Добавили в объект поле — <code>Profile</code> тут же о нём узнал. Это и есть главная выгода: <strong>один источник правды</strong>.</p>
+  <p>Ещё один частый сценарий — распаковать результат <code>Promise.all</code>. Эта функция берёт несколько обещаний и отдаёт <strong>одно</strong> обещание с массивом их результатов. Тип этого общего обещания тоже удобно распаковывать через <code>Awaited</code>:</p>
+  <app-code-block [code]="promiseAllExample" lang="typescript" />
+  <p>Тип <code>AllData</code> получился готовым кортежем результатов — <strong>без всякой обёртки <code>Promise</code></strong>. Из него сразу можно доставать элементы и читать их поля. Обратите внимание, как аккуратно <code>Awaited&lt;ReturnType&lt;typeof loadAll&gt;&gt;</code> снял единственную внешнюю обёртку и оставил чистые данные.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Частые заблуждения</h2>
+  <p>Соберём в одну таблицу ошибки, на которых спотыкаются новички. Слева — как <em>кажется</em>, справа — как есть на самом деле.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Кажется</th>
+          <th>На самом деле</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Awaited</code> «ждёт» и что-то выполняет в рантайме</td>
+          <td class="yes">✅ Работает только с типами, до запуска; ничего не исполняет</td>
+        </tr>
+        <tr>
+          <td><code>ReturnType</code> у <code>async</code>-функции даёт <code>User</code></td>
+          <td class="no">❌ Даёт <code>Promise&lt;User&gt;</code> — нужен ещё <code>Awaited</code></td>
+        </tr>
+        <tr>
+          <td><code>Awaited&lt;number&gt;</code> — это ошибка (не промис же)</td>
+          <td class="yes">✅ Вернёт <code>number</code>: не промис — отдаёт тип как есть</td>
+        </tr>
+        <tr>
+          <td><code>Awaited&lt;Promise&lt;Promise&lt;X&gt;&gt;&gt;</code> даст <code>Promise&lt;X&gt;</code></td>
+          <td class="no">❌ Даст <code>X</code>: разворачивает рекурсивно, до дна</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Запомните пару.</strong> В девяти случаях из десяти <code>Awaited</code> встречается именно рядом с <code>ReturnType</code>, потому что <code>async</code>-функции всегда прячут результат в коробку. Увидели <code>Promise&lt;...&gt;</code> там, где хотелось «голый» тип, — оберните всё в <code>Awaited</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>Awaited&lt;T&gt;</code></strong> — это <code>await</code> на уровне типов: снимает обёртку <code>Promise&lt;...&gt;</code> и даёт тип значения <em>внутри</em> коробки.</li>
+    <li><code>Awaited&lt;Promise&lt;string&gt;&gt;</code> = <code>string</code>, <code>Awaited&lt;Promise&lt;User&gt;&gt;</code> = <code>User</code>. Обёртка исчезает, содержимое остаётся.</li>
+    <li><strong>Рекурсивно:</strong> <code>Awaited&lt;Promise&lt;Promise&lt;number&gt;&gt;&gt;</code> = <code>number</code> — снимаются все вложенные коробки сразу.</li>
+    <li><strong>Не промис — не трогает:</strong> <code>Awaited&lt;number&gt;</code> = <code>number</code>. Если разворачивать нечего, тип возвращается как есть.</li>
+    <li><strong>Главная связка</strong> — <code>Awaited&lt;ReturnType&lt;typeof fn&gt;&gt;</code>: <code>ReturnType</code> у <code>async</code>-функции даёт <code>Promise&lt;X&gt;</code>, а <code>Awaited</code> распаковывает его до <code>X</code>.</li>
+    <li>Выгода — <strong>один источник правды</strong>: выведенный тип «следует» за функцией и обновляется сам, когда меняется её результат.</li>
+  </ul>
+  <p class="note">Дальше загляните на страницу про <a routerLink="/typescript/utility-types/function-types">типы функций</a> — там подробно разобран <code>ReturnType</code>, с которым <code>Awaited</code> ходит в паре. А чтобы прочно понимать, откуда вообще берутся угловые скобки <code>&lt;...&gt;</code> и параметры типа, всегда полезно освежить <a routerLink="/typescript/generics/basics">основы дженериков</a> — фундамент, на котором стоят все утилитарные типы.</p>
+</section>
+</article>

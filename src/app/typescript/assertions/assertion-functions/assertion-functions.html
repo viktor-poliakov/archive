@@ -1,0 +1,175 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/assertions">Приведение и утверждения</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Assertion-функции</span></nav>
+
+<h1 class="doc__title">Assertion-функции</h1>
+<p class="doc__lead">Assertion-функция (функция-утверждение) — это <strong>КПП со шлагбаумом</strong>. Она не говорит «да» или «нет», как вежливый охранник на фейс-контроле. Она делает жёстче: если с данными всё в порядке — <strong>молча пропускает дальше</strong>, и весь код за шлагбаумом уже уверен, что проверка пройдена. А если что-то не так — <strong>вообще не пропускает</strong>: бросает исключение, и выполнение обрывается. Технически это функция с особой аннотацией <code>asserts</code>: <code>asserts condition</code> или <code>asserts v is Type</code>.</p>
+
+<section class="doc__section">
+  <h2>Боль: проверять одно и то же снова и снова</h2>
+  <p>Начнём с ситуации, знакомой каждому. Мы достаём элемент со страницы, и его тип — <code>HTMLElement | null</code>: браузер не гарантирует, что элемент существует. Компилятор поэтому требует проверку на <code>null</code> <strong>перед каждым</strong> обращением к элементу.</p>
+  <app-code-block [code]="painRepeatedChecks" lang="typescript" />
+  <p>Мы точно знаем, что элемент есть, но вынуждены писать <code>if (input)</code> снова и снова. Хочется по-другому: <strong>проверить один раз в самом начале</strong> — и дальше обращаться к <code>input</code> спокойно, без <code>null</code>. Ровно для этого и придуманы assertion-функции. Одна проверка «на входе», после которой весь код ниже считается уже <a routerLink="/typescript/unions-narrowing/narrowing">суженным</a>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 270" width="100%" role="img" aria-label="Assertion-функция как КПП: при истинном условии пропускает дальше, при ложном бросает исключение">
+      <text x="320" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">assert — это КПП: либо пропускает дальше, либо не пропускает вовсе</text>
+
+      <rect x="24" y="116" width="150" height="54" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="99" y="141" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">HTMLElement</text>
+      <text x="99" y="160" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">| null</text>
+
+      <line x1="174" y1="143" x2="204" y2="143" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="204,137 218,143 204,149" fill="var(--muted)" />
+
+      <rect x="222" y="110" width="166" height="66" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="305" y="139" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">assert(cond)</text>
+      <text x="305" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">шлагбаум / КПП</text>
+
+      <line x1="388" y1="143" x2="430" y2="143" stroke="var(--muted)" stroke-width="2" />
+      <line x1="430" y1="90" x2="430" y2="211" stroke="var(--muted)" stroke-width="2" />
+
+      <line x1="430" y1="90" x2="452" y2="90" stroke="var(--green)" stroke-width="2" />
+      <polygon points="452,84 466,90 452,96" fill="var(--green)" />
+      <line x1="430" y1="211" x2="452" y2="211" stroke="var(--red)" stroke-width="2" />
+      <polygon points="452,205 466,211 452,217" fill="var(--red)" />
+
+      <rect x="470" y="63" width="162" height="54" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="551" y="86" text-anchor="middle" fill="var(--green)" font-size="12">условие истинно →</text>
+      <text x="551" y="105" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">HTMLElement</text>
+
+      <rect x="470" y="184" width="162" height="54" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="551" y="207" text-anchor="middle" fill="var(--red)" font-size="12">условие ложно →</text>
+      <text x="551" y="226" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">throw Error</text>
+    </svg>
+    <figcaption>Шлагбаум либо поднят (условие истинно) — и весь код за ним уверен, что <code>null</code> уже отсеян; либо опущен (условие ложно) — тогда <code>throw</code> обрывает выполнение и до кода ниже дело просто не доходит.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис 1: <code>asserts condition</code></h2>
+  <p>Самая универсальная форма. Функция принимает какое-то <em>условие</em> и обещает: «если я вернулась, а не бросила, то условие истинно». Это обещание записано в возвращаемом типе — <code>asserts condition</code>, где <code>condition</code> — это <strong>имя параметра</strong>, а не тип.</p>
+  <app-code-block [code]="assertSyntax1" lang="typescript" />
+  <p>Разберём по шагам. Параметр <code>condition</code> имеет тип <a routerLink="/typescript/basic-types/any-unknown"><code>unknown</code></a> — сюда можно передать любое выражение-проверку, например <code>input !== null</code>. Внутри тела: если условие ложно — <code>throw</code>, и функция никогда не «вернётся». Значит, любая строка <strong>после</strong> удачного вызова выполняется только тогда, когда условие было истинным — и компилятор имеет полное право сузить типы, опираясь на это. По сути <code>assert(input !== null)</code> работает как <a routerLink="/typescript/assertions/non-null">оператор <code>!</code></a>, только не в одном месте, а сразу для всего кода ниже — и, в отличие от <code>!</code>, честно падает в рантайме, если данные всё же плохие.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис 2: <code>asserts v is Type</code></h2>
+  <p>Вторая форма утверждает не абстрактное условие, а <strong>конкретный тип конкретной переменной</strong>. Записывается как <code>asserts v is Type</code> — «утверждаю, что параметр <code>v</code> имеет тип <code>Type</code>». Похоже на <a routerLink="/typescript/assertions/user-type-guards">пользовательский type guard</a> (<code>v is Type</code>), но с добавленным словом <code>asserts</code> и другим поведением — не возврат, а бросок.</p>
+  <app-code-block [code]="assertSyntax2" lang="typescript" />
+  <p>Обратите внимание на область действия. После вызова <code>assertIsString(raw)</code> переменная <code>raw</code> имеет тип <code>string</code> во <strong>всём остальном теле</strong> функции — до самого <code>return</code>. Не нужно оборачивать использование в <code>if</code>: assertion-функция «выпрямляет» тип на весь код, идущий следом.</p>
+  <p class="note"><strong>Аналогия.</strong> Type guard — это фраза «покажи паспорт», после которой вы сами решаете, что делать с ответом (пустить или нет). А assertion-функция — это турникет: приложил проверку и <em>прошёл</em>, дальше все считают, что пропуск действителен. Не прошёл — застрял на входе, дальше пути нет.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Assertion-функция против type guard</h2>
+  <p>Это ключевое различие, ради которого стоит остановиться. Обе конструкции «сужают» тип, но делают это по-разному и в разных местах. Type guard <strong>возвращает <code>boolean</code></strong> и сужает тип <strong>только внутри <code>if</code></strong>. Assertion-функция <strong>бросает исключение</strong> и сужает тип <strong>во всём коде после вызова</strong>. Наглядно — две «дорожки»:</p>
+  <app-code-block [code]="guardVsAssert" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 260" width="100%" role="img" aria-label="Сравнение областей сужения: type guard сужает только внутри if, assertion-функция сужает весь код ниже вызова">
+      <text x="330" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">Где действует сужение: узкая зона if против всего кода ниже</text>
+
+      <text x="164" y="50" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="600">type guard — только внутри if</text>
+      <text x="496" y="50" text-anchor="middle" fill="var(--fg)" font-size="12" font-weight="600">assertion — до конца функции</text>
+
+      <rect x="24" y="64" width="280" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="40" y="86" fill="var(--fg)" font-family="monospace" font-size="12.5">if (isString(v)) &#123;</text>
+
+      <rect x="40" y="106" width="248" height="44" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="164" y="128" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12.5">v: string</text>
+      <text x="164" y="144" text-anchor="middle" fill="var(--muted)" font-size="10.5">сужено — только тут</text>
+
+      <rect x="24" y="158" width="280" height="30" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="40" y="178" fill="var(--fg)" font-family="monospace" font-size="12.5">&#125;</text>
+
+      <rect x="24" y="196" width="280" height="44" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="164" y="218" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12.5">v: unknown</text>
+      <text x="164" y="234" text-anchor="middle" fill="var(--muted)" font-size="10.5">снаружи сужение пропало</text>
+
+      <rect x="356" y="64" width="280" height="34" rx="8" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="372" y="86" fill="var(--fg)" font-family="monospace" font-size="12.5">assertIsString(v);</text>
+
+      <rect x="356" y="106" width="280" height="134" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="496" y="166" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13">v: string</text>
+      <text x="496" y="188" text-anchor="middle" fill="var(--muted)" font-size="11">весь код НИЖЕ вызова</text>
+    </svg>
+    <figcaption>Слева type guard: зелёная (суженная) зона — только тело <code>if</code>, за скобками снова <code>unknown</code>. Справа assertion-функция: одна строка вызова — и всё, что идёт ниже, уже сужено.</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th>Type guard (<code>v is Type</code>)</th>
+          <th>Assertion-функция (<code>asserts v is Type</code>)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Что делает при провале проверки</td>
+          <td>возвращает <code>false</code></td>
+          <td class="no">бросает исключение</td>
+        </tr>
+        <tr>
+          <td>Возвращаемое значение</td>
+          <td><code>boolean</code></td>
+          <td><code>void</code> (ничего)</td>
+        </tr>
+        <tr>
+          <td>Где действует сужение</td>
+          <td class="no">только внутри <code>if</code></td>
+          <td class="yes">весь код после вызова</td>
+        </tr>
+        <tr>
+          <td>Как вызывают</td>
+          <td><code>if (isString(v)) &#123; … &#125;</code></td>
+          <td><code>assertIsString(v);</code></td>
+        </tr>
+        <tr>
+          <td>Когда удобнее</td>
+          <td>есть запасной путь (<code>else</code>)</td>
+          <td>плохие данные = «дальше нельзя»</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Выбор простой. Нужна <strong>развилка</strong> («если строка — одно, иначе — другое») — берите type guard. Нужно <strong>гарантировать</strong> условие и рухнуть, если оно нарушено («без этого дальше работать нельзя») — берите assertion-функцию.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: валидация данных и инварианты</h2>
+  <p>Главное применение — <strong>проверка данных из внешнего мира</strong>: ответа API, содержимого формы, <code>localStorage</code>. Такие данные приходят как <code>unknown</code>, и им нельзя верить на слово. Assertion-функция проверяет их <em>форму</em> в рантайме и, если всё хорошо, сужает тип для всего кода ниже.</p>
+  <app-code-block [code]="practiceApi" lang="typescript" />
+  <p class="note"><strong>Важно: это не то же, что <code>as</code>.</strong> Соблазнительно написать <code>const user = data as User</code> — и компилятор замолчит. Но <a routerLink="/typescript/assertions/as">приведение <code>as</code></a> и <a routerLink="/typescript/assertions/non-null"><code>!</code></a> ничего не проверяют в рантайме: они лишь подсказка компилятору «поверь мне». Если сервер вернул мусор, <code>as</code> его пропустит, и программа упадёт где-то позже и непонятно почему. Assertion-функция же <em>реально проверяет</em> данные и падает сразу, в понятном месте, с внятным сообщением.</p>
+  <p>Второе применение — <strong>проверка инвариантов</strong>, то есть утверждений «этого не может быть». Классика — функция <code>assertNever</code> для исчерпывающего <code>switch</code>. Она принимает <a routerLink="/typescript/basic-types/void-never"><code>never</code></a> и служит «стоп-краном»: если вы забыли обработать один из вариантов, компилятор поймает это ещё до запуска.</p>
+  <app-code-block [code]="assertNever" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Важные нюансы: без аннотации не работает</h2>
+  <p>Здесь ошибаются чаще всего, поэтому запомните два правила. Первое: <strong>аннотацию <code>asserts …</code> нельзя опустить</strong>. Именно она превращает обычную функцию в «утверждающую». Если её забыть, TypeScript увидит рядовую функцию, которая иногда бросает ошибку, и <em>не будет</em> сужать типы — вывод типов ниже вызова останется прежним.</p>
+  <app-code-block [code]="mustAnnotate" lang="typescript" />
+  <p>Второе правило касается <strong>функций, присвоенных переменным</strong> (стрелочных, <code>const assert = …</code>). Для них TypeScript требует <strong>явную аннотацию типа самой переменной</strong>. Без неё вы получите характерную ошибку прямо в месте вызова: «<em>Assertions require every name in the call target to be declared with an explicit type annotation</em>».</p>
+  <app-code-block [code]="constAnnotation" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Пишете assertion-функцию через обычное объявление <code>function</code> — просто не забывайте <code>: asserts …</code> в сигнатуре. Присваиваете стрелку в <code>const</code> — обязательно указывайте тип переменной целиком: <code>const assert: (c: unknown) =&gt; asserts c = …</code>. Проще всего избегать проблемы, объявляя такие функции через <code>function</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Связь с Node.js</h2>
+  <p>Если вы работали с Node, то, скорее всего, уже встречали похожее — встроенный модуль <code>node:assert</code>. Его функция <code>assert(value, message?)</code> бросает <code>AssertionError</code>, когда значение ложно, а её типы в TypeScript размечены ровно как assertion-функция. То есть она не только проверяет в рантайме, но и <strong>сужает типы</strong> в коде ниже — тот же механизм, что мы разбирали.</p>
+  <app-code-block [code]="nodeAssert" lang="typescript" />
+  <p>Так что <code>node:assert</code> — это готовая assertion-функция «из коробки». Понимая, как устроен <code>asserts</code>, вы понимаете и её поведение: почему после <code>assert(x)</code> компилятор вдруг перестаёт ругаться на <code>x</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Assertion-функция</strong> — это КПП: она не возвращает да/нет, а <em>бросает</em> исключение, если условие ложно. Вернулась молча — значит условие истинно.</li>
+    <li>Если функция не бросила, компилятор считает <strong>весь код ниже вызова</strong> уже суженным — не нужно оборачивать в <code>if</code>.</li>
+    <li>Две формы: <code>asserts condition</code> (утверждает произвольное условие) и <code>asserts v is Type</code> (утверждает конкретный тип переменной).</li>
+    <li><strong>Отличие от type guard:</strong> guard возвращает <code>boolean</code> и сужает <em>только внутри <code>if</code></em>; assertion-функция бросает и сужает <em>весь код после вызова</em>.</li>
+    <li>Это <strong>не <code>as</code>:</strong> assertion-функция реально проверяет данные в рантайме и падает в понятном месте, а <code>as</code> и <code>!</code> лишь молча «обещают» тип.</li>
+    <li>Аннотацию <code>asserts …</code> <strong>нельзя опустить</strong> — без неё сужения не будет. Для <code>const assert = …</code> нужна явная аннотация типа переменной.</li>
+    <li>Применения: валидация внешних данных (ответ API, формы), проверка инвариантов (<code>assertNever</code>). В Node это уже готовый <code>node:assert</code>.</li>
+  </ul>
+  <p class="note">Дальше стоит сравнить механику с <a routerLink="/typescript/assertions/user-type-guards">пользовательскими type guard</a> и посмотреть, чем это отличается от опасного <a routerLink="/typescript/assertions/as">приведения <code>as</code></a> и оператора <a routerLink="/typescript/assertions/non-null"><code>!</code></a>. Общая теория сужения — на странице <a routerLink="/typescript/unions-narrowing/narrowing">сужение типов</a>, а про тип <code>never</code> (нужен для <code>assertNever</code>) — на странице <a routerLink="/typescript/basic-types/void-never">void и never</a>. Типичные ошибки собраны в разделе <a routerLink="/typescript/assertions/pitfalls">нюансы и подводные камни</a>.</p>
+</section>
+</article>

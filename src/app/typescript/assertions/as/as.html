@@ -1,0 +1,164 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/assertions">Приведение и утверждения</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Приведение (as)</span></nav>
+
+<h1 class="doc__title">Приведение (as)</h1>
+<p class="doc__lead">Оператор <code>as</code> — это способ сказать компилятору: «поверь мне, я знаю тип точнее тебя». Ты <strong>утверждаешь</strong>, чем является значение, а TypeScript <strong>верит на слово</strong> — совсем не проверяя. Это как показать охраннику пропуск: он смотрит на бумажку и пускает, но не выясняет, действительно ли ты тот, кем представился. Или как наклеить на коробку этикетку «Посуда», ни разу не заглянув внутрь. Отсюда и вся сила, и вся опасность <code>as</code>.</p>
+
+<section class="doc__section">
+  <h2>Зачем это нужно: иногда компилятор знает меньше тебя</h2>
+  <p>TypeScript очень умный, но он видит только то, что <em>написано в типах</em>. Он не запускает программу и не знает, что реально лежит в переменной во время работы. Бывают ситуации, когда <strong>ты знаешь тип точнее компилятора</strong>. Классический пример — достать элемент со страницы:</p>
+  <app-code-block [code]="getByIdMotivation" lang="typescript" />
+  <p>Метод <code>document.getElementById</code> по своему описанию возвращает <code>HTMLElement | null</code> — «какой-то элемент или ничего». Это честно: компилятор не читал твою HTML-разметку и не может знать, что по этому <code>id</code> стоит именно <code>&lt;canvas&gt;</code>. Но <em>ты</em> это знаешь. Оператором <code>as HTMLCanvasElement</code> ты сообщаешь компилятору более точный тип, и он перестаёт ругаться.</p>
+  <p class="note"><strong>Аналогия: пропуск охраннику.</strong> Ты подходишь к турникету и показываешь пропуск «Я — HTMLCanvasElement». Охранник (компилятор) не звонит в отдел кадров и не сверяет фото — он просто <em>верит написанному</em> и пускает. Если пропуск поддельный, охранник этого не заметит: проверять не его работа. Ровно так же ведёт себя <code>as</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис: две формы, но пиши <code>as</code></h2>
+  <p>У приведения есть два варианта записи. Оба делают <strong>абсолютно одно и то же</strong>, отличается лишь внешний вид.</p>
+  <app-code-block [code]="syntaxBoth" lang="typescript" />
+  <p>Основная форма — <code>value as Type</code> (значение, потом ключевое слово <code>as</code>, потом тип). Старая форма — <code>&lt;Type&gt;value</code> (тип в угловых скобках перед значением). Проблема старой формы в том, что угловые скобки конфликтуют с синтаксисом JSX/TSX: в файле <code>.tsx</code> запись <code>&lt;string&gt;value</code> компилятор примет за открывающий HTML-тег и запутается.</p>
+  <p class="note"><strong>Как правильно.</strong> Всегда используй форму <code>value as Type</code>. Она работает везде — и в обычных <code>.ts</code>, и в <code>.tsx</code>, — читается слева направо и не путается с разметкой. Форму <code>&lt;Type&gt;value</code> достаточно просто узнавать в чужом старом коде.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ключевое: <code>as</code> НЕ преобразует данные</h2>
+  <p>Это самое важное на всей странице, и здесь чаще всего ошибаются новички. <code>as</code> <strong>ничего не делает во время работы программы</strong>. Он не превращает строку в число, не создаёт объект, не проверяет значение. Это <em>подсказка компилятору</em> на этапе проверки типов — и только. Когда TypeScript компилируется в JavaScript, все <code>as</code> просто <strong>стираются</strong>, будто их и не было.</p>
+  <app-code-block [code]="asDisappears" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="На этапе компиляции as подсказывает тип и идёт проверка, а в рантайме as исчезает и значение остаётся прежним">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">as живёт только на этапе компиляции — в рантайме его уже нет</text>
+
+      <rect x="24" y="50" width="262" height="150" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="155" y="78" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">Этап компиляции · TypeScript</text>
+      <rect x="46" y="96" width="218" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="155" y="121" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">raw as string</text>
+      <text x="155" y="162" text-anchor="middle" fill="var(--muted)" font-size="12">as подсказывает тип,</text>
+      <text x="155" y="180" text-anchor="middle" fill="var(--muted)" font-size="12">идёт проверка типов</text>
+
+      <line x1="288" y1="125" x2="368" y2="125" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="368,119 382,125 368,131" fill="var(--muted)" />
+      <text x="330" y="112" text-anchor="middle" fill="var(--red)" font-size="11">компиляция:</text>
+      <text x="330" y="147" text-anchor="middle" fill="var(--red)" font-size="11">as стирается</text>
+
+      <rect x="388" y="50" width="248" height="150" rx="14" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="512" y="78" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="600">Рантайм · JavaScript</text>
+      <rect x="410" y="96" width="204" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="512" y="121" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">raw</text>
+      <text x="512" y="162" text-anchor="middle" fill="var(--muted)" font-size="12">as исчез бесследно,</text>
+      <text x="512" y="180" text-anchor="middle" fill="var(--muted)" font-size="12">значение то же самое</text>
+    </svg>
+    <figcaption>Слева — как код видит компилятор: <code>as</code> помогает при проверке типов. Справа — что реально выполнится: <code>as</code> исчез, осталось только исходное значение. Никакого преобразования не произошло.</figcaption>
+  </figure>
+  <p>Из-за этого нельзя использовать <code>as</code> как замену настоящей конвертации. Попытка «превратить» строку в число через <code>as</code> либо не скомпилируется, либо соврёт:</p>
+  <app-code-block [code]="asIsNotConversion" lang="typescript" />
+  <p class="note"><strong>Важно.</strong> <code>as</code> — это <em>обещание про тип</em>, а не <em>действие над данными</em>. Настоящее преобразование делают функции, которые выполняются в рантайме: <code>Number(x)</code>, <code>String(x)</code>, <code>parseInt(x)</code>, <code>Boolean(x)</code>. Если тебе нужно реально изменить значение — бери функцию, а не <code>as</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Безопасное и опасное приведение</h2>
+  <p>Хотя <code>as</code> и верит на слово, совсем уж любую чушь TypeScript всё же не позволит. Есть правило: приводить можно только между <strong>пересекающимися</strong> типами — когда один тип является частным случаем другого (расположен «выше» или «ниже» по иерархии). Приведение <em>вбок</em>, между двумя чужими друг другу типами, запрещено.</p>
+  <app-code-block [code]="safeVsDangerous" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 680 262" width="100%" role="img" aria-label="Сужение вниз по иерархии от HTMLElement к HTMLButtonElement безопасно, а приведение вбок между string и number запрещено с ошибкой TS2352">
+      <line x1="340" y1="42" x2="340" y2="242" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+
+      <text x="168" y="34" text-anchor="middle" fill="var(--green)" font-size="13">Вниз по иерархии — безопасно</text>
+      <rect x="98" y="54" width="140" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="168" y="82" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">HTMLElement</text>
+      <line x1="168" y1="100" x2="168" y2="148" stroke="var(--green)" stroke-width="2" />
+      <polygon points="162,148 168,162 174,148" fill="var(--green)" />
+      <text x="258" y="128" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">as ✅</text>
+      <rect x="74" y="166" width="188" height="46" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="168" y="194" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">HTMLButtonElement</text>
+      <text x="168" y="236" text-anchor="middle" fill="var(--muted)" font-size="11">частный случай — типы пересекаются</text>
+
+      <text x="514" y="34" text-anchor="middle" fill="var(--red)" font-size="13">Вбок, между чужими типами — нельзя</text>
+      <rect x="376" y="112" width="110" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="431" y="140" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">string</text>
+      <line x1="486" y1="135" x2="552" y2="135" stroke="var(--red)" stroke-width="2" stroke-dasharray="6 5" />
+      <polygon points="552,129 566,135 552,141" fill="var(--red)" />
+      <line x1="512" y1="122" x2="526" y2="148" stroke="var(--red)" stroke-width="2.5" />
+      <line x1="526" y1="122" x2="512" y2="148" stroke="var(--red)" stroke-width="2.5" />
+      <rect x="568" y="112" width="106" height="46" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="2" stroke-dasharray="6 5" />
+      <text x="621" y="140" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">number</text>
+      <text x="514" y="194" text-anchor="middle" fill="var(--muted)" font-size="11">TS2352 — типы не пересекаются</text>
+    </svg>
+    <figcaption>Приведение «вниз» к более частному типу (<code>HTMLElement</code> → <code>HTMLButtonElement</code>) разрешено — типы связаны. Приведение «вбок» между несвязанными <code>string</code> и <code>number</code> компилятор блокирует ошибкой <code>TS2352</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Двойное приведение <code>as unknown as T</code> — отмычка</h2>
+  <p>В тексте ошибки <code>TS2352</code> выше компилятор сам подсказал обходной путь: «сначала приведи к <code>unknown</code>». Дело в том, что к <a routerLink="/typescript/basic-types/any-unknown"><code>unknown</code></a> можно привести <em>что угодно</em>, а из <code>unknown</code> — снова во что угодно. Соединив два приведения в цепочку — <code>as unknown as T</code>, — можно обойти защиту из прошлого раздела и приводить даже несовместимые типы.</p>
+  <app-code-block [code]="doubleAssertion" lang="typescript" />
+  <p>Обрати внимание на результат: <code>num + 1</code> дало <code>"hello1"</code>, а не <code>1</code> и не ошибку. Строки в JavaScript при <code>+</code> склеиваются, а не складываются. Двойное приведение обмануло <em>компилятор</em>, но не изменило <em>данные</em> — в рантайме там всё ещё лежит строка. Ты просто отключил единственную оставшуюся защиту.</p>
+  <p class="note"><strong>Аналогия: отмычка.</strong> Обычный <code>as</code> — это показать охраннику пропуск. Двойное <code>as unknown as T</code> — это вскрыть замок отмычкой в обход охраны вообще. Иногда без этого не собрать сложные типы из чужих библиотек, но каждый такой случай — сигнал остановиться и подумать: «а точно ли я знаю, что тут лежит?». Ответственность за ошибку целиком на тебе.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>as</code> умеет врать</h2>
+  <p>Главная опасность в том, что <code>as</code> ничего не добавляет и не проверяет — он лишь меняет <em>мнение компилятора</em> о типе. Если это мнение расходится с реальностью, компилятор промолчит, а программа упадёт уже у пользователя, в рантайме.</p>
+  <app-code-block [code]="asCanLie" lang="typescript" />
+  <p>Мы взяли пустой объект <code>&#123;&#125;</code> и наклеили на него этикетку <code>User</code>. Компилятор поверил и разрешил обращаться к <code>u.name</code>, как будто поле точно есть. Но в объекте <em>ничего нет</em> — <code>u.name</code> равно <code>undefined</code>, и вызов метода на нём роняет программу. <code>as</code> не создал недостающие поля; он лишь <strong>пообещал</strong>, что они там есть.</p>
+  <p class="note"><strong>Аналогия: этикетка на коробке.</strong> Наклеить на пустую коробку ярлык «Ноутбук» очень легко — но ноутбук внутри от этого не появится. <code>as</code> клеит ярлык на тип, не заглядывая в саму коробку. Проверяет содержимое только тот, кто её потом откроет — то есть рантайм.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>as</code> против настоящей проверки</h2>
+  <p>Раз <code>as</code> так легко врёт, возникает вопрос: а как <em>надёжно</em> сузить тип? Ответ — не утверждать, а <strong>проверять</strong>. Проверки вроде <a routerLink="/typescript/unions-narrowing/type-guards"><code>typeof</code> / <code>instanceof</code></a> и <a routerLink="/typescript/assertions/user-type-guards">функции-проверки (type guards)</a> реально смотрят на данные во время работы и остаются в скомпилированном коде.</p>
+  <app-code-block [code]="checkInstead" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th><code>as</code> — утверждение</th>
+          <th>Проверка (<code>typeof</code> / guard)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Реально смотрит на данные в рантайме</td>
+          <td class="no">❌ нет, только обещает</td>
+          <td class="yes">✅ да, проверяет значение</td>
+        </tr>
+        <tr>
+          <td>Остаётся в скомпилированном JS</td>
+          <td class="no">❌ исчезает бесследно</td>
+          <td class="yes">✅ остаётся (реальный <code>if</code>)</td>
+        </tr>
+        <tr>
+          <td>Сужает тип безопасно</td>
+          <td class="no">❌ на слово, без гарантий</td>
+          <td class="yes">✅ доказано проверкой</td>
+        </tr>
+        <tr>
+          <td>Поймает неверную форму данных</td>
+          <td class="no">❌ промолчит → упадёт в рантайме</td>
+          <td class="yes">✅ поймает и даст обработать</td>
+        </tr>
+        <tr>
+          <td>Может «наврать» про тип</td>
+          <td class="no">❌ да, легко</td>
+          <td class="yes">✅ нет</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Правило простое: если ты <em>точно</em> знаешь тип, а компилятор просто не может его вывести (как с <code>getElementById</code>) — <code>as</code> уместен. Но если данные приходят извне и ты в них <em>не уверен</em> (ответ API, <code>JSON.parse</code>, поле формы) — не обещай тип через <code>as</code>, а проверь его.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>as</code> — это утверждение типа</strong>: «поверь мне, я знаю тип точнее». Компилятор верит <em>на слово</em> и не проверяет. Аналогии — пропуск охраннику и этикетка на коробке.</li>
+    <li><strong>Синтаксис</strong> — <code>value as Type</code> (основной, пиши только его) и старый <code>&lt;Type&gt;value</code> (ломается в <code>.tsx</code>).</li>
+    <li><strong><code>as</code> ничего не преобразует и не проверяет.</strong> В скомпилированном JS он <em>исчезает</em>. Реальную конвертацию делают функции: <code>Number(x)</code>, <code>parseInt(x)</code>, <code>String(x)</code>.</li>
+    <li><strong>Приводить можно только «по вертикали»</strong> — между пересекающимися типами. Приведение вбок (<code>'hello' as number</code>) блокирует ошибка <code>TS2352</code>.</li>
+    <li><strong><code>as unknown as T</code> — отмычка</strong>: обходит защиту <code>TS2352</code>. Компилятор замолкает, но данные не меняются — применяй крайне редко и осознанно.</li>
+    <li><strong><code>as</code> умеет врать</strong>: <code>&#123;&#125; as User</code> компилируется, а в рантайме <code>u.name</code> равно <code>undefined</code>. Он не добавляет поля — лишь обещает их.</li>
+    <li><strong>Не уверен в данных — проверяй, а не утверждай.</strong> <code>typeof</code>, <code>instanceof</code> и функции-проверки надёжнее, потому что реально смотрят на значение.</li>
+  </ul>
+  <p class="note">Дальше по теме: <a routerLink="/typescript/assertions/non-null">оператор <code>!</code> (non-null)</a> — родственное «поверь мне, тут не null»; <a routerLink="/typescript/assertions/as-const"><code>as const</code></a> — особая форма, которая, наоборот, <em>сужает</em> тип честно; <a routerLink="/typescript/assertions/user-type-guards">функции-проверки</a> и <a routerLink="/typescript/unions-narrowing/type-guards"><code>typeof</code> / <code>instanceof</code></a> — безопасная альтернатива приведению; про <a routerLink="/typescript/basic-types/any-unknown"><code>unknown</code></a> — из чего собрана «отмычка»; и <a routerLink="/typescript/assertions/pitfalls">подводные камни приведений</a> — собрание типичных ошибок.</p>
+</section>
+</article>

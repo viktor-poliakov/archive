@@ -1,0 +1,178 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/assertions">Приведение и утверждения</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Пользовательские type guards (is)</span></nav>
+
+<h1 class="doc__title">Пользовательские type guards (is)</h1>
+<p class="doc__lead">Пользовательский type guard (страж типа) — это <strong>охранник на входе в клуб</strong>. Он проверяет документы (реально смотрит на значение) и, если всё в порядке, ставит на руку <strong>штамп «проверено — это точно VIP»</strong>. Дальше по этому штампу человека пропускают везде, никто документы больше не спрашивает. В TypeScript таким «штампом» служит особый тип, который функция возвращает, — <code>value is Type</code>. Функция сама проверяет тип <em>и</em> «докладывает» результат компилятору, а тот дальше <strong>сам сужает</strong> тип по её слову.</p>
+
+<section class="doc__section">
+  <h2>Проблема: встроенных проверок не хватает</h2>
+  <p>На странице про <a routerLink="/typescript/unions-narrowing/type-guards">typeof и instanceof</a> мы видели: этих двух операторов достаточно для простых случаев. <code>typeof</code> различает примитивы (<code>'string'</code>, <code>'number'</code>, <code>'boolean'</code>), а <code>instanceof</code> — экземпляры классов (<code>Date</code>, <code>Error</code>, ваши собственные классы). Пока значение — строка или объект известного класса, всё хорошо.</p>
+  <app-code-block [code]="builtinsNotEnough" lang="typescript" />
+  <p>Но реальные данные редко бывают такими удобными. Ответ от сервера — это <strong>обычный объект</strong> вроде <code>&#123; id: 1, name: 'Аня' &#125;</code>, а не экземпляр класса, поэтому <code>instanceof</code> к нему неприменим. А <code>typeof</code> для любого объекта возвращает лишь строку <code>'object'</code> — он видит, что это «что-то объектное», но <strong>не видит формы</strong>: есть ли поле <code>id</code>, какого оно типа. Точно так же встроенные операторы не помогут выбрать один вариант из <a routerLink="/typescript/unions-narrowing/union">объединения</a>, различающегося по значению поля. Для этих задач нужен инструмент, который проверит что угодно и сам объяснит результат компилятору.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Синтаксис: возвращаемый тип <code>v is Type</code></h2>
+  <p>Пользовательский type guard — это самая обычная функция. Отличие ровно одно: вместо <code>boolean</code> в возвращаемом типе стоит особая конструкция <code>v is Type</code>. Её называют <strong>тип-предикатом</strong> (type predicate — «утверждение о типе»).</p>
+  <app-code-block [code]="guardSyntax" lang="typescript" />
+  <p>Разберём эту строку по косточкам, потому что здесь и кроется вся идея. Запись <code>function isString(v: unknown): v is string</code> состоит из частей:</p>
+  <ul class="rules">
+    <li><code>v</code> — имя параметра, <strong>о котором</strong> функция делает утверждение. Оно должно совпадать с именем в скобках.</li>
+    <li><code>: unknown</code> — что функция принимает на вход. Здесь <a routerLink="/typescript/basic-types/any-unknown"><code>unknown</code></a> («что угодно, но потребуй проверки»), но может быть и объединение, и любой другой тип.</li>
+    <li><code>: v is string</code> — <strong>сам предикат</strong>. Он заменяет <code>boolean</code> и читается так: «если функция вернула <code>true</code>, то <code>v</code> — это <code>string</code>».</li>
+    <li>тело <code>return typeof v === 'string'</code> — настоящая проверка. Она обязана вернуть <code>true</code> или <code>false</code>.</li>
+  </ul>
+  <p class="note"><strong>Аналогия со штампом.</strong> Функция-предикат — это охранник. Тело <code>return ...</code> — момент, когда он <em>смотрит документы</em>. А возвращаемый тип <code>v is string</code> — <em>штамп на руке</em>: «я проверил, это точно строка». Компилятор — это остальные сотрудники клуба: сами документы они не смотрят, а верят штампу охранника и пускают дальше.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 210" width="100%" role="img" aria-label="Значение проходит через охранника isUser, тот возвращает штамп v is User, и компилятор дальше доверяет этому штампу">
+      <text x="360" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Охранник проверил документы и поставил штамп — дальше все верят штампу</text>
+
+      <rect x="24" y="78" width="150" height="60" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="99" y="104" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">v: unknown</text>
+      <text x="99" y="124" text-anchor="middle" fill="var(--muted)" font-size="11">кто-то «с улицы»</text>
+
+      <line x1="174" y1="108" x2="228" y2="108" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="228,102 242,108 228,114" fill="var(--muted)" />
+      <text x="201" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">проверка</text>
+
+      <rect x="248" y="70" width="176" height="76" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="336" y="102" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">isUser(v)</text>
+      <text x="336" y="124" text-anchor="middle" fill="var(--muted)" font-size="12">охранник</text>
+
+      <line x1="424" y1="108" x2="500" y2="108" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="500,102 514,108 500,114" fill="var(--muted)" />
+      <text x="462" y="98" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="11">штамп: v is User</text>
+
+      <rect x="520" y="70" width="176" height="76" rx="14" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="608" y="102" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">v: User</text>
+      <text x="608" y="124" text-anchor="middle" fill="var(--muted)" font-size="12">теперь ей доверяют</text>
+    </svg>
+    <figcaption>Значение проходит через охранника <code>isUser</code>. Тот возвращает штамп-предикат <code>v is User</code>, и компилятор дальше считает <code>v</code> объектом <code>User</code> без дополнительных проверок.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Как TS сужает тип по предикату</h2>
+  <p>Ради чего всё затевалось: после вызова guard в условии <code>if</code> компилятор <a routerLink="/typescript/unions-narrowing/narrowing">сужает</a> тип автоматически. До проверки значение — широкое <code>unknown</code>; в ветке, где guard вернул <code>true</code>, тип становится узким; в ветке <code>else</code> этот вариант вычитается.</p>
+  <app-code-block [code]="narrowingExample" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 700 240" width="100%" role="img" aria-label="Воронка сужения: v unknown входит в проверку isString, в ветке true тип становится string, в ветке false — не string">
+      <text x="350" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Предикат «включает» сужение: в ветке true тип становится узким</text>
+
+      <rect x="30" y="104" width="150" height="58" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="105" y="130" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">v: unknown</text>
+      <text x="105" y="149" text-anchor="middle" fill="var(--muted)" font-size="11">тип пока широкий</text>
+
+      <line x1="180" y1="133" x2="240" y2="133" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="240,127 254,133 240,139" fill="var(--muted)" />
+
+      <rect x="258" y="98" width="170" height="70" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="343" y="128" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">if (isString(v))</text>
+      <text x="343" y="149" text-anchor="middle" fill="var(--muted)" font-size="11">предикат v is string</text>
+
+      <line x1="428" y1="133" x2="470" y2="133" stroke="var(--muted)" stroke-width="2" />
+      <line x1="470" y1="133" x2="470" y2="92" stroke="var(--muted)" stroke-width="2" />
+      <line x1="470" y1="92" x2="512" y2="92" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="512,86 526,92 512,98" fill="var(--muted)" />
+      <text x="476" y="84" text-anchor="start" fill="var(--green)" font-size="11">true</text>
+
+      <line x1="470" y1="133" x2="470" y2="178" stroke="var(--muted)" stroke-width="2" />
+      <line x1="470" y1="178" x2="512" y2="178" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="512,172 526,178 512,184" fill="var(--muted)" />
+      <text x="476" y="172" text-anchor="start" fill="var(--red)" font-size="11">false</text>
+
+      <rect x="528" y="66" width="160" height="52" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="608" y="90" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="14">v: string</text>
+      <text x="608" y="108" text-anchor="middle" fill="var(--muted)" font-size="11">методы строки ✓</text>
+
+      <rect x="528" y="152" width="160" height="52" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="608" y="176" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="13">v: не string</text>
+      <text x="608" y="194" text-anchor="middle" fill="var(--muted)" font-size="11">string исключён</text>
+    </svg>
+    <figcaption>Одно широкое <code>unknown</code> входит в проверку и «раздваивается»: в ветке <code>true</code> тип сужается до <code>string</code>, в ветке <code>false</code> из него вычитается <code>string</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Практика A: проверка формы объекта</h2>
+  <p>Самый частый повод завести guard — <strong>внешние данные</strong>: ответ API, разобранный <code>JSON.parse</code>, содержимое формы. Их форму TypeScript знать не может (для него это <code>unknown</code>), поэтому мы проверяем её вручную — шаг за шагом. Порядок проверок важен: сначала грубые (это вообще объект?), потом точные (нужного ли типа поля?).</p>
+  <app-code-block [code]="isUserGuard" lang="typescript" />
+  <p>Обратите внимание на шаг <code>v !== null</code>: без него guard был бы дырявым, ведь <code>typeof null</code> тоже даёт <code>'object'</code> — это давняя особенность JavaScript. И заметьте <code>(v as User).id</code> внутри тела: здесь <a routerLink="/typescript/assertions/as">as</a> уместен, потому что мы <em>тут же</em> проверяем это поле в рантайме через <code>typeof</code>. Само по себе <code>as</code> ничего не проверяет — но мы и не полагаемся на него, а используем лишь чтобы дотянуться до поля для настоящей проверки.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика B: выбор члена объединения</h2>
+  <p>Второй классический случай — <a routerLink="/typescript/unions-narrowing/discriminated-unions">размеченное объединение</a>, где у каждого варианта есть общее поле-«ярлык» (дискриминатор). Guard проверяет значение этого ярлыка и сообщает компилятору, какой именно вариант перед нами.</p>
+  <app-code-block [code]="isCatUnion" lang="typescript" />
+  <p>Здесь предикат <code>a is Cat</code> делает ровно то, что нужно: в ветке <code>if</code> компилятор уверен, что <code>a</code> — это <code>Cat</code>, а в <code>else</code> из объединения <code>Cat | Dog</code> остаётся только <code>Dog</code>. Вся логика выбора спрятана в одну переиспользуемую функцию.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика C: сужение массива через <code>.filter</code></h2>
+  <p>Очень частая задача — убрать из массива «пустышки» (<code>null</code> и <code>undefined</code>). Проблема в том, что <code>filter</code> с функцией, которая возвращает <strong>просто <code>boolean</code></strong>, <strong>не меняет тип</strong>: даже отбросив все <code>null</code>, TypeScript по-прежнему считает элементы <code>string | null</code>. А вот если передать в <code>filter</code> guard-предикат — тип элементов сузится по-настоящему.</p>
+  <app-code-block [code]="isDefinedFilter" lang="typescript" />
+  <p class="note"><strong>Почему так.</strong> Метод <code>filter</code> имеет специальную перегрузку: если ему передать функцию с предикатом <code>v is T</code>, он возвращает уже <code>T[]</code>. Guard <code>isDefined</code> сделан дженериком, чтобы работать с массивом любого типа — <code>(string | null)[]</code> превращается в <code>string[]</code>, <code>(Task | undefined)[]</code> — в <code>Task[]</code>, и так далее.</p>
+  <p class="note"><strong>Про современный TypeScript.</strong> Начиная с версии 5.5 компилятор умеет сам вывести предикат для <em>простой встроенной</em> стрелки — например, <code>raw.filter((s) =&gt; s !== null)</code> он тоже сузит до <code>string[]</code>. Но именованный guard всё равно предпочтительнее: его видно по имени, он переиспользуется и одинаково надёжно сужает даже сложные проверки формы, где авто-вывод не срабатывает.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Опасность: предикат — это ваше обещание</h2>
+  <p>Здесь спрятана главная ловушка, и её важно понять до конца. Компилятор <strong>не проверяет</strong>, что тело функции действительно соответствует предикату. Вы написали <code>: v is string</code> — TS просто <em>верит</em> этому на слово, чем бы ни было тело. Если тело проверяет не то (guard «лжёт»), компилятор окажется обманут, а ошибка тихо уедет в рантайм.</p>
+  <app-code-block [code]="lyingGuard" lang="typescript" />
+  <p class="note"><strong>Важно.</strong> Предикат <code>v is Type</code> — это <strong>обещание, за которое отвечаете вы</strong>, а не гарантия от компилятора. Это роднит guard с приведением <a routerLink="/typescript/assertions/as">as</a> и оператором <code>!</code>: все они говорят компилятору «поверь мне» и <em>не</em> проверяют данные сами. Разница в том, что у честного guard внутри стоит <em>настоящая</em> рантайм-проверка — но следить за её правильностью должны вы. Пишите тело внимательно и покрывайте guard тестами.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Чем это отличается от обычного <code>boolean</code></h2>
+  <p>Логичный вопрос: «Функция ведь и так возвращает <code>true</code>/<code>false</code> — зачем этот <code>is</code>?» Ответ: без предиката сужения <strong>не происходит</strong>. Обычная функция, возвращающая <code>boolean</code>, для компилятора — «чёрный ящик»: он видит, что она вернула <code>true</code>, но не знает, <em>что это означает</em> для типа аргумента. Предикат как раз и объясняет ему смысл проверки.</p>
+  <app-code-block [code]="booleanVsPredicate" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th>Обычная функция <code>: boolean</code></th>
+          <th>Type guard <code>: v is Type</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Проверяет значение в рантайме</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Сужает тип в ветке <code>if</code></td>
+          <td class="no">❌ нет, тип остаётся широким</td>
+          <td class="yes">✅ да, тип становится узким</td>
+        </tr>
+        <tr>
+          <td>Работает с <code>.filter</code> для сужения массива</td>
+          <td class="no">❌ нет, тип элементов не меняется</td>
+          <td class="yes">✅ да, <code>(T | null)[]</code> → <code>T[]</code></td>
+        </tr>
+        <tr>
+          <td>Кто отвечает за правильность тела</td>
+          <td class="yes">компилятор проверяет возврат <code>boolean</code></td>
+          <td class="no">❌ вы — предикат TS не сверяет</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Итог: <code>return</code> в обеих функциях может быть посимвольно одинаковым — вся разница в возвращаемом типе. Одно слово <code>is</code> превращает «немой» <code>boolean</code> в инструмент, который управляет сужением.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Type guard</strong> — обычная функция, но её возвращаемый тип — предикат <code>v is Type</code>. Аналогия: охранник проверяет документы и ставит штамп, которому дальше все верят.</li>
+    <li><strong>Синтаксис:</strong> <code>function isString(v: unknown): v is string &#123; return typeof v === 'string'; &#125;</code>. <code>v</code> — параметр, <code>v is string</code> — предикат, тело — настоящая проверка, возвращающая <code>boolean</code>.</li>
+    <li><strong>TS сам сужает</strong> тип по предикату: в ветке <code>if (isX(v))</code> тип <code>v</code> становится узким, в <code>else</code> вариант вычитается.</li>
+    <li><strong>Где нужен:</strong> проверка формы объекта (<code>isUser</code>), выбор члена объединения по дискриминатору (<code>isCat</code>), сужение массива через <code>filter(isDefined)</code>.</li>
+    <li><strong>Опасность:</strong> предикат — ваше обещание, TS <em>не</em> сверяет его с телом. Соврал guard — обманут весь код, ошибка уедет в рантайм. Это роднит guard с <code>as</code> и <code>!</code>.</li>
+    <li><strong>Отличие от <code>boolean</code>:</strong> без <code>is</code> сужения не происходит вовсе. Один и тот же <code>return</code>, разный возвращаемый тип — разный результат.</li>
+    <li><strong>Форму внешних данных проверяйте guard-ом</strong>, а не «обещайте» её через <code>as</code>: только реальная проверка защищает от кривых данных.</li>
+  </ul>
+  <p class="note">Дальше по теме: встроенные <a routerLink="/typescript/unions-narrowing/type-guards">typeof и instanceof</a> и общий механизм <a routerLink="/typescript/unions-narrowing/narrowing">сужения типов</a>. Рядом стоят <a routerLink="/typescript/assertions/assertion-functions">assertion-функции</a> (проверяют и бросают ошибку вместо возврата <code>boolean</code>) и приведение <a routerLink="/typescript/assertions/as">as</a> — с ним guard роднит принцип «поверь мне». Про безопасный вход в мир непроверенных данных читайте <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>, а типичные ошибки собраны в разделе <a routerLink="/typescript/assertions/pitfalls">подводные камни</a>.</p>
+</section>
+</article>

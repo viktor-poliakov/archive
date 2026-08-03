@@ -1,0 +1,195 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/assertions">Приведение и утверждения</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Non-null (!)</span></nav>
+
+<h1 class="doc__title">Non-null (!)</h1>
+<p class="doc__lead">Оператор <code>!</code> в конце выражения — <code>value!</code> — это ваше слово компилятору: <strong>«я ГАРАНТИРУЮ, что здесь не <code>null</code> и не <code>undefined</code>»</strong>. Представьте, что вы <strong>расписываетесь под гарантией</strong> или <strong>ручаетесь за человека</strong>: вы берёте ответственность на себя, а сотрудник вам верит и <em>сам ничего не перепроверяет</em>. Ровно так же ведёт себя <code>!</code>: он убирает <code>null</code> и <code>undefined</code> из <em>типа</em>, но никакой проверки в работающей программе не делает. Если вы поручились зря — отвечать вам, и падение случится уже у пользователя.</p>
+
+<section class="doc__section">
+  <h2>Проблема: <code>strictNullChecks</code> и «possibly null»</h2>
+  <p>Чтобы понять, зачем нужен <code>!</code>, посмотрим, откуда вообще берётся боль. В строгом режиме TypeScript (флаг <code>strictNullChecks</code>, он включён по умолчанию в <code>strict</code>) компилятор честно учитывает, что значения <strong>может не быть</strong>. Классика — поиск элемента на странице:</p>
+  <app-code-block [code]="problemNull" lang="typescript" />
+  <p>Функция <code>document.getElementById</code> возвращает тип <code>HTMLElement | null</code> — <a routerLink="/typescript/unions-narrowing/union">объединение</a> «или элемент, или <code>null</code>». Ведь элемента с таким <code>id</code> может и не оказаться. Пока в типе есть <code>null</code>, компилятор не даёт обращаться к <code>el.click()</code> — и правильно делает, иначе программа упала бы. Один из способов убрать <code>null</code> из типа — приписать <code>!</code>:</p>
+  <app-code-block [code]="fixNonNull" lang="typescript" />
+  <p class="note"><strong>Аналогия.</strong> Охранник (компилятор) не пускает вас в здание без пропуска (<code>null</code> в типе). Вы говорите: «пропуск точно есть, зуб даю» — и приписываете <code>!</code>. Охранник верит на слово и пропускает. Но он <em>не заглянул</em> в ваш карман и не проверил, есть ли пропуск на самом деле. Если вы соврали — проблемы будут уже внутри.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Формы записи: <code>value!</code>, <code>obj!.prop</code>, <code>arr.find()!</code></h2>
+  <p>Оператор <code>!</code> — постфиксный: он ставится <strong>после</strong> выражения, к типу которого относится. На практике встречаются три частые формы. Разберём каждую.</p>
+  <app-code-block [code]="forms" lang="typescript" />
+  <p>Во всех трёх случаях <code>!</code> делает одно и то же — вычёркивает <code>null</code> и <code>undefined</code> из типа стоящего слева выражения. <code>name!</code> из <code>string | undefined</code> становится <code>string</code>; <code>btn!</code> из <code>Element | null</code> становится <code>Element</code>; <code>found!</code> из <code>number | undefined</code> становится <code>number</code>. Тип «сузился» — а вот значение осталось прежним.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ключевое: <code>!</code> ничего не проверяет в рантайме</h2>
+  <p>Это самый важный раздел страницы, и именно здесь новички обжигаются. Запомните главное: <strong><code>!</code> живёт только в мире типов</strong>. Он влияет на то, что <em>думает компилятор</em>, но в собранной программе (рантайме) его будто и нет — он не добавляет ни одной проверки. Если вы поручились за значение, а там реально <code>null</code>, произойдёт падение:</p>
+  <app-code-block [code]="runtimeCrash" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 330" width="100%" role="img" aria-label="Оператор восклицательный знак убирает null из типа, но реальное значение в рантайме не меняется и остаётся null">
+      <text x="330" y="28" text-anchor="middle" fill="var(--accent)" font-size="13">На уровне типов: ! вычёркивает null и undefined</text>
+
+      <rect x="18" y="50" width="220" height="54" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="128" y="82" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">HTMLElement | null | undefined</text>
+
+      <line x1="238" y1="77" x2="300" y2="77" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="300,71 314,77 300,83" fill="var(--muted)" />
+
+      <rect x="318" y="50" width="60" height="54" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="348" y="87" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="22">!</text>
+
+      <line x1="378" y1="77" x2="440" y2="77" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="440,71 454,77 440,83" fill="var(--muted)" />
+
+      <rect x="458" y="50" width="184" height="54" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="550" y="76" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">HTMLElement</text>
+      <text x="550" y="94" text-anchor="middle" fill="var(--muted)" font-size="10">null убран из типа</text>
+
+      <line x1="30" y1="162" x2="630" y2="162" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+
+      <text x="330" y="196" text-anchor="middle" fill="var(--red)" font-size="13">В рантайме: реальное значение НЕ меняется</text>
+
+      <rect x="18" y="216" width="220" height="54" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="128" y="248" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="15">null</text>
+
+      <line x1="238" y1="243" x2="300" y2="243" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="300,237 314,243 300,249" fill="var(--muted)" />
+
+      <rect x="318" y="216" width="60" height="54" rx="12" fill="var(--surface)" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4" />
+      <text x="348" y="253" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="22">!</text>
+      <text x="348" y="290" text-anchor="middle" fill="var(--muted)" font-size="10">ничего не делает</text>
+
+      <line x1="378" y1="243" x2="440" y2="243" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="440,237 454,243 440,249" fill="var(--muted)" />
+
+      <rect x="458" y="216" width="184" height="54" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="550" y="242" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="15">null</text>
+      <text x="550" y="260" text-anchor="middle" fill="var(--muted)" font-size="10">→ падение при .click()</text>
+    </svg>
+    <figcaption>Верхняя дорожка — мир типов: <code>!</code> убирает <code>null</code>, и компилятор доволен. Нижняя дорожка — рантайм: значение как было <code>null</code>, так и осталось, и обращение к нему падает. <code>!</code> «затыкает» только компилятор.</figcaption>
+  </figure>
+  <p class="note"><strong>Важно.</strong> Ровно как приведение <a routerLink="/typescript/assertions/as">as</a> и сам оператор <code>!</code> — это <em>подсказки компилятору</em>, а не преобразование данных. Они не проверяют значение и не меняют его в рантайме. Пишете <code>el!</code> — вы не делаете <code>el</code> «не-null», вы лишь запрещаете компилятору сомневаться. Настоящая гарантия должна прийти откуда-то ещё: из реальной проверки, инварианта выше по коду или тестов.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Definite assignment: <code>name!: string</code> на объявлении</h2>
+  <p>У <code>!</code> есть второе, отдельное применение — его ставят не на <em>значение</em>, а на <em>объявление</em> поля класса или переменной. Это называется <strong>definite assignment assertion</strong> (утверждение об определённом присваивании). Смысл тот же — «я ручаюсь», — но обещание другое: «я <strong>присвою это значение позже</strong>, до первого использования».</p>
+  <app-code-block [code]="definiteAssignment" lang="typescript" />
+  <p>Зачем это нужно в классах и особенно в Angular? В строгом режиме есть проверка <code>strictPropertyInitialization</code>: каждое поле должно получить значение либо там же при объявлении, либо в конструкторе. Но в Angular поля сплошь и рядом заполняются <strong>не в конструкторе</strong>: одни приходят через <code>&#64;Input()</code> уже после создания компонента, другие вы выставляете в хуке <code>ngOnInit</code>. Компилятор этого «не видит» и ругается. Приписав <code>!</code> к объявлению (<code>private name!: string</code>), вы берёте на себя ответственность за то, что к моменту чтения поле уже будет заполнено.</p>
+  <p class="note"><strong>Та же ловушка, что и с <code>value!</code>.</strong> Если вы объявили <code>name!: string</code>, но забыли присвоить значение, компилятор промолчит, а в рантайме <code>this.name</code> окажется <code>undefined</code>. <code>!</code> и здесь ничего не проверяет — он лишь снимает предупреждение. Обещали присвоить — присвойте.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда <code>!</code> оправдан, а когда это «запах»</h2>
+  <p><code>!</code> — не зло сам по себе, но пользоваться им нужно осознанно. Он уместен, когда у вас есть <strong>реальная гарантия отсутствия <code>null</code></strong>, о которой компилятор просто не догадался: проверка на строку выше, инвариант по логике программы, гарантия из теста.</p>
+  <app-code-block [code]="justified" lang="typescript" />
+  <p>Но гораздо чаще <code>!</code> в коде — это <strong>«запах»</strong> (code smell): признак того, что автор поспорил с компилятором вместо того, чтобы честно обработать <code>null</code>. Каждый <code>!</code> — это место, где вы <em>отключили</em> защиту и переложили ответственность на себя. Одна ошибка в рассуждении — и получаете падение в рантайме. Прежде чем написать <code>!</code>, спросите себя: «а не безопаснее ли просто проверить?» Почти всегда — да. Об этом следующий раздел.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Альтернативы: почти всегда лучше, чем <code>!</code></h2>
+  <p>Хорошая новость: в большинстве ситуаций <code>!</code> вообще не нужен. Есть безопасные приёмы, которые делают <strong>настоящую проверку</strong> в рантайме — и компилятор при этом доволен. Разберём четыре.</p>
+
+  <h3 class="doc__subtitle">1. Сужение через <code>if</code> (самый надёжный способ)</h3>
+  <p>Обычная проверка <code>if (el)</code> — это реальный код, который выполнится в рантайме. Внутри ветки компилятор <a routerLink="/typescript/unions-narrowing/narrowing">сам сузит</a> тип и уберёт <code>null</code>, безо всякого <code>!</code>:</p>
+  <app-code-block [code]="altNarrowing" lang="typescript" />
+
+  <h3 class="doc__subtitle">2. Опциональная цепочка <code>?.</code></h3>
+  <p>Если действие можно спокойно пропустить, когда значения нет, — используйте <code>?.</code>. При <code>null</code>/<code>undefined</code> слева обращение не происходит, а выражение даёт <code>undefined</code> вместо падения:</p>
+  <app-code-block [code]="altOptionalChaining" lang="typescript" />
+
+  <h3 class="doc__subtitle">3. Значение по умолчанию через <code>??</code></h3>
+  <p>Когда вместо отсутствующего значения нужна разумная замена, подставьте её оператором <code>??</code>:</p>
+  <app-code-block [code]="altNullish" lang="typescript" />
+
+  <h3 class="doc__subtitle">4. Бросить ошибку при <code>null</code></h3>
+  <p>Если <code>null</code> здесь — действительно нештатная ситуация, не молчите с <code>!</code>, а явно бросьте понятную ошибку. Бонус: после <code>throw</code> компилятор сам сузит тип ниже, и внятное сообщение сильно упростит отладку:</p>
+  <app-code-block [code]="altThrow" lang="typescript" />
+  <p class="note"><strong>Как выбрать.</strong> Значение реально может отсутствовать, и это нормально — <code>?.</code> или <code>??</code>. Нужно выполнить блок кода только при наличии — <code>if</code>. Отсутствие означает баг — <code>throw</code>. И лишь когда вы <em>точно</em> знаете, что <code>null</code> уже невозможен (а компилятор не в курсе), — тогда <code>!</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Сравнение: <code>!</code> против <code>?.</code> против <code>if</code></h2>
+  <p>Соберём главное в таблицу. Представьте, что во всех трёх случаях <code>el</code> в рантайме оказался <code>null</code>, — и посмотрим, кто как себя поведёт.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th><code>el!.click()</code></th>
+          <th><code>el?.click()</code></th>
+          <th><code>if (el) &#123; … &#125;</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Реальная проверка в рантайме</td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Что будет, если <code>el</code> — <code>null</code></td>
+          <td class="no">❌ падение: Cannot read properties of null</td>
+          <td class="yes">✅ тихо пропустит, выражение → <code>undefined</code></td>
+          <td class="yes">✅ в блок не войдёт, безопасно</td>
+        </tr>
+        <tr>
+          <td>Убирает <code>null</code> из типа</td>
+          <td class="yes">✅ да (на всём выражении)</td>
+          <td class="yes">✅ да (в самой цепочке)</td>
+          <td class="yes">✅ да (внутри блока)</td>
+        </tr>
+        <tr>
+          <td>Кто отвечает за корректность</td>
+          <td class="no">🧑 только вы, «на слово»</td>
+          <td class="yes">компилятор + рантайм</td>
+          <td class="yes">компилятор + рантайм</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Три подхода при null: восклицательный знак падает, опциональная цепочка тихо пропускает, if в блок не входит">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">Что произойдёт, если el на самом деле null</text>
+
+      <rect x="24" y="44" width="250" height="48" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="44" y="73" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">el!.click()</text>
+      <line x1="278" y1="68" x2="356" y2="68" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="356,62 370,68 356,74" fill="var(--muted)" />
+      <rect x="374" y="44" width="262" height="48" rx="9" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="505" y="66" text-anchor="middle" fill="var(--red)" font-size="12">❌ падение в рантайме</text>
+      <text x="505" y="82" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="9">Cannot read properties of null</text>
+
+      <rect x="24" y="102" width="250" height="48" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="44" y="131" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="14">el?.click()</text>
+      <line x1="278" y1="126" x2="356" y2="126" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="356,120 370,126 356,132" fill="var(--muted)" />
+      <rect x="374" y="102" width="262" height="48" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="505" y="124" text-anchor="middle" fill="var(--fg)" font-size="12">вызова нет, идём дальше</text>
+      <text x="505" y="140" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="10">результат = undefined</text>
+
+      <rect x="24" y="160" width="250" height="48" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="44" y="189" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">if (el) &#123; el.click() &#125;</text>
+      <line x1="278" y1="184" x2="356" y2="184" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="356,178 370,184 356,190" fill="var(--muted)" />
+      <rect x="374" y="160" width="262" height="48" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="505" y="182" text-anchor="middle" fill="var(--fg)" font-size="12">в блок не вошли</text>
+      <text x="505" y="198" text-anchor="middle" fill="var(--green)" font-size="11">✅ безопасно</text>
+    </svg>
+    <figcaption>Только <code>!</code> оставляет вас один на один с падением. <code>?.</code> и <code>if</code> делают настоящую проверку и ведут себя предсказуемо.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>value!</code></strong> — постфиксное утверждение «здесь точно не <code>null</code> и не <code>undefined</code>». Оно убирает <code>null</code>/<code>undefined</code> из <em>типа</em> выражения.</li>
+    <li><strong>В рантайме <code>!</code> не делает НИЧЕГО</strong> — не проверяет и не меняет значение. Если там реально <code>null</code>, будет падение <code>Cannot read properties of null</code>. Это подсказка компилятору, как и <a routerLink="/typescript/assertions/as">as</a>.</li>
+    <li><strong>Формы:</strong> <code>value!</code>, <code>obj!.prop</code>, <code>arr.find()!</code> — везде <code>!</code> вычёркивает <code>null</code>/<code>undefined</code> из типа стоящего слева.</li>
+    <li><strong>Definite assignment</strong> — <code>name!: string</code> на поле и <code>let x!: number</code>: «присвою позже, до первого использования». В Angular удобно для полей из <code>&#64;Input()</code> и <code>ngOnInit</code>, но обещание всё равно на вас.</li>
+    <li><strong>Оправдан</strong> лишь при реальной гарантии выше по коду (проверка, инвариант, тест). Чаще же <code>!</code> — «запах»: вы отключили защиту.</li>
+    <li><strong>Почти всегда лучше:</strong> сужение через <code>if (el)</code>, опциональная цепочка <code>el?.click()</code>, значение по умолчанию через <code>??</code> или явный <code>throw</code> при <code>null</code>.</li>
+  </ul>
+  <p class="note">Дальше по теме: приведение <a routerLink="/typescript/assertions/as">as</a> (тот же принцип «поверь мне»); безопасное <a routerLink="/typescript/unions-narrowing/narrowing">сужение типов</a> — главная альтернатива <code>!</code>; откуда вообще берётся <code>null</code> в типах — <a routerLink="/typescript/basic-types/void-never">void и never</a> и <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>. Как проверять форму данных по-настоящему — <a routerLink="/typescript/assertions/assertion-functions">функции-утверждения</a>. А типичные ошибки с утверждениями собраны в разделе <a routerLink="/typescript/assertions/pitfalls">нюансы и подводные камни</a>.</p>
+</section>
+</article>

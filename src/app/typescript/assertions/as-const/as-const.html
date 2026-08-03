@@ -1,0 +1,176 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/assertions">Приведение и утверждения</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">as const</span></nav>
+
+<h1 class="doc__title">as const</h1>
+<p class="doc__lead"><code>as const</code> — это команда компилятору: <strong>«заморозь это значение как есть»</strong>. Заморозь в двух смыслах сразу: возьми самый <strong>узкий</strong> из возможных типов (не «какая-то строка», а <em>ровно вот эта</em> строка) и сделай всё содержимое <strong>только для чтения</strong> (<code>readonly</code>). Аналогия — <strong>консервация</strong>: обычная переменная как свежий продукт, «мягкая», её тип легко «расплывается» и расширяется; а <code>as const</code> — как закатать банку: значение застыло в одном состоянии, и его форму уже не поменять.</p>
+
+<section class="doc__section">
+  <h2>Проблема: литералы «расплываются»</h2>
+  <p>Чтобы понять, зачем нужен <code>as const</code>, сначала посмотрим на боль. <strong>Литерал</strong> — это конкретное значение, вписанное прямо в код: строка <code>'idle'</code>, число <code>42</code>, <code>true</code>. Казалось бы, если мы написали <code>'idle'</code>, то и тип должен быть <code>'idle'</code>. Но TypeScript часто выводит более широкий тип — <code>string</code>. Это явление называют <strong>расширением литерала</strong> (literal widening).</p>
+  <app-code-block [code]="widenPrimitives" lang="typescript" />
+  <p>Логика тут простая и разумная. Раз в <code>let</code>-переменную завтра можно записать любую другую строку, нет смысла держать узкий тип <code>'idle'</code> — компилятор заранее расширяет его до <code>string</code>. А <code>const</code>-переменную переприсвоить нельзя, значит её значение застыло, и тип можно оставить узким — <code>'idle'</code>.</p>
+
+  <h3 class="doc__subtitle">Но с объектами <code>const</code> не помогает вглубь</h3>
+  <p>Кажется, что решение найдено: пиши <code>const</code> — и литералы сохранятся. Для одиночных примитивов так и есть. Но как только значение — <strong>объект</strong> или <strong>массив</strong>, <code>const</code> перестаёт помогать внутри. И вот почему.</p>
+  <app-code-block [code]="widenObject" lang="typescript" />
+  <p><code>const</code> защищает только саму <em>ссылку</em> на объект — переменную <code>o</code> нельзя переприсвоить на другой объект. Но <strong>поля</strong> внутри объекта остаются свободно изменяемыми: <code>o.status = 'loading'</code> компилятор разрешит. А раз поле <code>status</code> в будущем может стать любой строкой, TypeScript честно и выводит его тип как <code>string</code>, а не как узкий <code>'idle'</code>. То же с массивами: <code>[1, 2, 3]</code> становится <code>number[]</code>, потому что в массив можно и дописать, и переписать элементы.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>as const</code> «замораживает» значение</h2>
+  <p>Именно эту проблему и решает <code>as const</code>. Приписав его к значению, вы говорите компилятору: перестань расширять и разрешать изменения — <strong>возьми самый узкий тип и пометь всё как <code>readonly</code></strong>. Три следствия, по одному на каждый вид значения:</p>
+  <ul class="rules">
+    <li><strong>Строки, числа, <code>boolean</code></strong> → превращаются в <strong>литеральные типы</strong>: <code>'idle'</code> вместо <code>string</code>, <code>42</code> вместо <code>number</code>.</li>
+    <li><strong>Объекты</strong> → все поля становятся <strong><code>readonly</code></strong> и получают литеральные типы.</li>
+    <li><strong>Массивы</strong> → превращаются в <strong><code>readonly</code>-кортежи</strong> (tuple): фиксированная длина, порядок и типы элементов.</li>
+  </ul>
+  <app-code-block [code]="asConstBasics" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Без as const объект расширяется до string и number, с as const поля становятся readonly и литеральными">
+      <text x="330" y="28" text-anchor="middle" fill="var(--red)" font-size="13">без as const: значение «мягкое» — тип расширяется</text>
+
+      <rect x="40" y="48" width="250" height="58" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="165" y="73" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#123; status: 'idle',</text>
+      <text x="165" y="93" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#160;&#160;count: 42 &#125;</text>
+
+      <line x1="290" y1="77" x2="368" y2="77" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="368,71 382,77 368,83" fill="var(--muted)" />
+
+      <rect x="388" y="48" width="248" height="58" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="512" y="73" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">&#123; status: string,</text>
+      <text x="512" y="93" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">&#160;&#160;count: number &#125;</text>
+
+      <line x1="30" y1="150" x2="630" y2="150" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+
+      <text x="330" y="182" text-anchor="middle" fill="var(--green)" font-size="13">с as const: значение «застыло» — узкий тип + readonly</text>
+
+      <rect x="40" y="202" width="250" height="58" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="165" y="227" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#123; status: 'idle',</text>
+      <text x="165" y="247" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#160;&#160;count: 42 &#125; as const</text>
+
+      <line x1="290" y1="231" x2="368" y2="231" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="368,225 382,231 368,237" fill="var(--muted)" />
+
+      <rect x="388" y="202" width="248" height="58" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="512" y="227" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">&#123; readonly status: 'idle',</text>
+      <text x="512" y="247" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">&#160;&#160;readonly count: 42 &#125;</text>
+    </svg>
+    <figcaption>Верхний ряд — без <code>as const</code>: поля расширяются до <code>string</code> и <code>number</code>. Нижний — с <code>as const</code>: каждое поле стало <code>readonly</code> и получило узкий литеральный тип.</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Значение</th>
+          <th>Тип без <code>as const</code></th>
+          <th>Тип с <code>as const</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>'idle'</code> (в <code>let</code>)</td>
+          <td class="no"><code>string</code></td>
+          <td class="yes"><code>'idle'</code></td>
+        </tr>
+        <tr>
+          <td><code>42</code></td>
+          <td class="no"><code>number</code></td>
+          <td class="yes"><code>42</code></td>
+        </tr>
+        <tr>
+          <td><code>&#123; status: 'idle' &#125;</code></td>
+          <td class="no"><code>&#123; status: string &#125;</code></td>
+          <td class="yes"><code>&#123; readonly status: 'idle' &#125;</code></td>
+        </tr>
+        <tr>
+          <td><code>[1, 2, 3]</code></td>
+          <td class="no"><code>number[]</code></td>
+          <td class="yes"><code>readonly [1, 2, 3]</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Аналогия.</strong> Свежий продукт — «мягкий»: он меняется, портится, форму держит плохо (это расширение типа). Закатать в банку — значит зафиксировать содержимое в одном состоянии: ничего не добавить, не убрать, не подменить. <code>as const</code> и есть та самая «закатка» для значения на уровне типов.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика A: неизменяемый конфиг</h2>
+  <p>Самое частое применение — <strong>константы и конфиги</strong>, которые не должны меняться после объявления. Обычный объект легко испортить случайным присваиванием где-нибудь в глубине кода. <code>as const</code> закрывает эту дверь: любая попытка записи в поле становится ошибкой ещё на компиляции.</p>
+  <app-code-block [code]="configExample" lang="typescript" />
+  <p>Обратите внимание: читать поля можно как обычно (<code>CONFIG.apiUrl</code>), а вот перезаписать — уже нет. Компилятор превратил конфиг в «только для чтения» и заодно запомнил точные значения полей как литеральные типы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика B: union-тип из массива</h2>
+  <p>Это один из самых полезных приёмов с <code>as const</code>, который встречается постоянно. Идея: держать список допустимых значений в <strong>одном</strong> массиве, а тип-<a routerLink="/typescript/unions-narrowing/union">объединение</a> из него вывести <em>автоматически</em>, чтобы не дублировать один и тот же список руками в двух местах.</p>
+  <app-code-block [code]="rolesUnion" lang="typescript" />
+  <p>Разберём загадочную строку <code>type Role = typeof ROLES[number]</code> медленно, по кусочкам — здесь два новых для новичка приёма.</p>
+  <ul class="rules">
+    <li><code>typeof ROLES</code> — это <strong><code>typeof</code> на уровне типов</strong> (не тот <code>typeof</code>, что работает в рантайме!). Он берёт <em>тип</em> переменной <code>ROLES</code> — а благодаря <code>as const</code> это <code>readonly ['admin', 'editor', 'guest']</code>.</li>
+    <li><code>[number]</code> — это <strong>индексный доступ</strong>. У кортежа мы «спрашиваем» тип элемента по индексу. Если индекс — конкретное число (<code>[0]</code>), получим тип одного элемента. А если индекс — тип <code>number</code> (то есть «любой числовой индекс»), получим тип <em>любого</em> элемента, то есть <strong>объединение всех</strong>: <code>'admin' | 'editor' | 'guest'</code>.</li>
+  </ul>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Массив ROLES с as const превращается через typeof ROLES индекс number в объединение admin editor guest">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">как массив значений превращается в тип-объединение</text>
+
+      <rect x="60" y="46" width="540" height="42" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="330" y="72" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">const ROLES = ['admin', 'editor', 'guest'] as const</text>
+
+      <line x1="330" y1="88" x2="330" y2="116" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="324,116 330,130 336,116" fill="var(--muted)" />
+      <text x="418" y="108" text-anchor="middle" fill="var(--muted)" font-size="11">typeof ROLES</text>
+
+      <rect x="130" y="132" width="400" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="330" y="157" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">readonly ['admin', 'editor', 'guest']</text>
+
+      <line x1="330" y1="172" x2="330" y2="200" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="324,200 330,214 336,200" fill="var(--muted)" />
+      <text x="392" y="192" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="11">[number]</text>
+
+      <rect x="160" y="216" width="340" height="30" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="330" y="236" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13">'admin' | 'editor' | 'guest'</text>
+    </svg>
+    <figcaption>Массив → <code>typeof</code> берёт его тип-кортеж → <code>[number]</code> собирает типы всех элементов в объединение. Добавите значение в массив — тип обновится сам.</figcaption>
+  </figure>
+  <p class="note"><strong>Почему без <code>as const</code> не работает.</strong> Без него тип массива был бы <code>string[]</code>. Тогда <code>typeof ROLES[number]</code> дал бы просто <code>string</code> — не список конкретных ролей, а «любая строка». Весь смысл приёма именно в том, что <code>as const</code> сохранил литералы <code>'admin' | 'editor' | 'guest'</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика C: точный кортеж вместо массива</h2>
+  <p>Иногда массив на самом деле — не «список из чего-то одного», а <strong>пара (или тройка) значений фиксированной формы</strong>: координаты <code>[x, y]</code>, размеры <code>[ширина, высота]</code>, пара «значение и функция». Обычный вывод превращает такое в размытый <code>number[]</code> и теряет и длину, и порядок. <code>as const</code> закрепляет форму — получается <strong>кортеж</strong> (tuple).</p>
+  <app-code-block [code]="tupleExample" lang="typescript" />
+  <p>Особенно ярко это видно на паре «значение + функция» — так устроен, например, <code>useState</code> в React. Без <code>as const</code> оба элемента слились бы в один общий тип-мешанину, и при разборе <code>const [isOpen, toggle] = ...</code> было бы непонятно, где <code>boolean</code>, а где функция. С <code>as const</code> компилятор точно знает: первый элемент — <code>boolean</code>, второй — функция, и типы разъезжаются по своим местам.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика D: действия и размеченные объединения</h2>
+  <p>Ещё один частый случай — <strong>объекты-действия</strong> (actions), которые описывают «что произошло»: <code>&#123; type: 'increment', by: 1 &#125;</code>. Такие объекты обычно складывают в <a routerLink="/typescript/unions-narrowing/discriminated-unions">размеченное объединение</a> (discriminated union), где поле-<strong>тег</strong> <code>type</code> позволяет компилятору сузить объект до нужной ветки. Но сужение сработает, только если тег — <strong>литерал</strong> <code>'increment'</code>, а не размытый <code>string</code>.</p>
+  <app-code-block [code]="actionExample" lang="typescript" />
+  <p>Здесь <code>as const</code> играет решающую роль: без него поле <code>type</code> расширилось бы до <code>string</code>, и объект перестал бы подходить под тип <code>Action</code> (ведь <code>string</code> — это не только <code>'increment'</code> или <code>'reset'</code>). С <code>as const</code> тег зафиксирован как литерал — и всё сходится.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Два важных нюанса</h2>
+  <h3 class="doc__subtitle">1. <code>readonly</code> — глубокий</h3>
+  <p>Заморозка от <code>as const</code> действует <strong>на любую глубину</strong> (её называют deep readonly). Одно <code>as const</code> в конце выражения делает <code>readonly</code> не только верхние поля, но и все вложенные объекты и массивы. Не нужно расставлять <code>as const</code> на каждом уровне.</p>
+  <app-code-block [code]="deepReadonly" lang="typescript" />
+  <h3 class="doc__subtitle">2. Это подсказка типам, а не действие в рантайме</h3>
+  <p>Как и другие утверждения (<a routerLink="/typescript/assertions/as"><code>as</code></a>, <a routerLink="/typescript/assertions/non-null">оператор <code>!</code></a>), <code>as const</code> живёт <strong>только на этапе типов</strong>. Он ничего не делает во время выполнения программы: не копирует значение и не замораживает его по-настоящему. В скомпилированном JavaScript от него не остаётся и следа.</p>
+  <app-code-block [code]="runtimeOnlyType" lang="typescript" />
+  <p class="note"><strong>Важно не путать.</strong> <code>as const</code> — это <em>обещание компилятору</em> «я не буду это менять», и компилятор помогает его сдержать, подсвечивая ошибки. Но если данные «обойти» приведением <code>as</code>, в рантайме они изменятся: настоящей защиты значения нет. Реальную заморозку во время выполнения даёт <code>Object.freeze()</code>, а <code>as const</code> — только типы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>as const</code> = «заморозь как есть»</strong>: самый узкий (литеральный) тип + всё <code>readonly</code>. Аналогия — консервация: значение застывает в одном состоянии.</li>
+    <li><strong>Проблема, которую он лечит</strong> — расширение литералов: <code>let s = 'idle'</code> даёт <code>string</code>, а объектам не помогает даже <code>const</code>, потому что их поля мутабельны.</li>
+    <li><strong>Что делает по видам значений:</strong> строки/числа → литеральные типы; объекты → <code>readonly</code>-поля с литералами; массивы → <code>readonly</code>-кортежи.</li>
+    <li><strong>Union из массива:</strong> <code>const ROLES = [...] as const</code>, затем <code>type Role = typeof ROLES[number]</code> — один источник правды вместо дублирования списка.</li>
+    <li><strong>Точный кортеж</strong> вместо <code>number[]</code> — для координат, пар «значение + функция» (как <code>useState</code>) и других структур фиксированной формы.</li>
+    <li><strong>Фиксирует тег</strong> <code>type: 'increment'</code> как литерал — без этого размеченные объединения и сужение не работают.</li>
+    <li><strong><code>readonly</code> глубокий</strong>, но действует <strong>только на уровне типов</strong>: в рантайме значение не копируется и не замораживается — для этого нужен <code>Object.freeze()</code>.</li>
+  </ul>
+  <p class="note">Дальше по теме: как литеральные типы устроены в основе — <a routerLink="/typescript/basic-types/literal-types">Литеральные типы</a>. Соседние утверждения — приведение <a routerLink="/typescript/assertions/as">as</a> и оператор <a routerLink="/typescript/assertions/non-null">non-null (<code>!</code>)</a>. Где <code>as const</code> раскрывается на практике — <a routerLink="/typescript/unions-narrowing/discriminated-unions">размеченные объединения</a>. А типичные ошибки с утверждениями собраны в разделе <a routerLink="/typescript/assertions/pitfalls">нюансы и подводные камни</a>.</p>
+</section>
+</article>

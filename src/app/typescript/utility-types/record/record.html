@@ -1,0 +1,161 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/utility-types">Утилитарные типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Record</span></nav>
+
+<h1 class="doc__title">Record</h1>
+<p class="doc__lead"><code>Record&lt;K, V&gt;</code> — это <strong>шкаф с подписанными ячейками</strong>. На каждой ячейке — <strong>ярлык (ключ типа <code>K</code>)</strong>, а внутри всегда лежит <strong>вещь одного и того же вида (значение типа <code>V</code>)</strong>. Или, если ближе к словам, — <strong>справочник</strong>: слева колонка ключей, справа колонка значений, и любой ключ <code>K</code> ведёт к значению <code>V</code>. По сути это готовая таблица «ключ&nbsp;→&nbsp;значение», где вы называете только <em>тип ярлыков</em> и <em>тип содержимого</em>, а сам объект TypeScript собирает за вас.</p>
+
+<section class="doc__section">
+  <h2>Боль без <code>Record</code></h2>
+  <p>Начнём, как всегда, с проблемы, которую <code>Record</code> решает. Представьте приложение с ролями пользователей: <strong>администратор</strong>, <strong>редактор</strong> и <strong>гость</strong>. Для каждой роли нужно хранить признак «можно ли удалять записи» — простое <code>да/нет</code>, то есть <a routerLink="/typescript/basic-types/primitives"><code>boolean</code></a>. Пока утилитарных типов мы не знаем, придётся выписать все поля руками:</p>
+  <app-code-block [code]="painManual" lang="typescript" />
+  <p>Вроде работает. Но приглядитесь: <strong>тип значения <code>boolean</code> повторяется в каждой строке</strong> — это копипаста, как в примере с коробками из <a routerLink="/typescript/generics/basics">основ дженериков</a>. Хуже того — набор ролей у нас почти наверняка уже описан отдельно (в приложениях роли выносят в отдельный тип). Значит, мы перечислили их <strong>дважды</strong> и теперь обязаны держать оба списка синхронными вручную.</p>
+  <p>А руки — ненадёжны. Смотрите, что бывает, когда список ключей и список полей расходятся:</p>
+  <app-code-block [code]="painDrift" lang="typescript" />
+  <p class="note"><strong>В чём беда.</strong> Между типом <code>Role</code> и интерфейсом <code>Permissions</code> нет никакой связи — это два независимых, вручную набранных списка. Поэтому забытый ключ <code>guest</code> никто не поймает: с точки зрения TypeScript интерфейс полон и корректен. Нам нужен инструмент, который скажет одной фразой: «ключи возьми <em>вот отсюда</em> (из <code>Role</code>), а значение у всех одинаковое — <code>boolean</code>». Это ровно то, что делает <code>Record</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Первое знакомство: <code>Record&lt;K, V&gt;</code></h2>
+  <p><code>Record</code> — это встроенный <strong>утилитарный тип</strong>. Так называют готовые типы-помощники, которые сами живут в TypeScript: вы даёте им на вход другие типы (в угловых скобках, как <a routerLink="/typescript/generics/basics">дженерику</a>), а на выходе получаете новый тип. У <code>Record</code> два таких входа: <code>K</code> — от <em>Key</em> (ключ) и <code>V</code> — от <em>Value</em> (значение). Он строит тип объекта, у которого ключи имеют тип <code>K</code>, а <strong>у всех ключей значение одного и того же типа <code>V</code></strong>.</p>
+  <app-code-block [code]="recordFirst" lang="typescript" />
+  <p>Одна короткая строка <code>Record&lt;Role, boolean&gt;</code> развернулась в тот же самый объект с тремя полями, что мы раньше набирали руками, — но теперь <strong>ключи взяты прямо из <code>Role</code></strong>. Добавите в <code>Role</code> новую роль — тип прав подхватит её автоматически, ничего дописывать не придётся. Список ролей стал единственным источником правды.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 250" width="100%" role="img" aria-label="Record строит таблицу: слева ключи типа Role, справа значения типа boolean">
+      <text x="320" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">Record&lt;Role, boolean&gt; — «справочник»: каждый ключ ведёт к значению</text>
+
+      <text x="150" y="62" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">ключи K = Role</text>
+      <text x="470" y="62" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">значения V = boolean</text>
+
+      <rect x="60" y="78" width="180" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="150" y="103" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">admin</text>
+      <line x1="240" y1="98" x2="378" y2="98" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="378,92 392,98 378,104" fill="var(--muted)" />
+      <rect x="400" y="78" width="180" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="490" y="103" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">boolean</text>
+
+      <rect x="60" y="128" width="180" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="150" y="153" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">editor</text>
+      <line x1="240" y1="148" x2="378" y2="148" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="378,142 392,148 378,154" fill="var(--muted)" />
+      <rect x="400" y="128" width="180" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="490" y="153" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">boolean</text>
+
+      <rect x="60" y="178" width="180" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="150" y="203" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">guest</text>
+      <line x1="240" y1="198" x2="378" y2="198" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="378,192 392,198 378,204" fill="var(--muted)" />
+      <rect x="400" y="178" width="180" height="40" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="490" y="203" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">boolean</text>
+    </svg>
+    <figcaption>Слева — ярлыки-ключи из <code>Role</code>, справа — содержимое одного вида (<code>boolean</code>). <code>Record</code> связывает каждый ключ со значением.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Литеральные ключи заставляют заполнить всё</h2>
+  <p>Вот самое ценное свойство <code>Record</code>, ради которого его часто и берут. Когда <code>K</code> — это <a routerLink="/typescript/unions-narrowing/union">объединение</a> строк-литералов (как <code>'admin' | 'editor' | 'guest'</code>), TypeScript <strong>требует указать все эти ключи без исключения</strong>. Получается <em>исчерпывающая карта</em>: ни один случай не забыт, потому что забыть их компилятор просто не даст.</p>
+  <app-code-block [code]="recordExhaustive" lang="typescript" />
+  <p>Сравните с болью из первого раздела: там забытый <code>guest</code> прошёл незамеченным, а здесь тот же самый пропуск сразу превращается в ошибку компиляции. Это и есть страховка, которую даёт связь ключей с типом <code>Role</code>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 250" width="100%" role="img" aria-label="Объединение литеральных ключей требует, чтобы в объекте присутствовали все ключи">
+      <rect x="200" y="26" width="240" height="46" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="320" y="47" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">'admin' | 'editor' | 'guest'</text>
+      <text x="320" y="64" text-anchor="middle" fill="var(--muted)" font-size="11">ключи должны быть ВСЕ</text>
+
+      <line x1="320" y1="72" x2="320" y2="98" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="314,98 320,112 326,98" fill="var(--muted)" />
+
+      <rect x="46" y="122" width="270" height="104" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="181" y="146" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">✅ все три ключа на месте</text>
+      <text x="66" y="170" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">admin: true,</text>
+      <text x="66" y="190" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">editor: false,</text>
+      <text x="66" y="210" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">guest: false,</text>
+
+      <rect x="336" y="122" width="270" height="104" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="471" y="146" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="600">❌ забыли guest — ошибка</text>
+      <text x="356" y="170" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">admin: true,</text>
+      <text x="356" y="190" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">editor: false,</text>
+      <text x="356" y="210" text-anchor="start" fill="var(--muted)" font-family="monospace" font-size="12">— guest пропущен —</text>
+    </svg>
+    <figcaption>Ключ-объединение — это чек-лист. Пока не заполнен каждый пункт, тип не соберётся: пропущенный <code>guest</code> сразу подсвечивается ошибкой.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Свободный словарь: <code>Record&lt;string, V&gt;</code></h2>
+  <p>Второй частый случай — когда ключи <strong>заранее не известны</strong>. Их может быть сколько угодно, и появляются они на ходу. Тогда в качестве <code>K</code> берут не список литералов, а просто <code>string</code>. Получается свободный словарь (по-английски <em>dictionary</em>) вида «строка&nbsp;→&nbsp;значение». Классический пример — счётчик слов:</p>
+  <app-code-block [code]="recordDictionary" lang="typescript" />
+  <p>Обратите внимание: здесь никакого требования «перечислить все ключи» нет и быть не может — у типа <code>string</code> ключей бесконечно много. <code>Record&lt;string, number&gt;</code> означает просто «объект, где под <strong>любым</strong> строковым ключом лежит число». Это два разных режима одного инструмента: <strong>литеральные ключи</strong> дают закрытый, исчерпывающий список, а <strong>ключ <code>string</code></strong> — открытый словарь без ограничений на набор ключей.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ещё примеры из жизни</h2>
+  <p>Значением <code>V</code> может быть любой тип — строка, число, объект, массив. Разберём пару реалистичных ситуаций. Сначала — <strong>словарь переводов</strong> интерфейса. Языков ровно два, поэтому ключ снова литеральный (<code>'ru' | 'en'</code>), а значение — строка с переводом:</p>
+  <app-code-block [code]="recordTranslations" lang="typescript" />
+  <p>Литеральный ключ здесь работает как страховка от «недопереведённого» интерфейса: забудете язык <code>'en'</code> — тип не соберётся. А внутри функции <code>t</code> обращение <code>dict[lang]</code> гарантированно даёт строку, ведь <code>Record</code> обещает: <em>под каждым объявленным ключом значение точно есть</em>.</p>
+  <p>Теперь пример, где значение — целый <strong>объект настроек</strong>. Пусть у нас три окружения, и у каждого своя конфигурация:</p>
+  <app-code-block [code]="recordConfig" lang="typescript" />
+  <p>Здесь особенно наглядно, зачем нужна исчерпывающая карта: добавите окружение <code>'test'</code> в <code>Environment</code> — TypeScript тут же напомнит дописать его настройки в <code>configs</code>. Пропустить окружение просто не выйдет, и «полузаполненного» конфига в проекте не появится.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>Record</code> и индексная сигнатура — одно и то же</h2>
+  <p>Если вы уже встречали запись <code>&#123; [key: string]: number &#125;</code> — это так называемая <strong>индексная сигнатура</strong>, старый способ сказать «под любым строковым ключом лежит значение типа <code>number</code>». Так вот: <code>Record&lt;string, number&gt;</code> и индексная сигнатура — это <strong>буквально один и тот же тип</strong>, просто записанный по-разному.</p>
+  <app-code-block [code]="recordVsIndex" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th><code>&#123; [key: string]: V &#125;</code></th>
+          <th><code>Record&lt;string, V&gt;</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Свободный словарь «строка → V»</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td>Короче и читается как фраза</td>
+          <td class="no">❌ длиннее, шумно</td>
+          <td class="yes">✅ одна строка</td>
+        </tr>
+        <tr>
+          <td>Ключ — объединение литералов</td>
+          <td class="no">❌ так не записать</td>
+          <td class="yes">✅ <code>Record&lt;'ru' | 'en', V&gt;</code></td>
+        </tr>
+        <tr>
+          <td>Требует заполнить все ключи</td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ с литеральными ключами</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Вывод простой: для <strong>открытого</strong> словаря <code>Record&lt;string, V&gt;</code> — это просто более короткая и понятная запись индексной сигнатуры. А вот там, где ключи <strong>известны и их конечный список</strong>, <code>Record</code> с объединением литералов даёт то, чего индексная сигнатура вообще не умеет, — проверку «все ключи на месте».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Какой ключ выбрать: литералы или <code>string</code></h2>
+  <p>Главный практический вопрос: брать в <code>K</code> объединение литералов или просто <code>string</code>? Ответ зависит от одного — <strong>знаете ли вы ключи заранее</strong>.</p>
+  <app-code-block [code]="recordLiteralVsString" lang="typescript" />
+  <p class="note"><strong>Правило выбора.</strong> Ключи известны и их конечный список (роли, языки, окружения, статусы) — берите <strong>объединение литералов</strong>: <code>Record</code> заставит заполнить каждый и не даст ничего забыть. Ключи приходят извне и растут на ходу (id пользователей, слова, кэш) — берите <strong><code>Record&lt;string, V&gt;</code></strong>. Но помните про ловушку открытого словаря: обращение по несуществующему ключу вернёт значение типа <code>V</code>, хотя по факту там <code>undefined</code>. С литеральными ключами такой ямы нет — все ключи гарантированно на месте.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>Record&lt;K, V&gt;</code></strong> строит тип объекта, где ключи имеют тип <code>K</code>, а значение у <em>всех</em> ключей — один и тот же тип <code>V</code>. Это «шкаф с подписанными ячейками» и таблица «ключ → значение».</li>
+    <li><strong><code>K</code> — тип ключей</strong>: чаще всего объединение строк-литералов (<code>'admin' | 'editor'</code>) или просто <code>string</code> / <code>number</code>.</li>
+    <li><strong><code>V</code> — тип значений</strong>: любой тип — <code>boolean</code>, <code>number</code>, строка, объект, массив.</li>
+    <li><strong>Литеральные ключи = исчерпывающая карта.</strong> Если <code>K</code> — объединение литералов, TypeScript требует указать <em>все</em> ключи. Забыли один — ошибка компиляции.</li>
+    <li><strong><code>Record&lt;string, V&gt;</code> = свободный словарь.</strong> Ключей сколько угодно, добавляются на ходу; требования «заполнить всё» нет.</li>
+    <li><strong><code>Record&lt;string, V&gt;</code> ≡ <code>&#123; [key: string]: V &#125;</code></strong> — это один и тот же тип, <code>Record</code> просто короче и яснее.</li>
+    <li><strong>Выбор ключа:</strong> знаете список заранее — литералы (и получаете проверку «все ключи»); не знаете — <code>string</code> (и помните про обращение по несуществующему ключу).</li>
+  </ul>
+  <p class="note">Основа <code>Record</code> — <a routerLink="/typescript/generics/basics">дженерики</a>: <code>K</code> и <code>V</code> — это те же параметры типа в угловых скобках. Под капотом <code>Record</code> устроен через <a routerLink="/typescript/advanced-types/mapped">отображённые типы (mapped types)</a> и оператор <a routerLink="/typescript/advanced-types/keyof">keyof</a>. Рядом полезно посмотреть соседние утилитарные типы, которые, наоборот, <em>берут</em> ключи из существующего типа: <a routerLink="/typescript/utility-types/pick-omit">Pick и Omit</a> и <a routerLink="/typescript/utility-types/partial-required-readonly">Partial, Required, Readonly</a>.</p>
+</section>
+</article>

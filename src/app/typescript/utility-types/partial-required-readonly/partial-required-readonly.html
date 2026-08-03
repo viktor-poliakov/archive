@@ -1,0 +1,180 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/utility-types">Утилитарные типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Partial, Required, Readonly</span></nav>
+
+<h1 class="doc__title">Partial, Required, Readonly</h1>
+<p class="doc__lead">Представьте, что у вас есть <strong>бланк анкеты</strong> с полями «имя», «email», «телефон». Один и тот же бланк можно выдать людям с разными правилами заполнения. <strong><code>Partial&lt;T&gt;</code> — это анкета, где заполнять поля <em>необязательно</em></strong>: впиши только то, что хочешь, остальное оставь пустым. <strong><code>Required&lt;T&gt;</code> — анкета, где <em>обязательно</em> каждое поле</strong>: пустых строк не допускается, вернут на доработку. <strong><code>Readonly&lt;T&gt;</code> — это заламинированная карточка</strong>: данные на ней прекрасно читаются, но переписать их уже нельзя. Все три берут готовый тип и <strong>переключают один и тот же модификатор сразу у ВСЕХ полей</strong> — вам не нужно править каждое поле руками.</p>
+
+<section class="doc__section">
+  <h2>Отправная точка: обычный тип</h2>
+  <p>Прежде чем что-то преобразовывать, нужен исходный тип — тот самый «бланк». Возьмём знакомую всем карточку пользователя. Обратите внимание: у неё три поля, и все они <strong>обязательные</strong> — то есть при создании объекта пропустить их нельзя.</p>
+  <app-code-block [code]="baseUser" lang="typescript" />
+  <p>Этот <code>User</code> мы будем «прогонять» через утилитарные типы. <strong>Утилитарный тип</strong> — это встроенный в TypeScript готовый инструмент, который берёт один тип и делает из него другой, немного изменённый. Думайте о нём как о <em>функции, но не над значениями, а над типами</em>: на входе <code>User</code>, на выходе — новый тип с теми же полями, но с другими правилами. Сам <code>User</code> при этом остаётся нетронутым.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Боль без <code>Partial</code>: обновление объекта</h2>
+  <p>Самая частая задача, ради которой придумали <code>Partial</code>, — это <strong>частичное обновление</strong>. Допустим, у пользователя поменялся только email. Логично написать функцию, которая принимает <em>лишь изменившиеся поля</em>. Но если типизировать её аргумент как обычный <code>User</code>, компилятор потребует передать вообще всё:</p>
+  <app-code-block [code]="painUpdate" lang="typescript" />
+  <p>Тащить <code>id</code> и <code>name</code>, которые мы и не думали менять, — глупо и опасно (легко подставить не то значение). «Решение в лоб» — написать руками второй тип, где у каждого поля стоит <code>?</code> (вопросительный знак — пометка «поле можно пропустить»):</p>
+  <app-code-block [code]="painManualOptional" lang="typescript" />
+  <p>Формально работает, но это <strong>копипаста</strong>: тот же <code>User</code>, только со знаками <code>?</code>. Добавите в <code>User</code> новое поле — придётся не забыть добавить его и во второй тип, и держать два типа в синхроне вручную. Именно эту рутину и убирает <code>Partial</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>Partial&lt;T&gt;</code>: каждое поле становится необязательным</h2>
+  <p><code>Partial&lt;T&gt;</code> берёт тип <code>T</code> и автоматически ставит <code>?</code> <strong>каждому</strong> его полю. Название буквальное: «partial» значит «частичный» — теперь допустимо заполнить лишь <em>часть</em> полей. Пишется он просто: имя <code>Partial</code>, а в угловых скобках — тип, который преобразуем.</p>
+  <app-code-block [code]="partialBasic" lang="typescript" />
+  <p>Смотрите, что произошло: мы не трогали <code>User</code>, но получили новый тип, в котором <strong>все три поля стали необязательными</strong>. Теперь можно передать хоть одно поле, хоть два, хоть вообще пустой объект. А вот и обещанное применение — аккуратная функция обновления:</p>
+  <app-code-block [code]="partialUpdate" lang="typescript" />
+  <p class="note"><strong>Тонкость.</strong> <code>Partial</code> ослабляет <em>обязательность</em>, но <strong>не разрешает посторонние поля</strong>. Набор допустимых полей остаётся ровно таким же, как у <code>User</code>: попытка передать <code>age</code>, которого в <code>User</code> нет, — по-прежнему ошибка. <code>Partial</code> отвечает только за «можно ли пропустить поле», а не за «какие поля вообще бывают».</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>Required&lt;T&gt;</code>: полная противоположность</h2>
+  <p>Если <code>Partial</code> <em>добавляет</em> <code>?</code> каждому полю, то <code>Required&lt;T&gt;</code> делает ровно обратное — <strong>убирает <code>?</code></strong>, превращая все поля в обязательные. Это два зеркальных инструмента: один расслабляет правила заполнения анкеты, другой — ужесточает их до предела, «ни одной пустой строки».</p>
+  <app-code-block [code]="requiredBasic" lang="typescript" />
+  <p>Зачем это нужно на практике? Очень частый сценарий: «сырые» данные приходят с необязательными полями (пользователь мог что-то не указать), но <strong>после проверки и подстановки значений по умолчанию</strong> вы хотите гарантировать, что заполнено уже всё. Тип <code>Required&lt;T&gt;</code> отражает этот переход «до валидации → после валидации» прямо в системе типов:</p>
+  <app-code-block [code]="requiredValidate" lang="typescript" />
+  <p>Выгода в последней строке: раз результат имеет тип <code>Required&lt;Settings&gt;</code>, компилятор знает, что <code>fontSize</code> точно есть, — и позволяет сразу вызвать <code>.toFixed(0)</code> без утомительной проверки «а не <code>undefined</code> ли это». Обязательность полей стала частью контракта.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>Readonly&lt;T&gt;</code>: только для чтения</h2>
+  <p>Третий из трио переключает уже <em>другой</em> модификатор. <code>Readonly&lt;T&gt;</code> ставит каждому полю пометку <code>readonly</code> — «только для чтения». Значение такого поля можно <strong>прочитать сколько угодно раз</strong>, но <strong>перезаписать после создания объекта нельзя</strong>. Это наша заламинированная карточка: текст виден, но ручкой поверх ламинации ничего не напишешь.</p>
+  <app-code-block [code]="readonlyBasic" lang="typescript" />
+  <p>Заполнить объект <em>один раз</em>, в момент создания, разрешено — иначе им нельзя было бы пользоваться. А вот любая последующая попытка присвоить полю новое значение превращается в ошибку компиляции. Это идеально подходит для <strong>неизменяемой конфигурации</strong> и «замороженных» констант, которые задают на старте и дальше только читают:</p>
+  <app-code-block [code]="readonlyConfig" lang="typescript" />
+  <p class="note"><strong>Компиляция, а не рантайм.</strong> <code>readonly</code> — это проверка <em>на этапе компиляции</em>. В собранном JavaScript никакого <code>readonly</code> не остаётся, и технически значение поменять можно. <code>readonly</code> защищает вас от <em>случайной</em> перезаписи в вашем же коде, а не запечатывает объект физически. Если нужна настоящая заморозка в рантайме, есть отдельный приём — <code>Object.freeze</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как это выглядит: одна карточка — три превращения</h2>
+  <p>Сведём всё вместе. Берём один тип <code>User</code> и получаем из него три «копии», в каждой из которых у <em>всех</em> полей переключён свой модификатор:</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 360" width="100%" role="img" aria-label="Тип User превращается в три версии: Partial добавляет знак вопроса каждому полю, Required делает поля обязательными, Readonly добавляет замок">
+      <text x="340" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">один тип User — три превращения, модификатор меняется у КАЖДОГО поля</text>
+
+      <rect x="270" y="40" width="140" height="96" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="340" y="62" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">User</text>
+      <text x="340" y="86" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">id</text>
+      <text x="340" y="104" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">name</text>
+      <text x="340" y="122" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">email</text>
+
+      <line x1="270" y1="120" x2="130" y2="188" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="132,180 122,192 141,190" fill="var(--muted)" />
+      <line x1="340" y1="136" x2="340" y2="188" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="334,188 340,200 346,188" fill="var(--muted)" />
+      <line x1="410" y1="120" x2="550" y2="188" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="548,190 558,192 548,180" fill="var(--muted)" />
+
+      <rect x="20" y="200" width="200" height="130" rx="12" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="120" y="224" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="13">Partial&lt;User&gt;</text>
+      <text x="120" y="248" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">id?</text>
+      <text x="120" y="270" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">name?</text>
+      <text x="120" y="292" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">email?</text>
+      <text x="120" y="316" text-anchor="middle" fill="var(--muted)" font-size="11">«?» — можно пропустить</text>
+
+      <rect x="240" y="200" width="200" height="130" rx="12" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="340" y="224" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">Required&lt;User&gt;</text>
+      <text x="340" y="248" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">id</text>
+      <text x="340" y="270" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">name</text>
+      <text x="340" y="292" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">email</text>
+      <text x="340" y="316" text-anchor="middle" fill="var(--muted)" font-size="11">все — обязательны</text>
+
+      <rect x="460" y="200" width="200" height="130" rx="12" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="560" y="224" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="13">Readonly&lt;User&gt;</text>
+      <text x="560" y="248" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">🔒 id</text>
+      <text x="560" y="270" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">🔒 name</text>
+      <text x="560" y="292" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">🔒 email</text>
+      <text x="560" y="316" text-anchor="middle" fill="var(--muted)" font-size="11">только для чтения</text>
+    </svg>
+    <figcaption>Исходный <code>User</code> не меняется. Каждый утилитарный тип создаёт из него новую версию, переключая модификатор сразу у всех полей: <code>?</code> у <code>Partial</code>, обязательность у <code>Required</code>, замок у <code>Readonly</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Важная ловушка: <code>Readonly</code> «неглубокий»</h2>
+  <p>Вот момент, на котором спотыкаются почти все новички, поэтому притормозим. <code>Readonly&lt;T&gt;</code> запечатывает <strong>только поля верхнего уровня</strong>. Если внутри поля лежит <em>вложенный объект</em>, его собственные поля остаются обычными, изменяемыми. Такое поведение называют «неглубоким» (shallow) — заморозка не «спускается» вглубь.</p>
+  <app-code-block [code]="readonlyShallow" lang="typescript" />
+  <p>Разберём по шагам. Заменить всё поле <code>address</code> целиком нельзя — сама «полка» запечатана. Но <code>Readonly</code> не поставил замок на то, что <em>внутри</em> этой полки, поэтому изменить <code>address.city</code> компилятор спокойно позволяет. Наглядно это выглядит так:</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Readonly запечатывает только верхний уровень: поля name и address защищены замком, но поля city и zip внутри address остаются открытыми">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">замок висит только на верхнем уровне</text>
+
+      <rect x="40" y="46" width="580" height="176" rx="14" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="66" y="76" text-anchor="start" fill="var(--red)" font-family="monospace" font-size="13">Readonly&lt;Profile&gt;</text>
+
+      <rect x="66" y="92" width="240" height="40" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="86" y="117" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">🔒 name</text>
+      <text x="290" y="117" text-anchor="end" fill="var(--red)" font-size="11">перезаписать нельзя</text>
+
+      <rect x="66" y="144" width="528" height="62" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="86" y="169" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">🔒 address</text>
+      <text x="574" y="169" text-anchor="end" fill="var(--red)" font-size="11">заменить целиком нельзя</text>
+
+      <rect x="330" y="152" width="120" height="20" rx="5" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="390" y="167" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">city ✏️</text>
+      <rect x="460" y="152" width="120" height="20" rx="5" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="520" y="167" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">zip ✏️</text>
+      <text x="454" y="196" text-anchor="middle" fill="var(--green)" font-size="11">вложенные поля остались изменяемыми</text>
+    </svg>
+    <figcaption>Верхние поля <code>name</code> и <code>address</code> защищены замком. Но <code>city</code> и <code>zip</code> <em>внутри</em> <code>address</code> — под открытым карандашом: их можно переписать.</figcaption>
+  </figure>
+  <p>Ровно та же история с <code>Partial</code>: он делает необязательным лишь верхний уровень, а вложенные поля остаются как были. Отсюда закономерный вопрос — «а есть ли <em>глубокие</em> версии?»</p>
+  <app-code-block [code]="noDeep" lang="typescript" />
+  <p class="note"><strong>Запомните.</strong> Встроенных <code>DeepReadonly</code> и <code>DeepPartial</code> в TypeScript <strong>нет</strong>. И <code>Partial</code>, и <code>Readonly</code> работают только на одном, самом верхнем уровне. Если действительно нужна «глубокая» заморозка, её пишут вручную или берут из сторонних библиотек (например, <code>type-fest</code>). Но на практике верхнего уровня хватает в подавляющем большинстве случаев — не усложняйте раньше времени.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Их можно комбинировать</h2>
+  <p>Поскольку утилитарные типы — это «функции над типами», их можно вкладывать друг в друга, как обычные функции. Например, «черновик пользователя», где все поля <em>и</em> необязательны, <em>и</em> только для чтения:</p>
+  <app-code-block [code]="combine" lang="typescript" />
+  <p>Читается изнутри наружу: сначала <code>Partial&lt;User&gt;</code> добавил каждому полю <code>?</code>, затем <code>Readonly&lt;...&gt;</code> навесил на всё это <code>readonly</code>. Результат — тип, где поля можно пропускать, но написанное уже не переписать.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Сравнение трёх</h2>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Утилитарный тип</th>
+          <th>Что делает с каждым полем</th>
+          <th>Когда брать</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Partial&lt;T&gt;</code></td>
+          <td class="yes">✅ добавляет <code>?</code> — поле можно пропустить</td>
+          <td>частичное обновление, черновики, «заполни что хочешь»</td>
+        </tr>
+        <tr>
+          <td><code>Required&lt;T&gt;</code></td>
+          <td class="yes">✅ убирает <code>?</code> — поле обязательно</td>
+          <td>результат валидации, «заполнено всё до конца»</td>
+        </tr>
+        <tr>
+          <td><code>Readonly&lt;T&gt;</code></td>
+          <td class="yes">✅ добавляет <code>readonly</code> — только чтение</td>
+          <td>неизменяемая конфигурация, замороженные константы</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Помните про верхний уровень.</strong> Все три работают <em>неглубоко</em> — переключают модификатор только у полей самого объекта, но не заходят во вложенные объекты. Это единственный подводный камень, о котором стоит помнить постоянно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>Partial&lt;T&gt;</code></strong> ставит <code>?</code> каждому полю — все поля становятся <em>необязательными</em>. Классика — функция обновления <code>updateUser(id, patch: Partial&lt;User&gt;)</code>, куда передают только изменившиеся поля.</li>
+    <li><strong><code>Required&lt;T&gt;</code></strong> — полная противоположность <code>Partial</code>: убирает <code>?</code>, делая все поля <em>обязательными</em>. Удобно как тип «проверенных, дозаполненных» данных.</li>
+    <li><strong><code>Readonly&lt;T&gt;</code></strong> добавляет каждому полю <code>readonly</code> — <em>только для чтения</em>. Перезапись поля становится ошибкой компиляции; идеально для неизменяемой конфигурации.</li>
+    <li>Все три берут готовый тип и <strong>переключают один модификатор сразу у ВСЕХ полей</strong>, избавляя от копипасты второго типа вручную.</li>
+    <li><strong>Все три «неглубокие».</strong> Они меняют только верхний уровень; вложенные объекты остаются как были. Встроенных <code>DeepPartial</code>/<code>DeepReadonly</code> в TypeScript нет.</li>
+    <li>Утилитарные типы <strong>комбинируются</strong> — например, <code>Readonly&lt;Partial&lt;User&gt;&gt;</code> — и читаются изнутри наружу.</li>
+  </ul>
+  <p class="note">Под капотом эти типы устроены на <a routerLink="/typescript/advanced-types/mapped">сопоставленных типах (mapped types)</a> и операторе <a routerLink="/typescript/advanced-types/keyof">keyof</a> — «пройтись по всем ключам и переключить модификатор». А поскольку они принимают тип <code>T</code> в угловых скобках, это ещё и <a routerLink="/typescript/generics/basics">дженерики</a> — фундамент, с которого стоит начать, если угловые скобки пока смущают. Дальше логично посмотреть <a routerLink="/typescript/utility-types/pick-omit">Pick и Omit</a> — они не переключают модификаторы, а <em>выбирают</em> и <em>выбрасывают</em> отдельные поля.</p>
+</section>
+</article>

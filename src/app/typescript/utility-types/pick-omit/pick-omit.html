@@ -1,0 +1,164 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/utility-types">Утилитарные типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Pick, Omit</span></nav>
+
+<h1 class="doc__title">Pick, Omit</h1>
+<p class="doc__lead"><code>Pick</code> и <code>Omit</code> — это как <strong>заказ в кафе по меню</strong>. Есть большое меню (готовый тип со всеми полями), а вам нужна лишь часть. <code>Pick</code> — вы <strong>ставите галочки только напротив тех блюд, что берёте</strong>, а всё остальное меню как будто исчезает. <code>Omit</code> — наоборот: вы говорите «несите <strong>всё, кроме</strong> одного-двух пунктов» (например, «всё, кроме пароля»). Оба не создают новое меню с нуля — они <strong>вырезают нужный кусок из уже существующего</strong> типа, а значит, ничего не приходится дублировать вручную.</p>
+
+<section class="doc__section">
+  <h2>Боль без Pick и Omit: копипаста полей</h2>
+  <p>Представьте большой тип — «полную анкету» пользователя. В ней много полей: <code>id</code>, имя, почта, пароль, дата регистрации. В разных местах приложения вам нужна не вся анкета целиком, а её кусочки: где-то только имя и <code>id</code> (для маленькой карточки в списке), где-то всё, кроме пароля (чтобы безопасно отдать данные на сайт). Что делает новичок? Копирует нужные поля руками в новый тип.</p>
+  <app-code-block [code]="painManualCopy" lang="typescript" />
+  <p>Вроде работает. Но это <strong>копипаста</strong>: описание полей продублировано. Стоит поменять что-то в исходном <code>User</code> — скажем, сделать <code>id</code> строкой вместо числа — и придётся вручную вспомнить про все ручные копии и починить каждую. Про одну обязательно забудешь, и типы «разъедутся»: в одном месте <code>id</code> — число, в другом — строка. Хочется способ, при котором маленький тип <strong>сам следует</strong> за большим. Ровно это и дают <code>Pick</code> и <code>Omit</code>.</p>
+  <p class="note"><strong>Что такое «ключ» (поле).</strong> У объектного типа <code>&#123; id: number; name: string &#125;</code> ключи — это имена свойств: <code>id</code> и <code>name</code>. Именно с ключами работают <code>Pick</code> и <code>Omit</code>: они решают, какие поля оставить, а какие выбросить. Подробнее про извлечение имён полей — на странице <a routerLink="/typescript/advanced-types/keyof">keyof</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Pick&lt;T, K&gt;: оставить только выбранное</h2>
+  <p><code>Pick&lt;T, K&gt;</code> строит <strong>новый тип</strong>, оставляя из типа <code>T</code> только те ключи, что перечислены в <code>K</code>. Здесь <code>T</code> — исходный тип (наше «меню»), а <code>K</code> — имена полей, которые вы «отмечаете галочкой». Если полей несколько, их соединяют <strong>вертикальной чертой</strong> <code>|</code> — это запись объединения имён: <code>'id' | 'name'</code> читается как «id или name».</p>
+  <app-code-block [code]="pickFirst" lang="typescript" />
+  <p>Заметьте главное отличие от ручной копии из первого раздела: мы нигде не переписали <code>id: number</code> заново. Мы <strong>сослались</strong> на поля <code>User</code> по имени. Поэтому <code>UserPreview</code> — не отдельная независимая копия, а «живой срез»: поменяется <code>User</code> — автоматически поменяется и превью. Один источник правды.</p>
+  <p>А что будет, если попробовать положить в такой тип лишнее поле, которого мы не выбирали? Компилятор мягко, но твёрдо остановит:</p>
+  <app-code-block [code]="pickExtraKey" lang="typescript" />
+  <p>И наоборот — если вы попросите у <code>Pick</code> поле, которого в исходном типе <strong>вообще нет</strong> (опечатались в имени), ошибка появится сразу же, ещё при описании типа:</p>
+  <app-code-block [code]="pickWrongKey" lang="typescript" />
+  <p class="note"><strong>Почему опечатка ловится.</strong> Второй аргумент <code>K</code> ограничен — в него разрешено вписывать только реальные ключи типа <code>T</code> (на языке TypeScript это <code>keyof T</code>). Поэтому <code>'username'</code> вместо <code>'name'</code> — не «пустое поле», а сразу ошибка компиляции. Это ровно та защита, ради которой берут дженерики; их основы разобраны на странице <a routerLink="/typescript/generics/basics">Дженерики: основы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Omit&lt;T, K&gt;: оставить всё, кроме</h2>
+  <p><code>Omit&lt;T, K&gt;</code> — полная противоположность <code>Pick</code>. Он берёт тип <code>T</code> целиком и <strong>выбрасывает</strong> из него ключи <code>K</code>. Всё остальное остаётся на месте. Это самый удобный инструмент, когда «лишних» полей мало, а оставить нужно почти всё. Классика жанра — убрать пароль перед отправкой данных на клиент:</p>
+  <app-code-block [code]="omitFirst" lang="typescript" />
+  <p>Обратите внимание: в результат <code>PublicUser</code> попали все поля, кроме <code>password</code>, и нам не пришлось перечислять их вручную — за нас это сделал <code>Omit</code>. В <code>K</code> можно указать и несколько ключей сразу, соединив их той же чертой <code>|</code>:</p>
+  <app-code-block [code]="omitMultiple" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 680 300" width="100%" role="img" aria-label="Из полного типа User Pick оставляет выбранные поля, Omit выбрасывает указанное поле">
+      <text x="120" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">исходный тип User</text>
+
+      <rect x="30" y="42" width="180" height="216" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="120" y="72" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">id</text>
+      <text x="120" y="104" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">name</text>
+      <text x="120" y="136" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">email</text>
+      <text x="120" y="168" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">password</text>
+      <text x="120" y="200" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">createdAt</text>
+
+      <line x1="212" y1="150" x2="286" y2="90" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="282,82 292,88 283,96" fill="var(--muted)" />
+      <line x1="212" y1="150" x2="286" y2="212" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="283,204 292,212 282,218" fill="var(--muted)" />
+
+      <text x="390" y="60" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">Pick&lt;User,'id'|'name'&gt;</text>
+      <rect x="300" y="72" width="170" height="70" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
+      <text x="385" y="98" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="14">id</text>
+      <text x="385" y="122" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="14">name</text>
+
+      <text x="390" y="186" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">Omit&lt;User,'password'&gt;</text>
+      <rect x="300" y="196" width="170" height="86" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
+      <text x="385" y="218" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">id, name, email,</text>
+      <text x="385" y="238" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">createdAt</text>
+      <text x="385" y="264" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12" text-decoration="line-through">password</text>
+
+      <text x="590" y="60" text-anchor="middle" fill="var(--green)" font-size="12">оставили</text>
+      <text x="590" y="76" text-anchor="middle" fill="var(--muted)" font-size="11">только галочки</text>
+      <text x="590" y="186" text-anchor="middle" fill="var(--red)" font-size="12">выбросили</text>
+      <text x="590" y="202" text-anchor="middle" fill="var(--muted)" font-size="11">лишнее поле</text>
+    </svg>
+    <figcaption><code>Pick</code> оставляет только отмеченные поля (зелёные), остальное отбрасывает. <code>Omit</code> оставляет всё, а перечёркнутое поле <code>password</code> убирает.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Omit — это дополнение Pick</h2>
+  <p>Между <code>Pick</code> и <code>Omit</code> есть красивая связь: они описывают <strong>одно и то же</strong> с двух сторон. Всё, что можно выразить через «оставить вот эти», можно выразить и через «выбросить все остальные», — и наоборот. Результат получится буквально одинаковым.</p>
+  <app-code-block [code]="pickOmitEquivalence" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 210" width="100%" role="img" aria-label="Pick оставляет два поля, Omit выбрасывает три остальных — результат одинаковый">
+      <rect x="250" y="24" width="140" height="150" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="320" y="18" text-anchor="middle" fill="var(--muted)" font-size="12">5 полей User</text>
+      <rect x="266" y="38" width="108" height="24" rx="6" fill="color-mix(in srgb, var(--green) 22%, transparent)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="320" y="55" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">id</text>
+      <rect x="266" y="66" width="108" height="24" rx="6" fill="color-mix(in srgb, var(--green) 22%, transparent)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="320" y="83" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">name</text>
+      <text x="320" y="112" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">email</text>
+      <text x="320" y="134" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">password</text>
+      <text x="320" y="156" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">createdAt</text>
+
+      <line x1="248" y1="55" x2="150" y2="55" stroke="var(--green)" stroke-width="2" />
+      <polygon points="150,49 138,55 150,61" fill="var(--green)" />
+      <text x="90" y="44" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">Pick</text>
+      <text x="90" y="62" text-anchor="middle" fill="var(--muted)" font-size="11">беру эти 2</text>
+
+      <line x1="392" y1="128" x2="490" y2="128" stroke="var(--red)" stroke-width="2" />
+      <polygon points="490,122 502,128 490,134" fill="var(--red)" />
+      <text x="560" y="117" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">Omit</text>
+      <text x="560" y="135" text-anchor="middle" fill="var(--muted)" font-size="11">выбрасываю 3</text>
+
+      <text x="320" y="196" text-anchor="middle" fill="var(--muted)" font-size="12">итог одинаковый: &#123; id; name &#125;</text>
+    </svg>
+    <figcaption>Оставить два поля (<code>Pick</code>) или выбросить три остальных (<code>Omit</code>) — это два пути к одному и тому же типу.</figcaption>
+  </figure>
+  <p>Отсюда простое правило выбора: смотрите, чего <strong>меньше писать</strong>. Нужно оставить всего пару полей из двадцати — берите <code>Pick</code>. Нужно убрать одно-два поля, а остальное сохранить — берите <code>Omit</code>. Оба одинаково корректны; выбирают тот, что короче и понятнее читается.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: формы, карточки и ответы API</h2>
+  <p>Теперь посмотрим, где это встречается каждый день. Первый случай — <strong>форма</strong>. Форме редактирования профиля не нужен весь пользователь: она меняет только имя и почту. Описываем «значения формы» как срез большого типа — и они автоматически совпадают с реальными полями:</p>
+  <app-code-block [code]="formProps" lang="typescript" />
+  <p>Второй случай — <strong>ответ сервера</strong>. В базе у сущности часто есть служебные поля (внутренние заметки, технические даты), которые не стоит показывать пользователю. <code>Pick</code> собирает компактную строку списка, а <code>Omit</code> прячет служебное поле в «карточке»:</p>
+  <app-code-block [code]="apiResponse" lang="typescript" />
+  <p class="note"><strong>Совет.</strong> Хотите тот же срез, но со всеми полями <em>необязательными</em> (для формы, где заполнены не все поля) или <em>только для чтения</em>? Комбинируйте: сначала вырежьте нужные ключи через <code>Pick</code>/<code>Omit</code>, а потом оберните в <code>Partial</code> или <code>Readonly</code>. Про них — на соседней странице <a routerLink="/typescript/utility-types/partial-required-readonly">Partial, Required, Readonly</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Частая путаница: Pick/Omit — это НЕ Exclude/Extract</h2>
+  <p>Это ловушка, в которую попадают почти все новички, поэтому остановимся на ней отдельно. Есть похожая по звучанию пара — <code>Exclude</code> и <code>Extract</code>, — и её постоянно путают с <code>Pick</code>/<code>Omit</code>. Разница принципиальная и запоминается легко, если один раз её понять.</p>
+  <p><code>Pick</code> и <code>Omit</code> работают с <strong>ключами объектного типа</strong> — то есть с полями структуры вроде <code>&#123; id; name; email &#125;</code>. А <code>Exclude</code> и <code>Extract</code> работают с <strong>членами объединения</strong> — вариантами из набора допустимых значений вроде <code>'admin' | 'editor' | 'guest'</code>. Это два совершенно разных «материала»:</p>
+  <app-code-block [code]="notExcludeExtract" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Вопрос</th>
+          <th><code>Pick</code> / <code>Omit</code></th>
+          <th><code>Exclude</code> / <code>Extract</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>С чем работают</td>
+          <td class="yes">✅ поля объекта <code>&#123; ... &#125;</code></td>
+          <td class="no">❌ не поля — варианты union</td>
+        </tr>
+        <tr>
+          <td>Что режут</td>
+          <td class="yes">✅ ключи (имена свойств)</td>
+          <td class="no">❌ члены объединения <code>A | B</code></td>
+        </tr>
+        <tr>
+          <td>Пример входа</td>
+          <td><code>User</code> с полями</td>
+          <td><code>'admin' | 'editor'</code></td>
+        </tr>
+        <tr>
+          <td>Результат</td>
+          <td>объект с меньшим числом полей</td>
+          <td>объединение с меньшим числом вариантов</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Запомнить просто: видите <strong>объект с полями</strong> — режете поля через <code>Pick</code>/<code>Omit</code>; видите <strong>цепочку значений через <code>|</code></strong> — режете варианты через <code>Exclude</code>/<code>Extract</code>. Подробный разбор второй пары — на странице <a routerLink="/typescript/utility-types/exclude-extract">Exclude, Extract</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>Pick&lt;T, K&gt;</code></strong> строит новый тип, оставляя из <code>T</code> <em>только</em> ключи <code>K</code>. Это «галочки в меню»: беру вот эти поля, остальное убираю.</li>
+    <li><strong><code>Omit&lt;T, K&gt;</code></strong> оставляет из <code>T</code> <em>всё, кроме</em> ключей <code>K</code>. Это «всё, кроме пароля»: выбрасываю пару полей, остальное сохраняю.</li>
+    <li><strong><code>K</code> — это имена ключей</strong>, соединённые вертикальной чертой <code>|</code>: <code>'id' | 'name'</code>. Разрешены только <em>реальные</em> ключи типа — опечатка сразу даёт ошибку компиляции.</li>
+    <li><strong><code>Omit</code> — дополнение <code>Pick</code></strong>: любой срез выразим и «оставить вот эти», и «выбросить остальные». Выбирайте тот вариант, где меньше писать.</li>
+    <li><strong>Не копипаста.</strong> Срез <em>ссылается</em> на исходный тип: меняется большой тип — срез обновляется сам. Один источник правды.</li>
+    <li><strong>Не путать с <code>Exclude</code>/<code>Extract</code>.</strong> <code>Pick</code>/<code>Omit</code> режут <em>поля объекта</em>; <code>Exclude</code>/<code>Extract</code> режут <em>варианты объединения</em>.</li>
+  </ul>
+  <p class="note">Дальше загляните на соседнюю страницу <a routerLink="/typescript/utility-types/partial-required-readonly">Partial, Required, Readonly</a> — их часто комбинируют с <code>Pick</code>/<code>Omit</code>. Чтобы понять, как эти утилиты устроены изнутри, освежите <a routerLink="/typescript/advanced-types/keyof">keyof</a> и <a routerLink="/typescript/generics/basics">основы дженериков</a>. А похожую, но другую пару разбирает <a routerLink="/typescript/utility-types/exclude-extract">Exclude, Extract</a>.</p>
+</section>
+</article>
