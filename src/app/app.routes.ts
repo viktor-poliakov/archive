@@ -224,6 +224,34 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./typescript/assertions/pitfalls/pitfalls').then(
       (m) => m.TypescriptAssertionsPitfalls,
     ),
+  'typescript/modules-types/import-export': () =>
+    import('./typescript/modules-types/import-export/import-export').then(
+      (m) => m.TypescriptModulesTypesImportExport,
+    ),
+  'typescript/modules-types/declare': () =>
+    import('./typescript/modules-types/declare/declare').then(
+      (m) => m.TypescriptModulesTypesDeclare,
+    ),
+  'typescript/modules-types/declaration-files': () =>
+    import('./typescript/modules-types/declaration-files/declaration-files').then(
+      (m) => m.TypescriptModulesTypesDeclarationFiles,
+    ),
+  'typescript/modules-types/third-party': () =>
+    import('./typescript/modules-types/third-party/third-party').then(
+      (m) => m.TypescriptModulesTypesThirdParty,
+    ),
+  'typescript/modules-types/declaration-merging': () =>
+    import('./typescript/modules-types/declaration-merging/declaration-merging').then(
+      (m) => m.TypescriptModulesTypesDeclarationMerging,
+    ),
+  'typescript/modules-types/namespaces': () =>
+    import('./typescript/modules-types/namespaces/namespaces').then(
+      (m) => m.TypescriptModulesTypesNamespaces,
+    ),
+  'typescript/modules-types/pitfalls': () =>
+    import('./typescript/modules-types/pitfalls/pitfalls').then(
+      (m) => m.TypescriptModulesTypesPitfalls,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

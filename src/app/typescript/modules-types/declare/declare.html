@@ -1,0 +1,103 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/modules-types">Модули и типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Ключевое слово declare</span></nav>
+
+<h1 class="doc__title">Ключевое слово declare</h1>
+<p class="doc__lead">Представьте табличку на двери кабинета: «Здесь принимает доктор Иванов». Табличка <strong>не создаёт</strong> доктора и не лечит пациентов — она лишь <strong>сообщает</strong>, что доктор есть и как его зовут. Ключевое слово <code>declare</code> — это ровно такая табличка для компилятора: «поверь на слово, вот эта штука уже где-то существует, и вот какого она типа». Никакого кода <code>declare</code> не создаёт — это <strong>объявление-обещание без реализации</strong> (по-научному — <em>ambient-объявление</em>, «объявление об окружении»). Как таможенная декларация: вы объявляете, что везёте вот это, — но сама декларация ничего не производит, она лишь фиксирует, что нечто есть.</p>
+
+<section class="doc__section">
+  <h2>Зачем это нужно</h2>
+  <p>TypeScript проверяет только тот код, который <em>видит</em>. Но в реальной программе рядом всегда есть вещи, которые компилятор увидеть не может, а в момент работы они точно будут:</p>
+  <ul class="rules">
+    <li><strong>Глобальная переменная из тега <code>&lt;script&gt;</code></strong> — например, библиотека аналитики подключена прямо в <code>index.html</code> и кладёт функцию <code>gtag</code> в глобальную область.</li>
+    <li><strong>Значение, подставленное сборщиком</strong> — Vite или Webpack на этапе сборки заменяют слово <code>VERSION</code> (или <code>__VERSION__</code>) на реальную строку вроде <code>"1.4.0"</code>.</li>
+    <li><strong>API окружения</strong> — глобальные объекты, которые предоставляет платформа (браузер, Node.js, расширение), но которых нет в вашем исходнике.</li>
+  </ul>
+  <p>Во всех этих случаях значение <strong>в рантайме есть</strong>, а в исходном коде оно нигде не объявлено — и компилятор честно жалуется:</p>
+  <app-code-block [code]="problemNoDeclare" lang="typescript" />
+  <p>Нам нужно <strong>описать</strong> эти имена, не создавая их: сказать компилятору «верь, что <code>VERSION</code> есть, это строка». Именно для этого и существует <code>declare</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как объявить: <code>declare const</code></h2>
+  <p>Самая частая форма — объявить переменную. Пишется как обычная <code>const</code>/<code>let</code>/<code>var</code>, но <strong>без присваивания значения</strong>: значение даст кто-то снаружи, а мы лишь обещаем тип.</p>
+  <app-code-block [code]="declareConst" lang="typescript" />
+  <p class="note"><strong>Ключевая мысль.</strong> В строке <code>declare const VERSION: string;</code> нет ни <code>=</code>, ни значения. Это не «создать переменную <code>VERSION</code>», а «пообещать, что переменная <code>VERSION</code> где-то уже есть и её тип — <code>string</code>». Реализацию (реальное значение) поставляет сборщик, скрипт или другая часть системы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Формы declare</h2>
+  <p>Объявлять можно не только переменные. Общий принцип у всех форм один: <strong>пишем только тип (форму), без тела и без значения</strong>.</p>
+  <app-code-block [code]="forms" lang="typescript" />
+  <p>Отдельно подчеркнём <strong>функцию и класс</strong>: у declare-функции и declare-класса <strong>нет реализации</strong> — только сигнатура (имя, аргументы, типы). Мы обещаем, <em>что</em> функция есть и <em>какая</em> она, но не описываем, <em>как</em> она работает. Как только вы попытаетесь дописать тело — компилятор остановит:</p>
+  <app-code-block [code]="functionNoBody" lang="typescript" />
+  <p class="note"><strong>Почему так.</strong> Табличка на двери сообщает «здесь принимает доктор Иванов», но не описывает, как именно он лечит. Точно так же <code>declare function track(...)</code> сообщает форму функции, а её «лечение» (тело) находится в другом месте. Тело внутри <code>declare</code> — это TS1183 «An implementation cannot be declared in ambient contexts».</p>
+</section>
+
+<section class="doc__section">
+  <h2>declare ничего не компилирует</h2>
+  <p>Вот что важнее всего понять про <code>declare</code>: он <strong>не попадает в собранный JavaScript ни одной строкой</strong>. Всё, что помечено <code>declare</code>, существует только на этапе компиляции — как знание для проверки типов — и бесследно исчезает из итогового <code>.js</code>.</p>
+  <app-code-block [code]="noOutput" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Строка declare const VERSION существует только в TypeScript и превращается в ноль строк JavaScript">
+      <text x="330" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">declare живёт только в компиляторе — в собранном .js его нет</text>
+
+      <rect x="26" y="58" width="270" height="150" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="161" y="84" text-anchor="middle" fill="var(--muted)" font-size="12">TypeScript (до сборки)</text>
+      <text x="161" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">declare const</text>
+      <text x="161" y="138" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">VERSION: string</text>
+      <line x1="56" y1="156" x2="266" y2="156" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+      <text x="161" y="182" text-anchor="middle" fill="var(--muted)" font-size="12">знание для компилятора:</text>
+      <text x="161" y="200" text-anchor="middle" fill="var(--muted)" font-size="12">«VERSION есть, это строка»</text>
+
+      <line x1="296" y1="133" x2="392" y2="133" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="392,127 406,133 392,139" fill="var(--muted)" />
+      <text x="351" y="122" text-anchor="middle" fill="var(--red)" font-size="11">компиляция</text>
+
+      <rect x="410" y="58" width="224" height="150" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="522" y="84" text-anchor="middle" fill="var(--muted)" font-size="12">JavaScript (собранный .js)</text>
+      <line x1="440" y1="104" x2="604" y2="104" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+      <text x="522" y="140" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="15">// пусто</text>
+      <text x="522" y="176" text-anchor="middle" fill="var(--muted)" font-size="12">0 строк кода —</text>
+      <text x="522" y="194" text-anchor="middle" fill="var(--muted)" font-size="12">строка declare исчезла</text>
+    </svg>
+    <figcaption>Слева — <code>declare const VERSION: string</code> в исходнике: чистое знание для компилятора. Справа — результат сборки: <strong>ноль строк</strong>. <code>declare</code> физически не может ничего создать в рантайме.</figcaption>
+  </figure>
+  <p class="note"><strong>Сравните с <code>import type</code>.</strong> У <code>declare</code> та же природа, что у «только типовых» конструкций: они нужны исключительно для проверки и стираются при компиляции. Разница в том, что <code>import type</code> тянет тип из другого файла, а <code>declare</code> — обещает, что нечто уже есть в окружении. Подробнее про стираемые импорты — на странице <a routerLink="/typescript/modules-types/import-export">Импорт и экспорт типов</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дополнить глобальную область: <code>declare global</code></h2>
+  <p>Иногда нужно не просто объявить новое имя, а <strong>дополнить</strong> уже существующий глобальный тип — например, добавить своё поле в <code>Window</code>. Для этого есть блок <code>declare global</code>: он открывает глобальную область и подмешивает в неё ваши объявления.</p>
+  <app-code-block [code]="declareGlobal" lang="typescript" />
+  <p>Здесь мы не создаём новый <code>Window</code> с нуля, а <strong>добавляем поле</strong> <code>myWidget</code> к тому <code>Window</code>, что уже описан в стандартной библиотеке. Это работает благодаря <a routerLink="/typescript/modules-types/declaration-merging">слиянию объявлений</a>: два описания одного интерфейса <code>Window</code> объединяются в одно.</p>
+  <p class="note"><strong>Важная тонкость.</strong> <code>declare global</code> работает <strong>только внутри файла-модуля</strong> — то есть файла, где есть хотя бы один <code>import</code> или <code>export</code>. В обычном скрипте (без импортов/экспортов) вы получите TS2669 «Augmentations for the global scope can only be directly nested in external modules...». Лечится одной строкой — пустым <code>export &#123;&#125;</code>, которая превращает файл в модуль, ничего наружу не экспортируя:</p>
+  <app-code-block [code]="globalNeedsModule" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Практика: типизируем внешний скрипт аналитики</h2>
+  <p>Соберём всё вместе на живом примере. В <code>index.html</code> подключён сторонний скрипт аналитики тегом <code>&lt;script&gt;</code>; он кладёт в глобальную область функцию <code>gtag</code>. В рантайме функция есть, но в нашем <code>.ts</code>-коде её никто не объявлял — и компилятор её не знает.</p>
+  <app-code-block [code]="gtagPractice" lang="typescript" />
+  <p>До объявления — красная волна <code>Cannot find name 'gtag'</code> и никакого автодополнения. После <code>declare function gtag(...)</code> — код компилируется, редактор подсказывает вызов, а типы аргументов проверяются как у обычной функции. Мы описали функцию, не написав её тела: реализацию поставляет подключённый скрипт.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Осторожно: declare — это обещание, а не проверка</h2>
+  <p>У всей этой силы есть обратная сторона. <code>declare</code> — это <strong>ваше слово</strong>, которому компилятор верит безоговорочно. Он не проверяет, действительно ли объявленная вещь есть в рантайме. Если её там не окажется — программа упадёт, а компилятор при этом <strong>промолчит</strong>.</p>
+  <app-code-block [code]="promiseCanLie" lang="typescript" />
+  <p class="note"><strong>Та же природа, что у <code>as</code>.</strong> Приведение <a routerLink="/typescript/assertions/as">as</a> и <code>declare</code> — родственники: оба говорят компилятору «поверь мне», оба ничего не проверяют в рантайме и оба стираются при компиляции. Поэтому правило одно: объявляйте через <code>declare</code> <strong>только то, что реально появляется в окружении</strong>. Обещание, которого рантайм не сдержит, — это отложенное падение. Подробнее о таких ловушках — на странице <a routerLink="/typescript/modules-types/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>declare</code></strong> — это «табличка на двери»: объявление-обещание, что нечто уже существует в окружении, без создания кода. Научное имя — <em>ambient-объявление</em>.</li>
+    <li><strong>Пишем только тип, без реализации.</strong> <code>declare const VERSION: string;</code> — без <code>=</code>; у <code>declare function</code> и <code>declare class</code> нет тела, только сигнатура (иначе TS1183).</li>
+    <li><strong>Формы:</strong> <code>declare const/let/var</code>, <code>declare function</code>, <code>declare class</code>, <code>declare namespace</code>.</li>
+    <li><strong>Ноль строк в <code>.js</code>.</strong> Всё, что помечено <code>declare</code>, существует только для компилятора и полностью исчезает из собранного кода.</li>
+    <li><strong><code>declare global &#123; … &#125;</code></strong> дополняет глобальную область (например, добавляет поле в <code>Window</code>). Работает только в файле-модуле — добавьте <code>export &#123;&#125;</code>, если импортов/экспортов нет.</li>
+    <li><strong>Это обещание, а не проверка.</strong> Если объявленной вещи в рантайме нет — падение, а компилятор молчит. Та же природа, что у <code>as</code>: объявляйте только то, что реально есть.</li>
+  </ul>
+  <p class="note">Дальше: где хранят такие объявления централизованно — на странице <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a>; как именно объединяются описания <code>Window</code> — <a routerLink="/typescript/modules-types/declaration-merging">Слияние объявлений</a>; откуда берутся готовые типы чужих библиотек — <a routerLink="/typescript/modules-types/third-party">Типы библиотек @types</a>. Частые ошибки с <code>declare</code> собраны в разделе <a routerLink="/typescript/modules-types/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+</article>

@@ -32,6 +32,10 @@ Copy a sibling in the same folder and you'll match the section's convention auto
 5. **Add the nav entry** in [`nav/nav.data.ts`](nav/nav.data.ts) under `NAV_SECTIONS` if the child/sub isn't listed yet (this generates the sidebar link and the route).
 6. **Verify**: `npm run build`.
 
+> **Verifying an example's TS semantics** (exact error text, does-it-compile): don't trust memory — compile a scratch file with the project's own tsc. TS 6.x needs `--ignoreConfig` when you pass a file while a `tsconfig.json` is present:
+> `npx tsc --ignoreConfig --noEmit --strict --target es2020 --lib es2020,dom scratch.ts`
+> Error codes/messages differ from intuition (e.g. two interfaces with a same-named field of conflicting types is `TS2416` "not assignable to the same property in base type", **not** "incorrectly implements").
+
 ## Component skeleton (TS page — for JS, adjust the two `../` counts)
 
 ```ts

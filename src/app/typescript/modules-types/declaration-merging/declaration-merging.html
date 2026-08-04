@@ -1,0 +1,120 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/modules-types">Модули и типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Слияние объявлений</span></nav>
+
+<h1 class="doc__title">Слияние объявлений</h1>
+<p class="doc__lead">Представьте: два сотрудника отдела кадров описывают одного и того же человека. Первый записал «рост 180, глаза карие», второй — «водит машину, знает английский». Вы не заводите две карточки — вы <strong>складываете оба описания в одно, более полное досье</strong>. Ровно это делает TypeScript со <em>слиянием объявлений</em> (declaration merging): если он встречает <strong>несколько объявлений с одним и тем же именем</strong>, он не ругается на повтор, а <strong>объединяет их в одно целое</strong>. Другой образ: вы не заводите вторую папку с тем же названием, а <strong>подшиваете новые листы в уже существующую папку</strong>.</p>
+
+<section class="doc__section">
+  <h2>Базовый случай: два <code>interface</code> с одним именем</h2>
+  <p>Начнём с самого частого и самого полезного вида слияния — двух интерфейсов. Объявим <code>interface Box</code> дважды: в первом объявлении зададим ширину, во втором — высоту. TypeScript <strong>не считает это ошибкой</strong>. Он берёт поля из <em>всех</em> объявлений с именем <code>Box</code> и складывает их в один интерфейс.</p>
+  <app-code-block [code]="boxMerge" lang="typescript" />
+  <p>Результат такой, будто вы с самого начала написали оба поля в одном интерфейсе. Поэтому переменная типа <code>Box</code> теперь обязана иметь <strong>и</strong> <code>width</code>, <strong>и</strong> <code>height</code> — попытка создать <code>Box</code> только с шириной завершится ошибкой <code>TS2741</code>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 210" width="100%" role="img" aria-label="Два объявления интерфейса Box с полями width и height складываются в один интерфейс Box с обоими полями">
+      <text x="320" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">поля из всех объявлений складываются в одно</text>
+
+      <rect x="24" y="60" width="180" height="70" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="114" y="88" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">interface Box</text>
+      <text x="114" y="112" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">width: number</text>
+
+      <text x="228" y="100" text-anchor="middle" fill="var(--muted)" font-size="26">+</text>
+
+      <rect x="252" y="60" width="180" height="70" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="342" y="88" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">interface Box</text>
+      <text x="342" y="112" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">height: number</text>
+
+      <text x="456" y="100" text-anchor="middle" fill="var(--muted)" font-size="26">=</text>
+
+      <rect x="480" y="52" width="146" height="88" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="553" y="80" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="14">interface Box</text>
+      <text x="553" y="104" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">width: number</text>
+      <text x="553" y="124" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">height: number</text>
+    </svg>
+    <figcaption>Два объявления <code>Box</code> — не конфликт, а два листа в одной папке. TypeScript подшивает их вместе: получается один <code>Box</code> с обоими полями.</figcaption>
+  </figure>
+  <p>Важно, что объявления не обязаны стоять рядом. Их можно разнести по файлу (а при дополнении глобальных типов — и по разным файлам проекта): TypeScript всё равно найдёт всех «однофамильцев» и соберёт в одно досье.</p>
+  <app-code-block [code]="boxSpread" lang="typescript" />
+  <p class="note"><strong>Что можно и нельзя при слиянии интерфейсов.</strong> Складывать <em>разные</em> поля — можно. А вот объявить одно и то же поле <strong>с разными типами</strong> нельзя: <code>width: number</code> в одном объявлении и <code>width: string</code> в другом дадут ошибку <code>TS2717</code> «Subsequent property declarations must have the same type». Слияние добавляет поля, но не позволяет им противоречить друг другу.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Контраст: <code>type</code>-псевдонимы НЕ сливаются</h2>
+  <p>А теперь главное отличие, которое надо запомнить накрепко: <strong>сливаются интерфейсы, но не <code>type</code>-псевдонимы</strong>. Если объявить <code>type</code> с одним именем дважды, TypeScript расценит это не как «добавить листов», а как «завести вторую папку с тем же названием» — и запретит повтор ошибкой <code>Duplicate identifier</code>.</p>
+  <app-code-block [code]="typeNoMerge" lang="typescript" />
+  <p>Логика простая: имя, занятое <code>type</code>, считается <strong>занятым окончательно</strong> — второй раз его объявить нельзя. Интерфейс же остаётся «открытым» для новых объявлений (об этом — в предпоследнем разделе). Хотите с <code>type</code> получить объединение полей — соединяйте типы вручную через <strong>пересечение</strong> <code>&amp;</code>, как показано в конце примера выше.</p>
+  <p class="note"><strong>Ещё одно отличие <code>interface</code> от <code>type</code>.</strong> Способность сливаться — одно из практических различий между ними. Полное сравнение с рекомендациями, что и когда выбирать, — на странице <a routerLink="/typescript/objects-interfaces/interface-vs-type">Интерфейс или тип</a>. А расширение интерфейса «в лоб» через <code>extends</code> разобрано в <a routerLink="/typescript/objects-interfaces/extending">Расширение интерфейсов</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Другие виды слияния (кратко)</h2>
+  <p>Слияние — механизм не только для интерфейсов. Под одним именем могут ужиться и объявления <em>разного рода</em>. Самый наглядный пример — <strong>функция плюс <code>namespace</code></strong>: к функции «прикрепляют» статическое поле. В JavaScript функциям давно можно дописывать свойства (<code>greet.version = '1.0'</code>), и слияние даёт этому типобезопасную запись.</p>
+  <app-code-block [code]="funcNamespace" lang="typescript" />
+  <p>После слияния имя <code>greet</code> — это одновременно <strong>и</strong> вызываемая функция, <strong>и</strong> «папка» со свойством <code>version</code>. Так же между собой сливаются <code>namespace</code> + <code>namespace</code>, <code>interface</code> + <code>namespace</code>, <code>enum</code> + <code>namespace</code> — все они частные случаи одного правила: «несколько объявлений с одним именем становятся одним целым». Глубоко в эти комбинации сейчас не погружаемся; про сами пространства имён есть отдельная страница <a routerLink="/typescript/modules-types/namespaces">Пространства имён</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Главная польза: дополнять чужие и глобальные типы</h2>
+  <p>Зачем всё это на практике? Ответ: слияние — единственный штатный способ <strong>дополнить тип, который вам не принадлежит</strong> и который нельзя отредактировать напрямую. Тип из стандартной библиотеки (<code>Window</code>), тип из чужой библиотеки (<code>Request</code> в Express) — открыть их файл и дописать поле вы не можете. Но можете <strong>подшить своё объявление к существующему интерфейсу</strong>. Такой приём называют <em>augmentation</em> (дополнение).</p>
+
+  <h3 class="doc__subtitle">Глобальное дополнение: <code>declare global</code></h3>
+  <p>Допустим, вы кладёте свой объект приложения прямо в глобальный <code>window.myApp</code>. TypeScript про такое поле ничего не знает — тип <code>Window</code> описан в стандартной библиотеке. Добавим поле сами, дополнив интерфейс <code>Window</code> внутри блока <code>declare global</code>.</p>
+  <app-code-block [code]="windowGlobal" lang="typescript" />
+  <p>После этого обращения к <code>window.myApp</code> становятся типобезопасными: TypeScript знает форму вашего поля, подсказывает методы и ловит опечатки. Обратите внимание на последнюю строку — <code>export &#123;&#125;;</code>. Она делает файл <strong>модулем</strong>, а это обязательное условие для <code>declare global</code>: дополнять глобальную область можно только из модуля. Подробнее про само ключевое слово — на странице <a routerLink="/typescript/modules-types/declare">Ключевое слово declare</a>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 220" width="100%" role="img" aria-label="Стандартный интерфейс Window дополняется своим полем myApp через declare global, в результате window.myApp становится известен компилятору">
+      <text x="320" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">своё поле подшивается к чужому интерфейсу Window</text>
+
+      <rect x="30" y="52" width="200" height="120" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="130" y="78" text-anchor="middle" fill="var(--muted)" font-size="12">из стандартной библиотеки</text>
+      <text x="130" y="104" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">interface Window</text>
+      <text x="130" y="128" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">location, document…</text>
+      <text x="130" y="150" text-anchor="middle" fill="var(--muted)" font-size="11">трогать нельзя</text>
+
+      <text x="290" y="118" text-anchor="middle" fill="var(--muted)" font-size="26">+</text>
+
+      <rect x="330" y="52" width="200" height="120" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5" />
+      <text x="430" y="78" text-anchor="middle" fill="var(--muted)" font-size="12">ваш declare global</text>
+      <text x="430" y="104" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">interface Window</text>
+      <text x="430" y="128" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">myApp: MyApp</text>
+      <text x="430" y="150" text-anchor="middle" fill="var(--muted)" font-size="11">ваше добавление</text>
+
+      <line x1="90" y1="192" x2="470" y2="192" stroke="var(--green)" stroke-width="1.6" />
+      <polygon points="470,186 484,192 470,198" fill="var(--green)" />
+      <text x="278" y="212" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">window.myApp.start() ✅</text>
+    </svg>
+    <figcaption>Файл стандартной библиотеки остаётся нетронутым. Ваше объявление сливается с ним, и <code>window.myApp</code> становится известен компилятору по всему проекту.</figcaption>
+  </figure>
+
+  <h3 class="doc__subtitle">Дополнение модуля: <code>declare module</code></h3>
+  <p>Похожая история с типами из сторонних библиотек. Частый пример из мира Node.js: во фреймворке Express у объекта запроса <code>Request</code> нет поля <code>user</code>, а вам нужно класть туда авторизованного пользователя. Открыть исходники Express и дописать поле нельзя — зато можно <strong>дополнить модуль</strong>: объявить блок <code>declare module 'express'</code> и добавить в его интерфейс <code>Request</code> своё поле.</p>
+  <app-code-block [code]="moduleAugment" lang="typescript" />
+  <p>Два условия, без которых дополнение модуля не сработает:</p>
+  <ul class="rules">
+    <li><strong>Файл должен быть модулем</strong> — то есть содержать хотя бы один <code>import</code> или <code>export</code>. В примере роль «сделать файл модулем» играет строка <code>import 'express';</code>. Без импорта/экспорта <code>declare module 'express'</code> будет понят иначе (как объявление нового окружающего модуля), и слияния не произойдёт.</li>
+    <li><strong>Имя в <code>declare module '…'</code> — точно как при импорте</strong> библиотеки. Пишете <code>import ... from 'express'</code> — значит и дополнять надо <code>declare module 'express'</code>, символ в символ. Ошиблись в имени — TypeScript решит, что это другой, новый модуль, и ваше поле не приклеится к настоящему <code>Request</code>.</li>
+  </ul>
+  <p class="note"><strong>Куда это писать.</strong> Такие дополнения обычно кладут в отдельный файл объявлений — см. <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a>. А как вообще подключаются типы чужих библиотек (пакеты <code>@types</code>) — на странице <a routerLink="/typescript/modules-types/third-party">Типы библиотек @types</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Почему именно через <code>interface</code></h2>
+  <p>Осталось объяснить, почему дополняют всегда именно интерфейсы, а не <code>type</code>. Причина — та самая, с которой мы столкнулись во втором разделе: <strong>интерфейс «открыт»</strong> для новых объявлений, а <code>type</code> «закрыт». К интерфейсу всегда можно добавить ещё одно объявление, и поля сольются; имя, занятое <code>type</code>, повторно объявить нельзя.</p>
+  <p>Поэтому библиотеки, которые хотят разрешить пользователям себя расширять, <strong>специально публикуют интерфейсы</strong> — как оставленную дверцу. Express объявляет <code>Request</code> интерфейсом именно затем, чтобы вы могли дополнить его своими полями, не форкая библиотеку.</p>
+  <app-code-block [code]="openInterface" lang="typescript" />
+  <p class="note"><strong>Вывод.</strong> «Открытость» интерфейса — не случайная деталь, а сознательный приём. Если проектируете тип, который другим захочется расширять (точку расширения, конфиг плагина, объект контекста), делайте его <code>interface</code>, а не <code>type</code> — тогда его можно будет дополнить через слияние.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Слияние объявлений</strong> — TypeScript объединяет <em>несколько</em> объявлений с <em>одним именем</em> в одно целое. Образ: подшить новые листы в существующую папку, а не завести вторую.</li>
+    <li><strong>Два <code>interface</code> с одним именем складывают поля.</strong> <code>interface Box &#123; width &#125;</code> + <code>interface Box &#123; height &#125;</code> = <code>Box</code> с обоими полями. Одно поле с конфликтующими типами — ошибка.</li>
+    <li><strong><code>type</code> не сливается.</strong> Повторный <code>type X</code> — ошибка <code>Duplicate identifier 'X'</code>. Это одно из отличий <a routerLink="/typescript/objects-interfaces/interface-vs-type">интерфейса от типа</a>; объединять <code>type</code> надо вручную через <code>&amp;</code>.</li>
+    <li><strong>Сливаются и другие пары</strong> — функция + <code>namespace</code> (статическое поле на функции), <code>namespace</code> + <code>namespace</code>, <code>interface</code> + <code>namespace</code>, <code>enum</code> + <code>namespace</code>.</li>
+    <li><strong>Главная польза — дополнять чужие типы.</strong> Глобально через <code>declare global &#123; interface Window &#123; … &#125; &#125;</code>, модуль библиотеки — через <code>declare module 'lib' &#123; interface … &#125;</code>.</li>
+    <li><strong>Условия дополнения модуля:</strong> файл должен быть модулем (иметь <code>import</code>/<code>export</code>), а имя в <code>declare module</code> — точно как в импорте.</li>
+    <li><strong>Дополняют интерфейсы,</strong> потому что интерфейс «открыт» для расширения; библиотеки для того и публикуют интерфейсы-точки расширения.</li>
+  </ul>
+  <p class="note">Дальше по теме: <a routerLink="/typescript/modules-types/declare">Ключевое слово declare</a>, <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a> и <a routerLink="/typescript/modules-types/namespaces">Пространства имён</a>. Про выбор между <code>interface</code> и <code>type</code> — <a routerLink="/typescript/objects-interfaces/interface-vs-type">Интерфейс или тип</a> и <a routerLink="/typescript/objects-interfaces/extending">Расширение интерфейсов</a>. Прочие тонкости раздела собраны в <a routerLink="/typescript/modules-types/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+</article>

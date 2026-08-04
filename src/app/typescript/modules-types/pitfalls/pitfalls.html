@@ -1,0 +1,195 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/modules-types">Модули и типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">Модули и типы — это как разные <strong>отделы большого склада</strong>. Каждый файл-модуль — отдельная комната со своей дверью: чтобы что-то взять из соседней, нужно официально её «импортировать». А описания типов (<code>declare</code>, <code>.d.ts</code>) — это <strong>таблички и инструкции на стенах</strong>: они говорят, что где лежит, но сами ничего не кладут на полку. Почти все грабли этого раздела растут из путаницы между «настоящим кодом, который выполняется» и «описанием, которое живёт только в компиляторе». Здесь собраны самые частые ловушки — с примером, объяснением <em>почему</em> так и как сделать правильно. Если базовые вещи ещё в новинку, начните со страниц <a routerLink="/typescript/modules-types/import-export">Импорт и экспорт типов</a> и <a routerLink="/typescript/modules-types/declare">Ключевое слово declare</a>.</p>
+
+<section class="doc__section">
+  <h2>1. Забыли <code>import type</code> — импорт остаётся в рантайме</h2>
+  <p>Когда вам из модуля нужен <strong>только тип</strong> (для аннотации <code>: User</code>), а вы пишете обычный <code>import &#123; User &#125;</code>, компилятор оставляет этот импорт в собранном JavaScript. Это значит, что модуль <strong>реально загрузится</strong> и выполнит весь свой код — включая побочные эффекты, которые вам вовсе не нужны.</p>
+  <app-code-block [code]="forgotImportType" lang="typescript" />
+  <app-code-block [code]="forgotImportTypeUse" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 210" width="100%" role="img" aria-label="import type стирается при компиляции, обычный import значения остаётся в собранном JavaScript">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">что попадёт в собранный JavaScript</text>
+
+      <rect x="30" y="52" width="290" height="128" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="175" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">import &#123; User &#125;</text>
+      <text x="175" y="104" text-anchor="middle" fill="var(--muted)" font-size="12">обычный импорт</text>
+      <line x1="60" y1="120" x2="290" y2="120" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+      <text x="175" y="142" text-anchor="middle" fill="var(--red)" font-size="12">остаётся в бандле</text>
+      <text x="175" y="164" text-anchor="middle" fill="var(--red)" font-size="12">модуль грузится, код выполняется</text>
+
+      <rect x="340" y="52" width="290" height="128" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="485" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">import type &#123; User &#125;</text>
+      <text x="485" y="104" text-anchor="middle" fill="var(--muted)" font-size="12">типовой импорт</text>
+      <line x1="370" y1="120" x2="600" y2="120" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4" />
+      <text x="485" y="142" text-anchor="middle" fill="var(--green)" font-size="12">СТИРАЕТСЯ при компиляции</text>
+      <text x="485" y="164" text-anchor="middle" fill="var(--green)" font-size="12">в бандл ничего не попадёт</text>
+    </svg>
+    <figcaption>Слева: обычный <code>import</code> «значения» остаётся в собранном коде — модуль загрузится. Справа: <code>import type</code> существует лишь для проверки типов и полностью исчезает в JavaScript.</figcaption>
+  </figure>
+  <p>А при строгой опции <code>verbatimModuleSyntax</code> забытый <code>import type</code> — это уже не «лишний вес», а <strong>прямая ошибка компиляции</strong> (<code>TS1484</code>): в этом режиме компилятор ничего не «додумывает» и обязан по одному файлу понять судьбу каждого импорта, а <code>User</code>, ввезённый обычным <code>import</code>, обязан быть значением — но это только тип.</p>
+  <app-code-block [code]="forgotImportTypeError" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Чисто-типовые импорты помечайте <code>import type &#123; User &#125;</code>. Если из модуля берёте и тип, и значение — помечайте только тип прямо в списке: <code>import &#123; saveUser, type User &#125;</code>. Подробнее — на странице <a routerLink="/typescript/modules-types/import-export">Импорт и экспорт типов</a>.</p>
+  <app-code-block [code]="forgotImportTypeFix" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>2. <code>declare</code> — это обещание БЕЗ проверки</h2>
+  <p><code>declare</code> говорит компилятору: «поверь, снаружи существует вот такая переменная (функция, тип)». Это <strong>только обещание</strong> — ровно как приведение <a routerLink="/typescript/assertions/as"><code>as</code></a>. Компилятор ничего не проверяет: если описанного на деле нет, он всё равно спокойно пропустит код.</p>
+  <app-code-block [code]="declarePromise" lang="typescript" />
+  <p>Пока внешний скрипт подключён, всё работает. Но стоит ему не загрузиться — забыли тег <code>&lt;script&gt;</code>, заблокировал адблок, опечатка в URL — и в рантайме переменной просто нет:</p>
+  <app-code-block [code]="declarePromiseRuntime" lang="typescript" />
+  <p>Компилятор молчал не потому, что всё хорошо, а потому что <code>declare</code> — это <strong>слово, а не проверка</strong>. Вы пообещали, что <code>gtag</code> существует и имеет такой тип, — и за правдивость обещания отвечаете сами. Это та же ловушка, что и с <code>as</code>: описание не создаёт объект, оно лишь рассказывает о нём.</p>
+  <p class="note"><strong>Как правильно.</strong> Во-первых, убедитесь, что описанное <em>действительно</em> подключено (тег на месте, имя совпадает буква в букву). Во-вторых, если существование под вопросом — не обещайте, а <strong>проверяйте в рантайме</strong>: опишите значение как «может отсутствовать» и смотрите перед вызовом. Про сам механизм — на странице <a routerLink="/typescript/modules-types/declare">Ключевое слово declare</a>.</p>
+  <app-code-block [code]="declarePromiseFix" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>3. Случайный <code>import</code>/<code>export</code> превращает глобальный <code>.d.ts</code> в модуль</h2>
+  <p>В TypeScript действует железное правило: <strong>как только в файле появляется хоть один верхнеуровневый <code>import</code> или <code>export</code>, файл становится модулем</strong>. А всё, что объявлено в модуле, — локально: снаружи это видно только через импорт. Для обычного кода это хорошо. Но для <em>глобального</em> файла объявлений (<code>globals.d.ts</code>), который специально написан, чтобы раздавать типы всему приложению, это катастрофа: одна случайная строчка <code>import</code> — и все глобальные объявления «пропадают».</p>
+  <p>Вот файл, который работает как задумано, — <strong>без</strong> <code>import</code>/<code>export</code>:</p>
+  <app-code-block [code]="globalDtsBefore" lang="typescript" />
+  <p>А теперь кто-то добавил одну строку импорта наверху — и всё сломалось:</p>
+  <app-code-block [code]="globalDtsAfter" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Глобальный d.ts без import виден везде; тот же файл с import становится модулем и его объявления прячутся внутрь">
+      <text x="330" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">один и тот же .d.ts — разница в одной строке</text>
+
+      <rect x="24" y="44" width="300" height="180" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="174" y="70" text-anchor="middle" fill="var(--green)" font-size="12">НЕТ import / export → глобальный</text>
+      <rect x="52" y="84" width="244" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="174" y="109" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">interface Window &#123; … &#125;</text>
+      <text x="174" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">видно в ЛЮБОМ файле проекта</text>
+      <text x="90" y="180" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">a.ts ✅</text>
+      <text x="174" y="180" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">b.ts ✅</text>
+      <text x="258" y="180" text-anchor="middle" fill="var(--green)" font-family="monospace" font-size="12">c.ts ✅</text>
+      <text x="174" y="206" text-anchor="middle" fill="var(--muted)" font-size="11">без всякого импорта</text>
+
+      <rect x="336" y="44" width="300" height="180" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="486" y="70" text-anchor="middle" fill="var(--red)" font-size="12">есть import / export → модуль</text>
+      <rect x="364" y="84" width="244" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="486" y="101" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="11">import &#123; Theme &#125; from …</text>
+      <text x="486" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">interface Window &#123; … &#125;</text>
+      <text x="486" y="150" text-anchor="middle" fill="var(--muted)" font-size="12">объявления заперты ВНУТРИ файла</text>
+      <text x="402" y="180" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">a.ts ❌</text>
+      <text x="486" y="180" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">b.ts ❌</text>
+      <text x="570" y="180" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">c.ts ❌</text>
+      <text x="486" y="206" text-anchor="middle" fill="var(--muted)" font-size="11">глобальное «пропало»</text>
+    </svg>
+    <figcaption>Слева — файл без <code>import</code>/<code>export</code>: объявления глобальны, видны везде. Справа — добавили <code>import</code>: файл стал модулем, и те же объявления «спрятались» внутрь него.</figcaption>
+  </figure>
+  <p class="note"><strong>Как правильно.</strong> Запомните правило «есть верхнеуровневый <code>import</code>/<code>export</code> → файл стал модулем». Либо держите глобальный <code>.d.ts</code> без импортов, либо, если импорт нужен, оборачивайте глобальное в <code>declare global &#123; … &#125;</code>. Подробнее — <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a>.</p>
+  <app-code-block [code]="globalDtsFix" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>4. <code>type</code> НЕ сливается, а <code>interface</code> — сливается</h2>
+  <p>Соблазн: расширить существующий тип, объявив его ещё раз с новыми полями — как будто поля «сложатся». С <code>type</code> это <strong>не работает</strong>: два объявления с одним именем компилятор считает конфликтом.</p>
+  <app-code-block [code]="typeNoMerge" lang="typescript" />
+  <p>А вот <code>interface</code> с тем же именем не конфликтуют, а <strong>сливаются</strong> — это и называется слиянием объявлений (declaration merging). Поля из всех объявлений складываются в один интерфейс:</p>
+  <app-code-block [code]="interfaceMerges" lang="typescript" />
+  <p>Именно на этом свойстве держится расширение чужих (библиотечных) типов — <em>augmentation</em>. Дополнить библиотечный <code>type</code> повторным объявлением нельзя (получите <code>Duplicate identifier</code>), а <code>interface</code> (и <code>namespace</code>) — можно.</p>
+  <app-code-block [code]="augmentType" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Для расширения существующих типов используйте <code>interface</code> + module augmentation. Собственные типы, которые кто-то будет дополнять, тоже лучше объявлять как <code>interface</code>. Разбор темы — <a routerLink="/typescript/modules-types/declaration-merging">Слияние объявлений</a> и <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface против type</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>5. Module augmentation «молча» не срабатывает</h2>
+  <p>Вы написали <code>declare module '…' &#123; … &#125;</code>, чтобы добавить поле в библиотечный тип, — а оно не появляется, и ошибок тоже нет. Почти всегда причина одна из двух: <strong>файл не является модулем</strong> или <strong>имя модуля не совпадает</strong> с тем, что реально импортируют.</p>
+  <app-code-block [code]="augmentFail" lang="typescript" />
+  <p>Первая причина: чтобы <code>declare module</code> <em>дополнял</em> существующий модуль (а не описывал новый с нуля), файл сам должен быть модулем — то есть содержать хотя бы один <code>import</code> или <code>export</code>. Вторая причина коварнее: строка в <code>declare module 'express'</code> должна совпадать с путём импорта <strong>буква в букву</strong>. <code>'Express'</code>, <code>'express/index'</code> или лишний слэш — это, с точки зрения компилятора, <em>другой</em> модуль, и дополнение уходит в пустоту.</p>
+  <p class="note"><strong>Как правильно.</strong> Файл-дополнение должен иметь <code>import</code>/<code>export</code> (подойдёт хоть <code>export &#123;&#125;;</code> или <code>import 'express';</code>). Имя в <code>declare module '…'</code> пишите точно так же, как в <code>import</code>. Детали — <a routerLink="/typescript/modules-types/declaration-merging">Слияние объявлений</a> и <a routerLink="/typescript/modules-types/third-party">Типы библиотек @types</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>6. <code>@types</code> рассинхронизированы с версией библиотеки</h2>
+  <p>Типы для библиотеки часто ставят отдельным пакетом <code>@types/имя</code>. Беда в том, что версия типов и версия самой библиотеки — <strong>это два независимых пакета</strong>. Если они разъехались, типы начинают <em>врать</em>: описывают API, которого в вашей установленной версии нет (или наоборот, не знают про новый метод).</p>
+  <app-code-block [code]="typesMismatch" lang="typescript" />
+  <p>Обе стороны неприятны. Если <code>@types</code> <em>новее</em> библиотеки — компилятор разрешит вызвать метод, которого в рантайме ещё нет (упадёт при запуске). Если <code>@types</code> <em>старее</em> — компилятор запретит реально существующий метод, и вы будете спорить с редактором на пустом месте.</p>
+  <p class="note"><strong>Как правильно.</strong> Держите версии согласованными — подбирайте <code>@types</code> под ту же мажорную/минорную версию библиотеки. А если библиотека <strong>уже поставляет свои типы</strong> (в ней есть <code>.d.ts</code> и поле <code>"types"</code> в <code>package.json</code>), отдельный <code>@types</code> не нужен — он лишний и может конфликтовать. Подробнее — <a routerLink="/typescript/modules-types/third-party">Типы библиотек @types</a>.</p>
+  <app-code-block [code]="typesMismatchFix" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>7. <code>namespace</code> для организации кода в проекте на модулях</h2>
+  <p>Раньше, до появления ES-модулей, код группировали в <code>namespace</code> — «пространства имён», доступ к которым идёт через точку (<code>Utils.formatDate</code>). В современном проекте, где каждый файл и так модуль, использовать <code>namespace</code> для организации своего кода — <strong>антипаттерн</strong>: он дублирует роль модулей, путает и, главное, <strong>мешает tree-shaking</strong> (удалению неиспользуемого кода из бандла).</p>
+  <app-code-block [code]="namespaceBad" lang="typescript" />
+  <p>Проблема в том, что <code>namespace</code> — это единый объект: сборщик не может понять, какие его части используются, а какие нет, и тащит в бандл всё целиком. Модули же экспортируют функции по отдельности, и сборщик спокойно выкидывает то, что нигде не импортировано.</p>
+  <app-code-block [code]="namespaceGood" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> В прикладном коде организуйте всё <strong>модулями</strong> (файл = модуль, точечные <code>export</code>/<code>import</code>). Законное место <code>namespace</code> сегодня — старые <code>.d.ts</code> и глобальные типы, а не структура вашего приложения. Подробнее — <a routerLink="/typescript/modules-types/namespaces">Пространства имён</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>8. Легаси <code>export =</code> и <code>import x = require(…)</code></h2>
+  <p>Помимо ES-синтаксиса (<code>import</code>/<code>export</code>) в TypeScript есть <strong>старый синтаксис</strong> из мира CommonJS: <code>export =</code> для экспорта «всего модуля одним значением» и парный ему <code>import x = require(…)</code>. Его ещё встречают в старом коде и в некоторых <code>.d.ts</code>, но в новом коде мешать его с ES-синтаксисом не стоит.</p>
+  <app-code-block [code]="legacyExport" lang="typescript" />
+  <p>Эти две системы плохо уживаются в одном файле: при сборке в ES-модули <code>import x = require(…)</code> вызывает ошибку компиляции, потому что это принципиально разные модели.</p>
+  <app-code-block [code]="legacyImportFix" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Современный код пишите на ES-синтаксисе (<code>import</code>/<code>export</code>, <code>export default</code>). Если нужно подружиться со <em>старой</em> библиотекой на <code>module.exports = …</code>, включите опцию <code>esModuleInterop</code> — тогда обычный default-импорт корректно свяжется с CommonJS-экспортом, и <code>import = require</code> не понадобится. Про импорт/экспорт целиком — <a routerLink="/typescript/modules-types/import-export">Импорт и экспорт типов</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Сводка: частая ошибка → как правильно</h2>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Частая ошибка</th>
+          <th>Как правильно</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="no">Обычный <code>import &#123; T &#125;</code> для чисто-типового импорта</td>
+          <td class="yes"><code>import type &#123; T &#125;</code> (или <code>import &#123; type T &#125;</code>)</td>
+        </tr>
+        <tr>
+          <td class="no"><code>declare</code> и надежда, что «оно точно есть»</td>
+          <td class="yes">Убедиться, что подключено; внешнее — проверять в рантайме</td>
+        </tr>
+        <tr>
+          <td class="no"><code>import</code>/<code>export</code> в глобальном <code>.d.ts</code></td>
+          <td class="yes">Без импортов, либо обернуть в <code>declare global &#123; … &#125;</code></td>
+        </tr>
+        <tr>
+          <td class="no">Дополнять библиотечный тип повторным <code>type</code></td>
+          <td class="yes"><code>interface</code> + module augmentation</td>
+        </tr>
+        <tr>
+          <td class="no"><code>declare module</code> в не-модуле или с неверным именем</td>
+          <td class="yes">Файл-модуль (<code>export &#123;&#125;</code>) + имя буква в букву</td>
+        </tr>
+        <tr>
+          <td class="no"><code>@types</code> любой версии</td>
+          <td class="yes">Согласовать версии; встроенные типы — <code>@types</code> убрать</td>
+        </tr>
+        <tr>
+          <td class="no"><code>namespace</code> для структуры приложения</td>
+          <td class="yes">Модули (файл = модуль), точечные <code>export</code></td>
+        </tr>
+        <tr>
+          <td class="no">Мешать <code>import = require</code> с ES <code>import</code></td>
+          <td class="yes">ES-синтаксис; для CommonJS — <code>esModuleInterop</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Забыли <code>import type</code></strong> — импорт остаётся в рантайме (лишний код и побочные эффекты), а при <code>verbatimModuleSyntax</code> это прямая ошибка <code>TS1484</code>. Чисто-типовое помечайте <code>import type</code> или <code>import &#123; type X &#125;</code>.</li>
+    <li><strong><code>declare</code> — обещание без проверки</strong>, как <code>as</code>. Описали <code>gtag</code>, а скрипта нет → <code>gtag is not defined</code> в рантайме, компилятор молчит. Убеждайтесь, что описанное есть; внешнее — проверяйте.</li>
+    <li><strong>Случайный <code>import</code>/<code>export</code> в глобальном <code>.d.ts</code></strong> превращает его в модуль, и глобальные объявления «пропадают». Держите такой файл без импортов или оборачивайте в <code>declare global &#123; … &#125;</code>.</li>
+    <li><strong><code>type</code> не сливается</strong> (повтор = <code>Duplicate identifier</code>, <code>TS2300</code>), <strong><code>interface</code> сливается</strong>. Для расширения типов — <code>interface</code> + augmentation.</li>
+    <li><strong>Augmentation не сработал?</strong> Файл должен быть модулем (есть <code>import</code>/<code>export</code>), а имя в <code>declare module '…'</code> — совпадать с импортом буква в букву.</li>
+    <li><strong><code>@types</code> должны совпадать с версией библиотеки.</strong> Рассинхрон = типы врут. Если библиотека везёт типы сама — <code>@types</code> не нужен и может конфликтовать.</li>
+    <li><strong>Не используйте <code>namespace</code></strong> для организации кода в проекте на модулях — он мешает tree-shaking. Организуйте всё модулями.</li>
+    <li><strong>Не мешайте легаси <code>export =</code> / <code>import x = require(…)</code></strong> с ES <code>import</code>/<code>export</code>. Современный код — ES-синтаксис; для совместимости с CommonJS — опция <code>esModuleInterop</code>.</li>
+  </ul>
+  <p class="note">Инструменты по отдельности: <a routerLink="/typescript/modules-types/import-export">Импорт и экспорт типов</a>, <a routerLink="/typescript/modules-types/declare">Ключевое слово declare</a>, <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a>, <a routerLink="/typescript/modules-types/third-party">Типы библиотек @types</a>, <a routerLink="/typescript/modules-types/declaration-merging">Слияние объявлений</a> и <a routerLink="/typescript/modules-types/namespaces">Пространства имён</a>. Смежное: <a routerLink="/typescript/objects-interfaces/interface-vs-type">interface против type</a> (что расширяется, а что нет) и <a routerLink="/typescript/assertions/as">Приведение as</a> — та же природа «обещания без проверки», что и у <code>declare</code>.</p>
+</section>
+</article>

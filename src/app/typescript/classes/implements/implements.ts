@@ -124,6 +124,52 @@ rec.log('запись удалена'); // ✅ форма Logger соблюде�
 rec.toJSON();             // ✅ форма Serializable соблюдена
 // Забыли бы toJSON — снова "incorrectly implements interface 'Serializable'".`;
 
+  protected readonly sharedFields = `// Два независимых ТЗ, но у обоих есть ОБЩЕЕ требование — поле id: number.
+interface Entity {
+  id: number;      // ← общее поле
+  createdAt: Date;
+}
+interface Trackable {
+  id: number;      // ← то же имя, тот же тип, что и в Entity
+  track(): void;
+}
+
+// Order берётся за ОБА контракта. Поле id пишем ОДИН раз —
+// одинаковое требование двух интерфейсов закрывается одной реализацией.
+class Order implements Entity, Trackable {
+  constructor(
+    public id: number,        // ← закрывает id сразу и Entity, и Trackable
+    public createdAt: Date,   // ← из Entity
+  ) {}
+
+  track(): void {             // ← из Trackable
+    console.log(\`Слежу за заказом #\${this.id}\`);
+  }
+}
+
+const o = new Order(1, new Date());
+o.id;      // ✅ одно поле — на оба контракта сразу
+o.track(); // ✅ форма Trackable соблюдена`;
+
+  protected readonly conflictingFields = `// А если одноимённые поля требуют РАЗНЫХ типов — контракты конфликтуют.
+interface HasId {
+  id: number; // тут id — число
+}
+interface HasCode {
+  id: string; // а тут id — строка (то же имя, другой тип!)
+}
+
+// Одно поле не может быть сразу и number, и string:
+class Ticket implements HasId, HasCode {
+  id: number = 1; // выбрали number → форма HasCode нарушена
+  // ❌ Property 'id' in type 'Ticket' is not assignable to the same
+  //    property in base type 'HasCode'.
+  //    Type 'number' is not assignable to type 'string'.
+}
+
+// Сделать id строкой — сломается HasId. Угодить обоим нечем:
+// пересекающиеся требования противоречат друг другу.`;
+
   protected readonly extendsImplements = `// extends и implements прекрасно работают ВМЕСТЕ.
 // Порядок фиксирован: сначала extends (берём код), потом implements (сверяем форму).
 interface Logger {

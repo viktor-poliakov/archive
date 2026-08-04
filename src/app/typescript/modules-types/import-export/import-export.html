@@ -1,0 +1,107 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/modules-types">Модули и типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Импорт и экспорт типов</span></nav>
+
+<h1 class="doc__title">Импорт и экспорт типов</h1>
+<p class="doc__lead">Представьте, что ваш модуль — это <strong>завод</strong>. Импортировать <em>значение</em> (функцию, переменную, класс) — всё равно что привезти на завод <strong>настоящий станок</strong>: он тяжёлый, занимает место в собранном коде и может «шуметь» — выполнять что-то уже при включении. А импортировать <em>тип</em> — это как получить <strong>чертёж</strong>: по нему сверяются во время сборки, а потом чертёж выбрасывают. В готовый продукт он не попадает вовсе. Типы в TypeScript живут только на этапе компиляции и <strong>полностью стираются</strong> из итогового JavaScript. На этой странице разберёмся, как экспортировать и импортировать типы и зачем придумали особые слова <code>import type</code> и <code>export type</code>.</p>
+
+<section class="doc__section">
+  <h2>Типы экспортируются как обычные значения</h2>
+  <p>Начнём с хорошей новости: чтобы «поделиться» типом с другим файлом, ничего особенного делать не нужно. <code>interface</code> и <code>type</code> экспортируют тем же словом <code>export</code>, что и функции с переменными. А импортируют так же — фигурные скобки и имя. Пусть один файл описывает пользователя:</p>
+  <app-code-block [code]="exportType" lang="typescript" />
+  <p>А другой файл забирает этот тип к себе и пользуется им — например, чтобы описать параметр функции:</p>
+  <app-code-block [code]="importType" lang="typescript" />
+  <p>Пока всё просто и симметрично: экспортировали <code>interface User</code>, импортировали <code>User</code>. Внешне такой импорт <strong>ничем не отличается</strong> от импорта функции. И именно в этой неотличимости прячется тонкость, ради которой и написана вся страница.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Проблема: обычный импорт может «застрять» в собранном коде</h2>
+  <p>Вот в чём загвоздка. Компилятор видит строку <code>import &#123; User &#125; from './user'</code> и должен решить: <code>User</code> — это тип (тогда строку надо стереть) или значение (тогда её надо оставить)? Обычно он справляется. Но в некоторых режимах сборки — особенно когда файлы компилируются <strong>по одному, в изоляции</strong> (бандлеры вроде esbuild, опция <code>isolatedModules</code>) — компилятор смотрит только на <em>текущий</em> файл и <strong>не знает</strong>, чем окажется <code>User</code> в соседнем. На всякий случай он оставляет импорт в готовом <code>.js</code>.</p>
+  <p>Само по себе это было бы полбеды. Но импорт файла запускает <strong>весь код верхнего уровня</strong> этого файла — его <em>побочные эффекты</em>. Представим модуль-логгер, который что-то делает уже при загрузке:</p>
+  <app-code-block [code]="sideEffectValue" lang="typescript" />
+  <p>Теперь другой файл берёт из логгера <strong>только тип</strong> <code>LogEntry</code>, а саму функцию <code>log</code> даже не вызывает:</p>
+  <app-code-block [code]="sideEffectProblem" lang="typescript" />
+  <p>Если импорт останется в собранном коде, то при загрузке нашего файла <strong>выполнится весь логгер</strong>, и в консоли ни с того ни с сего появится «logger.ts загрузился!». Мы притащили на завод целый станок и включили его — ради одного лишь чертежа. Это и лишний вес в бандле, и неожиданные побочные эффекты, и потенциальные проблемы с <a routerLink="/javascript/modules/basics">циклическими импортами</a>.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 260" width="100%" role="img" aria-label="Конвейер компиляции: импорт значения остаётся в собранном JavaScript, а импорт типа полностью исчезает">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">компилятор снимает типы — что переживёт сборку, а что исчезнет</text>
+
+      <rect x="30" y="52" width="210" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="135" y="78" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">import &#123; log &#125;</text>
+      <text x="135" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">импорт ЗНАЧЕНИЯ</text>
+
+      <line x1="240" y1="82" x2="410" y2="82" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="410,76 424,82 410,88" fill="var(--muted)" />
+      <text x="325" y="72" text-anchor="middle" fill="var(--green)" font-size="11">остаётся</text>
+
+      <rect x="430" y="52" width="200" height="60" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="530" y="78" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">import &#123; log &#125;</text>
+      <text x="530" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">есть в .js</text>
+
+      <rect x="30" y="150" width="210" height="60" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="135" y="176" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">import &#123; User &#125;</text>
+      <text x="135" y="196" text-anchor="middle" fill="var(--muted)" font-size="11">импорт ТИПА</text>
+
+      <line x1="240" y1="180" x2="410" y2="180" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 5" />
+      <polygon points="410,174 424,180 410,186" fill="var(--muted)" />
+      <text x="325" y="170" text-anchor="middle" fill="var(--red)" font-size="11">стирается</text>
+
+      <rect x="430" y="150" width="200" height="60" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="530" y="176" text-anchor="middle" fill="var(--red)" font-size="13">— пусто —</text>
+      <text x="530" y="196" text-anchor="middle" fill="var(--muted)" font-size="11">типа нет в .js</text>
+    </svg>
+    <figcaption>Значение (станок) остаётся в собранном коде. Тип (чертёж) должен исчезнуть — но обычный <code>import</code> не всегда даёт компилятору это понять, и импорт застревает в <code>.js</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Решение: <code>import type</code> и <code>export type</code></h2>
+  <p>Чтобы снять всякую двусмысленность, придумали отдельную запись — <code>import type</code>. Она говорит компилятору прямо и без догадок: <strong>«это только тип, в рантайме удали его целиком»</strong>. Такой импорт <em>гарантированно</em> исчезает из собранного JavaScript — вместе со всеми побочными эффектами модуля, если больше из него ничего не берут.</p>
+  <app-code-block [code]="importTypeSolution" lang="typescript" />
+  <p>Симметричная запись есть и для экспорта — <code>export type</code>. Она пригождается, когда модуль работает «фасадом»: собирает типы из разных мест и пробрасывает их наружу единым списком. <code>export type</code> тоже полностью стирается из рантайма:</p>
+  <app-code-block [code]="exportTypeReexport" lang="typescript" />
+  <p class="note"><strong>Простое правило.</strong> Пишете <code>import type</code> или <code>export type</code> — вы <em>обещаете</em> компилятору, что за этими скобками нет ни одного значения, только типы. Компилятор ловит вас на слове: если вы попробуете тем же импортом затащить настоящую функцию, будет ошибка. Так запись остаётся честной.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Встроенный модификатор <code>type</code> в одной строке</h2>
+  <p>А что, если из одного модуля нужны <strong>и тип, и значение сразу</strong>? Делить их на два отдельных импорта — <code>import type &#123; User &#125;</code> и <code>import &#123; createUser &#125;</code> — можно, но громоздко. Поэтому появилась третья форма: пометить словом <code>type</code> <strong>отдельное имя</strong> прямо внутри фигурных скобок. Помеченное — тип (сотрётся), остальное — значение (останется).</p>
+  <app-code-block [code]="inlineTypeModifier" lang="typescript" />
+  <p>Разница тонкая, но важная. <code>import type &#123; ... &#125;</code> (слово <code>type</code> <strong>перед скобкой</strong>) означает, что <em>вся строка</em> — только типы. А <code>import &#123; type User, createUser &#125;</code> (слово <code>type</code> <strong>внутри скобок</strong>, перед конкретным именем) помечает <em>лишь одно имя</em>, оставляя соседей обычными значениями. Вторая форма — самая удобная в повседневном коде, когда тип и функция лежат в одном модуле.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Зачем это на практике</h2>
+  <p>Может показаться, что <code>import type</code> — мелочь для педантов. На деле у него несколько вполне ощутимых выгод:</p>
+  <ul class="rules">
+    <li><strong>Чистый бандл и точный tree-shaking.</strong> Импорты-типы гарантированно исчезают, и сборщику проще выкидывать всё лишнее. В готовый JavaScript не попадает ни байта «чертежей».</li>
+    <li><strong>Нет случайных побочных эффектов.</strong> Взяли из модуля только тип — значит его код при загрузке точно не выполнится. Никаких сюрпризов вроде «logger.ts загрузился!».</li>
+    <li><strong>Меньше проблем с циклическими импортами.</strong> Если два модуля ссылаются друг на друга <em>только типами</em>, то после стирания импортов цикл в рантайме исчезает сам собой.</li>
+    <li><strong>Совместимость со строгими сборщиками.</strong> Режимы <code>isolatedModules</code> и <code>verbatimModuleSyntax</code> могут <em>требовать</em> <code>import type</code> — без него будет ошибка компиляции.</li>
+  </ul>
+  <p>Про последний пункт стоит сказать отдельно. Опция <code>verbatimModuleSyntax</code> (её всё чаще включают в новых проектах) переводится как «дословный синтаксис модулей». Смысл простой: <strong>компилятор больше не угадывает</strong> сам, какой импорт стереть, а какой оставить, — он делает <em>буквально то, что написано</em>. Значение оставляет, <code>import type</code> стирает. А раз он не угадывает — <strong>помечать типы словом <code>type</code> обязаны вы сами</strong>.</p>
+  <app-code-block [code]="verbatimConfig" lang="json" />
+  <p>При включённой опции обычный импорт типа станет ошибкой, и компилятор прямо подскажет, что делать:</p>
+  <app-code-block [code]="verbatimRequires" lang="typescript" />
+  <p class="note"><strong>Как это понимать.</strong> <code>verbatimModuleSyntax</code> — это договор «пиши импорты честно и буквально: хочешь, чтобы импорт удалился в рантайме, — сам поставь <code>type</code>». Взамен вы получаете полную предсказуемость: по одному взгляду на строку импорта видно, останется она в собранном коде или нет.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практический пример: тип и функция из одного модуля</h2>
+  <p>Соберём всё вместе на маленьком, но полном примере. Модуль корзины отдаёт наружу <strong>тип</strong> <code>Cart</code> (описание формы данных) и <strong>функцию</strong> <code>createCart</code> (настоящий код, который создаёт корзину). Файл-потребитель берёт оба, но помечает тип словом <code>type</code>:</p>
+  <app-code-block [code]="practical" lang="typescript" />
+  <p>Обратите внимание на итог: в собранном <code>.js</code> останется только <code>import &#123; createCart &#125; from './cart'</code>. Тип <code>Cart</code> стёрт без следа, лишний код не подтянут — станок привезли, а чертёж, отслужив на сборке, выбросили. Ровно то поведение, которого мы хотели.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Типы экспортируются и импортируются как значения.</strong> <code>export interface User &#123; … &#125;</code> → <code>import &#123; User &#125; from './user'</code>. Внешне импорт типа не отличить от импорта функции.</li>
+    <li><strong>Типы стираются из рантайма.</strong> Значение — это «станок» (остаётся в собранном JS и может «шуметь» побочными эффектами), тип — это «чертёж» (исчезает после сборки).</li>
+    <li><strong>Обычный <code>import</code> для типа рискует «застрять» в <code>.js</code></strong> при изоляции файлов (<code>isolatedModules</code>, бандлеры) и затащить лишний код с его побочными эффектами.</li>
+    <li><strong><code>import type &#123; User &#125;</code></strong> — «это только тип, в рантайме удали полностью». <strong><code>export type &#123; User &#125;</code></strong> — реэкспорт лишь типа. Обе записи гарантированно исчезают из JS.</li>
+    <li><strong>Встроенная пометка</strong> <code>import &#123; type User, createUser &#125;</code> помечает <em>одно имя</em> как тип, оставляя соседнее значение обычным — удобно, когда тип и функция в одном модуле.</li>
+    <li><strong><code>verbatimModuleSyntax</code></strong> — «пиши импорты буквально»: компилятор ничего не угадывает, и помечать типы словом <code>type</code> нужно самому, иначе ошибка.</li>
+  </ul>
+  <p class="note">Дальше по теме: <a routerLink="/typescript/modules-types/declare">ключевое слово <code>declare</code></a> и <a routerLink="/typescript/modules-types/declaration-files">файлы объявлений <code>.d.ts</code></a> — где типы живут вообще без кода. Основы модулей — на странице <a routerLink="/javascript/modules/basics">Модули JavaScript</a>, а про сами описания форм данных — <a routerLink="/typescript/objects-interfaces/type-aliases">Псевдонимы типов (type)</a>. Типичные ошибки раздела собраны в <a routerLink="/typescript/modules-types/pitfalls">Нюансах и подводных камнях</a>.</p>
+</section>
+</article>

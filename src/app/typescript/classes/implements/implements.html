@@ -65,6 +65,16 @@
 </section>
 
 <section class="doc__section">
+  <h2>Общие поля у нескольких интерфейсов</h2>
+  <p>Частый вопрос: а что, если два ТЗ требуют <strong>одно и то же поле</strong>? Ничего страшного — если требования <em>совпадают</em> (одинаковые имя и тип), класс реализует такое поле <strong>один раз</strong>, и оно закрывает пункт сразу обоих контрактов. Дублировать ничего не нужно.</p>
+  <app-code-block [code]="sharedFields" lang="typescript" />
+  <p>И <code>Entity</code>, и <code>Trackable</code> требуют поле <code>id: number</code>. Класс <code>Order</code> объявляет <code>id</code> единожды (здесь — через <a routerLink="/typescript/classes/parameter-properties">параметр-свойство</a>) — и приёмка обоих контрактов довольна. Пересекающиеся требования просто «накладываются» друг на друга: пункт один и тот же — реализация одна.</p>
+  <p>Но есть ловушка. Если одноимённые поля требуют <strong>несовместимых</strong> типов, угодить обоим контрактам разом невозможно — одно поле не может быть одновременно и <code>number</code>, и <code>string</code>. Такое сочетание компилятор отклоняет:</p>
+  <app-code-block [code]="conflictingFields" lang="typescript" />
+  <p class="note"><strong>Вывод.</strong> Пересекающиеся поля — это норма, пока их типы <em>совместимы</em>: одинаковые типы «схлопываются» в одну реализацию. А конфликтующие типы — сигнал, что интерфейсы противоречат друг другу, и одному классу их не совместить. То же касается любых одноимённых членов: их описания в разных ТЗ должны быть согласованы.</p>
+</section>
+
+<section class="doc__section">
   <h2><code>extends</code> и <code>implements</code>: в чём разница</h2>
   <p>Оба слова связывают класс с чем-то «сверху», но роли у них разные. Сведём различия в таблицу — держите её в голове, и путаницы больше не будет.</p>
   <div class="table-wrap">
@@ -143,6 +153,7 @@
   <p>Раз это разные механизмы, их можно применять <strong>одновременно</strong>. Класс берёт готовый код у базы через <code>extends</code> и заодно обещает выполнить контракт через <code>implements</code>. Порядок в объявлении строгий: сначала <code>extends</code>, потом <code>implements</code>.</p>
   <app-code-block [code]="extendsImplements" lang="typescript" />
   <p>Обратите внимание, как делятся обязанности. Поле <code>name</code> и метод <code>describe()</code> пришли <em>готовыми</em> от базы <code>Device</code> (это работа <code>extends</code>). А метод <code>log</code> из контракта <code>Logger</code> пришлось написать самому — интерфейс его не дал, лишь потребовал (это работа <code>implements</code>). Если бы <code>Printer</code> переопределял метод базы <code>Device</code>, к нему нужно было бы добавить ключевое слово <code>override</code> — в этом проекте оно обязательно; но <code>log</code> базой не объявлен, поэтому здесь <code>override</code> не нужен.</p>
+  <p class="note"><strong>А где же <code>super(name)</code>?</strong> Его здесь и не требуется. <code>Printer</code> <em>не объявляет собственный конструктор</em>, поэтому автоматически получает конструктор базы <code>Device</code>: вызов <code>new Printer('HP-1')</code> идёт прямо в него, и именно он заполняет поле <code>name</code>. Писать конструктор с <code>super(name)</code> пришлось бы лишь тогда, когда у <code>Printer</code> появится <em>свой</em> конструктор (например, чтобы добавить собственное поле) — вот там <code>super(...)</code> уже обязателен, причём <em>до</em> первого обращения к <code>this</code>. Полный разбор этого правила — на странице <a routerLink="/typescript/classes/basics">Основы</a>.</p>
 </section>
 
 <section class="doc__section">
@@ -161,6 +172,7 @@
     <li><code>implements</code> <strong>только проверяет форму</strong>. Недостающий член → ошибка <code>Class 'X' incorrectly implements interface 'I'. Property '...' is missing</code>, причём прямо на классе.</li>
     <li><strong>Кода <code>implements</code> не приносит.</strong> Интерфейс не содержит реализации — все тела методов класс пишет сам. Этим он отличается от <code>extends</code>, который наследует готовый код.</li>
     <li><strong>Интерфейсов может быть много</strong>: <code>implements A, B, C</code> — класс обязан закрыть требования каждого.</li>
+    <li><strong>Общее поле у нескольких интерфейсов</strong> реализуют один раз, если типы совпадают; конфликтующие типы (<code>id: number</code> vs <code>id: string</code>) одному классу не совместить.</li>
     <li><code>extends</code> и <code>implements</code> <strong>совместимы</strong>: сначала <code>extends</code> (берём код базы), затем <code>implements</code> (сверяем форму с контрактом).</li>
     <li><strong>Зачем всё это</strong> — взаимозаменяемость: код зависит от контракта, а не от класса, поэтому реализации (<code>ConsoleLogger</code>, <code>ArrayLogger</code>, …) можно свободно подменять.</li>
   </ul>

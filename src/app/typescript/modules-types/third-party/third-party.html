@@ -1,0 +1,184 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/modules-types">Модули и типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Типы библиотек (@types)</span></nav>
+
+<h1 class="doc__title">Типы библиотек (@types)</h1>
+<p class="doc__lead">Представьте огромный склад инструментов. Одни приезжают <strong>с инструкцией по эксплуатации в коробке</strong> — открыл и сразу знаешь, за какую кнопку тянуть. А другие приходят <strong>голым железом, без единой бумажки</strong>. Для таких «безмолвных» инструментов энтузиасты со всего мира завели одну общую полку и годами пишут туда инструкции — по одной на каждый инструмент. В мире TypeScript эта полка называется <strong>DefinitelyTyped</strong>, а инструкции с неё ставятся пакетами <code>&#64;types/&lt;имя&gt;</code>. Разберёмся, когда типы уже лежат «в коробке», а когда их нужно принести с этой общей полки.</p>
+
+<section class="doc__section">
+  <h2>Две ситуации, в которые вы попадёте</h2>
+  <p>Когда вы ставите любую npm-библиотеку и пытаетесь ей пользоваться из TypeScript, возможны ровно две ситуации. От того, в какую вы попали, зависит, нужно вам что-то доустанавливать или нет.</p>
+
+  <h3 class="doc__subtitle">Ситуация A: типы уже «в коробке»</h3>
+  <p>Многие современные библиотеки написаны <em>на самом TypeScript</em> (например, <code>zod</code>, <code>axios</code>, Angular) либо кладут рядом со своим кодом готовые файлы типов (<code>.d.ts</code>). В этом случае инструкция приехала прямо в коробке с инструментом — ставите пакет и <strong>сразу</strong> получаете автодополнение и проверки. Делать ничего не надо:</p>
+  <app-code-block [code]="builtInImport" lang="typescript" />
+  <p>Как понять, что перед вами именно такой пакет? В его <code>package.json</code> есть поле <code>types</code> (или его синоним <code>typings</code>) — оно указывает на файл с типами. Это и есть «отметка на коробке: инструкция внутри».</p>
+  <app-code-block [code]="typesField" lang="json" />
+
+  <h3 class="doc__subtitle">Ситуация Б: библиотека — чистый JavaScript без типов</h3>
+  <p>Немало полезных библиотек появились <em>задолго</em> до TypeScript и написаны на обычном JavaScript. Их код прекрасно работает, но «инструкции» к нему нет: поля <code>types</code> в <code>package.json</code> не найти. Импортируете такую библиотеку — и компилятор растерянно разводит руками:</p>
+  <app-code-block [code]="plainJsProblem" lang="typescript" />
+  <p>Это не поломка библиотеки — код на месте и запустится. Просто TypeScript не знает <em>формы</em> того, что импортирует: какие функции есть, что они принимают и возвращают. Ему нужна инструкция. И вот тут на сцену выходит общая полка сообщества.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 640 250" width="100%" role="img" aria-label="Два инструмента: один приезжает с инструкцией внутри коробки, другой без инструкции — её берут с общей полки types">
+      <text x="320" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">библиотека приезжает с инструкцией или без неё</text>
+
+      <rect x="34" y="52" width="250" height="150" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="159" y="78" text-anchor="middle" fill="var(--green)" font-size="13">A. типы в комплекте</text>
+      <text x="159" y="108" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">npm i zod</text>
+      <text x="159" y="134" text-anchor="middle" fill="var(--muted)" font-size="12">в package.json есть</text>
+      <text x="159" y="152" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">"types": "...d.ts"</text>
+      <text x="159" y="182" text-anchor="middle" fill="var(--green)" font-size="12">работает сразу ✓</text>
+
+      <rect x="356" y="52" width="250" height="150" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="481" y="78" text-anchor="middle" fill="var(--accent)" font-size="13">Б. чистый JS, типов нет</text>
+      <text x="481" y="108" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">npm i lodash</text>
+      <text x="481" y="134" text-anchor="middle" fill="var(--muted)" font-size="12">поля "types" нет →</text>
+      <text x="481" y="152" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">npm i -D &#64;types/lodash</text>
+      <text x="481" y="182" text-anchor="middle" fill="var(--accent)" font-size="12">инструкцию берём с полки</text>
+    </svg>
+    <figcaption>Слева инструкция приехала в коробке — ничего не доустанавливаем. Справа её нет — приносим отдельным пакетом <code>&#64;types/…</code> с общей полки сообщества.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>DefinitelyTyped и пакеты <code>&#64;types/*</code></h2>
+  <p>Та самая «общая полка» — это открытый проект <strong>DefinitelyTyped</strong>: гигантский репозиторий, куда сообщество складывает написанные вручную типы для тысяч JavaScript-библиотек, у которых своих типов нет. Каждый набор типов автоматически публикуется в npm под именем с префиксом <code>&#64;types/</code>. Отсюда знакомые названия:</p>
+  <ul class="rules">
+    <li><code>&#64;types/lodash</code> — типы для утилит lodash.</li>
+    <li><code>&#64;types/node</code> — типы для встроенных модулей Node.js (<code>fs</code>, <code>path</code>, <code>process</code> и т.д.).</li>
+    <li><code>&#64;types/express</code> — типы для веб-фреймворка Express.</li>
+  </ul>
+  <p>Правило именования простое и предсказуемое: библиотека называется <code>foo</code> — её типы живут в <code>&#64;types/foo</code>. Ставится этот пакет как <strong>dev-зависимость</strong>, флагом <code>-D</code>:</p>
+  <app-code-block [code]="installTypes" lang="bash" />
+  <p class="note"><strong>Почему именно dev-зависимость.</strong> Типы существуют только на этапе разработки и сборки — их читают редактор и компилятор. В собранный JavaScript, который выполняется у пользователя, типы не попадают вообще (TypeScript стирает их при компиляции). Держать <code>&#64;types/*</code> в обычных <code>dependencies</code> бессмысленно — им там нечего делать в рантайме. Поэтому их место в <code>devDependencies</code>:</p>
+  <app-code-block [code]="devDepJson" lang="json" />
+  <p>Обратите внимание: сама библиотека <code>lodash</code> — в <code>dependencies</code> (её код реально нужен программе), а её типы <code>&#64;types/lodash</code> — в <code>devDependencies</code> (нужны только вам во время работы над кодом). Это две разные вещи, которые ставят по отдельности.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как TypeScript ищет типы</h2>
+  <p>Откуда компилятор вообще узнаёт, где лежит «инструкция» к импортированному пакету? Он проверяет два места по порядку — и это ровно те две ситуации, что мы разобрали выше.</p>
+  <p><strong>Шаг 1.</strong> Заглянуть в <code>package.json</code> самого пакета и посмотреть поле <code>types</code>. Если оно есть — взять указанный там <code>.d.ts</code> и на этом успокоиться. Это ситуация A:</p>
+  <app-code-block [code]="bundledTypesSearch" lang="typescript" />
+  <p><strong>Шаг 2.</strong> Если поля <code>types</code> нет — поискать типы в отдельной папке <code>node_modules/&#64;types/</code>, в подпапке с тем же именем. Это ситуация Б: типы лежат не внутри библиотеки, а рядом, в <code>&#64;types</code>:</p>
+  <app-code-block [code]="atTypesSearch" lang="typescript" />
+
+  <figure class="diagram">
+    <svg viewBox="0 0 620 300" width="100%" role="img" aria-label="Дерево node_modules: папка lodash содержит только JavaScript, папка @types/lodash содержит типы, TypeScript склеивает их в один типизированный модуль">
+      <text x="310" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">node_modules: код и типы лежат в разных папках, TS их склеивает</text>
+
+      <rect x="40" y="52" width="230" height="96" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="155" y="76" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">node_modules/lodash/</text>
+      <text x="155" y="102" text-anchor="middle" fill="var(--muted)" font-size="12">lodash.js — код (JS)</text>
+      <text x="155" y="126" text-anchor="middle" fill="var(--red)" font-size="12">типов нет</text>
+
+      <rect x="350" y="52" width="230" height="96" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="465" y="76" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">node_modules/&#64;types/lodash/</text>
+      <text x="465" y="102" text-anchor="middle" fill="var(--muted)" font-size="12">index.d.ts — типы</text>
+      <text x="465" y="126" text-anchor="middle" fill="var(--green)" font-size="12">кода нет</text>
+
+      <line x1="155" y1="148" x2="290" y2="212" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="284,205 296,218 291,201" fill="var(--muted)" />
+      <line x1="465" y1="148" x2="330" y2="212" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="336,201 324,218 330,205" fill="var(--muted)" />
+
+      <rect x="170" y="216" width="280" height="60" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="242" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">import ... from 'lodash'</text>
+      <text x="310" y="264" text-anchor="middle" fill="var(--fg)" font-size="12">код + типы = типизированный модуль</text>
+    </svg>
+    <figcaption>Библиотека (<code>lodash</code>) даёт исполняемый код, пакет <code>&#64;types/lodash</code> — только описания типов. По одинаковому имени TypeScript сопоставляет их и работает с модулем так, будто типы были в нём изначально.</figcaption>
+  </figure>
+  <p class="note"><strong>Важно.</strong> Из пакета <code>&#64;types/lodash</code> ничего не импортируют руками — вы по-прежнему пишете <code>import ... from 'lodash'</code>. Достаточно, чтобы <code>&#64;types/lodash</code> был просто <em>установлен</em>: компилятор подхватывает его автоматически. Хотите заглянуть глубже в устройство <code>.d.ts</code> — см. страницу <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ошибка TS7016 и как её починить</h2>
+  <p>Это, пожалуй, самая частая ошибка, с которой новичок встречает нетипизированную библиотеку. Выглядит она пугающе, но означает ровно одно: «я нашёл код, но не нашёл к нему инструкцию». Смотрим <strong>до</strong> — сразу после установки одной лишь библиотеки:</p>
+  <app-code-block [code]="plainJsProblem" lang="typescript" />
+  <p>Компилятор даже подсказывает решение прямо в тексте ошибки: <code>Try npm i --save-dev &#64;types/lodash</code>. Выполняем эту команду — и смотрим <strong>после</strong>:</p>
+  <app-code-block [code]="afterInstall" lang="typescript" />
+  <p>Мы не тронули ни строчки собственного кода — только принесли «инструкцию» с полки. Ошибка ушла, появились автодополнение и проверки. Именно так чинится подавляющее большинство случаев TS7016: команда из текста ошибки, и готово.</p>
+  <p class="note"><strong>Заметка.</strong> Слова про «implicitly has an 'any' type» в тексте ошибки — это про то, что без типов TypeScript вынужден считать весь модуль типом <a routerLink="/typescript/basic-types/any-unknown"><code>any</code></a>, а при строгом режиме (<code>noImplicitAny</code>) это запрещено — отсюда и ошибка. Поставив <code>&#64;types</code>, вы заменяете этот <code>any</code> на честные типы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Если типов нет вообще нигде</h2>
+  <p>Изредка попадается совсем «дикая» библиотека: своих типов нет, и на полке DefinitelyTyped пакета <code>&#64;types/…</code> для неё тоже никто не завёл. Инструкции не существует в природе. Что делать? Есть два пути — быстрый костыль и правильное решение.</p>
+
+  <h3 class="doc__subtitle">Быстрая заглушка: <code>declare module</code></h3>
+  <p>Самый быстрый способ — самому написать крошечную «пустую инструкцию»: завести в проекте файл с расширением <code>.d.ts</code> и объявить в нём модуль одной строкой. Это говорит компилятору: «такой модуль есть, поверь мне на слово».</p>
+  <app-code-block [code]="stubDeclare" lang="typescript" />
+  <p>Импорт из <code>'legacy-lib'</code> перестаёт быть ошибкой, и код собирается. Но у такой пустой заглушки есть цена: модуль получает тип <code>any</code>, а значит, <strong>все проверки по нему выключены</strong>:</p>
+  <app-code-block [code]="stubUsage" lang="typescript" />
+  <p class="note"><strong>Осторожно.</strong> Пустой <code>declare module</code> — это временный костыль, чтобы «просто заработало». Он молча пропустит любую опечатку и любой неверный аргумент, ведь <code>any</code> отключает контроль полностью (см. <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>). Используйте его, только чтобы разблокировать сборку прямо сейчас, и по возможности замените на настоящие типы.</p>
+
+  <h3 class="doc__subtitle">Правильно: описать типы самому</h3>
+  <p>Лучше потратить пять минут и описать хотя бы то, чем вы реально пользуетесь. В том же <code>.d.ts</code>-файле у <code>declare module</code> можно раскрыть тело и перечислить функции и константы — по факту их поведения:</p>
+  <app-code-block [code]="ownTypes" lang="typescript" />
+  <p>Теперь модуль типизирован по-настоящему: неверное число аргументов и неверные типы ловятся на компиляции, работает автодополнение. Подробнее про синтаксис <code>declare</code> — на странице <a routerLink="/typescript/modules-types/declare">Ключевое слово declare</a>, а про оформление таких описаний в отдельные файлы — <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Три случая рядом: сравнение</h2>
+  <p>Соберём всё вместе. Вот три возможных состояния типов у библиотеки — и что каждое из них значит на практике: нужно ли что-то ставить, кто написал типы и получите ли вы проверки с автодополнением.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th>Типы в комплекте</th>
+          <th>Есть <code>&#64;types</code></th>
+          <th>Типов нет нигде</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Что ставить</td>
+          <td class="yes">✅ только саму библиотеку</td>
+          <td>библиотеку + <code>&#64;types/…</code> (dev)</td>
+          <td class="no">❌ писать типы вручную</td>
+        </tr>
+        <tr>
+          <td>Кто написал типы</td>
+          <td>авторы библиотеки</td>
+          <td>сообщество (DefinitelyTyped)</td>
+          <td>вы сами</td>
+        </tr>
+        <tr>
+          <td>Где лежат типы</td>
+          <td>внутри пакета (поле <code>types</code>)</td>
+          <td><code>node_modules/&#64;types/</code></td>
+          <td>ваш файл <code>.d.ts</code> в проекте</td>
+        </tr>
+        <tr>
+          <td>Проверки и автодополнение</td>
+          <td class="yes">✅ полные</td>
+          <td class="yes">✅ полные</td>
+          <td>заглушка — <code>any</code>, нет; свои типы — да</td>
+        </tr>
+        <tr>
+          <td>Сколько работы</td>
+          <td class="yes">✅ ноль</td>
+          <td>одна команда <code>npm i -D</code></td>
+          <td class="no">❌ пишете и поддерживаете сами</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Порядок действий на практике.</strong> Импортировали библиотеку и увидели TS7016? Сначала попробуйте <code>npm i -D &#64;types/имя</code> — в 90% случаев пакет на полке уже есть. Не нашёлся (<code>npm</code> ругнётся, что такого пакета нет)? Тогда пишите свою заглушку или свои типы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Две ситуации.</strong> Библиотека либо <em>приносит типы в комплекте</em> (написана на TS или кладёт рядом <code>.d.ts</code>; в <code>package.json</code> есть поле <code>types</code>) — тогда всё работает из коробки; либо это <em>чистый JS без типов</em> — тогда типы нужно добыть отдельно.</li>
+    <li><strong>DefinitelyTyped</strong> — общая полка сообщества с инструкциями для нетипизированных библиотек. Типы оттуда ставятся пакетами <code>&#64;types/имя</code> (<code>&#64;types/lodash</code>, <code>&#64;types/node</code>, <code>&#64;types/express</code>).</li>
+    <li><strong>Ставим как dev-зависимость:</strong> <code>npm i -D &#64;types/lodash</code>. Типы нужны только на этапе разработки и сборки, в рантайм не попадают.</li>
+    <li><strong>Как TS ищет типы:</strong> сначала поле <code>types</code> в <code>package.json</code> пакета, затем папка <code>node_modules/&#64;types/</code>. Из <code>&#64;types/…</code> ничего не импортируют руками — достаточно, что пакет установлен.</li>
+    <li><strong>TS7016</strong> «Could not find a declaration file for module …» лечится установкой соответствующего <code>&#64;types/…</code> — команда есть прямо в тексте ошибки.</li>
+    <li><strong>Типов нет нигде?</strong> Быстрый костыль — <code>declare module 'имя';</code> в своём <code>.d.ts</code> (модуль станет <code>any</code>, без проверок). Правильнее — описать нужные функции самому, вернув настоящие проверки.</li>
+  </ul>
+  <p class="note">Дальше по теме: как устроены <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений .d.ts</a>, что делает <a routerLink="/typescript/modules-types/declare">Ключевое слово declare</a>, чем опасен тип <a routerLink="/typescript/basic-types/any-unknown">any</a> из пустой заглушки и какие ещё <a routerLink="/typescript/modules-types/pitfalls">Нюансы и подводные камни</a> ждут при работе с типами библиотек.</p>
+</section>
+</article>

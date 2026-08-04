@@ -1,0 +1,141 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/modules-types">Модули и типы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Пространства имён</span></nav>
+
+<h1 class="doc__title">Пространства имён</h1>
+<p class="doc__lead">Пространство имён (<code>namespace</code>) — это <strong>подписанный ящик</strong>, в который складывают родственные вещи, чтобы они держались вместе и не путались с чужими. Представьте кладовку без полок: все банки, коробки и инструменты свалены в одну кучу, и две банки с одинаковой этикеткой «САХАР» невозможно различить. Ящик с подписью спасает: положили нужное внутрь, подписали «КУХНЯ» — и теперь достаём через <code>КУХНЯ.сахар</code>, не путая с гаражным. Именно это и делает <code>namespace</code> для кода. Но есть важная новость: современный JavaScript выдаёт <strong>каждому файлу собственный ящик автоматически</strong> — это модули. Поэтому заводить ящики вручную сегодня почти не нужно, и <code>namespace</code> в новом коде считается легаси. Разберёмся, что это, откуда взялось и где ещё уместно.</p>
+
+<section class="doc__section">
+  <h2>Что такое <code>namespace</code></h2>
+  <p>Синтаксис простой: слово <code>namespace</code>, имя ящика и фигурные скобки, внутри которых живёт содержимое — типы, функции, переменные. Ключевой момент: наружу видно <strong>только то, что помечено словом <code>export</code></strong>. Всё остальное спрятано внутри, как вещи на дне закрытого ящика.</p>
+  <app-code-block [code]="whatIsNamespace" lang="typescript" />
+  <p>Снаружи к «публичным» членам обращаются через <strong>имя ящика и точку</strong>: <code>Geometry.Point</code>, <code>Geometry.area</code>. Само имя <code>Geometry</code> — это как надпись на боку ящика; по ней вы находите нужную полку. А то, что не помечено <code>export</code> (в примере — <code>version</code>), остаётся приватным: снаружи его не достать, компилятор об этом честно скажет.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 640 260" width="100%" role="img" aria-label="Ящик namespace Geometry: наружу торчат только export-члены Point и area, а приватный version спрятан внутри">
+      <text x="320" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">наружу торчит только то, что помечено export</text>
+
+      <rect x="150" y="70" width="340" height="160" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="320" y="96" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">namespace Geometry</text>
+
+      <rect x="180" y="112" width="130" height="40" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="245" y="137" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">export Point</text>
+
+      <rect x="330" y="112" width="130" height="40" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="395" y="137" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">export area()</text>
+
+      <rect x="180" y="168" width="280" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" stroke-dasharray="5 4" />
+      <text x="320" y="193" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">version — без export, спрятан</text>
+
+      <line x1="245" y1="112" x2="245" y2="60" stroke="var(--green)" stroke-width="2" />
+      <polygon points="239,60 245,46 251,60" fill="var(--green)" />
+      <line x1="395" y1="112" x2="395" y2="60" stroke="var(--green)" stroke-width="2" />
+      <polygon points="389,60 395,46 401,60" fill="var(--green)" />
+      <text x="320" y="256" text-anchor="middle" fill="var(--muted)" font-size="12">снаружи доступно: Geometry.Point, Geometry.area</text>
+    </svg>
+    <figcaption>Ящик <code>Geometry</code>: <code>Point</code> и <code>area</code> помечены <code>export</code> и видны снаружи, а <code>version</code> лежит внутри и наружу не показывается.</figcaption>
+  </figure>
+  <p>Приватные члены — не бесполезны: ими пользуется код <em>внутри</em> самого ящика. Это удобно для вспомогательных функций, которые не хочется показывать наружу:</p>
+  <app-code-block [code]="hiddenMembers" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Откуда это взялось: немного истории</h2>
+  <p>Чтобы понять, зачем <code>namespace</code> вообще придумали, вернёмся в прошлое — во времена <strong>до ES-модулей</strong>. Тогда файлы подключали в HTML тегами <code>&lt;script&gt;</code>, и у них не было никакой изоляции: все переменные верхнего уровня из всех файлов сваливались в <strong>одну общую (глобальную) область</strong>. Файлы «видели» друг друга напрямую — но и мешали друг другу: две переменные с одинаковым именем в разных файлах затирали одна другую.</p>
+  <app-code-block [code]="historyGlobal" lang="typescript" />
+  <p>Это и есть <strong>коллизия имён</strong> — главная головная боль той эпохи. Чем больше файлов, тем выше шанс, что где-то два человека назвали переменную <code>data</code>, <code>utils</code> или <code>config</code>, и они молча перезаписали друг друга. Тогда <code>namespace</code> (в те годы их называли <em>внутренними модулями</em>, internal modules) и предложили как лекарство: сложить каждый набор кода в свой ящик, а глобальными оставить только имена самих ящиков.</p>
+  <app-code-block [code]="historyNamespaceFix" lang="typescript" />
+  <p class="note"><strong>Суть исторической роли.</strong> <code>namespace</code> появился как способ <em>навести порядок в общей глобальной свалке</em>: вместо десятков глобальных имён — несколько ящиков-пространств. Для своего времени это был большой шаг вперёд. Но сама проблема — «всё общее и глобальное» — исчезла, когда в язык добавили настоящие модули.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Современная позиция: используйте ES-модули</h2>
+  <p>Сформулируем прямо и без оговорок: <strong>для нового кода берите ES-модули, а не <code>namespace</code></strong>. Модуль — это просто файл с <code>import</code>/<code>export</code>. Каждый такой файл язык изолирует <em>автоматически</em>: всё, что вы в нём объявили, приватно для файла, пока вы явно не напишете <code>export</code>. Тот самый «ящик», который раньше приходилось заводить руками через <code>namespace</code>, теперь выдаётся бесплатно на каждый файл.</p>
+  <app-code-block [code]="modernModules" lang="typescript" />
+  <p>Почему модули победили и рекомендуются везде? Причин несколько, и все практические:</p>
+  <ul class="rules">
+    <li><strong>Инкапсуляция «из коробки»</strong> — граница ящика совпадает с границей файла, отдельная обёртка не нужна.</li>
+    <li><strong>Ленивая загрузка</strong> — модуль можно подгрузить по требованию через динамический <code>import()</code>; <code>namespace</code> так не умеет.</li>
+    <li><strong>Tree-shaking</strong> — сборщик выкидывает неиспользованные экспорты и уменьшает бандл; содержимое <code>namespace</code> труднее «встряхнуть».</li>
+    <li><strong>Работа со сборщиками и экосистемой</strong> — весь современный инструментарий (Vite, webpack, esbuild, npm-пакеты) построен вокруг модулей.</li>
+  </ul>
+  <p>Есть и важное правило гигиены: <strong>не смешивайте модули и <code>namespace</code></strong> для организации кода. Как только в файле появился <code>import</code> или <code>export</code>, он уже стал модулем — оборачивать его содержимое ещё и в <code>namespace</code> лишнее и только запутывает пользователя двойными путями.</p>
+  <app-code-block [code]="dontMix" lang="typescript" />
+  <p class="note"><strong>Правило.</strong> Файл-модуль <em>сам по себе</em> — уже пространство имён: его имя задаёт путь импорта, а <code>export</code> решает, что видно. Второй ящик поверх модуля не добавляет пользы. Про сами модули — страницы <a routerLink="/javascript/modules/basics">Основы модулей</a> и <a routerLink="/typescript/modules-types/import-export">Импорт и экспорт типов</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Где <code>namespace</code> ещё уместен</h2>
+  <p>«Легаси» не значит «запрещено». Есть два случая, где <code>namespace</code> и сегодня на своём месте.</p>
+
+  <h3 class="doc__subtitle">1. Глобальные типы в <code>.d.ts</code></h3>
+  <p>Некоторые старые библиотеки не являются модулями: их подключают тегом <code>&lt;script&gt;</code>, и они кладут себя в глобальную переменную (например, <code>window.MyLib</code>). Чтобы <em>описать типы</em> такой библиотеки, её сгруппировывают в глобальном <a routerLink="/typescript/modules-types/declaration-files">файле объявлений <code>.d.ts</code></a> — и <code>namespace</code> тут ровно к месту: он моделирует «объект-контейнер», который в рантайме доступен глобально.</p>
+  <app-code-block [code]="globalDts" lang="typescript" />
+
+  <h3 class="doc__subtitle">2. Слияние объявлений (function + namespace)</h3>
+  <p>Второй случай — паттерн <a routerLink="/typescript/modules-types/declaration-merging">слияния объявлений</a>: функция и <code>namespace</code> с <strong>одним и тем же именем</strong> сливаются в единую сущность. Так к вызываемой функции «приклеивают» статические свойства и вспомогательные функции.</p>
+  <app-code-block [code]="mergingFunction" lang="typescript" />
+  <p class="note"><strong>Не путать с <code>declare module '…'</code>.</strong> Запись <code>declare module 'имя'</code> — это <em>про описание или дополнение внешних модулей</em>, совсем другая тема, а не про <code>namespace</code>. Детали — на страницах <a routerLink="/typescript/modules-types/declaration-merging">Слияние объявлений</a> и <a routerLink="/typescript/modules-types/pitfalls">Нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Вложенность и <code>export</code> внутри</h2>
+  <p>Ящики можно вкладывать друг в друга — как папки внутри папок. Правило видимости то же на каждом уровне: чтобы вложенный ящик или его член был доступен снаружи, его тоже нужно пометить <code>export</code>. Обращение идёт по цепочке имён через точку: <code>App.Models.User</code>.</p>
+  <app-code-block [code]="nesting" lang="typescript" />
+  <p>Длинные цепочки вроде <code>App.Models.User</code> утомляют. Их сокращают <strong>import-псевдонимом</strong> — это специальная запись TypeScript <code>import Имя = Путь.К.Ящику</code> (не путать с ES-импортом из файла): она заводит короткий локальный синоним для длинного пути.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>namespace</code> против ES-модуля: сравнение</h2>
+  <p>Свести всё воедино проще всего таблицей. По каждому пункту, важному для реального проекта, модуль выигрывает — поэтому именно он рекомендован для нового кода.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th><code>namespace</code></th>
+          <th>ES-модуль (файл)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Инкапсуляция</td>
+          <td class="no">❌ ящик заводят вручную</td>
+          <td class="yes">✅ каждый файл изолирован сам</td>
+        </tr>
+        <tr>
+          <td>Ленивая загрузка (по требованию)</td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ динамический <code>import()</code></td>
+        </tr>
+        <tr>
+          <td>Tree-shaking (выброс лишнего)</td>
+          <td class="no">❌ плохо поддаётся</td>
+          <td class="yes">✅ да, сборщик режет неиспользованное</td>
+        </tr>
+        <tr>
+          <td>Сборщики и экосистема npm</td>
+          <td class="no">❌ не рассчитаны на него</td>
+          <td class="yes">✅ построены вокруг модулей</td>
+        </tr>
+        <tr>
+          <td>Актуальность для нового кода</td>
+          <td class="no">❌ легаси</td>
+          <td class="yes">✅ стандарт по умолчанию</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>namespace</code></strong> — «подписанный ящик»: группирует родственные типы и код под одним именем. Снаружи видно только помеченное <code>export</code>, доступ — через <code>Имя.член</code>.</li>
+    <li><strong>История</strong>: до ES-модулей все файлы сливались в одну глобальную область и коллизии имён были обычным делом; <code>namespace</code> (тогда — «внутренние модули») наводил в ней порядок.</li>
+    <li><strong>Сегодня для нового кода — ES-модули, не <code>namespace</code>.</strong> Файл = модуль = свой ящик автоматически. Модули дают инкапсуляцию, ленивую загрузку, tree-shaking и работают со сборщиками.</li>
+    <li><strong>Не смешивайте</strong> модули и <code>namespace</code>: файл с <code>import</code>/<code>export</code> уже пространство имён, второй ящик поверх лишний.</li>
+    <li><strong>Где ещё уместен</strong>: в глобальных <code>.d.ts</code> для старых библиотек-глобалей и в слиянии объявлений (function + namespace).</li>
+    <li><strong>Не путать</strong> <code>namespace</code> с <code>declare module '…'</code> — последнее про описание и дополнение внешних модулей, отдельная тема.</li>
+  </ul>
+  <p class="note">Дальше по теме: <a routerLink="/typescript/modules-types/declaration-files">Файлы объявлений <code>.d.ts</code></a>, <a routerLink="/typescript/modules-types/declaration-merging">Слияние объявлений</a> и <a routerLink="/typescript/modules-types/pitfalls">Нюансы и подводные камни</a>. Базу про современную альтернативу освежите на странице <a routerLink="/javascript/modules/basics">Основы модулей</a>.</p>
+</section>
+</article>
