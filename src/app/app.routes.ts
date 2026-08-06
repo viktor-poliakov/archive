@@ -252,6 +252,22 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./typescript/modules-types/pitfalls/pitfalls').then(
       (m) => m.TypescriptModulesTypesPitfalls,
     ),
+  'typescript/decorators/basics': () =>
+    import('./typescript/decorators/basics/basics').then((m) => m.TypescriptDecoratorsBasics),
+  'typescript/decorators/class': () =>
+    import('./typescript/decorators/class/class').then((m) => m.TypescriptDecoratorsClass),
+  'typescript/decorators/members': () =>
+    import('./typescript/decorators/members/members').then(
+      (m) => m.TypescriptDecoratorsMembers,
+    ),
+  'typescript/decorators/metadata': () =>
+    import('./typescript/decorators/metadata/metadata').then(
+      (m) => m.TypescriptDecoratorsMetadata,
+    ),
+  'typescript/decorators/pitfalls': () =>
+    import('./typescript/decorators/pitfalls/pitfalls').then(
+      (m) => m.TypescriptDecoratorsPitfalls,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

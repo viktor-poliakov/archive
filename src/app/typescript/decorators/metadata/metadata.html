@@ -1,0 +1,84 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/decorators">Декораторы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Метаданные</span></nav>
+
+<h1 class="doc__title">Метаданные</h1>
+<p class="doc__lead">Иногда декоратору не нужно менять поведение — ему нужно просто <strong>оставить заметку</strong>: «это поле обязательное», «этот столбец — текстовый», «этот метод доступен только админам». А потом другой код собирает все заметки и что-то с ними делает: проверяет форму, строит таблицу в базе, раздаёт права. Такие заметки называются <strong>метаданными</strong>. Представьте склад: на коробках расклеены бирки — «хрупкое», «верх», «партия №7». Сама коробка от бирки не меняется, но кладовщик по биркам знает, что делать. У стандартных декораторов для таких бирок есть общий «блокнот» — <code>context.metadata</code>. Разберём, как в него писать и как читать. Если это ваша первая страница про декораторы, начните с <a routerLink="/typescript/decorators/basics">основ</a>.</p>
+
+<section class="doc__section">
+  <h2>Общий блокнот класса</h2>
+  <p><code>context.metadata</code> — это обычный объект-«блокнот», <strong>один на класс</strong>. Все декораторы этого класса пишут в один и тот же блокнот, а снаружи его можно прочитать через <code>Класс[Symbol.metadata]</code>:</p>
+  <app-code-block [code]="intro" lang="typescript" />
+  <p>Ключевая мысль: блокнот <strong>общий</strong>. Сколько бы декораторов ни сработало на разных полях и методах класса, все они дописывают в один и тот же объект <code>metadata</code>. Поэтому декоратор одного поля может «накапливать» список вместе с декораторами других полей — чем мы сейчас и воспользуемся.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Практика 1: обязательные поля формы</h2>
+  <p>Классическая задача — проверить, что обязательные поля формы заполнены. Разложим её на две роли: декоратор <code>&#64;required</code> только <strong>записывает</strong> в блокнот имя обязательного поля, а отдельная функция <code>validate</code> потом <strong>читает</strong> блокнот и проверяет. Ни тот, ни другая не знают друг о друге напрямую — их связывает блокнот:</p>
+  <app-code-block [code]="requiredExample" lang="typescript" />
+  <p class="note"><strong>Про <code>??=</code>.</strong> Запись <code>x ??= []</code> читается как «если <code>x</code> ещё пусто — положить в него <code>[]</code>». Благодаря этому первый сработавший декоратор заводит пустой список, а все следующие просто дописывают в уже существующий — блокнот-то общий.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 220" width="100%" role="img" aria-label="Декораторы required записывают имена полей в блокнот метаданных, а функция validate его читает">
+      <text x="330" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">декораторы пишут · валидатор читает</text>
+
+      <rect x="24" y="46" width="170" height="46" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="109" y="74" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#64;required name</text>
+      <rect x="24" y="104" width="170" height="46" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="109" y="132" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#64;required email</text>
+
+      <line x1="194" y1="69" x2="272" y2="92" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="268,86 282,96 265,98" fill="var(--muted)" />
+      <line x1="194" y1="127" x2="272" y2="104" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="265,98 282,100 268,110" fill="var(--muted)" />
+      <text x="234" y="86" text-anchor="middle" fill="var(--muted)" font-size="11">пишут</text>
+
+      <rect x="286" y="64" width="200" height="72" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="386" y="90" text-anchor="middle" fill="var(--accent)" font-size="12">блокнот (metadata)</text>
+      <text x="386" y="114" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">required: [name, email]</text>
+
+      <line x1="486" y1="100" x2="552" y2="100" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="552,94 566,100 552,106" fill="var(--muted)" />
+      <text x="519" y="90" text-anchor="middle" fill="var(--muted)" font-size="11">читает</text>
+
+      <rect x="570" y="76" width="72" height="48" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="606" y="104" text-anchor="middle" fill="var(--fg)" font-size="12">validate</text>
+
+      <text x="330" y="176" text-anchor="middle" fill="var(--muted)" font-size="12">validate заранее НЕ знает про SignupForm — она просто читает блокнот</text>
+    </svg>
+    <figcaption>Декораторы наполняют блокнот именами обязательных полей. Функция <code>validate</code> читает его и возвращает те, что остались пустыми, — универсально, для любой формы с такими наклейками.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Практика 2: схема таблицы (как в ORM)</h2>
+  <p>Тот же приём в другом обличье. Пусть каждый <code>&#64;column</code> записывает в блокнот пару «имя поля → тип столбца». Собрав их вместе, мы получим <strong>карту всей таблицы</strong> — по ней потом можно, например, сгенерировать SQL:</p>
+  <app-code-block [code]="columnExample" lang="typescript" />
+  <p>Получилась карта <code>title → text</code>, <code>price → int</code>, <code>sku → text</code> — ровно то, из чего строят запрос <code>CREATE TABLE</code>. Именно так работают ORM-библиотеки: вы расставляете декораторы на полях, а библиотека читает метаданные и общается с базой за вас.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что нужно для <code>Symbol.metadata</code></h2>
+  <p>Пара технических деталей, чтобы всё заработало. <code>Symbol.metadata</code> — это новый <a routerLink="/javascript/symbol/well-known">системный символ</a>, под которым язык хранит блокнот на классе. Он совсем свежий, поэтому в некоторых средах его ещё нет — тогда добавляют короткий полифилл, а в <code>tsconfig.json</code> подключают современный набор библиотек:</p>
+  <app-code-block [code]="symbolPolyfill" lang="typescript" />
+  <p class="note"><strong>Если <code>Класс[Symbol.metadata]</code> оказался <code>undefined</code></strong> — почти наверняка забыт полифилл или устаревший <code>lib</code> в конфиге. Также помните: блокнот появляется, только если у класса <em>есть хоть один</em> декоратор, который в него что-то записал.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Метаданные в старом мире: <code>reflect-metadata</code></h2>
+  <p>Здесь важно не запутаться, потому что вы наверняка встретите совсем другой механизм. В Angular и NestJS метаданные сделаны <strong>не через <code>Symbol.metadata</code></strong>, а через библиотеку <code>reflect-metadata</code> и флаг <code>emitDecoratorMetadata</code>. С этим флагом компилятор <strong>сам</strong> записывает типы параметров конструктора, а контейнер внедрения зависимостей (DI) их читает и понимает, какие объекты создать и подставить:</p>
+  <app-code-block [code]="legacyReflect" lang="typescript" />
+  <p class="note"><strong>Не путайте два механизма.</strong> Стандартные декораторы хранят заметки в <code>context.metadata</code> и достают через <code>Symbol.metadata</code>. Старые (Angular/NestJS) — в <code>reflect-metadata</code>, достают через <code>Reflect.getMetadata(...)</code>, и главная их фишка — автоматически сохранённые <em>типы</em> (<code>design:type</code>, <code>design:paramtypes</code>), чего у стандартных пока нет. Это два разных мира, живущих под разными флагами компилятора.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Метаданные</strong> — это заметки-«бирки», которые декоратор оставляет о классе и его частях, чтобы другой код прочитал их позже.</li>
+    <li><strong><code>context.metadata</code></strong> — общий блокнот, один на класс. Все декораторы класса пишут в него; снаружи читают через <code>Класс[Symbol.metadata]</code>.</li>
+    <li><strong>Типичный сценарий:</strong> декораторы только <em>записывают</em> (обязательность поля, тип столбца), а отдельная функция потом <em>читает</em> и действует (валидация, генерация SQL).</li>
+    <li><strong>Универсальность:</strong> код-читатель не знает конкретных классов заранее — он работает с любым, у кого есть нужные заметки.</li>
+    <li><strong>Технические условия:</strong> может понадобиться полифилл <code>Symbol.metadata</code> и современный <code>lib</code> (<code>ESNext</code>) в <code>tsconfig.json</code>.</li>
+    <li><strong>Старый мир — отдельно:</strong> Angular и NestJS используют <code>reflect-metadata</code> и <code>emitDecoratorMetadata</code> (сохранение типов для DI), а не <code>Symbol.metadata</code>. Механизмы разные.</li>
+  </ul>
+  <p class="note">Осталась последняя страница раздела — <a routerLink="/typescript/decorators/pitfalls">нюансы и подводные камни</a>, где собраны самые частые ошибки. Смежные темы: <a routerLink="/javascript/symbol/well-known">системные символы</a> (что такое <code>Symbol.metadata</code>) и <a routerLink="/typescript/decorators/class">декораторы классов</a> (там метаданные вешали прямо на класс — сравните с аккуратным блокнотом отсюда).</p>
+</section>
+</article>

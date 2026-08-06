@@ -56,7 +56,29 @@
 </section>
 
 <section class="doc__section">
+  <h2>Практика: типобезопасный доступ и перебор ключей</h2>
+  <p>Самое частое применение <code>keyof</code> — вместе с дженериками. Классика — функция «достать поле объекта по имени», которая должна принимать только <em>существующие</em> ключи и возвращать <em>правильный</em> тип поля. Ключ ограничивают через <code>K extends keyof T</code> (это мостик к <a routerLink="/typescript/generics/constraints">ограничениям <code>extends</code></a>), а тип результата описывают <a routerLink="/typescript/advanced-types/indexed-access">индексным доступом</a> <code>T[K]</code>.</p>
+  <app-code-block [code]="getProp" lang="typescript" />
+  <p>Обратите внимание: тип результата <em>меняется в зависимости от ключа</em>. Для <code>'name'</code> вернётся <code>string</code>, для <code>'age'</code> — <code>number</code>. А несуществующий ключ <code>'phone'</code> отсекается ещё на компиляции. Всё это — без единого <a routerLink="/typescript/generics/basics"><code>any</code></a> и без ручных проверок в рантайме.</p>
+
+  <h3 class="doc__subtitle">Перебор ключей: <code>keyof</code> против <code>Object.keys</code></h3>
+  <p>Новичков часто смущает вопрос: «Если <code>keyof</code> даёт ключи, почему <code>Object.keys(obj)</code> возвращает просто <code>string[]</code>, а не точный набор?» Ответ снова упирается в разделение миров: <code>keyof</code> живёт в <strong>мире типов</strong> (компиляция), а <code>Object.keys</code> — это настоящая функция, работающая со <strong>значениями</strong> в рантайме.</p>
+  <app-code-block [code]="iterateKeys" lang="typescript" />
+  <p class="note"><strong>Почему <code>Object.keys</code> шире.</strong> Из-за структурной типизации в переменную типа <code>settings</code> мог попасть объект и с <em>лишними</em> полями. Тогда точный набор ключей был бы неправдой, поэтому TypeScript намеренно возвращает <code>string[]</code>. Приведение <code>as (keyof typeof settings)[]</code> — это ваше обещание компилятору, что лишних полей нет; проверять его правдивость он не станет.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>keyof</code> вместе с <code>typeof</code></h2>
+  <p>Часто ключи нужны не от объявленного <em>типа</em>, а от уже существующего <em>значения</em> — объекта с настройками, картой роутов, конфигом. Тут в дело вступает <a routerLink="/typescript/advanced-types/typeof">оператор <code>typeof</code></a> в позиции типа: он берёт тип <em>из значения</em>. А дальше к этому типу применяют <code>keyof</code>. Читается справа налево: <code>keyof typeof routes</code> — «ключи типа значения <code>routes</code>».</p>
+  <p class="note"><strong><code>keyof</code> — только к типу, <code>typeof</code> — к значению.</strong> Вот главное различие двух операторов. Справа от <code>keyof</code> обязан стоять <em>тип</em>: <code>keyof User</code> — правильно, а <code>keyof user</code> (по переменной-значению) — ошибка компиляции. Справа же от <code>typeof</code> (в позиции типа), наоборот, ставят <em>значение</em>: <code>typeof user</code>. Именно поэтому, чтобы достать ключи из <em>значения</em>, операторы и соединяют в цепочку: сначала <code>typeof</code> превращает значение в тип, а затем <code>keyof</code> берёт у этого типа ключи — <code>keyof typeof user</code>. Написать <code>keyof user</code> напрямую нельзя.</p>
+  <app-code-block [code]="keyofTypeof" lang="typescript" />
+  <p>Это один из самых полезных приёмов: единственный источник правды — сам объект <code>routes</code>, а тип имён выводится из него автоматически. Добавите роут — тип <code>RouteName</code> расширится сам. Тот же паттерн лежит в основе <a routerLink="/typescript/enums/alternatives">альтернативы enum через <code>as const</code></a>.</p>
+  <p class="note"><strong>Два разных <code>typeof</code>.</strong> Здесь <code>typeof</code> стоит <em>в позиции типа</em> и достаёт тип из значения — это операция в мире типов. Не путайте с рантайм-оператором <code>typeof x === 'string'</code> в обычном выражении: тот возвращает строку и работает со значениями. Одинаковое слово, разные миры. Подробнее — на странице <a routerLink="/typescript/advanced-types/typeof">оператор <code>typeof</code></a>.</p>
+</section>
+
+<section class="doc__section">
   <h2><code>keyof</code> от объединения: только общие ключи</h2>
+  <app-code-block [code]="keyofUnionObjects" lang="typescript" />
   <p>А что, если применить <code>keyof</code> не к одному типу, а к <a routerLink="/typescript/unions-narrowing/union">объединению</a> типов? Здравый смысл подсказывает верный ответ. Если значение — это «<code>Article</code> <em>или</em> <code>Video</code>», то мы заранее не знаем, что именно перед нами. Безопасно обращаться можно лишь к тем ключам, которые есть у <strong>обоих</strong> — иначе на статье не окажется поля <code>durationSec</code>, а на видео — поля <code>body</code>. Поэтому <code>keyof (A | B)</code> оставляет только <strong>общие</strong> ключи.</p>
   <figure class="diagram">
     <svg viewBox="0 0 660 380" width="100%" role="img" aria-label="keyof от объединения Article и Video оставляет только общие ключи id и title">
@@ -84,28 +106,7 @@
     </svg>
     <figcaption>Пересечение двух наборов ключей. В центре — общие для обоих типов <code>'id'</code> и <code>'title'</code>; уникальные <code>body</code> и <code>durationSec</code> в результат не попадают.</figcaption>
   </figure>
-  <app-code-block [code]="keyofUnionObjects" lang="typescript" />
   <p class="note"><strong>Легко перепутать.</strong> Объединение <em>типов</em> сужает набор ключей (остаётся пересечение), хотя само множество значений — расширяется. Это кажется парадоксом, но всё сходится: чем больше вариантов значения, тем меньше того, что гарантированно есть у каждого. Модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество</a>» помогает не запутаться.</p>
-</section>
-
-<section class="doc__section">
-  <h2>Практика: типобезопасный доступ и перебор ключей</h2>
-  <p>Самое частое применение <code>keyof</code> — вместе с дженериками. Классика — функция «достать поле объекта по имени», которая должна принимать только <em>существующие</em> ключи и возвращать <em>правильный</em> тип поля. Ключ ограничивают через <code>K extends keyof T</code> (это мостик к <a routerLink="/typescript/generics/constraints">ограничениям <code>extends</code></a>), а тип результата описывают <a routerLink="/typescript/advanced-types/indexed-access">индексным доступом</a> <code>T[K]</code>.</p>
-  <app-code-block [code]="getProp" lang="typescript" />
-  <p>Обратите внимание: тип результата <em>меняется в зависимости от ключа</em>. Для <code>'name'</code> вернётся <code>string</code>, для <code>'age'</code> — <code>number</code>. А несуществующий ключ <code>'phone'</code> отсекается ещё на компиляции. Всё это — без единого <a routerLink="/typescript/generics/basics"><code>any</code></a> и без ручных проверок в рантайме.</p>
-
-  <h3 class="doc__subtitle">Перебор ключей: <code>keyof</code> против <code>Object.keys</code></h3>
-  <p>Новичков часто смущает вопрос: «Если <code>keyof</code> даёт ключи, почему <code>Object.keys(obj)</code> возвращает просто <code>string[]</code>, а не точный набор?» Ответ снова упирается в разделение миров: <code>keyof</code> живёт в <strong>мире типов</strong> (компиляция), а <code>Object.keys</code> — это настоящая функция, работающая со <strong>значениями</strong> в рантайме.</p>
-  <app-code-block [code]="iterateKeys" lang="typescript" />
-  <p class="note"><strong>Почему <code>Object.keys</code> шире.</strong> Из-за структурной типизации в переменную типа <code>settings</code> мог попасть объект и с <em>лишними</em> полями. Тогда точный набор ключей был бы неправдой, поэтому TypeScript намеренно возвращает <code>string[]</code>. Приведение <code>as (keyof typeof settings)[]</code> — это ваше обещание компилятору, что лишних полей нет; проверять его правдивость он не станет.</p>
-</section>
-
-<section class="doc__section">
-  <h2><code>keyof</code> вместе с <code>typeof</code></h2>
-  <p>Часто ключи нужны не от объявленного <em>типа</em>, а от уже существующего <em>значения</em> — объекта с настройками, картой роутов, конфигом. Тут в дело вступает <a routerLink="/typescript/advanced-types/typeof">оператор <code>typeof</code></a> в позиции типа: он берёт тип <em>из значения</em>. А дальше к этому типу применяют <code>keyof</code>. Читается справа налево: <code>keyof typeof routes</code> — «ключи типа значения <code>routes</code>».</p>
-  <app-code-block [code]="keyofTypeof" lang="typescript" />
-  <p>Это один из самых полезных приёмов: единственный источник правды — сам объект <code>routes</code>, а тип имён выводится из него автоматически. Добавите роут — тип <code>RouteName</code> расширится сам. Тот же паттерн лежит в основе <a routerLink="/typescript/enums/alternatives">альтернативы enum через <code>as const</code></a>.</p>
-  <p class="note"><strong>Два разных <code>typeof</code>.</strong> Здесь <code>typeof</code> стоит <em>в позиции типа</em> и достаёт тип из значения — это операция в мире типов. Не путайте с рантайм-оператором <code>typeof x === 'string'</code> в обычном выражении: тот возвращает строку и работает со значениями. Одинаковое слово, разные миры. Подробнее — на странице <a routerLink="/typescript/advanced-types/typeof">оператор <code>typeof</code></a>.</p>
 </section>
 
 <section class="doc__section">

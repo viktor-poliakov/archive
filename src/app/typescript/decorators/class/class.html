@@ -1,0 +1,110 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/decorators">Декораторы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Декораторы классов</span></nav>
+
+<h1 class="doc__title">Декораторы классов</h1>
+<p class="doc__lead">Декоратор класса — это наклейка на <strong>весь класс целиком</strong>. Язык вызывает её один раз, в момент объявления класса, и передаёт ей сам класс «в руки». Дальше декоратор может сделать одно из трёх: <strong>подействовать</strong> на класс (запечатать, заморозить), <strong>записать</strong> его в общий список-реестр или даже <strong>заменить</strong> класс новым, улучшенным. Разберём все три по очереди — от самого простого к самому мощному. Если слово «декоратор» пока звучит незнакомо, сначала загляните в <a routerLink="/typescript/decorators/basics">основы</a>.</p>
+
+<section class="doc__section">
+  <h2>Из чего состоит декоратор класса</h2>
+  <p>Стандартный декоратор класса — это функция двух аргументов. Первый — <strong>сам класс</strong>, второй — <strong>«паспорт»</strong> (контекст) с информацией о том, что декорируют:</p>
+  <app-code-block [code]="anatomy" lang="typescript" />
+  <p>Первый аргумент (<code>value</code>) — это сам класс, то есть то, что можно вызвать через <code>new</code>. Второй (<code>context</code>) — объект-описание. Для класса в нём лежит <code>kind: 'class'</code>, <code>name</code> (имя класса строкой), функция <code>addInitializer</code> (выполнить код, когда класс полностью готов) и <code>metadata</code> (общий блокнот для заметок — ему посвящена <a routerLink="/typescript/decorators/metadata">отдельная страница</a>). Пока нам хватит <code>value</code> и <code>context.name</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Способ 1: подействовать на класс</h2>
+  <p>Самый простой декоратор ничего не возвращает — он лишь <strong>что-то делает</strong> с классом. Пример — <code>&#64;sealed</code>: он «запечатывает» класс, запрещая потом дописывать ему новые методы и свойства (защита от случайных изменений «на лету»):</p>
+  <app-code-block [code]="observeSeal" lang="typescript" />
+  <p>Здесь декоратор берёт класс (<code>value</code>), вызывает на нём <code>Object.seal</code> — и на этом всё. Класс остаётся тем же самым объектом, просто теперь он защищён. Такой декоратор — как штамп «проверено ОТК»: он не меняет изделие, а совершает над ним действие и оставляет как есть.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Способ 2: регистрация (самый частый)</h2>
+  <p>А вот приём, который вы будете встречать постоянно. Декоратор кладёт класс в общий <strong>список-реестр</strong>, а потом другой код проходит по этому списку и что-то с классами делает. Так устроены плагины, наборы команд, обработчики маршрутов: каждый класс сам «записывается» туда, где его будут искать, — а вручную вести список не нужно.</p>
+  <app-code-block [code]="registry" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 210" width="100%" role="img" aria-label="Декораторы регистрируют классы в общем реестре команд">
+      <rect x="24" y="40" width="180" height="52" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="114" y="62" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#64;command('save')</text>
+      <text x="114" y="80" text-anchor="middle" fill="var(--muted)" font-size="11">SaveCommand</text>
+
+      <rect x="24" y="118" width="180" height="52" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="114" y="140" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">&#64;command('delete')</text>
+      <text x="114" y="158" text-anchor="middle" fill="var(--muted)" font-size="11">DeleteCommand</text>
+
+      <line x1="204" y1="66" x2="290" y2="92" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="286,86 300,96 283,98" fill="var(--muted)" />
+      <line x1="204" y1="144" x2="290" y2="118" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="283,112 300,114 286,124" fill="var(--muted)" />
+      <text x="250" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">push</text>
+
+      <rect x="304" y="66" width="200" height="78" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="404" y="92" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">commands[ ]</text>
+      <text x="404" y="114" text-anchor="middle" fill="var(--fg)" font-size="12">SaveCommand</text>
+      <text x="404" y="132" text-anchor="middle" fill="var(--fg)" font-size="12">DeleteCommand</text>
+
+      <line x1="504" y1="105" x2="560" y2="105" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="560,99 574,105 560,111" fill="var(--muted)" />
+      <text x="588" y="101" text-anchor="middle" fill="var(--muted)" font-size="11">другой</text>
+      <text x="588" y="115" text-anchor="middle" fill="var(--muted)" font-size="11">код</text>
+    </svg>
+    <figcaption>Каждый класс при объявлении сам «записывается» в реестр через свой декоратор. Дальше по списку <code>commands</code> можно пройтись и, например, найти нужную команду по имени.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Способ 3: заменить класс</h2>
+  <p>Самая мощная возможность. Если декоратор класса <strong>что-то вернёт</strong> — а именно новый класс, — язык подставит этот новый класс <em>вместо</em> исходного. Классический приём: вернуть подкласс, который добавляет исходному новое поведение или поле. Добавим всем документам поле <code>createdAt</code> с датой создания, не трогая сам класс:</p>
+  <app-code-block [code]="replace" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 620 210" width="100%" role="img" aria-label="Декоратор заменяет класс: на входе исходный класс, на выходе подкласс с добавленным полем">
+      <text x="310" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">вернул класс — он заменяет исходный</text>
+
+      <rect x="30" y="60" width="200" height="96" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="130" y="86" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">class Document</text>
+      <text x="130" y="112" text-anchor="middle" fill="var(--fg)" font-size="12">title</text>
+      <text x="130" y="140" text-anchor="middle" fill="var(--muted)" font-size="11">что вошло</text>
+
+      <line x1="230" y1="108" x2="376" y2="108" stroke="var(--accent)" stroke-width="2" />
+      <polygon points="376,102 390,108 376,114" fill="var(--accent)" />
+      <text x="303" y="98" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">&#64;withTimestamp</text>
+
+      <rect x="394" y="52" width="200" height="112" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="494" y="80" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">class extends</text>
+      <text x="494" y="102" text-anchor="middle" fill="var(--fg)" font-size="12">title</text>
+      <text x="494" y="122" text-anchor="middle" fill="var(--green)" font-size="12">createdAt ← добавлено</text>
+      <text x="494" y="148" text-anchor="middle" fill="var(--muted)" font-size="11">что вышло (новый Document)</text>
+    </svg>
+    <figcaption>Декоратор вернул новый класс-наследник — и теперь имя <code>Document</code> указывает на него. Всё старое (<code>title</code>) на месте, но добавилось поле <code>createdAt</code>.</figcaption>
+  </figure>
+  <app-code-block [code]="replaceDiagram" lang="typescript" />
+  <p class="note"><strong>Что можно вернуть.</strong> Декоратор класса может вернуть <em>только</em> новый класс — тогда он заменит исходный, — либо не вернуть ничего (<code>undefined</code>), тогда класс останется прежним. Вернуть число, строку или объект нельзя: это не класс, и TypeScript выдаст ошибку.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Фабрика с настройкой на практике</h2>
+  <p>Соберём вместе фабрику (декоратор с аргументом) и сохранение настройки. Похоже на <code>&#64;Entity('users')</code> из библиотек работы с базой данных: каждому классу-«таблице» назначим её имя в базе:</p>
+  <app-code-block [code]="factoryEntity" lang="typescript" />
+  <p>Теперь у каждого класса есть свойство <code>tableName</code>, которое проставил декоратор при объявлении. Другой код (например, слой доступа к базе) может это свойство прочитать и понять, в какую таблицу писать. Правда, вешать заметки прямо на класс не всегда удобно — для этого есть аккуратный «блокнот» <code>metadata</code>, о котором отдельная страница <a routerLink="/typescript/decorators/metadata">Метаданные</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как это выглядит в старом режиме</h2>
+  <p>В Angular и NestJS декораторы классов (<code>&#64;Component</code>, <code>&#64;Injectable</code>, <code>&#64;Module</code>) написаны в <strong>старом, экспериментальном</strong> стиле. Отличие простое: старый декоратор класса получает <strong>один</strong> аргумент — конструктор, — и никакого <code>context</code>:</p>
+  <app-code-block [code]="legacyNote" lang="typescript" />
+  <p class="note"><strong>Вывод.</strong> Логика та же, но сигнатуры разные: новый — <code>(value, context)</code>, старый — <code>(constructor)</code>. В новом коде пишите первый вариант. Почему нельзя смешивать оба режима — на странице <a routerLink="/typescript/decorators/pitfalls">нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Декоратор класса</strong> получает <code>(value, context)</code>: <code>value</code> — сам класс, <code>context</code> — паспорт с <code>kind: 'class'</code> и <code>name</code>.</li>
+    <li><strong>Способ 1 — посмотреть/подействовать:</strong> ничего не возвращаем, просто делаем что-то с классом (<code>&#64;sealed</code>, <code>Object.freeze</code>).</li>
+    <li><strong>Способ 2 — регистрация:</strong> декоратор кладёт класс в общий реестр; так работают плагины и команды. Самый частый приём на практике.</li>
+    <li><strong>Способ 3 — замена:</strong> если декоратор вернёт новый класс, он заменит исходный. Обычно возвращают подкласс, добавляющий поле или поведение.</li>
+    <li><strong>Вернуть можно только класс</strong> (тогда замена) или ничего (тогда класс прежний) — не число и не строку.</li>
+    <li><strong>В старом режиме</strong> декоратор класса получает один аргумент — конструктор. Так написаны декораторы Angular и NestJS.</li>
+  </ul>
+  <p class="note">Дальше — <a routerLink="/typescript/decorators/members">методы, свойства и аксессоры</a>: наклейки не на весь класс, а на его отдельные части, и там появляется самое интересное — обёртки, которые срабатывают на каждый вызов. Затем — <a routerLink="/typescript/decorators/metadata">метаданные</a> и <a routerLink="/typescript/decorators/pitfalls">подводные камни</a>. Полезно вспомнить <a routerLink="/typescript/classes/basics">основы классов</a> и <a routerLink="/typescript/classes/abstract">наследование</a> — приём «вернуть подкласс» опирается именно на него.</p>
+</section>
+</article>

@@ -1,0 +1,143 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/decorators">Декораторы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Нюансы и подводные камни</span></nav>
+
+<h1 class="doc__title">Нюансы и подводные камни</h1>
+<p class="doc__lead">Декораторы выглядят просто — значок <code>&#64;</code> и функция, — но именно на мелочах новички спотыкаются чаще всего. Здесь собраны самые частые грабли: <em>когда</em> декоратор срабатывает, <em>со скобками или без</em>, чем отличаются два поколения и почему чужой декоратор из интернета вдруг ломается. Каждый пункт — с примером, объяснением <em>почему</em> так и как сделать правильно. Если что-то кажется незнакомым, вернитесь к <a routerLink="/typescript/decorators/basics">основам</a> и следующим страницам раздела.</p>
+
+<section class="doc__section">
+  <h2>1. Декоратор срабатывает раз, а не на каждый вызов</h2>
+  <p>Самое частое недопонимание. Тело декоратора выполняется <strong>один раз</strong> — когда объявляется класс. На каждый вызов метода работает лишь <em>обёртка</em>, которую декоратор вернул. Разделяйте эти два момента:</p>
+  <app-code-block [code]="onceVsEach" lang="typescript" />
+  <p>Строчка «НАСТРОЙКА декоратора» печатается сразу при загрузке файла, ещё до любого <code>fetch()</code>. А «вызов метода» — на каждый вызов. Отсюда вытекает коварное следствие: переменная, объявленная в теле декоратора, <strong>общая для всех объектов</strong> класса, ведь замыкание создаётся единожды.</p>
+  <app-code-block [code]="sharedState" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Всё, что должно быть «своим» у каждого объекта (счётчик, кэш), храните на самом объекте — через <code>this</code> (удобно с ключом-символом), а не в переменной внутри декоратора. В теле декоратора держите только то, что действительно общее.</p>
+</section>
+
+<section class="doc__section">
+  <h2>2. <code>&#64;имя</code> и <code>&#64;имя()</code> — разные вещи</h2>
+  <p>Скобки после <code>&#64;</code> меняют смысл. <code>&#64;имя</code> — это готовый декоратор. <code>&#64;имя()</code> — это <em>вызов фабрики</em>, которая должна вернуть декоратор. Перепутаете — получите ошибку:</p>
+  <app-code-block [code]="factoryConfusion" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Скобки после <code>&#64;</code> ставятся тогда и только тогда, когда это фабрика (декоратор с настройкой). Обычный декоратор без аргументов — без скобок. Если видите в чужом коде <code>&#64;Component(&#123;...&#125;)</code> — это фабрика; <code>&#64;sealed</code> — обычный декоратор. Подробнее — <a routerLink="/typescript/decorators/basics">основы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>3. Порядок: сверху пишутся, снизу применяются</h2>
+  <p>Когда на одном месте висит несколько декораторов, порядок неочевиден. Правил три, и они простые: <strong>выражения-фабрики вычисляются сверху вниз</strong>; <strong>сами декораторы применяются снизу вверх</strong> (ближайший к объявлению — первым), как матрёшка <code>f(g(x))</code>; а <strong>декоратор класса применяется последним</strong>, после всех его членов.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 210" width="100%" role="img" aria-label="Стек декораторов: выражения вычисляются сверху вниз, применяются снизу вверх">
+      <rect x="60" y="40" width="220" height="130" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="170" y="64" text-anchor="middle" fill="var(--muted)" font-size="12">запись в коде</text>
+      <text x="170" y="92" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#64;a</text>
+      <text x="170" y="116" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#64;b</text>
+      <text x="170" y="140" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">method()</text>
+
+      <line x1="300" y1="70" x2="300" y2="150" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 4" />
+
+      <text x="430" y="64" text-anchor="middle" fill="var(--muted)" font-size="12">что происходит</text>
+      <text x="430" y="92" text-anchor="middle" fill="var(--accent)" font-size="12">вычислить &#64;a, потом &#64;b (сверху вниз)</text>
+      <text x="430" y="120" text-anchor="middle" fill="var(--green)" font-size="12">применить &#64;b, потом &#64;a (снизу вверх)</text>
+      <text x="430" y="148" text-anchor="middle" fill="var(--muted)" font-size="12">класс — в самом конце</text>
+    </svg>
+    <figcaption>Сначала вычисляются выражения декораторов сверху вниз (например, вызовы фабрик), затем декораторы применяются в обратном порядке — снизу вверх. Декоратор класса срабатывает после всех своих членов.</figcaption>
+  </figure>
+  <p class="note"><strong>Почему это важно.</strong> Если <code>&#64;a</code> и <code>&#64;b</code> оба оборачивают метод, то <code>&#64;b</code> обернёт первым, а <code>&#64;a</code> — поверх него. При вызове метода внешним окажется <code>&#64;a</code>: он получит управление раньше. Когда декораторы независимы, порядок не важен; когда один влияет на другой — держите это правило в голове.</p>
+</section>
+
+<section class="doc__section">
+  <h2>4. Нельзя смешивать два поколения</h2>
+  <p>Очень частая беда: находят декоратор в статье или в коде Angular и вставляют к себе, а он не работает. Причина — <strong>разные сигнатуры</strong>. Старый (экспериментальный) декоратор ждёт <code>(target, key, descriptor)</code>, стандартный получает <code>(value, context)</code>. Это несовместимо:</p>
+  <app-code-block [code]="mixGenerations" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Определитесь с режимом. Флаг <code>"experimentalDecorators": true</code> в <code>tsconfig.json</code> включает старые правила (нужны Angular, NestJS, TypeORM); без него работают стандартные. Признак старого декоратора — обращения к <code>target.prototype</code> и <code>descriptor.value</code>. Не переносите такой код в проект со стандартными декораторами, не переписав его. См. таблицу отличий в <a routerLink="/typescript/decorators/basics">основах</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>5. Декоратор поля не перехватывает доступ</h2>
+  <p>От декоратора поля часто ждут, что он позволит «следить» за чтением и записью свойства. Не позволит. Значение поля ему недоступно (<code>value</code> — всегда <code>undefined</code>), и всё, что он умеет, — вернуть функцию, преобразующую <strong>начальное</strong> значение. Дальнейшие присваивания идут мимо него:</p>
+  <app-code-block [code]="fieldNotWrap" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Нужно перехватывать чтение и запись — используйте <code>accessor</code>: его декоратор возвращает <code>&#123; get, set, init &#125;</code> и вклинивается в оба действия. Разбор — на странице <a routerLink="/typescript/decorators/members">методы, свойства, аксессоры</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>6. Обёртка метода теряет <code>this</code></h2>
+  <p>Если обёртку написать стрелочной функцией или вызвать оригинал напрямую (<code>value(...args)</code>), метод потеряет <code>this</code> и не найдёт своих полей — типичный <code>Cannot read properties of undefined</code>:</p>
+  <app-code-block [code]="thisLost" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Обёртка — обычная <code>function</code> (не стрелка), а оригинал вызывайте через <code>value.apply(this, args)</code>: тогда <code>this</code> честно дойдёт до метода. Подробно про <code>this</code> — <a routerLink="/javascript/functions/this">контекст this</a> и <a routerLink="/javascript/context/call-apply-bind">call, apply, bind</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>7. Параметры — только в старом режиме</h2>
+  <p>Стандартные декораторы <strong>пока не умеют</strong> декорировать параметры функций и методов. Попытка это сделать — ошибка компиляции. Декораторы параметров существуют только в экспериментальном режиме, и именно на них построен <code>&#64;Inject(...)</code> в Angular и NestJS:</p>
+  <app-code-block [code]="paramLegacyOnly" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Если вам нужен декоратор параметра (например, для внедрения зависимостей), вы в мире экспериментальных декораторов — включите <code>experimentalDecorators</code>. В стандартном режиме перенесите логику в декоратор метода или конструктора, либо решайте задачу без декоратора параметра.</p>
+</section>
+
+<section class="doc__section">
+  <h2>8. <code>Symbol.metadata</code> оказался <code>undefined</code></h2>
+  <p>Записывали заметки в <code>context.metadata</code>, а <code>Класс[Symbol.metadata]</code> вернул <code>undefined</code>. Причин обычно три — полифилл, устаревший <code>lib</code> или отсутствие записей:</p>
+  <app-code-block [code]="metadataUndefined" lang="typescript" />
+  <p class="note"><strong>Как правильно.</strong> Подключите полифилл <code>Symbol.metadata</code> один раз в начале приложения, поставьте <code>"lib": ["ESNext"]</code> в <code>tsconfig.json</code> и убедитесь, что хоть один декоратор реально что-то записал. И не путайте стандартный <code>Symbol.metadata</code> с <code>reflect-metadata</code> из Angular — это разные механизмы. Разбор — на странице <a routerLink="/typescript/decorators/metadata">метаданные</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Сводка: частая ошибка → как правильно</h2>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Частая ошибка</th>
+          <th>Как правильно</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="no">Думать, что декоратор работает на каждый вызов</td>
+          <td class="yes">Тело — раз (при объявлении); на вызов — обёртка</td>
+        </tr>
+        <tr>
+          <td class="no">Хранить «своё» у объекта в переменной декоратора</td>
+          <td class="yes">Хранить на <code>this</code>; в декораторе — только общее</td>
+        </tr>
+        <tr>
+          <td class="no">Путать <code>&#64;имя</code> и <code>&#64;имя()</code></td>
+          <td class="yes">Скобки — только у фабрик (декораторов с настройкой)</td>
+        </tr>
+        <tr>
+          <td class="no">Вставлять старый <code>(target, key, descriptor)</code> к стандартным</td>
+          <td class="yes">Один режим; <code>experimentalDecorators</code> для старых</td>
+        </tr>
+        <tr>
+          <td class="no">Ждать перехвата доступа от декоратора поля</td>
+          <td class="yes">Для чтения/записи — <code>accessor</code> с <code>&#123; get, set, init &#125;</code></td>
+        </tr>
+        <tr>
+          <td class="no">Стрелка / <code>value(...args)</code> в обёртке</td>
+          <td class="yes"><code>function</code> + <code>value.apply(this, args)</code></td>
+        </tr>
+        <tr>
+          <td class="no">Декорировать параметр в стандартном режиме</td>
+          <td class="yes">Только <code>experimentalDecorators</code>; иначе — решать без него</td>
+        </tr>
+        <tr>
+          <td class="no"><code>Symbol.metadata</code> без полифилла и <code>lib</code></td>
+          <td class="yes">Полифилл + <code>"lib": ["ESNext"]</code>; это не <code>reflect-metadata</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Раз, а не на вызов.</strong> Тело декоратора выполняется при объявлении класса; на каждый вызов работает возвращённая обёртка. Переменные в декораторе — общие для всех объектов; «своё» держите на <code>this</code>.</li>
+    <li><strong>Скобки решают.</strong> <code>&#64;имя</code> — готовый декоратор, <code>&#64;имя()</code> — вызов фабрики. Перепутали — ошибка.</li>
+    <li><strong>Порядок:</strong> выражения — сверху вниз, применение — снизу вверх, класс — последним.</li>
+    <li><strong>Два поколения несовместимы.</strong> <code>(value, context)</code> у стандартных, <code>(target, key, descriptor)</code> у старых. Флаг <code>experimentalDecorators</code> выбирает режим; чужой декоратор из другого мира сам не заработает.</li>
+    <li><strong>Поле не оборачивается.</strong> <code>value = undefined</code>, можно лишь поправить начальное значение; для перехвата доступа — <code>accessor</code>.</li>
+    <li><strong><code>this</code> в обёртке</strong> — через <code>function</code> и <code>value.apply(this, args)</code>.</li>
+    <li><strong>Параметры</strong> декорируются только в старом режиме.</li>
+    <li><strong><code>Symbol.metadata</code></strong> требует полифилла и современного <code>lib</code>; это не <code>reflect-metadata</code>.</li>
+  </ul>
+  <p class="note">Инструменты по отдельности: <a routerLink="/typescript/decorators/basics">основы</a>, <a routerLink="/typescript/decorators/class">декораторы классов</a>, <a routerLink="/typescript/decorators/members">методы, свойства, аксессоры</a> и <a routerLink="/typescript/decorators/metadata">метаданные</a>. Смежное: <a routerLink="/javascript/functions/this">контекст this</a> (потеря <code>this</code> в обёртках) и <a routerLink="/typescript/config/strict">конфигурация компилятора</a> (флаги вроде <code>experimentalDecorators</code>).</p>
+</section>
+</article>

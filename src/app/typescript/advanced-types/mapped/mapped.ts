@@ -158,6 +158,73 @@ type UserGetters = Getters<User>;
 // отбрасывает number и symbol, оставляя строковую часть ключа. Без него —
 // ❌ Type 'K' does not satisfy the constraint 'string'.`;
 
+  protected readonly condValue = `// Правило справа от двоеточия может быть УСЛОВНЫМ типом (extends ? :).
+// Оно смотрит на тип текущего поля T[K] и решает, чем его заменить —
+// то есть теперь правило РАЗНОЕ для разных полей, а не одно на всех.
+
+// «Сериализуем» тип: все поля-Date заменим на string (как после JSON,
+// где настоящих дат нет), остальные поля оставим нетронутыми.
+type Serialized<T> = {
+  [K in keyof T]: T[K] extends Date ? string : T[K];
+};
+
+interface Meeting {
+  title: string;
+  attendees: number;
+  date: Date;
+}
+
+type SerializedMeeting = Serialized<Meeting>;
+// = {
+//     title: string;      ← не Date, условие не сработало → как было
+//     attendees: number;  ← тоже как было
+//     date: string;       ← была Date → заменили на string
+//   }`;
+
+  protected readonly condKeep = `// Самый мощный приём: УСЛОВИЕ В ИМЕНИ КЛЮЧА (после as).
+// Секрет: если переименовать ключ в never — поле ПРОПАДАЕТ из типа целиком.
+// Значит, условие в позиции ключа работает как ФИЛЬТР:
+//   подошло  → оставляем ключ K
+//   не подошло → отдаём never, и поле выпадает.
+
+// Оставим только поля-функции (методы), а обычные данные выбросим.
+type MethodsOnly<T> = {
+  [K in keyof T as T[K] extends Function ? K : never]: T[K];
+};
+
+interface Widget {
+  id: number;
+  title: string;
+  render: () => void;
+  destroy: () => void;
+}
+
+type WidgetMethods = MethodsOnly<Widget>;
+// = {
+//     render: () => void;
+//     destroy: () => void;
+//   }
+// Ключи id и title стали never — и поля просто исчезли из типа.`;
+
+  protected readonly condDrop = `// Тот же трюк наоборот — ВЫБРОСИТЬ конкретное поле. Условие смотрит уже
+// не на тип значения, а на само имя ключа K.
+type Public<T> = {
+  [K in keyof T as K extends 'password' ? never : K]: T[K];
+};
+
+interface Account {
+  id: number;
+  email: string;
+  password: string;
+}
+
+type PublicAccount = Public<Account>;
+// = {
+//     id: number;
+//     email: string;
+//   }
+// Поле password вырезано — удобно, чтобы случайно не отдать пароль наружу.`;
+
   protected readonly stdlib = `// Всё это — не «магия справочника». Ровно такие определения лежат
 // в стандартной библиотеке TypeScript (файл lib.es5.d.ts):
 //

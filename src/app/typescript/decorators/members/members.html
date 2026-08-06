@@ -1,0 +1,156 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/decorators">Декораторы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Методы, свойства, аксессоры</span></nav>
+
+<h1 class="doc__title">Методы, свойства, аксессоры</h1>
+<p class="doc__lead">До этого мы клеили наклейку на весь класс. Теперь спустимся внутрь и будем декорировать его <strong>отдельные части</strong>: методы, свойства (поля), геттеры и аксессоры. Здесь появляется самое полезное умение декораторов — <strong>обёртка</strong>: декоратор метода может «завернуть» метод в дополнительный слой, который срабатывает на <em>каждый вызов</em> (логирует, замеряет время, проверяет права). У каждого вида члена свои правила — что декоратор получает и что должен вернуть, — и мы разберём их по одному. Основы значка <code>&#64;</code> — на странице <a routerLink="/typescript/decorators/basics">основы</a>.</p>
+
+<section class="doc__section">
+  <h2>Декоратор метода: обёртка</h2>
+  <p>Декоратор метода получает <strong>сам метод</strong> (аргумент <code>value</code>) и может <strong>вернуть другую функцию</strong> — обёртку. Тогда класс будет звать обёртку вместо исходного метода. Представьте секретаря перед кабинетом: он записывает каждого посетителя в журнал, потом пропускает его к начальнику и передаёт ответ обратно. Обёртка делает ровно это — что-то до вызова, потом сам вызов, потом что-то после:</p>
+  <app-code-block [code]="methodWrap" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 210" width="100%" role="img" aria-label="Обёртка метода: вызов проходит через слой, который выполняет код до и после настоящего метода">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">каждый вызов проходит через обёртку</text>
+
+      <rect x="20" y="80" width="96" height="48" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="68" y="109" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">add(2,3)</text>
+
+      <line x1="116" y1="104" x2="152" y2="104" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="152,98 166,104 152,110" fill="var(--muted)" />
+
+      <rect x="170" y="52" width="320" height="108" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="330" y="76" text-anchor="middle" fill="var(--accent)" font-size="12">обёртка (&#64;log)</text>
+      <text x="330" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">1. лог «до»</text>
+      <rect x="238" y="106" width="184" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="330" y="128" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">настоящий add</text>
+      <text x="330" y="154" text-anchor="middle" fill="var(--muted)" font-size="11">2. вызов · 3. лог «после»</text>
+
+      <line x1="490" y1="104" x2="526" y2="104" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="526,98 540,104 526,110" fill="var(--muted)" />
+
+      <rect x="544" y="80" width="90" height="48" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="589" y="109" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">5</text>
+    </svg>
+    <figcaption>Обёртка стоит между вызовом и настоящим методом: она добавляет действия «до» и «после», а сам метод вызывает через <code>value.apply(this, args)</code> и возвращает его результат наружу.</figcaption>
+  </figure>
+  <p>Заметьте: <strong>сам декоратор</strong> (<code>log</code>) сработал один раз при объявлении класса — он лишь подготовил обёртку. А вот <strong>обёртка</strong> запускается на каждый <code>add()</code>. Это то самое различие «декоратор ставится раз, а установленное поведение работает много раз», о котором предупреждали в основах.</p>
+  <p>Практический пример той же идеи — <code>&#64;measure</code>, который замеряет длительность метода. Логику замера пишем однажды, а вешаем на любой «тяжёлый» метод одной строкой:</p>
+  <app-code-block [code]="methodMeasure" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Осторожно с <code>this</code> в обёртке</h2>
+  <p>Обёртка должна <strong>пробросить</strong> <code>this</code> в настоящий метод — иначе метод не найдёт своих полей. Здесь легко ошибиться, поэтому запомните два правила: обёртка — это обычная <code>function</code> (не стрелка), а оригинал вызывается через <code>value.apply(this, args)</code>:</p>
+  <app-code-block [code]="thisWarning" lang="typescript" />
+  <p class="note"><strong>Почему так.</strong> Стрелочная функция «запоминает» чужой <code>this</code> из места, где её создали, и не даст объекту подставить свой. А прямой вызов <code>value(...args)</code> вообще теряет <code>this</code>. Обычная <code>function</code> плюс <code>.apply(this, args)</code> честно передаёт тот объект, на котором метод позвали. Подробно про поведение <code>this</code> — на странице <a routerLink="/javascript/functions/this">контекст this</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Полезный приём: <code>&#64;bound</code></h2>
+  <p>Частая беда: метод «теряет <code>this</code>», когда его отрывают от объекта и передают как колбэк (например, <code>onClick</code> в обработчик события). Декоратор <code>&#64;bound</code> решает это раз и навсегда. Он использует <code>context.addInitializer</code> — способ выполнить код <strong>при создании каждого объекта</strong>, когда <code>this</code> уже указывает на новый экземпляр:</p>
+  <app-code-block [code]="bound" lang="typescript" />
+  <p>Внутри <code>addInitializer</code> мы для каждого нового объекта намертво привязываем метод к нему через <code>.bind(this)</code>. Теперь метод можно отрывать, передавать куда угодно — <code>this</code> всегда останется правильной кнопкой. Это тот же приём, что раньше писали руками в конструкторе (<code>this.onClick = this.onClick.bind(this)</code>), только вынесенный в аккуратную наклейку.</p>
+  <p class="note"><strong>Когда именно срабатывает <code>addInitializer</code>.</strong> У декоратора <em>члена</em> (метода, поля) — при создании <strong>каждого</strong> объекта, и <code>this</code> внутри указывает на новый экземпляр (именно это нам и нужно для <code>&#64;bound</code>). А если вызвать <code>addInitializer</code> из декоратора <em>класса</em>, он сработает один раз, когда класс полностью готов. Момент зависит от того, что декорируют.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Декоратор свойства (поля)</h2>
+  <p>С полями всё устроено иначе, и это важно понять, чтобы не ждать от них лишнего. Декоратор поля <strong>не получает значение</strong> (аргумент <code>value</code> здесь всегда <code>undefined</code>) и <strong>не может обернуть</strong> чтение или запись. Он умеет ровно одно: вернуть функцию, которая <strong>преобразует начальное значение</strong> поля в момент создания объекта:</p>
+  <app-code-block [code]="field" lang="typescript" />
+  <p>Возвращённая функция получает начальное значение (<code>initial</code>) и возвращает исправленное. В примере отрицательный баланс превращается в ноль. И это весь арсенал декоратора поля — «поправить стартовое значение». Захотите перехватывать <em>чтение и запись</em> — понадобится <code>accessor</code> (следующий раздел).</p>
+  <p>Тот же приём в виде фабрики — <code>&#64;defaultTo</code> подставляет значение по умолчанию, если поле оставили пустым:</p>
+  <app-code-block [code]="fieldFactory" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Аксессоры: перехват чтения и записи</h2>
+  <p>Чтобы вклиниться в <em>чтение</em> и <em>запись</em> свойства (а не только в его начальное значение), в новых декораторах появилось ключевое слово <code>accessor</code>. Запись <code>accessor health = 150</code> — это сокращение: язык сам заводит скрытое поле и пару геттер/сеттер к нему. Декоратор такого аксессора возвращает объект <code>&#123; get, set, init &#125;</code>, и можно подменить любую из трёх частей: как читать, как записывать, каким сделать начальное значение.</p>
+  <p>Соберём <code>&#64;clamp</code>, который держит число в заданном диапазоне и при создании, и при каждой записи — удобно для здоровья игрока, громкости, процентов:</p>
+  <app-code-block [code]="accessor" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 190" width="100%" role="img" aria-label="Аксессор с декоратором clamp перехватывает init, set и get, обрезая значение в диапазон">
+      <text x="320" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">&#64;clamp(0, 100) accessor health</text>
+
+      <rect x="30" y="52" width="150" height="46" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="105" y="74" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">= 150 (init)</text>
+      <text x="105" y="90" text-anchor="middle" fill="var(--muted)" font-size="11">начальное</text>
+      <rect x="30" y="112" width="150" height="46" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="105" y="134" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">= 999 (set)</text>
+      <text x="105" y="150" text-anchor="middle" fill="var(--muted)" font-size="11">запись</text>
+
+      <line x1="180" y1="105" x2="246" y2="105" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="246,99 260,105 246,111" fill="var(--muted)" />
+
+      <rect x="264" y="70" width="180" height="70" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="354" y="100" text-anchor="middle" fill="var(--accent)" font-size="13">clamp(0..100)</text>
+      <text x="354" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">обрезает в диапазон</text>
+
+      <line x1="444" y1="105" x2="510" y2="105" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="510,99 524,105 510,111" fill="var(--muted)" />
+
+      <rect x="528" y="82" width="96" height="46" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="576" y="110" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">100</text>
+    </svg>
+    <figcaption>Аксессор с <code>&#64;clamp</code> пропускает через себя и начальное значение, и каждую запись: <code>150</code> и <code>999</code> обрезаются до <code>100</code>, а <code>-50</code> — до <code>0</code>. Плоское поле так не умеет, только аксессор.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Что получает и что возвращает каждый вид</h2>
+  <p>Сведём в таблицу, чтобы не держать всё в голове. Именно этим виды членских декораторов и отличаются друг от друга:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Вид</th>
+          <th>Что получает (<code>value</code>)</th>
+          <th>Что можно вернуть</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Метод</td>
+          <td>сам метод (функцию)</td>
+          <td>новую функцию-обёртку (или ничего)</td>
+        </tr>
+        <tr>
+          <td>Геттер / сеттер</td>
+          <td>функцию геттера/сеттера</td>
+          <td>новую функцию (или ничего)</td>
+        </tr>
+        <tr>
+          <td>Свойство (поле)</td>
+          <td class="no"><code>undefined</code> (значения нет)</td>
+          <td>функцию <code>(initial) =&gt; новое</code> (или ничего)</td>
+        </tr>
+        <tr>
+          <td>Аксессор (<code>accessor</code>)</td>
+          <td>объект с <code>get</code> и <code>set</code></td>
+          <td>объект <code>&#123; get, set, init &#125;</code> (или ничего)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Во всех случаях у декоратора есть второй аргумент — <code>context</code> с полями <code>kind</code> (<code>'method'</code>, <code>'field'</code>, <code>'getter'</code>, <code>'accessor'</code>…), <code>name</code>, <code>static</code>, <code>private</code>, а также <code>addInitializer</code> и <code>metadata</code>. И у всех работает правило: вернул новое — заменит исходное, вернул <code>undefined</code> — оставит как было.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как это выглядит в старом режиме</h2>
+  <p>В экспериментальных декораторах метод декорируют иначе: функция получает <code>(target, ключ, дескриптор)</code> и <strong>меняет</strong> <code>descriptor.value</code> на месте, а не возвращает новую функцию:</p>
+  <app-code-block [code]="legacyMethod" lang="typescript" />
+  <p class="note"><strong>Вывод.</strong> Идея та же — «подменить метод обёрткой», — но механика разная: новый декоратор <em>возвращает</em> функцию, старый <em>правит дескриптор</em>. Отдельного «декоратора поля-инициализатора» в старом режиме нет: там поля декорируют как свойства с сигнатурой <code>(target, ключ)</code>. Разбор различий — на странице <a routerLink="/typescript/decorators/pitfalls">нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Декоратор метода</strong> получает сам метод и может вернуть <strong>обёртку</strong> — функцию, которая срабатывает на каждый вызов (лог, замер, проверка). Оригинал внутри вызывают через <code>value.apply(this, args)</code>.</li>
+    <li><strong>Сам декоратор — раз, обёртка — много.</strong> Декоратор ставится при объявлении класса; установленная им обёртка работает на каждый вызов метода.</li>
+    <li><strong><code>this</code> в обёртке</strong> пробрасывайте через обычную <code>function</code> и <code>.apply(this, args)</code>; стрелка и прямой вызов теряют контекст.</li>
+    <li><strong><code>&#64;bound</code></strong> через <code>context.addInitializer</code> намертво привязывает метод к объекту — решает проблему «потерянного <code>this</code>» в колбэках.</li>
+    <li><strong>Декоратор поля</strong> не видит значения (<code>value = undefined</code>) и не оборачивает доступ — он лишь возвращает <code>(initial) =&gt; новое</code>, чтобы поправить <strong>начальное значение</strong>.</li>
+    <li><strong>Аксессор (<code>accessor</code>)</strong> — единственный способ перехватить <em>чтение и запись</em>: декоратор возвращает <code>&#123; get, set, init &#125;</code>.</li>
+  </ul>
+  <p class="note">Дальше — <a routerLink="/typescript/decorators/metadata">метаданные</a>: как декораторы оставляют «заметки» о полях и методах, чтобы другой код (валидатор, ORM) их прочитал. Затем — <a routerLink="/typescript/decorators/pitfalls">нюансы и подводные камни</a>. Про перехват доступа к свойствам без декораторов см. также <a routerLink="/javascript/proxy-reflect/basics">Proxy и Reflect</a>, а про <code>this</code> — <a routerLink="/javascript/functions/this">контекст this</a>.</p>
+</section>
+</article>

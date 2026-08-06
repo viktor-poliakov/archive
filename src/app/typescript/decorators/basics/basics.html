@@ -1,0 +1,175 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/decorators">Декораторы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Основы</span></nav>
+
+<h1 class="doc__title">Основы</h1>
+<p class="doc__lead">Декоратор — это <strong>наклейка на класс или его часть</strong>, которая добавляет им поведение, не залезая внутрь. Представьте фабрику: изделие сходит с конвейера, и на него шлёпают штамп — «проверено», «упаковать в плёнку», «зарегистрировать на складе». Изделие остаётся прежним, но штамп что-то с ним делает или что-то про него запоминает. В коде таким «штампом» служит значок <code>&#64;</code> перед именем функции: <code>&#64;log</code>, <code>&#64;sealed</code>, <code>&#64;Component</code>. Под капотом декоратор — это <strong>обычная функция</strong>, которую язык вызывает за вас в нужный момент. Давайте разберём этот механизм с самого нуля, медленно и по шагам.</p>
+
+<section class="doc__section">
+  <h2>Зачем они нужны</h2>
+  <p>Начнём с боли, которую декораторы лечат. Допустим, мы хотим, чтобы при каждом вызове метода в консоль печаталась строчка «меня вызвали» — это удобно для отладки. Без декораторов служебную строчку приходится вписывать <strong>внутрь каждого метода руками</strong>:</p>
+  <app-code-block [code]="painManual" lang="typescript" />
+  <p>Проблема видна сразу: полезный код (создать пользователя) перемешан со служебным (напечатать в консоль). Строчка-повторяшка кочует из метода в метод — её легко забыть, тяжело менять, и она засоряет глаза. Хочется сказать «печатай при вызове» <em>один раз снаружи</em>, а не внутри каждого метода. Ровно это и делает декоратор:</p>
+  <app-code-block [code]="painDecorator" lang="typescript" />
+  <p>Методы снова чистые: видно только то, что они реально делают. А наклейка <code>&#64;log</code> навешивает логирование сверху. Написать сам <code>&#64;log</code> нужно лишь однажды — и повесить хоть на сто методов. Вот главная идея: <strong>декоратор выносит «сквозное» поведение (логирование, проверку прав, кэш, замер времени) из тела методов в отдельную переиспользуемую наклейку</strong>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Декоратор — это просто функция</h2>
+  <p>Никакой магии тут нет. Декоратор — это <strong>обычная функция</strong>, у которой особая роль: её вешают на объявление через значок <code>&#64;</code>, и язык сам вызывает её за вас. Напишем самый простой декоратор класса — он будет просто печатать имя класса:</p>
+  <app-code-block [code]="firstDecorator" lang="typescript" />
+  <p>Разберём по частям. Функция <code>logged</code> получает два аргумента: <code>value</code> — это сам класс, на который её повесили, и <code>context</code> — «паспорт» с информацией о том, <em>что</em> и <em>как</em> декорируют (здесь мы читаем из него <code>context.name</code> — имя класса). Строка <code>&#64;logged</code> над классом <code>Cat</code> означает: «когда будешь объявлять этот класс, вызови функцию <code>logged</code> и передай ей класс». Всё — это и есть декоратор.</p>
+  <p class="note"><strong>Значок <code>&#64;</code> читается как «приклей».</strong> <code>&#64;logged class Cat</code> — «приклей <code>logged</code> к классу <code>Cat</code>». Никакого нового синтаксиса запоминать не нужно: справа от <code>&#64;</code> стоит имя обычной функции, которую вы (или библиотека) написали заранее.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда декоратор срабатывает</h2>
+  <p>Это <strong>самый важный</strong> момент для новичка, и именно здесь чаще всего возникает путаница. Тело декоратора выполняется <strong>один раз</strong> — в тот миг, когда JavaScript впервые «читает» объявление класса (обычно при загрузке файла). Оно срабатывает <em>не</em> на каждый <code>new</code>, а единожды, само по себе — как штамп на конвейере ставят на образец при запуске производства, а не на каждую проданную коробку.</p>
+  <app-code-block [code]="whenItRuns" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Декоратор срабатывает один раз при объявлении класса, а конструктор — на каждый new">
+      <text x="330" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">две разные точки во времени</text>
+
+      <rect x="24" y="48" width="300" height="168" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="174" y="74" text-anchor="middle" fill="var(--accent)" font-size="13">1. ОБЪЯВЛЕНИЕ класса</text>
+      <text x="174" y="96" text-anchor="middle" fill="var(--muted)" font-size="12">происходит РАЗ, при загрузке</text>
+      <rect x="52" y="112" width="244" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="174" y="137" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#64;announce срабатывает</text>
+      <text x="174" y="180" text-anchor="middle" fill="var(--green)" font-size="12">тело декоратора: 1 раз</text>
+      <text x="174" y="200" text-anchor="middle" fill="var(--muted)" font-size="11">роботов ещё нет</text>
+
+      <rect x="336" y="48" width="300" height="168" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="2" />
+      <text x="486" y="74" text-anchor="middle" fill="var(--fg)" font-size="13">2. ИСПОЛЬЗОВАНИЕ класса</text>
+      <text x="486" y="96" text-anchor="middle" fill="var(--muted)" font-size="12">происходит МНОГО раз</text>
+      <rect x="364" y="112" width="110" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="419" y="137" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">new Robot()</text>
+      <rect x="498" y="112" width="110" height="40" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="553" y="137" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">new Robot()</text>
+      <text x="486" y="180" text-anchor="middle" fill="var(--muted)" font-size="12">конструктор: на КАЖДЫЙ new</text>
+      <text x="486" y="200" text-anchor="middle" fill="var(--muted)" font-size="11">декоратор здесь уже не участвует</text>
+    </svg>
+    <figcaption>Декоратор — событие «изготовления класса»: случается один раз. Создание объектов через <code>new</code> — событие «использования»: случается сколько угодно раз, и тело декоратора там уже не запускается.</figcaption>
+  </figure>
+  <p class="note"><strong>Запомните различие.</strong> Сам декоратор (функция с <code>&#64;</code>) работает <em>один раз</em>, при объявлении. Но он может <em>установить</em> обёртку, которая потом будет срабатывать на каждый вызов метода — это уже другое дело, разберём его на странице <a routerLink="/typescript/decorators/members">методы, свойства, аксессоры</a>. Пока держите в голове: «декоратор ставится один раз».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Декоратор с настройкой: фабрика</h2>
+  <p>Часто наклейку хочется <strong>настроить</strong> — например, передать префикс для лога или имя роли. Но сам значок <code>&#64;</code> аргументы не принимает. Приём такой: пишут функцию, которая <em>принимает настройку</em> и <em>возвращает</em> уже готовый декоратор. Такую функцию называют <strong>фабрикой декораторов</strong> — «фабрика наклеек»: говоришь ей, какую наклейку напечатать, и она выдаёт именно такую.</p>
+  <app-code-block [code]="factory" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 640 220" width="100%" role="img" aria-label="Фабрика декораторов: вызов с аргументом возвращает декоратор, который вешается на класс">
+      <rect x="20" y="70" width="180" height="70" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="110" y="100" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">logWithPrefix('...')</text>
+      <text x="110" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">вызов фабрики (со скобками)</text>
+
+      <line x1="200" y1="105" x2="266" y2="105" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="266,99 280,105 266,111" fill="var(--muted)" />
+      <text x="240" y="94" text-anchor="middle" fill="var(--muted)" font-size="11">возвращает</text>
+
+      <rect x="284" y="70" width="170" height="70" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="369" y="100" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">декоратор</text>
+      <text x="369" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">(value, context) =&gt; ...</text>
+
+      <line x1="454" y1="105" x2="520" y2="105" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="520,99 534,105 520,111" fill="var(--muted)" />
+      <text x="497" y="94" text-anchor="middle" fill="var(--muted)" font-size="11">вешается на</text>
+
+      <rect x="538" y="70" width="90" height="70" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="583" y="110" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Order</text>
+    </svg>
+    <figcaption><code>&#64;logWithPrefix('...')</code> — это сначала <em>вызов</em> фабрики (обратите внимание на скобки), она возвращает настоящий декоратор, и уже он вешается на класс. Так устроены <code>&#64;Component(&#123;...&#125;)</code> в Angular и <code>&#64;Module(&#123;...&#125;)</code> в NestJS.</figcaption>
+  </figure>
+  <p>Отсюда рождается частая путаница новичков — со скобками или без. Разница принципиальная:</p>
+  <app-code-block [code]="factoryVsPlain" lang="typescript" />
+  <p class="note"><strong>Правило.</strong> <code>&#64;имя</code> (без скобок) — это уже готовый декоратор. <code>&#64;имя(...)</code> (со скобками) — это фабрика, которую нужно <em>вызвать</em>, чтобы она вернула декоратор. Перепутаете — получите ошибку. Если видите скобки после <code>&#64;</code> — значит, автор написал фабрику.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Два поколения декораторов</h2>
+  <p>Здесь важно сразу расставить точки, иначе позже будет мешанина. В мире TypeScript <strong>уживаются два разных вида декораторов</strong>, и у них <em>разные</em> правила игры:</p>
+  <app-code-block [code]="standardVsLegacy" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th>Стандартные (новые)</th>
+          <th>Экспериментальные (старые)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Откуда взялись</td>
+          <td>Часть самого JavaScript (стандарт)</td>
+          <td>Ранняя версия из TypeScript</td>
+        </tr>
+        <tr>
+          <td>Как включить</td>
+          <td class="yes">Работают сразу в TS 5.0+</td>
+          <td class="no">Флаг <code>"experimentalDecorators": true</code></td>
+        </tr>
+        <tr>
+          <td>Сигнатура</td>
+          <td>всегда <code>(value, context)</code></td>
+          <td>зависит от места (метод — <code>(target, key, descriptor)</code>)</td>
+        </tr>
+        <tr>
+          <td>Декораторы параметров</td>
+          <td class="no">❌ пока нет</td>
+          <td class="yes">✅ есть (<code>&#64;Inject</code>)</td>
+        </tr>
+        <tr>
+          <td>Кто использует</td>
+          <td>Новый код, современные проекты</td>
+          <td>Angular, NestJS, TypeORM</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>На этом сайте мы учим <strong>стандартные</strong> декораторы: они уже часть языка, работают без настроек и являются будущим. Но старые встречаются повсюду (весь Angular на них построен), поэтому мы будем показывать, чем они отличаются, чтобы вы узнавали их в чужом коде. Самый простой способ отличить — по аргументам: у стандартных <strong>всегда</strong> <code>(value, context)</code>, а у старых сигнатура зависит от того, что декорируют (класс — <code>(constructor)</code>, метод — <code>(target, key, descriptor)</code>, свойство — <code>(target, key)</code>).</p>
+  <p class="note"><strong>Не смешивайте два режима в одном проекте.</strong> Если в <code>tsconfig.json</code> включён флаг <code>experimentalDecorators</code>, работают старые правила; если выключен — новые. Скопировать декоратор из Angular-примера в проект со стандартными декораторами и ждать, что он «просто заработает», — нельзя: сигнатуры разные. Подробнее — на странице <a routerLink="/typescript/decorators/pitfalls">нюансы и подводные камни</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Куда можно вешать декораторы</h2>
+  <p>Наклейку можно ставить не только на весь класс, но и на его «части» — методы, свойства, геттеры, аксессоры. Каждый вид декоратора получает чуть разные данные и умеет разное — этому посвящены отдельные страницы раздела. Пока просто посмотрите на общую карту мест:</p>
+  <app-code-block [code]="whereAllowed" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Карта мест, куда можно ставить декораторы: класс, свойство, метод, геттер, аксессор">
+      <rect x="150" y="20" width="320" height="210" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="310" y="46" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">&#64; class Widget</text>
+      <text x="486" y="46" text-anchor="start" fill="var(--muted)" font-size="11">← класс</text>
+
+      <rect x="176" y="66" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="192" y="88" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; title = '...'</text>
+      <text x="452" y="88" text-anchor="start" fill="var(--muted)" font-size="11">← свойство</text>
+
+      <rect x="176" y="108" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="192" y="130" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; render()</text>
+      <text x="452" y="130" text-anchor="start" fill="var(--muted)" font-size="11">← метод</text>
+
+      <rect x="176" y="150" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="192" y="172" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; get size()</text>
+      <text x="452" y="172" text-anchor="start" fill="var(--muted)" font-size="11">← геттер</text>
+
+      <rect x="176" y="192" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="192" y="214" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; accessor volume</text>
+      <text x="452" y="214" text-anchor="start" fill="var(--muted)" font-size="11">← аксессор</text>
+    </svg>
+    <figcaption>Декоратор можно поставить на весь класс и на любой его член. Параметры функций декорируются только в старом, экспериментальном режиме.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Декоратор</strong> — это наклейка-функция, которую вешают через значок <code>&#64;</code> на класс или его часть, чтобы добавить поведение снаружи, не меняя тело.</li>
+    <li><strong>Это обычная функция.</strong> Стандартный декоратор получает <code>(value, context)</code>: <code>value</code> — то, что декорируют, <code>context</code> — «паспорт» с видом (<code>kind</code>) и именем (<code>name</code>).</li>
+    <li><strong>Срабатывает один раз</strong> — при объявлении класса, а не на каждый <code>new</code>. Это ключевой момент, где путаются новички.</li>
+    <li><strong>Фабрика декораторов</strong> — функция, которая принимает настройку и возвращает декоратор. <code>&#64;имя</code> — готовый декоратор; <code>&#64;имя(...)</code> — вызов фабрики.</li>
+    <li><strong>Два поколения:</strong> стандартные <code>(value, context)</code> — работают в TS 5.0+ без настроек (учим их); экспериментальные <code>(target, key, descriptor)</code> — по флагу <code>experimentalDecorators</code>, их используют Angular и NestJS.</li>
+    <li><strong>Ставить можно</strong> на класс, свойство, метод, геттер/сеттер и авто-аксессор. Параметры — только в старом режиме.</li>
+  </ul>
+  <p class="note">Дальше по порядку: <a routerLink="/typescript/decorators/class">декораторы классов</a> (что они умеют делать с целым классом), затем <a routerLink="/typescript/decorators/members">методы, свойства и аксессоры</a> (наклейки на части класса), после — <a routerLink="/typescript/decorators/metadata">метаданные</a> (как декораторы оставляют заметки для другого кода) и, наконец, <a routerLink="/typescript/decorators/pitfalls">нюансы и подводные камни</a>. Полезно освежить в памяти <a routerLink="/typescript/classes/basics">классы</a> и <a routerLink="/javascript/functions/first-class">функции как значения</a> — на них всё здесь и держится.</p>
+</section>
+</article>

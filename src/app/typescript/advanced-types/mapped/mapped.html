@@ -110,6 +110,61 @@
 </section>
 
 <section class="doc__section">
+  <h2>Маппинг с условиями</h2>
+  <p>Мы умеем менять типы значений, модификаторы и имена ключей — но по одному правилу для всех полей сразу. Соединим конвейер с <a routerLink="/typescript/advanced-types/conditional">условными типами</a> (<code>extends ? :</code>) — и правило научится <strong>решать по каждому полю отдельно</strong>. Условие ставят в одно из двух мест: в <em>тип значения</em> (справа от двоеточия) или в <em>имя ключа</em> (после <code>as</code>).</p>
+
+  <h3 class="doc__subtitle">Условие в типе значения</h3>
+  <p>Начнём с простого — с правой части. Правило смотрит на тип текущего поля <code>T[K]</code> и в зависимости от него выбирает результат. Например, «сериализуем» тип: все поля-<code>Date</code> заменим на <code>string</code> (как бывает после <code>JSON</code>, где настоящих дат нет), а остальные поля оставим как есть:</p>
+  <app-code-block [code]="condValue" lang="typescript" />
+  <p>Условие <code>T[K] extends Date ? string : T[K]</code> проверяется для каждого поля по очереди. У <code>date</code> оно сработало (была <code>Date</code> — стала <code>string</code>), а <code>title</code> и <code>attendees</code> под условие не подошли и остались нетронутыми. Само правило одно, но ведёт себя по-разному в зависимости от поля.</p>
+
+  <h3 class="doc__subtitle">Условие в имени ключа — фильтр полей</h3>
+  <p>А вот приём, ради которого условия и соединяют с маппингом. Если в ремаппинге через <code>as</code> переписать ключ в <code>never</code>, то поле <strong>исчезает из типа целиком</strong>. Значит, условие в позиции ключа работает как <strong>фильтр</strong>: подошло — оставляем ключ <code>K</code>, не подошло — отдаём <code>never</code>, и поле выпадает. Оставим, к примеру, только поля-функции (методы), выбросив обычные данные:</p>
+  <app-code-block [code]="condKeep" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 760 280" width="100%" role="img" aria-label="Фильтр ключей условием: каждое поле проходит проверку T[K] extends Function; render и destroy остаются, id и title превращаются в never и выпадают">
+      <text x="380" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">не подошло под условие → ключ становится never → поле выпадает</text>
+
+      <rect x="24" y="52" width="150" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="99" y="74" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">id: number</text>
+      <rect x="24" y="96" width="150" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="99" y="118" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">title: string</text>
+      <rect x="24" y="150" width="150" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="99" y="172" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">render: () =&gt; void</text>
+      <rect x="24" y="194" width="150" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="99" y="216" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">destroy: () =&gt; void</text>
+
+      <line x1="174" y1="113" x2="286" y2="140" stroke="var(--muted)" stroke-width="1.6" />
+      <line x1="174" y1="211" x2="286" y2="140" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="284,132 298,140 283,146" fill="var(--muted)" />
+
+      <rect x="300" y="104" width="180" height="72" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="390" y="136" text-anchor="middle" fill="var(--muted)" font-size="12">условие в ключе</text>
+      <text x="390" y="160" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="12">T[K] extends Function ?</text>
+
+      <line x1="480" y1="128" x2="566" y2="96" stroke="var(--green)" stroke-width="2" />
+      <polygon points="560,90 574,94 561,102" fill="var(--green)" />
+      <line x1="480" y1="152" x2="566" y2="196" stroke="var(--red)" stroke-width="2" />
+      <polygon points="561,190 574,197 560,202" fill="var(--red)" />
+
+      <rect x="570" y="64" width="170" height="66" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="655" y="86" text-anchor="middle" fill="var(--green)" font-size="12">оставлены (ключ K)</text>
+      <text x="655" y="106" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">render</text>
+      <text x="655" y="122" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">destroy</text>
+
+      <rect x="570" y="176" width="170" height="66" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="6 5" />
+      <text x="655" y="198" text-anchor="middle" fill="var(--red)" font-size="12">→ never (выпали)</text>
+      <text x="655" y="218" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">id</text>
+      <text x="655" y="234" text-anchor="middle" fill="var(--muted)" font-family="monospace" font-size="12">title</text>
+    </svg>
+    <figcaption>Каждое поле проходит проверку <code>T[K] extends Function</code>. Методы <code>render</code> и <code>destroy</code> сохраняют свой ключ, а <code>id</code> и <code>title</code> получают ключ <code>never</code> — и просто исчезают из итогового типа.</figcaption>
+  </figure>
+  <p>Тот же приём наоборот — <strong>выбросить конкретное поле</strong>. Условие смотрит уже не на тип значения, а на само имя ключа: если это <code>'password'</code>, отправляем ключ в <code>never</code> и поле пропадает. Так в одну строчку получается «безопасная» версия типа без секретов:</p>
+  <app-code-block [code]="condDrop" lang="typescript" />
+  <p class="note"><strong>Ключ <code>never</code> ⇒ поля нет.</strong> Это и есть весь секрет фильтрации по условию — запомнить проще, чем звучит. На той же идее «ненужный ключ → <code>never</code>» держатся <a routerLink="/typescript/utility-types/pick-omit">Omit</a> и <a routerLink="/typescript/utility-types/exclude-extract">Exclude</a> из стандартной библиотеки. А подробный разбор самого механизма <code>extends ? :</code> — на странице <a routerLink="/typescript/advanced-types/conditional">условные типы</a>.</p>
+</section>
+
+<section class="doc__section">
   <h2>Это фундамент утилитарных типов</h2>
   <p>Возможно, вы уже пользовались готовыми <code>Partial&lt;User&gt;</code>, <code>Readonly&lt;User&gt;</code>, <code>Required&lt;Options&gt;</code> и считали их «встроенной магией». Раскроем секрет: это ровно те mapped-типы, что мы только что написали своими руками. Вот их подлинные определения из стандартной библиотеки:</p>
   <app-code-block [code]="stdlib" lang="typescript" />
@@ -125,6 +180,7 @@
     <li><strong>Модификаторы добавляют:</strong> <code>readonly [K in keyof T]</code> делает поля неизменяемыми, <code>[K in keyof T]?</code> — необязательными.</li>
     <li><strong>Знак минус снимает:</strong> <code>-readonly</code> убирает «только для чтения», <code>-?</code> делает поля обязательными.</li>
     <li><strong>Ремаппинг ключей</strong> — через <code>as</code>: <code>[K in keyof T as ...]</code>. Новое имя удобно собирать шаблоном, например <code>get$&#123;Capitalize&lt;string &amp; K&gt;&#125;</code>. Пересечение <code>string &amp; K</code> обязательно — иначе <code>Capitalize</code> подавится ключом-числом/символом.</li>
+    <li><strong>Условия внутри маппинга</strong> (<code>extends ? :</code>): в типе значения — меняют тип поля по условию (<code>Date</code> → <code>string</code>); в имени ключа (после <code>as</code>) — работают фильтром, ведь ключ <code>never</code> убирает поле целиком (так устроены <code>Omit</code> и <code>Exclude</code>).</li>
     <li><strong>Утилиты — это mapped-типы.</strong> <code>Partial</code>, <code>Readonly</code>, <code>Required</code> из стандартной библиотеки устроены буква в букву так, как мы их написали сами.</li>
   </ul>
   <p class="note">Рядом полезно освежить «топливо» конвейера: <a routerLink="/typescript/advanced-types/keyof">keyof</a>, <a routerLink="/typescript/advanced-types/indexed-access">индексный доступ</a> и <a routerLink="/typescript/advanced-types/template-literals">шаблонные литеральные типы</a>. Дальше — <a routerLink="/typescript/advanced-types/conditional">условные типы</a> и <a routerLink="/typescript/advanced-types/infer">infer</a>, а типичные ошибки собраны в разделе <a routerLink="/typescript/advanced-types/pitfalls">нюансы и подводные камни</a>. Базовая опора всего раздела — модель «<a routerLink="/typescript/basic-types/subtypes-supertypes">тип — это множество значений</a>».</p>
