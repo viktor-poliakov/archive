@@ -2,6 +2,10 @@
   <div class="page" [style.--accent]="section.color">
     <nav class="breadcrumbs">
       <span class="breadcrumbs__root">{{ section.label }}</span>
+      @if (group(); as group) {
+        <span class="breadcrumbs__sep">/</span>
+        <span>{{ group.label }}</span>
+      }
       @if (child(); as child) {
         <span class="breadcrumbs__sep">/</span>
         <span class="breadcrumbs__current">{{ child.label }}</span>
@@ -14,7 +18,8 @@
 
     <p class="page__lead">
       @if (child(); as child) {
-        Раздел «{{ child.label }}» из «{{ section.label }}». Содержимое появится позже.
+        Раздел «{{ child.label }}» из «{{ group()?.label ?? section.label }}». Содержимое появится
+        позже.
       } @else {
         Обзор раздела «{{ section.label }}». Выберите подраздел в меню слева.
       }

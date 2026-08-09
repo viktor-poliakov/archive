@@ -244,4 +244,47 @@ type VisibleKey = Exclude<UserKey, 'email'>;
 
 // По сути, Omit<User, 'email'> внутри устроен именно так:
 // он берёт keyof, вычитает лишние ключи через Exclude и собирает объект заново.`;
+
+  protected readonly ownImplementation = `// Ни один из трёх типов не встроен в компилятор — все они написаны
+// обычным кодом в стандартной библиотеке TypeScript (lib.es5.d.ts).
+// Каждый занимает ровно одну строку.
+
+// ── Exclude: «исключить» ────────────────────────────────────────
+// «Шарик подходит под U? Да → выброси (never). Нет → оставь (T)».
+type MyExclude<T, U> = T extends U ? never : T;
+
+// ── Extract: «извлечь» ──────────────────────────────────────────
+// Тот же вопрос — но ветки ПОМЕНЯНЫ МЕСТАМИ.
+// «Шарик подходит под U? Да → оставь (T). Нет → выброси (never)».
+type MyExtract<T, U> = T extends U ? T : never;
+
+// ── NonNullable: «не допускающий пустоты» ───────────────────────
+// Классическая запись — это просто частный случай Exclude:
+type MyNonNullableOld<T> = T extends null | undefined ? never : T;
+
+// А с TypeScript 4.8 во встроенной библиотеке его переписали короче,
+// через пересечение с пустым объектом (результат тот же):
+type MyNonNullable<T> = T & {};
+
+// ── Как это разворачивается по шагам ────────────────────────────
+type Status = 'idle' | 'loading' | 'done';
+
+type Active = MyExclude<Status, 'loading'>;
+// Компилятор разбирает мешок и спрашивает КАЖДЫЙ шарик по очереди
+// (это правило называют «распределительный условный тип»):
+//   'idle'    extends 'loading' ? never : 'idle'     → 'idle'
+//   'loading' extends 'loading' ? never : 'loading'  → never
+//   'done'    extends 'loading' ? never : 'done'     → 'done'
+// Собираем ответы обратно:  'idle' | never | 'done'
+// never в объединении РАСТВОРЯЕТСЯ:  'idle' | 'done'   ✅
+
+type Finished = MyExtract<Status, 'done' | 'error'>;
+// Те же три вопроса, но с обратными ветками → 'done'  ✅
+
+type Clean = MyNonNullable<string | null | undefined>;
+// → string   ✅ то же, что встроенный NonNullable
+
+// Ключевые два правила, на которых всё держится:
+// 1) «голый» T слева от extends → вопрос задаётся каждому члену union;
+// 2) never внутри union исчезает → «выброшенный» шарик пропадает.`;
 }

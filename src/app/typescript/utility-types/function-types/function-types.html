@@ -120,7 +120,44 @@
   <p>Последнее, о чём важно предупредить заранее. Если функция <strong>асинхронная</strong> (объявлена через <code>async</code>), она всегда возвращает <code>Promise</code> — «обещание» будущего значения. Поэтому <code>ReturnType</code> честно достанет именно <code>Promise</code>, а не тот объект, что лежит внутри него.</p>
   <app-code-block [code]="asyncTeaser" lang="typescript" />
   <p>Чтобы «развернуть» <code>Promise</code> и добраться до типа <em>внутри</em> него, есть отдельный утилитарный тип <code>Awaited</code>. Его удобно надеть поверх <code>ReturnType</code>: сначала <code>ReturnType</code> достаёт <code>Promise&lt;...&gt;</code>, а <code>Awaited</code> снимает обёртку. Подробнее — на странице про <a routerLink="/typescript/utility-types/awaited">Awaited</a>.</p>
-  <p class="note"><strong>Как это устроено внутри.</strong> И <code>ReturnType</code>, и <code>Parameters</code> — не магия компилятора, а обычные типы, написанные через <a routerLink="/typescript/advanced-types/conditional">условные типы</a> и ключевое слово <code>infer</code> («вывести» тип из шаблона). Знать это для использования не обязательно, но если захочется заглянуть «под капот» — загляните туда (по желанию).</p>
+  <p class="note"><strong>Как это устроено внутри.</strong> И <code>ReturnType</code>, и <code>Parameters</code> — не магия компилятора, а обычные типы, написанные через <a routerLink="/typescript/advanced-types/conditional">условные типы</a> и ключевое слово <code>infer</code> («вывести» тип из шаблона). Знать это для использования не обязательно — но если любопытно, следующий раздел разбирает их построчно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дословный перевод и своя реализация</h2>
+  <p>Имена обеих утилит — обычные английские слова, и они <strong>буквально</strong> называют то, что «рентген» считывает с функции:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Утилитарный тип</th>
+          <th>Английское слово</th>
+          <th>Дословный перевод</th>
+          <th>Как прочитать вслух</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ReturnType&lt;F&gt;</code></td>
+          <td><em>return type</em></td>
+          <td>«тип возвращаемого значения»</td>
+          <td>«<strong>тип того, что вернёт</strong> функция <code>F</code>»</td>
+        </tr>
+        <tr>
+          <td><code>Parameters&lt;F&gt;</code></td>
+          <td><em>parameters</em></td>
+          <td>«параметры» (то же, что аргументы функции)</td>
+          <td>«<strong>параметры</strong> функции <code>F</code>, по порядку»</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Почему множественное число.</strong> У <code>Parameters</code> на конце <code>s</code>, а у <code>ReturnType</code> — нет, и это не случайность, а подсказка о результате. Аргументов у функции <em>много</em> — поэтому <code>Parameters</code> возвращает кортеж, список. Возвращаемое значение <em>одно</em> — поэтому <code>ReturnType</code> отдаёт один тип, а не список.</p>
+  <p>Теперь самое интересное: обе утилиты — <strong>не магия компилятора</strong>. Это обычные типы, написанные парой строк в стандартной библиотеке TypeScript (файл <code>lib.es5.d.ts</code>). Вы можете написать их сами — и получить ровно те же самые типы:</p>
+  <app-code-block [code]="ownImplementation" lang="typescript" />
+  <p>Главное здесь — слово <code>infer</code>, что дословно значит «<strong>вывести</strong>, заключить». Работает оно как <strong>шаблон с пропуском</strong>: мы описываем форму функции и на месте интересующей нас части ставим не конкретный тип, а «дырку» с именем. Строка <code>T extends (...args: any) =&gt; infer R</code> читается так: «<em>если</em> <code>T</code> подходит под форму „функция, которая возвращает <strong>что-то</strong>“ — назови это „что-то“ буквой <code>R</code> и верни его». Компилятор сам подставляет в <code>R</code> то, что нашёл в этом месте.</p>
+  <p>Дальше всё очевидно. У <code>ReturnType</code> дырка стоит <strong>после стрелки</strong> — там, где объявляют результат. У <code>Parameters</code> — <strong>до стрелки</strong>, в списке аргументов. Один и тот же приём, и вся разница между двумя утилитами — <em>в каком месте шаблона поставлена дырка</em>. Вот почему их всегда разбирают в паре: это буквально два снимка одной функции — слева вход, справа выход.</p>
+  <p class="note"><strong>Зачем ветка «иначе».</strong> Условный тип обязан ответить и на случай «не подошло», поэтому в конце стоит <code>: any</code> у <code>ReturnType</code> и <code>: never</code> у <code>Parameters</code>. На практике до этой ветки дело не доходит: ограничение <code>F extends (...args: any) =&gt; any</code> и так не пропустит внутрь ничего, кроме функции, — а если попробуете, ошибку получите ещё на входе. Подробный разбор <code>infer</code> — на странице <a routerLink="/typescript/advanced-types/infer">infer</a>, а самой конструкции <code>extends ? :</code> — на странице <a routerLink="/typescript/advanced-types/conditional">условные типы</a>.</p>
 </section>
 
 <section class="doc__section">

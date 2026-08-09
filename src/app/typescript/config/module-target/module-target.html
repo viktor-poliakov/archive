@@ -1,0 +1,86 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/config">Конфигурация компилятора</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">module и target</span></nav>
+
+<h1 class="doc__title">module и target</h1>
+<p class="doc__lead">TypeScript не выполняется сам по себе — он <strong>превращается в JavaScript</strong>, и уже тот запускается в браузере или Node. Две опции решают, <em>каким</em> получится этот JavaScript. <strong><code>target</code> — «какого года выпуск» JavaScript</strong>: писать современно, но выдавать код, понятный даже старым браузерам, или оставлять всё как есть. <strong><code>module</code> — «на каком языке модулей говорить»</strong>: как будут выглядеть <code>import</code> и <code>export</code> в готовом коде. Звучит абстрактно — поэтому сразу посмотрим на реальный результат компиляции.</p>
+
+<section class="doc__section">
+  <h2><code>target</code>: какой версией JavaScript выдавать</h2>
+  <p><code>target</code> говорит компилятору, на какой <strong>стандарт JavaScript</strong> ориентироваться на выходе. Современный синтаксис (стрелки, классы, шаблонные строки) появился в языке не сразу; если целитесь в старое окружение, компилятор <strong>перепишет</strong> новый синтаксис на старый лад — это называют «понижением» (downleveling).</p>
+  <app-code-block [code]="targetJson" lang="json" />
+  <p>Возьмём один и тот же исходник и скомпилируем его с разными <code>target</code>. Вот исходный код:</p>
+  <app-code-block [code]="targetSource" lang="typescript" />
+  <p>Со старым <code>target: "ES5"</code> компилятор вынужден всё переписать — стрелочные функции становятся обычными, шаблонные строки — вызовами <code>.concat()</code>, классы — конструкциями на функциях:</p>
+  <app-code-block [code]="targetES5" lang="javascript" />
+  <p>А с современным <code>target: "ES2020"</code> переписывать почти нечего — браузеры и Node давно понимают этот синтаксис, поэтому код остаётся близким к исходному:</p>
+  <app-code-block [code]="targetES2020" lang="javascript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 700 210" width="100%" role="img" aria-label="Один исходник TypeScript через target превращается либо в старый громоздкий ES5, либо в компактный современный ES2020">
+      <rect x="270" y="20" width="160" height="52" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="350" y="43" text-anchor="middle" fill="var(--accent)" font-size="13">код на TypeScript</text>
+      <text x="350" y="62" text-anchor="middle" fill="var(--muted)" font-size="11">пишем современно</text>
+
+      <line x1="300" y1="72" x2="180" y2="112" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="182,106 170,118 190,116" fill="var(--muted)" />
+      <text x="205" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">target: ES5</text>
+
+      <line x1="400" y1="72" x2="520" y2="112" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="510,116 530,118 518,106" fill="var(--muted)" />
+      <text x="500" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">target: ES2020</text>
+
+      <rect x="40" y="120" width="260" height="72" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="170" y="146" text-anchor="middle" fill="var(--fg)" font-size="12">старый JavaScript (ES5)</text>
+      <text x="170" y="168" text-anchor="middle" fill="var(--muted)" font-size="11">громоздкий, всё переписано</text>
+      <text x="170" y="184" text-anchor="middle" fill="var(--muted)" font-size="11">работает даже в старых браузерах</text>
+
+      <rect x="400" y="120" width="260" height="72" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="530" y="146" text-anchor="middle" fill="var(--fg)" font-size="12">современный JavaScript (ES2020)</text>
+      <text x="530" y="168" text-anchor="middle" fill="var(--muted)" font-size="11">компактный, близок к исходнику</text>
+      <text x="530" y="184" text-anchor="middle" fill="var(--muted)" font-size="11">для современных браузеров и Node</text>
+    </svg>
+    <figcaption>Один исходник, разный <code>target</code>. Чем старее цель — тем больше компилятору приходится переписывать, и тем громоздче результат. Для современных проектов берут <code>ES2020</code>, <code>ES2022</code> или <code>ESNext</code>.</figcaption>
+  </figure>
+  <p class="note"><strong>Два важных факта.</strong> Во-первых, <code>target</code> заодно задаёт набор доступных «встроенных» типов (опция <a routerLink="/typescript/config/compiler-options"><code>lib</code></a>): при высоком <code>target</code> вам доступны свежие методы вроде <code>Array.at</code>. Во-вторых, совсем старые цели (<code>ES3</code>, <code>ES5</code>) в TypeScript 6.0 объявлены устаревшими — для нового кода выбирайте современный уровень.</p>
+</section>
+
+<section class="doc__section">
+  <h2><code>module</code>: как выглядят import и export</h2>
+  <p>Вторая ось — модульная система. За историю JavaScript их накопилось несколько, и <code>module</code> выбирает, в каком виде окажутся ваши <code>import</code>/<code>export</code> в готовом коде.</p>
+  <app-code-block [code]="moduleJson" lang="json" />
+  <p>Возьмём исходник:</p>
+  <app-code-block [code]="moduleSource" lang="typescript" />
+  <p>Со старой системой <code>CommonJS</code> (её долгие годы использовал Node) современные <code>import</code>/<code>export</code> переписываются в <code>require</code> и <code>exports</code>:</p>
+  <app-code-block [code]="moduleCjs" lang="javascript" />
+  <p>А с современными ES-модулями (<code>ESNext</code>) переписывать нечего — <code>import</code>/<code>export</code> остаются как есть, ведь и браузеры, и современный Node понимают их напрямую:</p>
+  <app-code-block [code]="moduleEsm" lang="javascript" />
+  <p class="note"><strong>Аналогия.</strong> <code>import</code>/<code>export</code> и <code>require</code>/<code>module.exports</code> — это два «языка», на которых файлы просят друг у друга код. Опция <code>module</code> выбирает, на каком языке будет разговаривать собранный проект. Подробнее про сами модули — на странице <a routerLink="/javascript/modules/basics">модули (ES Modules)</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как находятся файлы: <code>moduleResolution</code></h2>
+  <p>Рядом с <code>module</code> живёт <code>moduleResolution</code> — она отвечает за то, <strong>как</strong> компилятор ищет файл по строке импорта. Одно дело — <em>каким синтаксисом</em> написан импорт (<code>module</code>), другое — <em>где искать</em> то, что импортируют (<code>moduleResolution</code>):</p>
+  <app-code-block [code]="resolutionNote" lang="typescript" />
+  <p>Подробнее про поиск файлов, относительные пути и <code>node_modules</code> — на отдельной странице <a routerLink="/typescript/config/paths">пути и разрешение модулей</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Готовые сочетания под окружение</h2>
+  <p>На практике эти опции не подбирают наугад — есть два-три проверенных набора. Для проекта в браузере со сборщиком (Vite, webpack) сборщик сам разберётся с модулями, поэтому:</p>
+  <app-code-block [code]="comboBrowser" lang="json" />
+  <p>Для программы под Node.js на настоящих ES-модулях удобнее связка <code>NodeNext</code> — она одним словом настраивает и <code>module</code>, и <code>moduleResolution</code> под правила Node:</p>
+  <app-code-block [code]="comboNode" lang="json" />
+  <p class="note"><strong>Правило согласованности.</strong> <code>module</code> и <code>moduleResolution</code> должны подходить друг к другу. Самый простой способ не ошибиться — брать готовое сочетание под своё окружение (браузер+сборщик или Node), а не смешивать опции из разных миров. При странных ошибках «модуль не найден» первым делом проверяют именно эту пару.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>TypeScript превращается в JavaScript.</strong> <code>target</code> и <code>module</code> определяют, каким этот JavaScript получится.</li>
+    <li><strong><code>target</code></strong> — версия («год выпуска») JavaScript. Низкая (<code>ES5</code>) — компилятор переписывает современный синтаксис на старый (громоздко); современная (<code>ES2020</code>+) — оставляет почти как есть. Заодно задаёт набор встроенных типов (<code>lib</code>).</li>
+    <li><strong><code>module</code></strong> — модульная система на выходе. <code>CommonJS</code> переписывает <code>import</code>/<code>export</code> в <code>require</code>; <code>ESNext</code> оставляет их как есть.</li>
+    <li><strong><code>moduleResolution</code></strong> — как компилятор ищет файл по строке импорта. <code>bundler</code> — для фронтенда со сборщиком, <code>NodeNext</code> — для Node.</li>
+    <li><strong>Берите готовые сочетания:</strong> браузер+сборщик (<code>ESNext</code> + <code>bundler</code>) или Node (<code>NodeNext</code> + <code>NodeNext</code>); <code>module</code> и <code>moduleResolution</code> должны согласовываться.</li>
+  </ul>
+  <p class="note">Рядом: <a routerLink="/typescript/config/paths">пути и разрешение модулей</a> (продолжение про поиск файлов), <a routerLink="/typescript/config/compiler-options">основные опции</a> и <a routerLink="/typescript/config/strict">строгий режим</a>. Про сами модули в JavaScript — <a routerLink="/javascript/modules/basics">модули (ES Modules)</a>, а про старый и новый синтаксис импорта — <a routerLink="/typescript/modules-types/import-export">импорт и экспорт типов</a>.</p>
+</section>
+</article>

@@ -41,10 +41,10 @@
       <text x="120" y="168" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">password</text>
       <text x="120" y="200" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">createdAt</text>
 
-      <line x1="212" y1="150" x2="286" y2="90" stroke="var(--muted)" stroke-width="2" />
-      <polygon points="282,82 292,88 283,96" fill="var(--muted)" />
-      <line x1="212" y1="150" x2="286" y2="212" stroke="var(--muted)" stroke-width="2" />
-      <polygon points="283,204 292,212 282,218" fill="var(--muted)" />
+      <line x1="214" y1="150" x2="288" y2="111" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="296,107 288.6,116.5 283.9,107.7" fill="var(--muted)" />
+      <line x1="214" y1="150" x2="289" y2="231" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="296,239 284.9,234.3 292.2,227.5" fill="var(--muted)" />
 
       <text x="390" y="60" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">Pick&lt;User,'id'|'name'&gt;</text>
       <rect x="300" y="72" width="170" height="70" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
@@ -147,6 +147,42 @@
     </table>
   </div>
   <p>Запомнить просто: видите <strong>объект с полями</strong> — режете поля через <code>Pick</code>/<code>Omit</code>; видите <strong>цепочку значений через <code>|</code></strong> — режете варианты через <code>Exclude</code>/<code>Extract</code>. Подробный разбор второй пары — на странице <a routerLink="/typescript/utility-types/exclude-extract">Exclude, Extract</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дословный перевод и своя реализация</h2>
+  <p>Имена утилитарных типов — это обычные английские слова, и они <strong>буквально</strong> описывают то, что тип делает. Переведите их один раз — и запоминать больше нечего:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Утилитарный тип</th>
+          <th>Английское слово</th>
+          <th>Дословный перевод</th>
+          <th>Как прочитать вслух</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Pick&lt;T, K&gt;</code></td>
+          <td><em>pick</em></td>
+          <td>«выбрать, отобрать (нужное)»</td>
+          <td>«<strong>выбери</strong> из <code>T</code> ключи <code>K</code>»</td>
+        </tr>
+        <tr>
+          <td><code>Omit&lt;T, K&gt;</code></td>
+          <td><em>omit</em></td>
+          <td>«опустить, пропустить, не включать»</td>
+          <td>«возьми <code>T</code>, <strong>опустив</strong> ключи <code>K</code>»</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Теперь самое интересное: <code>Pick</code> и <code>Omit</code> — <strong>не магия компилятора</strong>. Это обычные типы, написанные парой строк кода в стандартной библиотеке TypeScript (файл <code>lib.es5.d.ts</code>). Вы можете написать их сами — и получить ровно те же самые типы:</p>
+  <app-code-block [code]="ownImplementation" lang="typescript" />
+  <p>Разберём <code>Pick</code> по кусочкам. Запись <code>[P in K]</code> — это <strong>отображённый тип</strong> (mapped type), то есть «цикл по ключам»: «для каждого имени <code>P</code> из набора <code>K</code> создай в новом типе поле <code>P</code>». А <code>T[P]</code> — <strong>индексный доступ</strong>: «возьми тип поля <code>P</code> прямо из <code>T</code>». Вот почему срез не копия, а «живая ссылка»: тип поля каждый раз <em>читается</em> из исходного <code>T</code>, а не переписывается. Ограничение <code>K extends keyof T</code> — та самая защита от опечаток, из-за которой <code>'username'</code> сразу даёт ошибку.</p>
+  <p>А <code>Omit</code> не написан с нуля — он <strong>собран из двух других утилит</strong>, и в этом вся его суть: «возьми все ключи <code>T</code> (<code>keyof T</code>), вычти из них <code>K</code> (<code>Exclude</code>), а по оставшимся сделай <code>Pick</code>». Именно поэтому раздел «Omit — это дополнение Pick» выше был не красивой метафорой, а буквальным описанием реализации.</p>
+  <p class="note"><strong>Почему у <code>Omit</code> ограничение слабее.</strong> У <code>Pick</code> написано <code>K extends keyof T</code>, а у <code>Omit</code> — <code>K extends keyof any</code> (то есть «любое имя ключа: <code>string</code>, <code>number</code> или <code>symbol</code>»). Это сделано намеренно: <code>Omit&lt;User, 'опечатка'&gt;</code> <strong>не выдаст ошибку</strong>, а просто ничего не выбросит. Опечатку в <code>Pick</code> компилятор ловит, а в <code>Omit</code> — нет; помните об этом. Механику <code>Exclude</code> разбирает страница <a routerLink="/typescript/utility-types/exclude-extract">Exclude, Extract</a>, а <code>[P in K]</code> — <a routerLink="/typescript/advanced-types/mapped">отображённые типы</a>.</p>
 </section>
 
 <section class="doc__section">

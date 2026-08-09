@@ -204,4 +204,46 @@ function useData(data: AllData): void {
   const settings = data[1]; // { theme: string }
   console.log(user.name, settings.theme); // ✅ поля доступны, обёртки нет
 }`;
+
+  protected readonly ownImplementation = `// Awaited не встроен в компилятор — это обычный тип из стандартной
+// библиотеки TypeScript (lib.es5.d.ts). Его суть умещается в строку:
+
+// ── Awaited: «дождавшийся» ──────────────────────────────────────
+type MyAwaited<T> = T extends Promise<infer V> ? MyAwaited<V> : T;
+//                            └─ шаблон:      │      │         └─ не коробка?
+//                            «коробка,       │      │            вернём как есть
+//                             а внутри V»    │      └─ РЕКУРСИЯ: спросим ещё раз
+//                                            └─ подошло? снимаем обёртку
+
+// Два ключевых момента:
+// 1) infer V — «дырка» в шаблоне: компилятор сам подставит сюда то,
+//              что лежит внутри Promise.
+// 2) MyAwaited<V> вместо простого V — тип ВЫЗЫВАЕТ САМ СЕБЯ.
+//    Снял одну обёртку → задай тот же вопрос содержимому.
+//    Именно так «матрёшка» промисов схлопывается до дна.
+
+type A = MyAwaited<Promise<string>>;
+// 1) Promise<string> — коробка? да, внутри string
+// 2) MyAwaited<string> — коробка? нет → возвращаем string
+// → string   ✅
+
+type B = MyAwaited<Promise<Promise<number>>>;
+// коробка → коробка → number
+// → number  ✅ (без рекурсии здесь осталось бы Promise<number>)
+
+type C = MyAwaited<number>;
+// не коробка, разворачивать нечего
+// → number  ✅
+
+// ── Как это написано во встроенной версии ───────────────────────
+// Скелет тот же — «есть обёртка? сними и повтори», — но проверяется
+// не сам Promise, а наличие метода then: так распаковывается ЛЮБОЙ
+// «промисоподобный» объект, а не только настоящий Promise.
+type RealAwaited<T> = T extends null | undefined
+  ? T // отдельный случай: пустые значения оставляем как есть
+  : T extends object & { then(onfulfilled: infer F, ...args: infer _): any }
+    ? F extends (value: infer V, ...args: infer _) => any
+      ? RealAwaited<V> // та же рекурсия, что и в нашей однострочной версии
+      : never
+    : T; // не промисоподобный — возвращаем без изменений`;
 }

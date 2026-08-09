@@ -268,6 +268,29 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./typescript/decorators/pitfalls/pitfalls').then(
       (m) => m.TypescriptDecoratorsPitfalls,
     ),
+  'typescript/config/strict': () =>
+    import('./typescript/config/strict/strict').then((m) => m.TypescriptConfigStrict),
+  'typescript/config/compiler-options': () =>
+    import('./typescript/config/compiler-options/compiler-options').then(
+      (m) => m.TypescriptConfigCompilerOptions,
+    ),
+  'typescript/config/module-target': () =>
+    import('./typescript/config/module-target/module-target').then(
+      (m) => m.TypescriptConfigModuleTarget,
+    ),
+  'typescript/config/paths': () =>
+    import('./typescript/config/paths/paths').then((m) => m.TypescriptConfigPaths),
+  ecosystem: () => import('./ecosystem/ecosystem').then((m) => m.EcosystemOverview),
+  'ecosystem/intro/why': () =>
+    import('./ecosystem/intro/why/why').then((m) => m.EcosystemIntroWhy),
+  'ecosystem/intro/anatomy': () =>
+    import('./ecosystem/intro/anatomy/anatomy').then((m) => m.EcosystemIntroAnatomy),
+  'ecosystem/intro/how-to-choose': () =>
+    import('./ecosystem/intro/how-to-choose/how-to-choose').then(
+      (m) => m.EcosystemIntroHowToChoose,
+    ),
+  'ecosystem/intro/glossary': () =>
+    import('./ecosystem/intro/glossary/glossary').then((m) => m.EcosystemIntroGlossary),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
@@ -573,12 +596,18 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
 };
 
 // A leaf route: a real content page if registered in PAGE_OVERRIDES, otherwise
-// the mock SectionPage that reads `data` to know what to render.
-function leafRoute(path: string, section: NavSection, child: NavChild): Route {
+// the mock SectionPage that reads `data` to know what to render. `group` is the
+// second-level parent when the leaf is a third-level item, so the mock can show
+// the full breadcrumb trail.
+function leafRoute(path: string, section: NavSection, child: NavChild, group?: NavChild): Route {
   const loadComponent = PAGE_OVERRIDES[path];
   return loadComponent
     ? { path, loadComponent }
-    : { path, component: SectionPage, data: { sectionId: section.id, childId: child.id } };
+    : {
+        path,
+        component: SectionPage,
+        data: { sectionId: section.id, childId: child.id, groupId: group?.id },
+      };
 }
 
 // Each section gets its own route, a route per child, and — when a child has
@@ -600,7 +629,7 @@ const sectionRoutes: Routes = NAV_SECTIONS.flatMap((section) => [
     if (subs?.length) {
       return [
         { path: base, pathMatch: 'full', redirectTo: `${base}/${subs[0].id}` },
-        ...subs.map((sub) => leafRoute(`${base}/${sub.id}`, section, sub)),
+        ...subs.map((sub) => leafRoute(`${base}/${sub.id}`, section, sub, child)),
       ];
     }
     return [leafRoute(base, section, child)];

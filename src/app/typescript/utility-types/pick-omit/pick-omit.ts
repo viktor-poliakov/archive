@@ -233,4 +233,46 @@ type NonGuest = Exclude<Role, 'guest'>; // убрали ВАРИАНТ 'guest'
 // Запомните разницу так:
 // • объект { поле: тип; ... }  → режем поля через Pick / Omit;
 // • объединение A | B | C      → режем варианты через Exclude / Extract.`;
+
+  protected readonly ownImplementation = `// Pick и Omit не встроены в компилятор — они написаны обычным кодом
+// в стандартной библиотеке TypeScript (lib.es5.d.ts). Вот они целиком.
+
+// ── Pick: «выбрать» ─────────────────────────────────────────────
+// «Для каждого имени P из набора K создай поле P
+//  с тем же типом, какой у этого поля в T».
+type MyPick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+// [P in K] — отображённый тип (mapped type), «цикл по ключам».
+// T[P]     — индексный доступ, «возьми тип поля P из T».
+// K extends keyof T — защита от опечаток: в K разрешены
+//                     ТОЛЬКО реальные ключи типа T.
+
+// ── Omit: «опустить» ────────────────────────────────────────────
+// Omit не пишут с нуля — его СОБИРАЮТ из Pick и Exclude:
+// «возьми все ключи T, вычти из них K, по остатку сделай Pick».
+type MyOmit<T, K extends keyof any> = MyPick<T, Exclude<keyof T, K>>;
+//                                            └─ 'id'|'name'|'email'|... минус K
+
+// ── Проверяем на знакомом User ──────────────────────────────────
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: string;
+}
+
+type Preview = MyPick<User, 'id' | 'name'>;
+// { id: number; name: string }
+// ✅ то же самое, что встроенный Pick<User, 'id' | 'name'>
+
+type Public = MyOmit<User, 'password'>;
+// { id: number; name: string; email: string; createdAt: string }
+// ✅ то же самое, что встроенный Omit<User, 'password'>
+
+// Разложим MyOmit<User, 'password'> по шагам:
+// 1) keyof User                    → 'id'|'name'|'email'|'password'|'createdAt'
+// 2) Exclude<..., 'password'>      → 'id'|'name'|'email'|'createdAt'
+// 3) MyPick<User, ...>             → объект из этих четырёх полей`;
 }

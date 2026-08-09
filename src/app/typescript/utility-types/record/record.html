@@ -146,6 +146,37 @@
 </section>
 
 <section class="doc__section">
+  <h2>Дословный перевод и своя реализация</h2>
+  <p>Имя утилитарного типа — обычное английское слово, и оно <strong>буквально</strong> описывает то, что тип строит. Переведите его один раз — и метафора «шкафа с ячейками» встанет на место сама:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Утилитарный тип</th>
+          <th>Английское слово</th>
+          <th>Дословный перевод</th>
+          <th>Как прочитать вслух</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Record&lt;K, V&gt;</code></td>
+          <td><em>record</em></td>
+          <td>«запись» (строка в картотеке, реестре, таблице)</td>
+          <td>«<strong>запись</strong>, где ярлыки — <code>K</code>, а содержимое — <code>V</code>»</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Не «рекорд».</strong> Русское «рекорд» (достижение) — ложный друг переводчика. Здесь <em>record</em> — из мира баз данных и картотек: <strong>запись</strong>, то есть строка со списком «поле → значение». Ровно это <code>Record</code> и описывает.</p>
+  <p>Теперь самое интересное: <code>Record</code> — <strong>не магия компилятора</strong>. Это обычный тип, написанный <em>тремя строками</em> в стандартной библиотеке TypeScript (файл <code>lib.es5.d.ts</code>). Вы можете написать его сами — и получить ровно тот же самый тип:</p>
+  <app-code-block [code]="ownImplementation" lang="typescript" />
+  <p>Разберём. Запись <code>[P in K]</code> — это <strong>отображённый тип</strong> (mapped type), то есть «цикл по ключам»: «для каждого имени <code>P</code> из набора <code>K</code> создай в новом типе поле <code>P</code>». А справа от двоеточия стоит просто <code>T</code> — <strong>без всякой зависимости от <code>P</code></strong>. В этом и весь <code>Record</code>: какой ключ ни возьми, тип значения один и тот же. Сравните с <a routerLink="/typescript/utility-types/pick-omit"><code>Pick</code></a>, где на том же месте написано <code>T[P]</code> — «у каждого ключа свой тип». Одна буква разницы, а смысл противоположный.</p>
+  <p>Отсюда же становятся понятны оба режима работы, которые мы разбирали выше. Если <code>K</code> — объединение литералов, цикл пробегает по трём конкретным именам и выдаёт объект ровно с тремя обязательными полями — вот откуда требование «заполнить все ключи». Если же <code>K</code> — это <code>string</code>, цикл по бесконечному множеству строк компилятор сворачивает обратно в <strong>индексную сигнатуру</strong> <code>&#123; [key: string]: V &#125;</code>. Не «почти то же самое», а буквально она — как мы и говорили в разделе выше.</p>
+  <p class="note"><strong>Что такое <code>keyof any</code>.</strong> В ограничении <code>K extends keyof any</code> прячется простая вещь: <code>keyof any</code> — это <code>string | number | symbol</code>, то есть «всё, чем вообще может быть имя свойства в JavaScript». Так <code>Record</code> говорит: «в <code>K</code> подставляй что угодно, лишь бы это годилось на роль ключа». Про сам оператор — на странице <a routerLink="/typescript/advanced-types/keyof">keyof</a>, а про циклы по ключам — <a routerLink="/typescript/advanced-types/mapped">отображённые типы</a>.</p>
+</section>
+
+<section class="doc__section">
   <h2>Коротко</h2>
   <ul class="rules">
     <li><strong><code>Record&lt;K, V&gt;</code></strong> строит тип объекта, где ключи имеют тип <code>K</code>, а значение у <em>всех</em> ключей — один и тот же тип <code>V</code>. Это «шкаф с подписанными ячейками» и таблица «ключ → значение».</li>

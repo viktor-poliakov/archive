@@ -1,0 +1,92 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/config">Конфигурация компилятора</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Строгий режим (strict)</span></nav>
+
+<h1 class="doc__title">Строгий режим (strict)</h1>
+<p class="doc__lead"><strong>Строгий режим — это «строгий инструктор» компилятора.</strong> Можно ехать без ремней безопасности: машина поедет, но авария будет дорогой. А можно пристегнуть <em>все</em> ремни разом одним движением — это и есть <code>strict</code>. Одна настройка <code>"strict": true</code> включает целый пакет проверок, которые ловят самые частые и болезненные ошибки — обращение к <code>null</code>, забытые типы, незаполненные поля — <strong>ещё в редакторе, до запуска</strong>, а не у пользователя в браузере. Разберём, что именно она включает и почему её держат включённой почти всегда.</p>
+
+<section class="doc__section">
+  <h2>Что делает строгий режим</h2>
+  <p>Посмотрим на боль, от которой он спасает. Вот код, который <strong>без</strong> строгого режима спокойно соберётся — компилятор промолчит, — а потом упадёт уже в рантайме, у пользователя:</p>
+  <app-code-block [code]="buggyLoose" lang="typescript" />
+  <p>Обе беды — классические: параметр без типа (компилятор молча делает его <code>any</code> и перестаёт проверять) и обращение к значению, которое может оказаться <code>null</code>. А теперь тот же код <strong>со</strong> строгим режимом — компилятор подсвечивает обе ошибки сразу и не даёт собрать проект, пока их не исправишь:</p>
+  <app-code-block [code]="strictCatches" lang="typescript" />
+  <p>В этом вся идея: строгий режим переносит момент обнаружения ошибки из «поздно и дорого» (рантайм у пользователя) в «рано и дёшево» (красное подчёркивание в редакторе). Ошибка никуда не делась — просто вы узнаёте о ней сразу, а не когда код уже попал к пользователю.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Строгий режим — это пакет проверок</h2>
+  <p>Важно понять: <code>strict</code> — не одна проверка, а <strong>рубильник, который включает сразу целую группу</strong>. Щёлкнули одним рубильником — включились сразу все проверки. Вот что прячется за одним словом:</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 250" width="100%" role="img" aria-label="strict как один рубильник, включающий группу отдельных проверок">
+      <rect x="230" y="24" width="220" height="52" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="340" y="47" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="15">"strict": true</text>
+      <text x="340" y="66" text-anchor="middle" fill="var(--muted)" font-size="11">один рубильник</text>
+
+      <line x1="340" y1="76" x2="340" y2="104" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="334,104 340,116 346,104" fill="var(--muted)" />
+      <text x="470" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">включает всё сразу</text>
+
+      <rect x="30" y="124" width="200" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="130" y="146" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">noImplicitAny</text>
+      <rect x="240" y="124" width="200" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="340" y="146" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">strictNullChecks</text>
+      <rect x="450" y="124" width="200" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="550" y="146" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">strictFunctionTypes</text>
+
+      <rect x="30" y="168" width="200" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="130" y="190" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">strictPropertyInitialization</text>
+      <rect x="240" y="168" width="200" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="340" y="190" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">noImplicitThis</text>
+      <rect x="450" y="168" width="200" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="550" y="190" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">alwaysStrict</text>
+
+      <text x="340" y="228" text-anchor="middle" fill="var(--muted)" font-size="12">…и ещё несколько — все они про «не давай спрятаться потенциальной ошибке»</text>
+    </svg>
+    <figcaption>Одно <code>"strict": true</code> включает всю группу проверок сразу. Каждую при желании можно трогать по отдельности, но обычно включают весь пакет.</figcaption>
+  </figure>
+  <app-code-block [code]="subFlagsList" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Он уже включён по умолчанию</h2>
+  <p>Хорошая новость для новичка: в современных версиях TypeScript (6.0 и новее) строгий режим <strong>включён по умолчанию</strong> — специально ничего делать не нужно. Раньше (в старых версиях) по умолчанию он был <em>выключен</em>, и его приходилось добавлять руками. Если работаете со старым проектом или просто хотите убедиться, что режим включён, — впишите это явно в <code>tsconfig.json</code>:</p>
+  <app-code-block [code]="enableJson" lang="json" />
+  <p class="note"><strong>Почему это важно знать.</strong> Многие старые статьи и туториалы написаны для времён, когда <code>strict</code> был выключен, и советуют «не забудьте включить strict». Сегодня достаточно просто <em>не выключать</em> его. Если в чужом проекте вы видите строгие ошибки «из ниоткуда» — скорее всего, дело именно в том, что режим теперь активен сам по себе.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Три главные проверки внутри</h2>
+  <p>Разберём три самые заметные проверки из пакета — те, с которыми новичок столкнётся в первый же день.</p>
+
+  <h3 class="doc__subtitle">1. <code>noImplicitAny</code> — нет молчаливому <code>any</code></h3>
+  <p>Если компилятор не может сам догадаться о типе (например, у параметра функции), он не подставляет тайком <a routerLink="/typescript/basic-types/any-unknown"><code>any</code></a> (который выключает все проверки), а <strong>требует указать тип явно</strong>:</p>
+  <app-code-block [code]="subNoImplicitAny" lang="typescript" />
+
+  <h3 class="doc__subtitle">2. <code>strictNullChecks</code> — обрабатывай <code>null</code></h3>
+  <p>Самая ценная проверка. Без неё <code>null</code> и <code>undefined</code> «прячутся» внутри любого типа, и обращение к ним рушит программу. С ней компилятор заставляет проверить значение перед использованием:</p>
+  <app-code-block [code]="subNullChecks" lang="typescript" />
+
+  <h3 class="doc__subtitle">3. <code>strictPropertyInitialization</code> — заполняй поля</h3>
+  <p>Поле класса, обещанное как <code>number</code> или <code>string</code>, должно быть реально заполнено — иначе оно окажется <code>undefined</code>, и получится та же ловушка, что с <code>null</code>:</p>
+  <app-code-block [code]="subPropInit" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Можно ли ослабить</h2>
+  <p>Да, отдельные проверки из пакета можно выключить, оставив остальные. Пишут <code>"strict": true</code> (включить всё), а ниже точечно отключают то, что мешает. Например, отключить требование заполнять поля класса:</p>
+  <app-code-block [code]="overrideOne" lang="json" />
+  <p class="note"><strong>Но лучше не надо.</strong> Каждая выключенная проверка — это дыра, через которую в код возвращаются ровно те баги, ради защиты от которых строгий режим и придуман. Для нового проекта держите весь пакет включённым: это не «придирки компилятора», а бесплатный автопилот, который ловит ошибки за вас. Выключать что-то оправдано в основном при постепенном переводе большого старого проекта на строгие правила.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>strict</code> — это рубильник</strong>, который одним махом включает целый пакет проверок (не одну).</li>
+    <li><strong>Смысл:</strong> ловить ошибки рано и дёшево (в редакторе), а не поздно и дорого (в рантайме у пользователя).</li>
+    <li><strong>Включён по умолчанию</strong> в TypeScript 6.0+. Раньше был выключен — отсюда старые советы «не забудьте включить».</li>
+    <li><strong>Главные проверки:</strong> <code>noImplicitAny</code> (нет молчаливого <code>any</code>), <code>strictNullChecks</code> (обрабатывай <code>null</code>/<code>undefined</code>), <code>strictPropertyInitialization</code> (заполняй поля класса).</li>
+    <li><strong>Ослаблять</strong> отдельные проверки можно (<code>"strict": true</code> + нужную в <code>false</code>), но для нового кода это не рекомендуется.</li>
+  </ul>
+  <p class="note">Дальше по разделу — <a routerLink="/typescript/config/compiler-options">основные опции</a> файла <code>tsconfig.json</code> целиком, затем <a routerLink="/typescript/config/module-target">module и target</a> (в какой JavaScript превращается код) и <a routerLink="/typescript/config/paths">пути и разрешение модулей</a>. Про то, откуда берётся <code>null</code> в типах, полезно почитать <a routerLink="/typescript/unions-narrowing/narrowing">сужение типов</a> и <a routerLink="/typescript/basic-types/any-unknown">any и unknown</a>.</p>
+</section>
+</article>

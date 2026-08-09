@@ -8,6 +8,8 @@ import { NAV_SECTIONS } from '../nav/nav.data';
 interface SectionRouteData {
   sectionId?: string;
   childId?: string;
+  /** Second-level parent when the URL points at a third-level item. */
+  groupId?: string;
 }
 
 @Component({
@@ -30,9 +32,16 @@ export class SectionPage {
     return NAV_SECTIONS.find((section) => section.id === id) ?? null;
   });
 
+  // Set only for third-level pages: the submenu group the child belongs to.
+  protected readonly group = computed(() => {
+    const groupId = this.data().groupId;
+    return this.section()?.children.find((c) => c.id === groupId) ?? null;
+  });
+
+  // Third-level children live under their group, second-level ones under the section.
   protected readonly child = computed(() => {
-    const section = this.section();
     const childId = this.data().childId;
-    return section?.children.find((c) => c.id === childId) ?? null;
+    const siblings = this.group()?.children ?? this.section()?.children;
+    return siblings?.find((c) => c.id === childId) ?? null;
   });
 }

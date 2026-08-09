@@ -1,0 +1,204 @@
+<article class="doc" style="--accent: #ffb86c">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Экосистема</span><span class="breadcrumbs__sep">/</span><a routerLink="/ecosystem/intro">Введение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Зачем этот раздел</span></nav>
+
+<h1 class="doc__title">Зачем этот раздел</h1>
+<p class="doc__lead">Есть очень обидный момент в жизни каждого, кто учит программирование. Вы честно разобрались с языком: понимаете переменные, функции, массивы, объекты. Решаете задачки. А потом открываете описание любой вакансии — и <strong>не понимаете почти ни одного слова</strong>. Появляется мысль: «наверное, я вообще ничего не знаю». Эта страница объясняет, почему такое чувство возникает у <em>всех</em>, почему оно обманчиво и что с ним делать.</p>
+
+<section class="doc__section">
+  <h2>Знакомая картина</h2>
+  <p>Давайте посмотрим на настоящую вакансию — из тех, что висят на любом сайте с работой. Прочитайте её глазами новичка:</p>
+  <app-code-block [code]="vacancy" lang="text" />
+  <p>Знакомых слов — два: <code>JavaScript</code> и <code>TypeScript</code>. Остальные восемнадцать выглядят как заклинания. Совершенно естественная реакция — «мне нужно выучить ещё восемнадцать штук, это займёт годы, я безнадёжно отстал».</p>
+  <p>А теперь фокус. Давайте припишем к каждому слову <strong>вопрос, на который оно отвечает</strong>:</p>
+  <app-code-block [code]="vacancyDecoded" lang="text" />
+  <p>Смотрите, что произошло. Список из двадцати незнакомых имён превратился в <strong>десяток простых и вполне понятных вопросов</strong>: чем рисовать, где хранить, как говорить с сервером, чем проверять. Ни один из этих вопросов не страшный. Вы, скорее всего, даже сами бы их задали, если бы взялись делать настоящий сайт.</p>
+  <p class="note"><strong>Вот главная мысль всей страницы.</strong> Пугают не задачи — пугают <em>незнакомые имена</em>. Как только за именем видно задачу, страх исчезает. Задача «где хранить данные» понятна любому человеку. А слово «Zustand» непонятно ровно до того момента, пока вам не сказали, что это ответ на эту задачу.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Почему знания языка мало</h2>
+  <p>Разберёмся, откуда вообще берётся этот разрыв. Язык программирования — это <strong>способ записывать инструкции</strong>. Отличный, нужный, базовый навык. Но продукт, которым пользуются люди, состоит не только из инструкций.</p>
+  <p class="note"><strong>Аналогия.</strong> Знать язык — это как <strong>уметь грамотно писать по-русски</strong>. Навык необходимый: без него книгу не напишешь. Но чтобы книга попала в руки читателю, нужны ещё: сюжет, редактор, корректор, вёрстка, обложка, типография, склад, магазины, доставка. Автор, который умеет только писать буквы, книгу не издаст. При этом он <em>не обязан</em> уметь печатать в типографии — ему достаточно <strong>понимать, что типография существует и зачем она нужна</strong>.</p>
+  <p>С программированием так же. Ваш код на ноутбуке — это ещё не сайт. Чтобы им кто-то воспользовался, нужно ответить на приземлённые вопросы, которые к языку отношения не имеют:</p>
+  <ul class="rules">
+    <li>Где будет <strong>крутиться</strong> программа, когда ваш ноутбук закрыт?</li>
+    <li>Как пользователь до неё <strong>дойдёт</strong> — по какому адресу?</li>
+    <li>Где <strong>останутся</strong> данные после перезагрузки?</li>
+    <li>Что случится, если <strong>тысяча</strong> человек зайдёт одновременно?</li>
+    <li>Как понять, что всё <strong>сломалось</strong>, если вы в это время спите?</li>
+    <li>Как <strong>исправить</strong> ошибку и выкатить исправление, не сломав остальное?</li>
+  </ul>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Слева маленький кирпич — язык, справа целый дом из множества частей — продукт">
+      <text x="120" y="26" text-anchor="middle" fill="var(--muted)" font-size="12">что вы выучили</text>
+      <text x="450" y="26" text-anchor="middle" fill="var(--muted)" font-size="12">что нужно для продукта</text>
+
+      <rect x="70" y="120" width="100" height="46" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="120" y="148" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">язык</text>
+      <text x="120" y="186" text-anchor="middle" fill="var(--muted)" font-size="11">кирпич</text>
+
+      <line x1="180" y1="143" x2="242" y2="143" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="242,137 256,143 242,149" fill="var(--muted)" />
+
+      <rect x="278" y="44" width="344" height="156" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="450" y="66" text-anchor="middle" fill="var(--muted)" font-size="11">дом</text>
+
+      <rect x="296" y="78" width="96" height="34" rx="7" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="344" y="99" text-anchor="middle" fill="var(--accent)" font-size="11">язык</text>
+      <rect x="400" y="78" width="96" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="448" y="99" text-anchor="middle" fill="var(--fg)" font-size="11">интерфейс</text>
+      <rect x="504" y="78" width="100" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="554" y="99" text-anchor="middle" fill="var(--fg)" font-size="11">сервер</text>
+
+      <rect x="296" y="120" width="96" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="344" y="141" text-anchor="middle" fill="var(--fg)" font-size="11">база</text>
+      <rect x="400" y="120" width="96" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="448" y="141" text-anchor="middle" fill="var(--fg)" font-size="11">хостинг</text>
+      <rect x="504" y="120" width="100" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="554" y="141" text-anchor="middle" fill="var(--fg)" font-size="11">защита</text>
+
+      <rect x="296" y="162" width="96" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="344" y="183" text-anchor="middle" fill="var(--fg)" font-size="11">тесты</text>
+      <rect x="400" y="162" width="96" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="448" y="183" text-anchor="middle" fill="var(--fg)" font-size="11">мониторинг</text>
+      <rect x="504" y="162" width="100" height="34" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="554" y="183" text-anchor="middle" fill="var(--fg)" font-size="11">деплой</text>
+    </svg>
+    <figcaption>Язык — не «мало» и не «зря». Он просто один кирпич из многих. Раздел «Экосистема» показывает остальные кирпичи и то, как они складываются в дом.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Посмотрим на настоящий проект</h2>
+  <p>Чтобы это перестало быть абстракцией, откроем файл, который есть в <strong>любом</strong> проекте на JavaScript. Он называется <code>package.json</code> и представляет собой список всего чужого кода, который проект использует. Вот типичный небольшой магазин:</p>
+  <app-code-block [code]="packageJson" lang="json" />
+  <p>Одиннадцать строк — и в них семь незнакомых названий. Но давайте применим тот же фокус: припишем к каждому его роль.</p>
+  <app-code-block [code]="packageJsonDecoded" lang="text" />
+  <p>Обратите внимание на важную деталь, которую видно прямо здесь. Пакеты разложены по <strong>двум разным коробкам</strong>. В <code>dependencies</code> — то, без чего сайт не будет работать <em>у пользователя</em>. В <code>devDependencies</code> — то, что нужно <em>только вам</em>, пока вы пишете код: сборщик, тесты, проверка стиля. К пользователю они не поедут — им там нечего делать.</p>
+  <p class="note"><strong>Что это значит на практике.</strong> В реальном проекте <em>вашего</em> кода — небольшая часть. Всё остальное — чужие готовые кирпичи, которые кто-то написал и выложил. Умение находить, выбирать и склеивать эти кирпичи — отдельный навык, не менее важный, чем знание языка. Именно ему и посвящён раздел.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Учим роли, а не имена</h2>
+  <p>Теперь — самый важный принцип, ради которого стоило читать всё предыдущее. Если пытаться <strong>запоминать названия</strong>, вы проиграете: их тысячи, каждый месяц появляются новые, а половина сегодняшних забудется через три года. Если понимать <strong>роли</strong> — вы выиграете навсегда, потому что роли почти не меняются.</p>
+  <app-code-block [code]="roleThinking" lang="typescript" />
+  <p>Представляйте себе приложение как <strong>шкаф с полками</strong>. Каждая полка — это роль, то есть задача, которую обязательно кто-то должен закрыть. На полку можно поставить любой из подходящих инструментов, но полка от этого не меняется. Полки — вечные, содержимое — сменное.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 290" width="100%" role="img" aria-label="Три полки-роли, на каждой стоят взаимозаменяемые инструменты-кандидаты">
+      <text x="330" y="24" text-anchor="middle" fill="var(--muted)" font-size="12">полка (роль) — вечная · содержимое (имена) — сменное</text>
+
+      <rect x="30" y="44" width="200" height="46" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="130" y="64" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">чем рисовать экран</text>
+      <text x="130" y="80" text-anchor="middle" fill="var(--muted)" font-size="10">роль</text>
+      <line x1="230" y1="67" x2="272" y2="67" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="272,62 284,67 272,72" fill="var(--muted)" />
+      <rect x="292" y="46" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="331" y="72" text-anchor="middle" fill="var(--fg)" font-size="11">React</text>
+      <rect x="380" y="46" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="419" y="72" text-anchor="middle" fill="var(--fg)" font-size="11">Vue</text>
+      <rect x="468" y="46" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="507" y="72" text-anchor="middle" fill="var(--fg)" font-size="11">Svelte</text>
+      <text x="590" y="72" text-anchor="middle" fill="var(--muted)" font-size="11">и другие…</text>
+
+      <rect x="30" y="122" width="200" height="46" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="130" y="142" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">где хранить данные</text>
+      <text x="130" y="158" text-anchor="middle" fill="var(--muted)" font-size="10">роль</text>
+      <line x1="230" y1="145" x2="272" y2="145" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="272,140 284,145 272,150" fill="var(--muted)" />
+      <rect x="292" y="124" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="331" y="150" text-anchor="middle" fill="var(--fg)" font-size="11">Redux</text>
+      <rect x="380" y="124" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="419" y="150" text-anchor="middle" fill="var(--fg)" font-size="11">Zustand</text>
+      <rect x="468" y="124" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="507" y="150" text-anchor="middle" fill="var(--fg)" font-size="11">MobX</text>
+      <text x="590" y="150" text-anchor="middle" fill="var(--muted)" font-size="11">и другие…</text>
+
+      <rect x="30" y="200" width="200" height="46" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="130" y="220" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">чем проверять код</text>
+      <text x="130" y="236" text-anchor="middle" fill="var(--muted)" font-size="10">роль</text>
+      <line x1="230" y1="223" x2="272" y2="223" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="272,218 284,223 272,228" fill="var(--muted)" />
+      <rect x="292" y="202" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="331" y="228" text-anchor="middle" fill="var(--fg)" font-size="11">Jest</text>
+      <rect x="380" y="202" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="419" y="228" text-anchor="middle" fill="var(--fg)" font-size="11">Vitest</text>
+      <rect x="468" y="202" width="78" height="42" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="507" y="228" text-anchor="middle" fill="var(--fg)" font-size="11">Mocha</text>
+      <text x="590" y="228" text-anchor="middle" fill="var(--muted)" font-size="11">и другие…</text>
+
+      <text x="330" y="274" text-anchor="middle" fill="var(--green)" font-size="12">выучили три полки слева — и правая часть перестала пугать</text>
+    </svg>
+    <figcaption>Слева — вечные роли, справа — сменные кандидаты на них. Новый модный инструмент почти всегда встаёт на уже знакомую полку, а не создаёт новую.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Насколько глубоко нужно знать каждую вещь</h2>
+  <p>Ещё одно облегчение: <strong>не все технологии нужно знать одинаково хорошо</strong>. Есть три очень разных уровня знакомства, и путать их — главная причина выгорания у новичков.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Уровень</th>
+          <th>Что это значит</th>
+          <th>Сколько нужно таких</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Узнаю</strong></td>
+          <td>Слышал слово, знаю, к какой полке оно относится. «Kubernetes? Это про запуск программ на серверах».</td>
+          <td class="yes">✅ Много — сотни. Ровно это даёт наш раздел.</td>
+        </tr>
+        <tr>
+          <td><strong>2. Разбираюсь</strong></td>
+          <td>Понимаю, как устроено, могу прочитать чужой код, поправить, найти ответ в документации.</td>
+          <td>Десяток — те, что реально встречаются в вашей работе.</td>
+        </tr>
+        <tr>
+          <td><strong>3. Владею</strong></td>
+          <td>Могу спроектировать с нуля, знаю подводные камни, объясню выбор коллеге.</td>
+          <td>Две-три штуки. Больше и не нужно.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Ошибка новичка — пытаться со всем сразу дойти до третьего уровня. Это невозможно физически, и попытка заканчивается ощущением «я ничего не успеваю». Правильная стратегия — <strong>широкий первый уровень и узкий третий</strong>: знать <em>про</em> многое, знать <em>глубоко</em> немногое.</p>
+  <p class="note"><strong>Как это выглядит у опытных.</strong> Разработчик с десятью годами опыта тоже не знает большинство инструментов из списка. Разница в том, что он <em>не пугается</em>: видит незнакомое слово, определяет полку, читает документацию час — и работает. Этот навык называют «умею быстро разбираться», и он ценнее, чем знание конкретных имён.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что вы получите от этого раздела</h2>
+  <ul class="rules">
+    <li><strong>Перестанете бояться вакансий и чужих проектов.</strong> Открыв незнакомый репозиторий, вы поймёте, из чего он собран, даже если каждое имя видите впервые.</li>
+    <li><strong>Начнёте понимать коллег.</strong> Фразы вроде «выкатим на стейдж через CI, если тесты зелёные» перестанут быть шумом.</li>
+    <li><strong>Научитесь выбирать.</strong> Когда придёт время решать «а на чём делать?», у вас будут критерии вместо гадания. Этому посвящена страница <a routerLink="/ecosystem/intro/how-to-choose">Как выбирать технологию</a>.</li>
+    <li><strong>Увидите картину целиком.</strong> Станет понятно, куда ведёт кнопка, которую вы нарисовали, и что с ней происходит дальше — до самой базы данных и обратно.</li>
+    <li><strong>Сможете задавать правильные вопросы.</strong> Это важнее готовых ответов: правильно заданный вопрос гуглится за минуту.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Чего в разделе не будет</h2>
+  <p>Честно обозначим границы, чтобы не было завышенных ожиданий:</p>
+  <ul class="rules">
+    <li><strong>Это не курс по React (или любому другому инструменту).</strong> Мы объясняем, зачем такие штуки нужны и чем отличаются, но не учим программировать на каждой.</li>
+    <li><strong>Здесь мало кода.</strong> Раздел про устройство мира вокруг кода, а не про синтаксис. Код появляется только там, где без него непонятно.</li>
+    <li><strong>Здесь нет «правильного ответа».</strong> Вопрос «что лучше — React или Vue» не имеет ответа в вакууме, и мы не будем его выдумывать. Вместо этого покажем, как выбирать под <em>вашу</em> задачу.</li>
+    <li><strong>Здесь нет полноты.</strong> Инструментов тысячи; мы называем самые распространённые, чтобы показать роль, а не составляем каталог.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Чувство «я ничего не знаю» — нормально и обманчиво.</strong> Оно возникает от незнакомых <em>имён</em>, а не от непонятных <em>задач</em>.</li>
+    <li><strong>Язык — один кирпич.</strong> Чтобы получился продукт, нужны ещё интерфейс, сервер, база, хостинг, защита, тесты, мониторинг и деплой.</li>
+    <li><strong>За каждым страшным словом стоит простой вопрос.</strong> «Чем рисовать», «где хранить», «как связать», «чем проверить». Вопросов — десяток, и они вечные.</li>
+    <li><strong>Учите роли (полки), а не имена.</strong> Имена меняются каждые несколько лет, роли — почти никогда. Новый инструмент обычно встаёт на знакомую полку.</li>
+    <li><strong>Три уровня знакомства.</strong> «Узнаю» — сотни вещей, «разбираюсь» — десяток, «владею» — две-три. Не пытайтесь всё довести до третьего уровня.</li>
+    <li><strong>Цель раздела — узнавание, а не владение.</strong> Чтобы вы могли открыть незнакомый проект и понять, что там происходит.</li>
+  </ul>
+  <p class="note">Дальше — страница <a routerLink="/ecosystem/intro/anatomy">Анатомия веб-приложения</a>: разберём по шагам, что вообще происходит между моментом, когда вы ввели адрес сайта, и моментом, когда на экране появилась страница. Это фундамент, без которого остальные подразделы читать тяжело. Если по пути встретится незнакомое слово — загляните в <a routerLink="/ecosystem/intro/glossary">Словарь терминов</a>.</p>
+</section>
+</article>

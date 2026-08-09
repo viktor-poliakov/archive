@@ -191,4 +191,43 @@ type FetchResult = ReturnType<typeof fetchUser>;
 // утилитарный тип Awaited — см. страницу про него (ссылка ниже).
 type User = Awaited<ReturnType<typeof fetchUser>>;
 // User = { id: string; name: string }  ✅ Promise снят, остался чистый объект`;
+
+  protected readonly ownImplementation = `// Обе утилиты не встроены в компилятор — они написаны обычным кодом
+// в стандартной библиотеке TypeScript (lib.es5.d.ts).
+
+// ── ReturnType: «тип возвращаемого значения» ────────────────────
+// «Если T подходит под шаблон „функция, возвращающая ЧТО-ТО“ —
+//  назови это что-то буквой R и верни R».
+type MyReturnType<T extends (...args: any) => any> =
+  T extends (...args: any) => infer R ? R : any;
+//                            ↑ дырка ПОСЛЕ стрелки — там, где результат
+
+// ── Parameters: «параметры» ─────────────────────────────────────
+// Тот же приём, но дырка стоит ДО стрелки — в списке аргументов.
+type MyParameters<T extends (...args: any) => any> =
+  T extends (...args: infer P) => any ? P : never;
+//                    ↑ дырка ДО стрелки — там, где аргументы
+
+// infer («вывести») — это шаблон с пропуском: мы описываем форму
+// функции, а на месте интересующей нас части ставим не конкретный
+// тип, а именованную «дырку». Компилятор сам подставит в неё то,
+// что найдёт. Вся разница между двумя утилитами — МЕСТО дырки.
+
+// ── Проверяем на живой функции ──────────────────────────────────
+function createUser(name: string, age: number, isAdmin: boolean) {
+  return { name: name, age: age, isAdmin: isAdmin };
+}
+
+type Result = MyReturnType<typeof createUser>;
+// { name: string; age: number; isAdmin: boolean }
+// ✅ то же самое, что встроенный ReturnType<typeof createUser>
+
+type Args = MyParameters<typeof createUser>;
+// [name: string, age: number, isAdmin: boolean]  ← кортеж
+// ✅ то же самое, что встроенный Parameters<typeof createUser>
+
+// Ветка «иначе» (: any и : never) нужна формально — условный тип
+// обязан ответить и на случай «шаблон не подошёл». На практике до
+// неё не доходит: ограничение T extends (...args: any) => any
+// не пропустит внутрь ничего, кроме функции.`;
 }

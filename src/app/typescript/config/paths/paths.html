@@ -1,0 +1,105 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/config">Конфигурация компилятора</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Пути и разрешение модулей</span></nav>
+
+<h1 class="doc__title">Пути и разрешение модулей</h1>
+<p class="doc__lead">Когда вы пишете <code>import ... from '...'</code>, кто-то должен по этой строке <strong>найти нужный файл</strong>. Этот процесс называется <em>разрешением модулей</em>. Сначала разберём, как компилятор ищет файлы по обычным путям, а потом — как настроить короткие <strong>псевдонимы</strong> (<code>&#64;/utils</code> вместо <code>../../../utils</code>) через опцию <code>paths</code>. И сразу предупредим о главной ловушке новичков, из-за которой «в редакторе всё зелёное, а запуск падает». Про соседнюю опцию <code>moduleResolution</code> см. страницу <a routerLink="/typescript/config/module-target">module и target</a>.</p>
+
+<section class="doc__section">
+  <h2>Два вида путей в импорте</h2>
+  <p>Любая строка импорта — это либо <strong>относительный путь</strong> к вашему файлу, либо <strong>«голое» имя</strong> установленного пакета. Различать их просто: относительный начинается с <code>./</code> или <code>../</code>, голый — сразу с имени:</p>
+  <app-code-block [code]="relativeVsBare" lang="typescript" />
+  <p>Дальше компилятор действует по чётким правилам: для относительного пути пробует разные расширения и папку с <code>index</code>, а для голого имени идёт в <code>node_modules</code>. Это и есть «разрешение модулей»:</p>
+  <app-code-block [code]="resolutionSteps" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 700 180" width="100%" role="img" aria-label="Относительный путь ищется рядом с файлом, голое имя ищется в node_modules">
+      <rect x="24" y="40" width="200" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="124" y="68" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'./math'</text>
+      <line x1="224" y1="63" x2="300" y2="63" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="300,57 314,63 300,69" fill="var(--muted)" />
+      <rect x="322" y="40" width="354" height="46" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="1.5" />
+      <text x="499" y="62" text-anchor="middle" fill="var(--fg)" font-size="12">ищем ФАЙЛ рядом: ./math.ts, ./math/index.ts</text>
+
+      <rect x="24" y="104" width="200" height="46" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="124" y="132" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">'zod'</text>
+      <line x1="224" y1="127" x2="300" y2="127" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="300,121 314,127 300,133" fill="var(--muted)" />
+      <rect x="322" y="104" width="354" height="46" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5" />
+      <text x="499" y="126" text-anchor="middle" fill="var(--fg)" font-size="12">ищем ПАКЕТ в node_modules/zod/</text>
+    </svg>
+    <figcaption>Путь с <code>./</code> или <code>../</code> ведёт к вашему файлу рядом. Голое имя (<code>zod</code>, <code>express</code>) компилятор ищет среди установленных пакетов в <code>node_modules</code>.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Псевдонимы через <code>paths</code></h2>
+  <p>В большом проекте относительные пути превращаются в лесенки <code>../../../</code>: их тяжело читать и они ломаются, стоит переместить файл. Опция <code>paths</code> заводит <strong>псевдонимы</strong> — короткие имена для папок. Договоримся, что <code>&#64;/</code> означает папку <code>src</code>:</p>
+  <app-code-block [code]="pathsJson" lang="json" />
+  <app-code-block [code]="pathsBeforeAfter" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 680 150" width="100%" role="img" aria-label="Псевдоним @/utils/date компилятор понимает как src/utils/date">
+      <rect x="40" y="50" width="230" height="50" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="155" y="80" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">&#64;/utils/date</text>
+      <line x1="270" y1="75" x2="400" y2="75" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="400,69 414,75 400,81" fill="var(--muted)" />
+      <text x="335" y="65" text-anchor="middle" fill="var(--muted)" font-size="11">paths: &#64;/* → ./src/*</text>
+      <rect x="422" y="50" width="230" height="50" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="537" y="80" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="14">src/utils/date</text>
+    </svg>
+    <figcaption>Псевдоним <code>&#64;/utils/date</code> компилятор понимает как <code>src/utils/date</code>: путь одинаково короткий из любого места проекта и не зависит от глубины вложенности файла.</figcaption>
+  </figure>
+  <p class="note"><strong>Про <code>baseUrl</code>.</strong> В старых примерах вместе с <code>paths</code> почти всегда встречается опция <code>baseUrl</code>. В TypeScript 6.0 её объявили устаревшей — современным способом <code>paths</code> работают и без неё (нужно лишь подходящее <code>moduleResolution</code>, например <code>bundler</code>). Если видите <code>baseUrl</code> в чужом конфиге — это наследие, не пугайтесь.</p>
+</section>
+
+<section class="doc__section">
+  <h2>⚠️ Главная ловушка: <code>paths</code> не переписываются</h2>
+  <p>А теперь — важнейшее, из-за чего псевдонимы «загадочно ломаются». <code>paths</code> — это подсказка компилятору <strong>только на время проверки типов</strong>. В <em>собранный</em> JavaScript псевдоним попадает <strong>как есть</strong>: TypeScript его не расшифровывает. Посмотрите. Вот исходник с псевдонимом:</p>
+  <app-code-block [code]="gotchaSource" lang="typescript" />
+  <p>А вот что реально оказалось в собранном файле — псевдоним <code>&#64;utils/math</code> остался нетронутым:</p>
+  <app-code-block [code]="gotchaEmit" lang="javascript" />
+  <p>И когда такой файл запускают напрямую в Node, тот не понимает, что за <code>&#64;utils/math</code>, — и падает:</p>
+  <app-code-block [code]="gotchaError" lang="bash" />
+  <figure class="diagram">
+    <svg viewBox="0 0 700 210" width="100%" role="img" aria-label="На этапе проверки типов TypeScript понимает псевдоним, но в собранном коде псевдоним остаётся и Node его не понимает">
+      <rect x="24" y="44" width="320" height="130" rx="12" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="184" y="70" text-anchor="middle" fill="var(--green)" font-size="12">на этапе проверки типов</text>
+      <text x="184" y="100" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#64;utils/math</text>
+      <line x1="120" y1="114" x2="248" y2="114" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="248,108 262,114 248,120" fill="var(--muted)" />
+      <text x="184" y="132" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="12">src/utils/math ✓</text>
+      <text x="184" y="158" text-anchor="middle" fill="var(--muted)" font-size="11">TS понимает псевдоним</text>
+
+      <rect x="356" y="44" width="320" height="130" rx="12" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="516" y="70" text-anchor="middle" fill="var(--red)" font-size="12">в собранном коде (рантайм)</text>
+      <text x="516" y="100" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">&#64;utils/math</text>
+      <line x1="452" y1="114" x2="580" y2="114" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" />
+      <polygon points="580,108 594,114 580,120" fill="var(--red)" />
+      <text x="516" y="132" text-anchor="middle" fill="var(--red)" font-family="monospace" font-size="12">&#64;utils/math ✗</text>
+      <text x="516" y="158" text-anchor="middle" fill="var(--muted)" font-size="11">Node не знает такого пакета</text>
+    </svg>
+    <figcaption>Псевдоним живёт только в голове компилятора. В выданном коде он остаётся дословно — и Node (или браузер) на нём спотыкается, если путь никто не расшифровал.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Как заставить псевдонимы работать</h2>
+  <p>Вывод из ловушки: раз TypeScript псевдонимы не переписывает, это должен сделать <strong>кто-то другой в рантайме</strong>. Вариантов несколько:</p>
+  <app-code-block [code]="fixNote" lang="typescript" />
+  <p>Чаще всего вопрос решается сам собой: в проекте со сборщиком (Vite, webpack) сборщик читает те же <code>paths</code> и подставляет реальные пути. Но если вы запускаете код прямо в Node без сборки, надёжнее использовать <strong>встроенные псевдонимы Node</strong> — поле <code>imports</code> в <code>package.json</code>. Их имена начинаются с <code>#</code>, и Node расшифровывает их сам:</p>
+  <app-code-block [code]="nodeImports" lang="json" />
+  <p>Обратите внимание: здесь псевдоним указывает на папку <code>dist</code>, а не <code>src</code>. Это не опечатка: Node запускает уже <em>собранный</em> JavaScript из <code>dist</code>, поэтому и путь ведёт туда. А <code>paths</code> в <code>tsconfig.json</code> смотрели на исходники в <code>src</code>, потому что работают на этапе проверки типов. Разные инструменты — разные папки.</p>
+  <app-code-block [code]="nodeImportsUsage" lang="typescript" />
+  <p class="note"><strong>Правило.</strong> <code>paths</code> из <code>tsconfig.json</code> — удобство на время разработки и проверки типов; они <em>не</em> волшебные и в рантайме сами не работают. Псевдонимы должен расшифровать сборщик, тест-раннер или (для чистого Node) поле <code>imports</code> в <code>package.json</code>. Забыли про это — получите <code>ERR_MODULE_NOT_FOUND</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Разрешение модулей</strong> — как компилятор находит файл по строке импорта. Относительный путь (<code>./</code>, <code>../</code>) ищется рядом; голое имя (<code>zod</code>) — в <code>node_modules</code>.</li>
+    <li><strong><code>paths</code></strong> — псевдонимы для папок (<code>&#64;/* → ./src/*</code>): вместо хрупких <code>../../../</code> пишем короткое <code>&#64;/utils/date</code>.</li>
+    <li><strong><code>baseUrl</code> устарел</strong> в TypeScript 6.0 — современные <code>paths</code> работают без него (с подходящим <code>moduleResolution</code>, например <code>bundler</code>).</li>
+    <li><strong>Главная ловушка:</strong> <code>paths</code> действуют только при проверке типов — в собранный код псевдоним попадает <em>как есть</em>, и в рантайме будет <code>ERR_MODULE_NOT_FOUND</code>, если его никто не расшифровал.</li>
+    <li><strong>Расшифровывает псевдонимы</strong> сборщик (Vite/webpack), тест-раннер или — для чистого Node — поле <code>imports</code> (<code>#</code>-псевдонимы) в <code>package.json</code>.</li>
+  </ul>
+  <p class="note">Соседнее: <a routerLink="/typescript/config/module-target">module и target</a> (там про <code>moduleResolution</code> — от него зависит, как ищутся файлы), <a routerLink="/typescript/config/compiler-options">основные опции</a> и <a routerLink="/typescript/config/strict">строгий режим</a>. Про сами импорты — <a routerLink="/javascript/modules/basics">модули (ES Modules)</a> и <a routerLink="/typescript/modules-types/import-export">импорт и экспорт типов</a>.</p>
+</section>
+</article>

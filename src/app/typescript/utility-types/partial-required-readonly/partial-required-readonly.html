@@ -109,8 +109,8 @@
       <text x="290" y="117" text-anchor="end" fill="var(--red)" font-size="11">перезаписать нельзя</text>
 
       <rect x="66" y="144" width="528" height="62" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
-      <text x="86" y="169" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">🔒 address</text>
-      <text x="574" y="169" text-anchor="end" fill="var(--red)" font-size="11">заменить целиком нельзя</text>
+      <text x="86" y="166" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="13">🔒 address</text>
+      <text x="86" y="188" text-anchor="start" fill="var(--red)" font-size="11">заменить целиком нельзя</text>
 
       <rect x="330" y="152" width="120" height="20" rx="5" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
       <text x="390" y="167" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="11">city ✏️</text>
@@ -163,6 +163,48 @@
     </table>
   </div>
   <p class="note"><strong>Помните про верхний уровень.</strong> Все три работают <em>неглубоко</em> — переключают модификатор только у полей самого объекта, но не заходят во вложенные объекты. Это единственный подводный камень, о котором стоит помнить постоянно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дословный перевод и своя реализация</h2>
+  <p>Имена всех трёх утилит — обычные английские слова, и они <strong>буквально</strong> описывают то, что тип делает с полями. Переведите их один раз — и запоминать больше нечего:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Утилитарный тип</th>
+          <th>Английское слово</th>
+          <th>Дословный перевод</th>
+          <th>Как прочитать вслух</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Partial&lt;T&gt;</code></td>
+          <td><em>partial</em></td>
+          <td>«частичный, неполный»</td>
+          <td>«<strong>частичный</strong> <code>T</code>» — заполнить можно лишь часть полей</td>
+        </tr>
+        <tr>
+          <td><code>Required&lt;T&gt;</code></td>
+          <td><em>required</em></td>
+          <td>«требуемый, обязательный»</td>
+          <td>«<code>T</code>, где всё <strong>обязательно</strong>» — требуется каждое поле</td>
+        </tr>
+        <tr>
+          <td><code>Readonly&lt;T&gt;</code></td>
+          <td><em>read only</em></td>
+          <td>«только читать»</td>
+          <td>«<code>T</code> <strong>только для чтения</strong>» — записывать нельзя</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Теперь самое интересное: эти типы — <strong>не магия компилятора</strong>. Они написаны обычным кодом в стандартной библиотеке TypeScript (файл <code>lib.es5.d.ts</code>), и каждый занимает буквально три строки. Вы можете написать их сами — и получить ровно те же самые типы:</p>
+  <app-code-block [code]="ownImplementation" lang="typescript" />
+  <p>Ключ ко всем трём — запись <code>[P in keyof T]</code>. Это <strong>отображённый тип</strong> (mapped type), то есть «цикл по ключам»: «для каждого имени поля <code>P</code> из <code>T</code> создай в новом типе поле <code>P</code> со значением типа <code>T[P]</code>». Сам по себе такой цикл ничего не меняет — получилась бы точная копия <code>T</code>. Вся разница — в <strong>одной пометке</strong>, дописанной к полю: <code>?</code> добавляет необязательность, <code>-?</code> её снимает, <code>readonly</code> вешает замок. Один и тот же цикл с тремя разными пометками — вот и всё трио.</p>
+  <p>Заодно становится очевидной «неглубокость», о которой мы говорили выше: цикл идёт по ключам <em>верхнего</em> уровня и подставляет <code>T[P]</code> <strong>как есть</strong>. Никто не заглядывает внутрь вложенного объекта и не запускает там такой же цикл — поэтому <code>Readonly</code> и <code>Partial</code> и не «спускаются» вглубь. Чтобы сделать <code>DeepReadonly</code>, цикл пришлось бы вызвать <em>рекурсивно</em> — и такой вариант тоже показан в примере.</p>
+  <p class="note"><strong>Минус — это «снять модификатор».</strong> Запись <code>-?</code> читается как «убрать <code>?</code>», а <code>-readonly</code> — как «снять <code>readonly</code>». Минус работает с обоими модификаторами, поэтому <code>Required</code> пишется через <code>-?</code>, а «размораживающий» тип — через <code>-readonly</code>. Встроенного <code>Mutable</code> в TypeScript нет, но написать его самому — одна строка. Подробнее про такие циклы — на странице <a routerLink="/typescript/advanced-types/mapped">отображённые типы (mapped types)</a>.</p>
 </section>
 
 <section class="doc__section">

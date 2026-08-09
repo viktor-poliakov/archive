@@ -1,0 +1,127 @@
+<article class="doc" style="--accent: #3178c6">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">TypeScript</span><span class="breadcrumbs__sep">/</span><a routerLink="/typescript/config">Конфигурация компилятора</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Основные опции</span></nav>
+
+<h1 class="doc__title">Основные опции</h1>
+<p class="doc__lead"><strong><code>tsconfig.json</code> — это пульт управления компилятором.</strong> Он лежит в корне проекта и отвечает на два вопроса: <em>какие</em> файлы собирать и <em>как</em> именно их собирать. Настроек в нём сотни, но пугаться не нужно — в реальной жизни используют полтора десятка, и почти все они логичны. На этой странице разберём устройство файла и самые нужные опции. Отдельные большие темы — <a routerLink="/typescript/config/strict">строгий режим</a>, <a routerLink="/typescript/config/module-target">module и target</a>, <a routerLink="/typescript/config/paths">пути</a> — вынесены на свои страницы.</p>
+
+<section class="doc__section">
+  <h2>Откуда он берётся</h2>
+  <p>Файл <code>tsconfig.json</code> можно написать руками, но проще сгенерировать командой — она создаст файл со всеми возможными опциями и подсказками к каждой (большинство будут закомментированы):</p>
+  <app-code-block [code]="createCmd" lang="bash" />
+  <p>Само присутствие <code>tsconfig.json</code> в папке говорит компилятору: «здесь начинается проект TypeScript, вот его границы и правила». Дальше и редактор (подсветка ошибок), и команда сборки читают именно этот файл.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Три части файла</h2>
+  <p>За вычетом мелочей файл состоит из трёх блоков. Один говорит <em>как</em> компилировать, два других — <em>что</em> компилировать:</p>
+  <app-code-block [code]="skeleton" lang="json" />
+  <app-code-block [code]="skeletonExplained" lang="typescript" />
+  <figure class="diagram">
+    <svg viewBox="0 0 680 240" width="100%" role="img" aria-label="include выбирает файлы из папки src, exclude убирает node_modules и dist, compilerOptions задаёт правила">
+      <text x="340" y="26" text-anchor="middle" fill="var(--muted)" font-size="13">include выбирает файлы · exclude выкидывает лишнее · compilerOptions задаёт правила</text>
+
+      <rect x="24" y="52" width="200" height="164" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" />
+      <text x="124" y="76" text-anchor="middle" fill="var(--muted)" font-size="12">папка проекта</text>
+      <text x="40" y="104" text-anchor="start" fill="var(--green)" font-family="monospace" font-size="12">src/index.ts ✓</text>
+      <text x="40" y="128" text-anchor="start" fill="var(--green)" font-family="monospace" font-size="12">src/utils.ts ✓</text>
+      <text x="40" y="152" text-anchor="start" fill="var(--red)" font-family="monospace" font-size="12">node_modules/ ✗</text>
+      <text x="40" y="176" text-anchor="start" fill="var(--red)" font-family="monospace" font-size="12">dist/ ✗</text>
+      <text x="40" y="200" text-anchor="start" fill="var(--muted)" font-family="monospace" font-size="12">README.md (не .ts)</text>
+
+      <line x1="224" y1="134" x2="290" y2="134" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="290,128 304,134 290,140" fill="var(--muted)" />
+
+      <rect x="310" y="90" width="180" height="88" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <text x="400" y="120" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="13">tsconfig.json</text>
+      <text x="400" y="142" text-anchor="middle" fill="var(--muted)" font-size="11">include: ["src"]</text>
+      <text x="400" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">exclude: node_modules, dist</text>
+
+      <line x1="490" y1="134" x2="556" y2="134" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="556,128 570,134 556,140" fill="var(--muted)" />
+
+      <rect x="576" y="104" width="90" height="60" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="621" y="130" text-anchor="middle" fill="var(--fg)" font-size="12">в проект</text>
+      <text x="621" y="150" text-anchor="middle" fill="var(--muted)" font-size="11">2 файла</text>
+    </svg>
+    <figcaption><code>include</code> набирает файлы (все <code>.ts</code> из <code>src</code>), <code>exclude</code> выбрасывает лишнее (<code>node_modules</code>, папку сборки), а <code>compilerOptions</code> определяет правила для отобранных файлов.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Готовый стартовый набор</h2>
+  <p>Чтобы было от чего оттолкнуться, вот разумный <code>tsconfig.json</code> для типичного проекта в браузере со сборщиком. Ниже разберём каждую строчку по группам:</p>
+  <app-code-block [code]="starter" lang="json" />
+  <p class="note"><strong>Не пугайтесь количества.</strong> Половину строк вы уже понимаете: <code>strict</code> — <a routerLink="/typescript/config/strict">строгий режим</a>, а <code>target</code>, <code>module</code>, <code>moduleResolution</code> — на странице <a routerLink="/typescript/config/module-target">module и target</a>. Разберём остальные — про вход/выход и удобство.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Вход и выход: <code>rootDir</code>, <code>outDir</code>, <code>noEmit</code></h2>
+  <p>Самое приземлённое: откуда брать исходники и куда класть результат. Компилятор превращает каждый <code>.ts</code> в <code>.js</code>; эти опции говорят, где что лежит:</p>
+  <app-code-block [code]="inputOutput" lang="json" />
+  <app-code-block [code]="inputOutputExplained" lang="typescript" />
+  <p class="note"><strong>Про <code>noEmit</code>.</strong> Сегодня код часто собирает не сам <code>tsc</code>, а сборщик (Vite, webpack, esbuild). Тогда TypeScript оставляют только для <em>проверки типов</em>, а генерацию файлов отключают через <code>"noEmit": true</code>. Это нормальный, очень распространённый режим: «TypeScript проверяет, сборщик собирает».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Карты и типы: <code>sourceMap</code>, <code>declaration</code></h2>
+  <p>Две опции, которые управляют <em>дополнительными</em> файлами рядом с готовым <code>.js</code>:</p>
+  <app-code-block [code]="emitExtras" lang="json" />
+  <app-code-block [code]="emitExtrasExplained" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Опции «для удобства и мира»</h2>
+  <p>Четыре настройки, которые почти всегда стоит включить — они убирают классические грабли и лишний шум:</p>
+  <app-code-block [code]="qualityJson" lang="json" />
+  <app-code-block [code]="qualityExplained" lang="typescript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Опция</th>
+          <th>Что делает — простыми словами</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>esModuleInterop</code></td>
+          <td>Даёт нормально импортировать старые CommonJS-библиотеки через <code>import</code></td>
+        </tr>
+        <tr>
+          <td><code>resolveJsonModule</code></td>
+          <td>Разрешает <code>import data from './file.json'</code></td>
+        </tr>
+        <tr>
+          <td><code>forceConsistentCasingInFileNames</code></td>
+          <td>Следит за регистром путей — спасает при переносе с Windows на Linux</td>
+        </tr>
+        <tr>
+          <td><code>skipLibCheck</code></td>
+          <td>Не проверять типы внутри чужих <code>.d.ts</code> — быстрее сборка, меньше чужих ошибок</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Наследование через <code>extends</code></h2>
+  <p>Не обязательно каждый раз писать конфиг с нуля. Опция <code>extends</code> позволяет взять готовый чужой <code>tsconfig</code> за <strong>основу</strong> и добавить поверх только своё — как наследование у классов:</p>
+  <app-code-block [code]="extendsJson" lang="json" />
+  <app-code-block [code]="extendsExplained" lang="typescript" />
+  <p class="note"><strong>Где пригодится.</strong> Готовые «рецепты» вроде <code>&#64;tsconfig/node20</code> избавляют от подбора десятка опций под окружение. А в большом репозитории с несколькими пакетами один базовый конфиг задаёт общие правила, а маленькие файлы в пакетах его расширяют — правишь основу один раз, меняется везде.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong><code>tsconfig.json</code></strong> — пульт компилятора в корне проекта; создаётся командой <code>npx tsc --init</code>.</li>
+    <li><strong>Три части:</strong> <code>compilerOptions</code> (как компилировать), <code>include</code> (какие файлы брать), <code>exclude</code> (что выкинуть).</li>
+    <li><strong>Вход/выход:</strong> <code>rootDir</code> — исходники, <code>outDir</code> — результат, <code>noEmit</code> — только проверять типы (когда собирает сборщик).</li>
+    <li><strong>Доп. файлы:</strong> <code>sourceMap</code> (отладка по исходникам), <code>declaration</code> (<code>.d.ts</code> для библиотек).</li>
+    <li><strong>Почти всегда включают:</strong> <code>esModuleInterop</code>, <code>resolveJsonModule</code>, <code>forceConsistentCasingInFileNames</code>, <code>skipLibCheck</code>.</li>
+    <li><strong><code>extends</code></strong> — взять готовый конфиг за основу и переопределить только нужное.</li>
+  </ul>
+  <p class="note">Отдельные большие темы: <a routerLink="/typescript/config/strict">строгий режим (strict)</a>, <a routerLink="/typescript/config/module-target">module и target</a> и <a routerLink="/typescript/config/paths">пути и разрешение модулей</a>. Смежное: <a routerLink="/typescript/modules-types/declaration-files">файлы объявлений .d.ts</a> (их создаёт опция <code>declaration</code>) и <a routerLink="/typescript/modules-types/third-party">типы библиотек</a>.</p>
+</section>
+</article>

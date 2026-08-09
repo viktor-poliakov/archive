@@ -1,0 +1,195 @@
+<article class="doc" style="--accent: #ffb86c">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Экосистема</span></nav>
+
+<h1 class="doc__title">Экосистема</h1>
+<p class="doc__lead">Знать язык программирования — это как <strong>уметь готовить</strong>. Полезный навык, но чтобы накормить сотню гостей, одного умения мало: нужна кухня, поставщики продуктов, холодильники, посуда, зал, официанты, касса и кто-то, кто моет полы ночью. Всё, что стоит <em>вокруг</em> языка и превращает ваш код в работающий продукт, которым пользуются живые люди, — это и есть <strong>экосистема</strong>. Этот раздел — обзорная экскурсия по ней: без глубокого погружения, но так, чтобы вы <strong>перестали теряться в незнакомых словах</strong> и понимали, кто за что отвечает.</p>
+
+<section class="doc__section">
+  <h2>Почему этот раздел вообще существует</h2>
+  <p>Представьте человека, который честно выучил JavaScript. Он понимает функции, массивы, объекты, промисы. Он решает задачки. А потом открывает описание вакансии и читает:</p>
+  <p class="note">«Ищем разработчика: <strong>React</strong>, <strong>TypeScript</strong>, <strong>Next.js</strong>, <strong>Redux Toolkit</strong>, опыт с <strong>REST</strong> и <strong>GraphQL</strong>, понимание <strong>Docker</strong>, <strong>CI/CD</strong>, знание <strong>PostgreSQL</strong>, опыт написания тестов в <strong>Jest</strong>, плюсом будет <strong>Kubernetes</strong> и <strong>Sentry</strong>».</p>
+  <p>Двадцать слов — и почти ни одного знакомого. Возникает очень неприятное чувство: «я вроде выучил язык, но, кажется, не знаю вообще ничего». Это чувство ложное, но объяснимое: <strong>язык — только один кирпич в большой постройке</strong>, а вакансия описывает всю постройку целиком.</p>
+  <p>Хорошая новость в том, что этих слов не двадцать разных вселенных. За ними стоит <strong>десяток понятных ролей</strong>, и каждое слово — просто имя инструмента, который одну из этих ролей исполняет. Как только вы увидите роли, список из вакансии перестанет пугать: вы будете читать его как меню, а не как экзаменационный билет.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что такое «экосистема» простыми словами</h2>
+  <p>Слово звучит по-научному, но смысл у него бытовой. <strong>Экосистема — это всё, что нужно вокруг языка, чтобы получился настоящий продукт.</strong> Сам по себе код на вашем ноутбуке — это ещё не сайт и не приложение. Чтобы им кто-то смог воспользоваться, нужно ответить на кучу приземлённых вопросов:</p>
+  <ul class="rules">
+    <li>Как показать пользователю <strong>кнопки и картинки</strong> в браузере?</li>
+    <li>Где <strong>хранить данные</strong>, чтобы они не пропали после перезагрузки?</li>
+    <li>Как две части программы <strong>разговаривают</strong> друг с другом через интернет?</li>
+    <li>На каком <strong>компьютере</strong> всё это крутится, пока вы спите?</li>
+    <li>Как понять, что сайт <strong>сломался</strong>, раньше, чем об этом напишут пользователи?</li>
+    <li>Как не дать посторонним <strong>прочитать чужие</strong> сообщения и списать деньги?</li>
+  </ul>
+  <p>На каждый такой вопрос человечество придумало отдельный класс инструментов. Вот они все вместе и есть экосистема.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Язык — маленький кирпич в центре, вокруг него кольцо из задач экосистемы: интерфейс, хранение, связь, запуск, наблюдение, защита">
+      <text x="330" y="24" text-anchor="middle" fill="var(--muted)" font-size="13">язык — в центре, но он лишь часть картины</text>
+
+      <rect x="250" y="112" width="160" height="76" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="2.4" />
+      <text x="330" y="140" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="600">язык</text>
+      <text x="330" y="160" text-anchor="middle" fill="var(--muted)" font-size="10.5">JS / TS — то,</text>
+      <text x="330" y="176" text-anchor="middle" fill="var(--muted)" font-size="10.5">что вы уже учили</text>
+
+      <rect x="40" y="46" width="170" height="44" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="125" y="66" text-anchor="middle" fill="var(--fg)" font-size="12">показать интерфейс</text>
+      <text x="125" y="82" text-anchor="middle" fill="var(--muted)" font-size="11">клиент, браузер</text>
+
+      <rect x="450" y="46" width="170" height="44" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="535" y="66" text-anchor="middle" fill="var(--fg)" font-size="12">хранить данные</text>
+      <text x="535" y="82" text-anchor="middle" fill="var(--muted)" font-size="11">базы данных</text>
+
+      <rect x="20" y="128" width="170" height="44" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="105" y="148" text-anchor="middle" fill="var(--fg)" font-size="12">связать части</text>
+      <text x="105" y="164" text-anchor="middle" fill="var(--muted)" font-size="11">HTTP, API</text>
+
+      <rect x="470" y="128" width="170" height="44" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="555" y="148" text-anchor="middle" fill="var(--fg)" font-size="12">запустить и держать</text>
+      <text x="555" y="164" text-anchor="middle" fill="var(--muted)" font-size="11">серверы, деплой</text>
+
+      <rect x="40" y="210" width="170" height="44" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="125" y="230" text-anchor="middle" fill="var(--fg)" font-size="12">защитить</text>
+      <text x="125" y="246" text-anchor="middle" fill="var(--muted)" font-size="11">безопасность</text>
+
+      <rect x="450" y="210" width="170" height="44" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="535" y="230" text-anchor="middle" fill="var(--fg)" font-size="12">увидеть поломку</text>
+      <text x="535" y="246" text-anchor="middle" fill="var(--muted)" font-size="11">логи, мониторинг</text>
+
+      <line x1="210" y1="76" x2="248" y2="116" stroke="var(--border)" stroke-width="1.4" />
+      <line x1="450" y1="76" x2="412" y2="116" stroke="var(--border)" stroke-width="1.4" />
+      <line x1="190" y1="150" x2="246" y2="150" stroke="var(--border)" stroke-width="1.4" />
+      <line x1="470" y1="150" x2="414" y2="150" stroke="var(--border)" stroke-width="1.4" />
+      <line x1="210" y1="224" x2="248" y2="184" stroke="var(--border)" stroke-width="1.4" />
+      <line x1="450" y1="224" x2="412" y2="184" stroke="var(--border)" stroke-width="1.4" />
+    </svg>
+    <figcaption>Язык — это то, чем вы пишете. Всё остальное вокруг отвечает на вопросы «где показать», «где хранить», «как связать», «где запустить», «как защитить» и «как заметить поломку».</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Как устроен раздел</h2>
+  <p>Подразделы слева идут не случайным списком, а <strong>примерно в том порядке, в каком данные путешествуют по системе</strong>: от экрана пользователя вглубь, к серверу и базе, а потом вниз — к железу, на котором всё крутится. Плюс три темы, которые пронизывают систему насквозь и касаются вообще всего.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 340" width="100%" role="img" aria-label="Слои системы сверху вниз: клиент, связь, бэкенд, данные, инфраструктура; справа сквозные темы: безопасность, наблюдаемость, процесс">
+      <text x="230" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">путь данных: сверху вниз</text>
+
+      <rect x="30" y="36" width="400" height="46" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="52" y="58" text-anchor="start" fill="var(--fg)" font-size="13" font-weight="600">Клиент</text>
+      <text x="410" y="66" text-anchor="end" fill="var(--muted)" font-size="11">то, что видит пользователь на экране</text>
+
+      <line x1="230" y1="82" x2="230" y2="96" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="224,96 230,108 236,96" fill="var(--muted)" />
+
+      <rect x="30" y="110" width="400" height="46" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="52" y="132" text-anchor="start" fill="var(--fg)" font-size="13" font-weight="600">Связь между частями</text>
+      <text x="410" y="140" text-anchor="end" fill="var(--muted)" font-size="11">как экран разговаривает с сервером</text>
+
+      <line x1="230" y1="156" x2="230" y2="170" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="224,170 230,182 236,170" fill="var(--muted)" />
+
+      <rect x="30" y="184" width="400" height="46" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="52" y="206" text-anchor="start" fill="var(--fg)" font-size="13" font-weight="600">Бэкенд</text>
+      <text x="410" y="214" text-anchor="end" fill="var(--muted)" font-size="11">где считаются и решаются задачи</text>
+
+      <line x1="230" y1="230" x2="230" y2="244" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="224,244 230,256 236,244" fill="var(--muted)" />
+
+      <rect x="30" y="258" width="400" height="46" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="52" y="280" text-anchor="start" fill="var(--fg)" font-size="13" font-weight="600">Данные и хранилища</text>
+      <text x="410" y="288" text-anchor="end" fill="var(--muted)" font-size="11">где всё это лежит и не теряется</text>
+
+      <rect x="30" y="312" width="400" height="24" rx="7" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="230" y="329" text-anchor="middle" fill="var(--muted)" font-size="11">Инфраструктура — «пол», на котором стоит всё остальное</text>
+
+      <rect x="452" y="36" width="176" height="268" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="6 5" />
+      <text x="540" y="60" text-anchor="middle" fill="var(--muted)" font-size="11">касаются ВСЕХ слоёв</text>
+      <rect x="470" y="76" width="140" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="540" y="101" text-anchor="middle" fill="var(--fg)" font-size="12">Безопасность</text>
+      <rect x="470" y="128" width="140" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="540" y="153" text-anchor="middle" fill="var(--fg)" font-size="12">Наблюдаемость</text>
+      <rect x="470" y="180" width="140" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="540" y="205" text-anchor="middle" fill="var(--fg)" font-size="12">Процесс и качество</text>
+      <rect x="470" y="232" width="140" height="40" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="540" y="257" text-anchor="middle" fill="var(--fg)" font-size="12">Архитектура</text>
+    </svg>
+    <figcaption>Слева — слои, через которые проходит запрос пользователя. Справа — темы, которые нельзя приделать к одному слою: они касаются сразу всего.</figcaption>
+  </figure>
+  <p>Коротко о каждом подразделе — чтобы вы понимали, куда идёте:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Подраздел</th>
+          <th>О чём он</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a routerLink="/ecosystem/intro/why">Введение</a></td>
+          <td>Зачем всё это, как устроено веб-приложение и как выбирать инструменты. <strong>Начните отсюда.</strong></td>
+        </tr>
+        <tr>
+          <td>Клиент</td>
+          <td>Всё, что работает в браузере: фреймворки, сборщики, стили, состояние, тесты.</td>
+        </tr>
+        <tr>
+          <td>Бэкенд</td>
+          <td>Серверная часть и языки, на которых её пишут: Node.js, Python, Go, Java и другие.</td>
+        </tr>
+        <tr>
+          <td>Связь между частями</td>
+          <td>Как половинки приложения разговаривают: HTTP, REST, GraphQL, вебсокеты, очереди.</td>
+        </tr>
+        <tr>
+          <td>Данные и хранилища</td>
+          <td>Базы данных, кэш, поиск, файлы. Где лежат ваши данные и как их достать.</td>
+        </tr>
+        <tr>
+          <td>Инфраструктура и деплой</td>
+          <td>Как код попадает с ноутбука в интернет: серверы, контейнеры, автоматическая сборка.</td>
+        </tr>
+        <tr>
+          <td>Безопасность</td>
+          <td>Вход по паролю, права доступа, типовые атаки и защита от них.</td>
+        </tr>
+        <tr>
+          <td>Наблюдаемость</td>
+          <td>Как узнать, что происходит внутри работающей системы: логи, метрики, ошибки.</td>
+        </tr>
+        <tr>
+          <td>Процесс и качество</td>
+          <td>Git, ревью кода, тесты, линтеры, документация — как работают командой.</td>
+        </tr>
+        <tr>
+          <td>Архитектура</td>
+          <td>Как собрать всё вместе: монолит или микросервисы, кэши, фоновые задачи, масштаб.</td>
+        </tr>
+        <tr>
+          <td>Сервисы вокруг продукта</td>
+          <td>Готовые кирпичи, которые не пишут сами: платежи, письма, карты, аналитика.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Главное правило: учим роли, а не названия</h2>
+  <p>Названия инструментов меняются. Пять лет назад все обсуждали одни библиотеки, сейчас — другие, через пять лет будут третьи. Если запоминать <em>имена</em>, знания устареют. Если понимать <strong>роли</strong> — то есть какую задачу инструмент закрывает и почему эта задача вообще возникла, — знания не устареют никогда.</p>
+  <p>Поэтому на каждой странице этого раздела мы сначала объясняем <strong>боль</strong> («вот проблема, из-за которой люди мучились»), потом <strong>роль</strong> («вот класс инструментов, который эту боль лечит»), и только потом называем <strong>конкретные имена</strong> — как примеры, а не как список для заучивания.</p>
+  <p class="note"><strong>Аналогия.</strong> В кухне есть роль «чем резать» — и есть конкретные ножи разных марок. Марки приходят и уходят, а роль «чем резать» была всегда и будет всегда. Научитесь видеть роли — и любой новый модный инструмент вы будете встречать вопросом «а, это чтобы резать?» вместо паники «опять что-то новое учить».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как читать этот раздел</h2>
+  <ul class="rules">
+    <li><strong>Не пытайтесь выучить всё.</strong> Здесь сотни названий, и никто в мире не знает их все. Цель раздела — узнавание, а не владение.</li>
+    <li><strong>Не нужно ничего устанавливать.</strong> Это обзорная экскурсия: читаете, понимаете картину, идёте дальше. Практика придёт в тех темах, которые вам реально понадобятся.</li>
+    <li><strong>Идите по порядку.</strong> Подразделы выстроены от простого к сложному и опираются друг на друга: разговор про базы данных проще, когда уже понятно, что такое сервер.</li>
+    <li><strong>Возвращайтесь.</strong> Этот раздел удобно перечитывать кусками, когда встретили незнакомое слово в реальном проекте.</li>
+  </ul>
+  <p>Начните с четырёх страниц <a routerLink="/ecosystem/intro/why">введения</a>: там разбирается, зачем вообще нужен этот раздел, из чего состоит любое веб-приложение, как выбирать между технологиями и что означают слова, которые будут встречаться дальше на каждом шагу.</p>
+</section>
+</article>

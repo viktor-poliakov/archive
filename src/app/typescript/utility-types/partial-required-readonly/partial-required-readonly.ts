@@ -230,4 +230,76 @@ type UserDraft = Readonly<Partial<User>>;
 const draft: UserDraft = { name: 'Аня' }; // ✅ хватило одного поля
 draft.name;         // ✅ читать можно
 draft.name = 'Боб'; // ❌ Cannot assign to 'name' because it is a read-only property.`;
+
+  protected readonly ownImplementation = `// Ни один из трёх типов не встроен в компилятор — все они написаны
+// обычным кодом в стандартной библиотеке TypeScript (lib.es5.d.ts).
+
+// ── Partial: «частичный» ────────────────────────────────────────
+// «Для каждого ключа P из T сделай поле P необязательным (?)».
+type MyPartial<T> = {
+  [P in keyof T]?: T[P];
+};
+
+// ── Required: «обязательный» ────────────────────────────────────
+// То же самое, но -? означает «УБРАТЬ знак вопроса».
+// Минус перед модификатором читается как «снять модификатор».
+type MyRequired<T> = {
+  [P in keyof T]-?: T[P];
+};
+
+// ── Readonly: «только для чтения» ───────────────────────────────
+// «Для каждого ключа P из T навесь пометку readonly».
+type MyReadonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+
+// Общая для всех троих часть — [P in keyof T]: T[P] — это «цикл по
+// ключам» (отображённый тип). Сама по себе она даёт точную копию T.
+// Различаются типы РОВНО одной пометкой у поля: ?, -? или readonly.
+
+// ── Проверяем: наши версии работают как встроенные ──────────────
+interface User {
+  id: number;
+  name: string;
+  email?: string;
+}
+
+type A = MyPartial<User>;
+// { id?: number; name?: string; email?: string }   ✅ = Partial<User>
+
+type B = MyRequired<User>;
+// { id: number; name: string; email: string }      ✅ = Required<User>
+// Обратите внимание: -? убрал не только «?», но и undefined из типа.
+
+type C = MyReadonly<User>;
+// { readonly id: number; readonly name: string; readonly email?: string }
+//                                                  ✅ = Readonly<User>
+
+// ── Бонус 1: «размораживающий» тип, которого во встроенных нет ──
+// Минус работает и с readonly: -readonly снимает замок со всех полей.
+type MyMutable<T> = {
+  -readonly [P in keyof T]: T[P];
+};
+
+type D = MyMutable<Readonly<User>>; // снова обычный, изменяемый User
+
+// ── Бонус 2: вот почему встроенные версии «неглубокие» ──────────
+// В MyReadonly значение подставляется как есть: T[P].
+// Никто не заходит ВНУТРЬ вложенного объекта — там замка не будет.
+// Чтобы он появился, цикл надо вызвать РЕКУРСИВНО, на самого себя:
+type DeepReadonly<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+  //                      └─ единственное отличие от MyReadonly
+};
+
+interface Profile {
+  name: string;
+  address: { city: string; zip: string };
+}
+
+type Frozen = DeepReadonly<Profile>;
+// { readonly name: string;
+//   readonly address: { readonly city: string; readonly zip: string } }
+// Теперь замок стоит и на address.city — но это НАШ тип,
+// во встроенных такого нет.`;
 }
