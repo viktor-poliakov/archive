@@ -25,6 +25,7 @@
     <li><strong>Массивы</strong> → превращаются в <strong><code>readonly</code>-кортежи</strong> (tuple): фиксированная длина, порядок и типы элементов.</li>
   </ul>
   <app-code-block [code]="asConstBasics" lang="typescript" />
+  <p>Обратите внимание на <code>let</code> в первых двух строках — это не опечатка. Для одиночных примитивов <code>as const</code> заметен <em>только</em> с <code>let</code>: у <code>const</code> литерал сохраняется и без него (<code>const a = 'idle'</code> уже даёт тип <code>'idle'</code>, мы разобрали это выше), а <code>let</code> без утверждения расширился бы до <code>string</code>. С объектами и массивами всё наоборот: там <code>const</code> не спасает, и <code>as const</code> нужен именно в паре с ним — поэтому ниже в примере снова <code>const</code>.</p>
   <figure class="diagram">
     <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Без as const объект расширяется до string и number, с as const поля становятся readonly и литеральными">
       <text x="330" y="28" text-anchor="middle" fill="var(--red)" font-size="13">без as const: значение «мягкое» — тип расширяется</text>
@@ -73,7 +74,7 @@
           <td class="yes"><code>'idle'</code></td>
         </tr>
         <tr>
-          <td><code>42</code></td>
+          <td><code>42</code> (в <code>let</code>)</td>
           <td class="no"><code>number</code></td>
           <td class="yes"><code>42</code></td>
         </tr>

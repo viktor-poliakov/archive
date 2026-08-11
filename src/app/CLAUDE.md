@@ -98,6 +98,12 @@ Inside the `.html` template, Angular reads a raw `{` as the start of an ICU expr
 
 This does **not** apply inside the backtick code strings in the `.ts` — those are highlighted by Shiki, not parsed by Angular, so write real `{`/`<` there. Grep `&#123;` in any existing page for examples.
 
+**Entity escaping does not work for a _double_ brace.** To show interpolation syntax like `{{ count }}` in prose or a table (Vue/Angular examples), `&#123;&#123;` is **not** a fix: the HTML parser decodes entities before interpolation scanning, so Angular still sees `{{ count }}` and fails with `TS2339: Property 'count' does not exist on type <Component>`. Write the real characters inside `ngNonBindable` instead — it's a built-in compiler attribute, no import required:
+
+```html
+<code ngNonBindable>{{ count }}</code>
+```
+
 ## Registration snippet (`app.routes.ts` → `PAGE_OVERRIDES`)
 
 ```ts

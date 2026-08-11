@@ -1,0 +1,405 @@
+<article class="doc" style="--accent: #ffb86c">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Экосистема</span><span class="breadcrumbs__sep">/</span><a routerLink="/ecosystem/backend">Бэкенд</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Node.js, Deno, Bun</span></nav>
+
+<h1 class="doc__title">Node.js, Deno, Bun</h1>
+<p class="doc__lead">Для человека, пришедшего с фронтенда, Node.js — самая короткая дорога на сервер: язык тот же, синтаксис тот же, привычки те же. Но за этой лёгкостью прячется несколько вещей, о которых лучше узнать заранее, а не в тот день, когда сервер перестанет отвечать всем пользователям сразу. На этой странице разберём, что такое Node на самом деле, чем серверный JavaScript отличается от браузерного, почему «один поток» на сервере значит совсем не то же самое, что в браузере, какие бывают каркасы и чем от Node отличаются два его молодых конкурента — Deno и Bun.</p>
+
+<section class="doc__section">
+  <h2>Что такое Node.js на самом деле</h2>
+  <p>Начнём с частой путаницы. Node.js — это <strong>не язык программирования</strong> и <strong>не библиотека</strong>. Это программа, которую вы устанавливаете на компьютер, и она умеет выполнять JavaScript вне браузера.</p>
+  <p>Внутри у неё две части, и понимание этого деления снимает половину вопросов:</p>
+  <app-code-block [code]="whatIsNode" lang="javascript" />
+  <p class="note"><strong>Аналогия: двигатель и автомобиль.</strong> V8 — это двигатель. Он умеет крутиться, то есть выполнять JavaScript, и больше ничего. В браузере вокруг двигателя построен один автомобиль — со стёклами, рулём и сиденьями, то есть с DOM, событиями и всем, что нужно для страницы. В Node вокруг того же самого двигателя построен другой автомобиль — грузовик: без стёкол и сидений, зато с кузовом, лебёдкой и доступом к дороге, то есть с файлами, процессами и сетью. Двигатель один, машины разные.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Один движок V8 внутри двух разных окружений: браузер даёт DOM и события, Node даёт файлы, процессы и сеть">
+      <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">один и тот же язык, два разных окружения вокруг него</text>
+
+      <rect x="30" y="44" width="260" height="200" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="160" y="68" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="600">Браузер</text>
+
+      <rect x="70" y="82" width="180" height="44" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="160" y="102" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">движок V8</text>
+      <text x="160" y="118" text-anchor="middle" fill="var(--muted)" font-size="9.5">выполняет JavaScript</text>
+
+      <rect x="48" y="138" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="101" y="159" text-anchor="middle" fill="var(--fg)" font-size="10">document</text>
+      <rect x="166" y="138" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="219" y="159" text-anchor="middle" fill="var(--fg)" font-size="10">window</text>
+      <rect x="48" y="180" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="101" y="201" text-anchor="middle" fill="var(--fg)" font-size="10">localStorage</text>
+      <rect x="166" y="180" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="219" y="201" text-anchor="middle" fill="var(--fg)" font-size="10">события мыши</text>
+
+      <text x="160" y="232" text-anchor="middle" fill="var(--muted)" font-size="10">всё про страницу и пользователя</text>
+
+      <rect x="370" y="44" width="260" height="200" rx="12" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="500" y="68" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="600">Node.js</text>
+
+      <rect x="410" y="82" width="180" height="44" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="500" y="102" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">движок V8</text>
+      <text x="500" y="118" text-anchor="middle" fill="var(--muted)" font-size="9.5">тот же самый</text>
+
+      <rect x="388" y="138" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="441" y="159" text-anchor="middle" fill="var(--fg)" font-size="10">файлы (fs)</text>
+      <rect x="506" y="138" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="559" y="159" text-anchor="middle" fill="var(--fg)" font-size="10">процесс</text>
+      <rect x="388" y="180" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="441" y="201" text-anchor="middle" fill="var(--fg)" font-size="10">сеть (net)</text>
+      <rect x="506" y="180" width="106" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
+      <text x="559" y="201" text-anchor="middle" fill="var(--fg)" font-size="10">секреты env</text>
+
+      <text x="500" y="232" text-anchor="middle" fill="var(--muted)" font-size="10">всё про машину и операционную систему</text>
+
+      <text x="330" y="272" text-anchor="middle" fill="var(--fg)" font-size="11">язык вы уже знаете — учить придётся только правую коробку</text>
+      <text x="330" y="292" text-anchor="middle" fill="var(--muted)" font-size="11">именно поэтому переход с фронтенда на Node самый короткий из возможных</text>
+    </svg>
+    <figcaption>Ошибка <code>ReferenceError: document is not defined</code> при запуске кода в Node означает ровно это: вы попросили деталь из левой коробки, находясь в правой.</figcaption>
+  </figure>
+  <app-code-block [code]="browserVsNode" lang="javascript" />
+  <p>Обратите внимание на нижнюю часть примера. Часть возможностей есть <em>и там и там</em>, и с годами таких становится больше: <code>fetch</code>, <code>URL</code>, <code>crypto</code>, <code>AbortController</code>. Это осознанное движение отрасли — не выдумывать для сервера отдельные названия там, где браузер уже придумал хорошие.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Один поток: в браузере неприятно, на сервере опасно</h2>
+  <p>На странице <a routerLink="/ecosystem/client/browser">Что делает браузер</a> мы разбирали правило: JavaScript выполняется в одном потоке, и пока выполняется ваша функция, не происходит ничего другого. В Node действует ровно то же самое правило — но последствия у него совсем другого масштаба.</p>
+  <p>В браузере один поток обслуживает <strong>одного человека</strong>. Подвисла страница — неприятно одному пользователю, и виноват в этом его собственный браузер.</p>
+  <p>На сервере один поток обслуживает <strong>всех сразу</strong>. Посмотрите, что это значит:</p>
+  <app-code-block [code]="blockingProblem" lang="javascript" />
+  <p class="note"><strong>Аналогия: единственный кассир, но теперь в аэропорту.</strong> В браузере медленный кассир задерживал одного покупателя. На сервере это единственная стойка регистрации на весь рейс. Один пассажир выложил чемодан с несоответствующим весом и выясняет отношения десять минут — за это время не зарегистрируется никто, и самолёт улетит полупустым. Кассир не плохой. Просто он один, и задача оказалась длинной.</p>
+  <p>Это не изъян Node, а прямое следствие его устройства. И у этого устройства есть обратная сторона, ради которой всё и затевалось.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Главный фокус: ожидание — это не работа</h2>
+  <p>Вот ключевая мысль всей страницы, и её стоит прочувствовать как следует. Node различает две принципиально разные вещи, которые новичок обычно считает одним и тем же:</p>
+  <ul class="rules">
+    <li><strong>Ждать</strong> ответа от базы, диска или чужого сервиса — поток при этом <em>свободен</em>.</li>
+    <li><strong>Считать</strong> в цикле, жать картинку, разбирать огромный файл — поток при этом <em>занят</em>.</li>
+  </ul>
+  <app-code-block [code]="nonBlockingIO" lang="javascript" />
+  <p class="note"><strong>Аналогия: официант, который не стоит у плиты.</strong> Хороший официант принял у вас заказ и ушёл — он не стоит рядом с поваром, глядя, как жарится мясо. За те двадцать минут, пока готовится ваше блюдо, он успевает обслужить ещё восемь столиков. Один официант на сорок гостей справляется прекрасно — потому что почти всё время гости <em>ждут</em>, а не требуют его внимания. Но если официанта поставить чистить картошку, весь зал встанет: пока он занят руками, никого обслужить нельзя.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 320" width="100%" role="img" aria-label="Две временные шкалы: сверху три запроса с ожиданием базы обслуживаются внахлёст, снизу один тяжёлый расчёт блокирует всех">
+      <text x="330" y="20" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">Запросы, которые ЖДУТ — поток успевает всех</text>
+
+      <text x="24" y="50" text-anchor="start" fill="var(--muted)" font-size="10">запрос 1</text>
+      <rect x="86" y="38" width="26" height="18" rx="4" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+      <rect x="112" y="38" width="150" height="18" rx="4" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="4 3" />
+      <text x="187" y="51" text-anchor="middle" fill="var(--muted)" font-size="9">ждём базу — поток свободен</text>
+      <rect x="262" y="38" width="26" height="18" rx="4" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+
+      <text x="24" y="80" text-anchor="start" fill="var(--muted)" font-size="10">запрос 2</text>
+      <rect x="116" y="68" width="26" height="18" rx="4" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+      <rect x="142" y="68" width="150" height="18" rx="4" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="4 3" />
+      <text x="217" y="81" text-anchor="middle" fill="var(--muted)" font-size="9">ждём чужой сервис</text>
+      <rect x="292" y="68" width="26" height="18" rx="4" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+
+      <text x="24" y="110" text-anchor="start" fill="var(--muted)" font-size="10">запрос 3</text>
+      <rect x="146" y="98" width="26" height="18" rx="4" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+      <rect x="172" y="98" width="150" height="18" rx="4" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="4 3" />
+      <text x="247" y="111" text-anchor="middle" fill="var(--muted)" font-size="9">ждём диск</text>
+      <rect x="322" y="98" width="26" height="18" rx="4" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+
+      <text x="470" y="80" text-anchor="middle" fill="var(--green)" font-size="10.5">зелёные кусочки — реальная</text>
+      <text x="470" y="95" text-anchor="middle" fill="var(--green)" font-size="10.5">работа потока, их мало</text>
+      <text x="470" y="112" text-anchor="middle" fill="var(--muted)" font-size="10.5">пунктир — ожидание, оно бесплатно</text>
+
+      <line x1="24" y1="140" x2="636" y2="140" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="6 5" />
+
+      <text x="330" y="168" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="600">Запрос, который СЧИТАЕТ — стоят все</text>
+
+      <text x="24" y="198" text-anchor="start" fill="var(--muted)" font-size="10">отчёт</text>
+      <rect x="86" y="186" width="300" height="18" rx="4" fill="var(--bg)" stroke="var(--red)" stroke-width="2" />
+      <text x="236" y="199" text-anchor="middle" fill="var(--red)" font-size="9.5">10 секунд чистых вычислений — поток занят полностью</text>
+
+      <text x="24" y="228" text-anchor="start" fill="var(--muted)" font-size="10">запрос 2</text>
+      <rect x="116" y="216" width="270" height="18" rx="4" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="3 3" />
+      <text x="251" y="229" text-anchor="middle" fill="var(--muted)" font-size="9">стоит в очереди и ничего не может</text>
+      <rect x="386" y="216" width="24" height="18" rx="4" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+
+      <text x="24" y="258" text-anchor="start" fill="var(--muted)" font-size="10">/health</text>
+      <rect x="146" y="246" width="240" height="18" rx="4" fill="var(--surface)" stroke="var(--red)" stroke-width="1.4" stroke-dasharray="3 3" />
+      <text x="266" y="259" text-anchor="middle" fill="var(--red)" font-size="9">не отвечает — балансировщик решит, что копия умерла</text>
+
+      <line x1="86" y1="278" x2="620" y2="278" stroke="var(--border)" stroke-width="1.4" />
+      <polygon points="620,273 632,278 620,283" fill="var(--border)" />
+      <text x="330" y="300" text-anchor="middle" fill="var(--fg)" font-size="11">время →   разница не в скорости языка, а в том, чем занят единственный поток</text>
+    </svg>
+    <figcaption>Обе картинки — про один и тот же Node. Верхняя показывает, за что его любят, нижняя — за что ругают. Всё зависит от того, что вы поручили обработчику.</figcaption>
+  </figure>
+  <p>Практический вывод: <strong>типичное веб-приложение почти всё время ждёт</strong>. Оно ждёт базу, ждёт чужое API, ждёт файловое хранилище. Собственных вычислений в нём — доли процента. Именно поэтому Node на такой работе прекрасен и держит тысячи одновременных соединений на скромной машине.</p>
+  <p>А что делать, если вычисления всё-таки нужны:</p>
+  <app-code-block [code]="cpuFix" lang="javascript" />
+  <p class="note"><strong>Как заметить проблему до того, как её заметят пользователи.</strong> Симптом всегда одинаковый: сервер отвечает то мгновенно, то с задержкой в несколько секунд, причём тормозят <em>все</em> адреса сразу, включая самые простые. Если при этом загрузка процессора близка к сотне процентов на одном ядре — вы нашли обработчик, который считает вместо того, чтобы ждать.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Каркасы: Express, Fastify, NestJS</h2>
+  <p>Голый модуль <code>http</code> из прошлой страницы работает, но писать на нём большое приложение неудобно. Поэтому берут каркас. Основных три, и различаются они ровно тем же, чем различались фреймворки на клиенте: <strong>сколько решений принято за вас</strong>.</p>
+  <app-code-block [code]="expressExample" lang="javascript" />
+  <p>Express — выбор по умолчанию для тех, кто начинает. Ему больше пятнадцати лет, на нём написано огромное количество живых проектов, и любой вопрос, который у вас возникнет, уже кто-то задал и получил ответ.</p>
+  <p>Его главный плюс — минимум магии — он же и главный минус. Express не навязывает ничего: ни структуру папок, ни способ проверки данных, ни работу с ошибками. На проекте из трёх человек это приятная свобода. На проекте из тридцати каждый придумывает своё, и через год в кодовой базе живут три несовместимых подхода.</p>
+  <app-code-block [code]="fastifyExample" lang="javascript" />
+  <p>Fastify решает две конкретные боли Express: он быстрее обрабатывает запросы и приносит с собой <strong>схемы</strong>. Схема — это описание того, что можно прислать; каркас проверяет вход по ней сам, до вашего кода. Мусор до обработчика просто не доходит, а описание заодно превращается в документацию API.</p>
+  <app-code-block [code]="nestExample" lang="typescript" />
+  <p>NestJS стоит особняком: это полноценный каркас «всё в комплекте», очень похожий по духу на Angular. Классы, декораторы, внедрение зависимостей, строгое деление на контроллеры и сервисы. Многословно — но одинаково во всех проектах, а на большой команде это ценнее краткости.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 250" width="100%" role="img" aria-label="Три каркаса Node на шкале от минимального Express до полного NestJS, с указанием что каждый берёт на себя">
+      <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">сколько решений каркас принимает за вас</text>
+
+      <line x1="60" y1="180" x2="620" y2="180" stroke="var(--border)" stroke-width="1.8" />
+      <polygon points="620,175 632,180 620,185" fill="var(--border)" />
+      <text x="60" y="204" text-anchor="start" fill="var(--green)" font-size="10.5">свобода и простота</text>
+      <text x="612" y="204" text-anchor="end" fill="var(--purple)" font-size="10.5">структура и предсказуемость</text>
+
+      <line x1="130" y1="180" x2="130" y2="166" stroke="var(--green)" stroke-width="1.6" />
+      <rect x="52" y="60" width="156" height="102" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="130" y="82" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">Express</text>
+      <text x="130" y="102" text-anchor="middle" fill="var(--fg)" font-size="9.5">маршруты ✓</text>
+      <text x="130" y="118" text-anchor="middle" fill="var(--fg)" font-size="9.5">промежуточные слои ✓</text>
+      <text x="130" y="134" text-anchor="middle" fill="var(--muted)" font-size="9.5">проверка данных — сами</text>
+      <text x="130" y="150" text-anchor="middle" fill="var(--muted)" font-size="9.5">структура — сами</text>
+
+      <line x1="330" y1="180" x2="330" y2="166" stroke="var(--accent)" stroke-width="1.6" />
+      <rect x="252" y="60" width="156" height="102" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
+      <text x="330" y="82" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">Fastify</text>
+      <text x="330" y="102" text-anchor="middle" fill="var(--fg)" font-size="9.5">маршруты ✓</text>
+      <text x="330" y="118" text-anchor="middle" fill="var(--fg)" font-size="9.5">схемы и проверка ✓</text>
+      <text x="330" y="134" text-anchor="middle" fill="var(--fg)" font-size="9.5">журнал ✓</text>
+      <text x="330" y="150" text-anchor="middle" fill="var(--muted)" font-size="9.5">структура — сами</text>
+
+      <line x1="530" y1="180" x2="530" y2="166" stroke="var(--purple)" stroke-width="1.6" />
+      <rect x="452" y="60" width="156" height="102" rx="10" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.8" />
+      <text x="530" y="82" text-anchor="middle" fill="var(--purple)" font-size="12" font-weight="600">NestJS</text>
+      <text x="530" y="102" text-anchor="middle" fill="var(--fg)" font-size="9.5">маршруты ✓</text>
+      <text x="530" y="118" text-anchor="middle" fill="var(--fg)" font-size="9.5">проверка ✓</text>
+      <text x="530" y="134" text-anchor="middle" fill="var(--fg)" font-size="9.5">внедрение зависимостей ✓</text>
+      <text x="530" y="150" text-anchor="middle" fill="var(--fg)" font-size="9.5">структура задана ✓</text>
+
+      <text x="330" y="234" text-anchor="middle" fill="var(--fg)" font-size="11">это та же шкала, что и у фреймворков на клиенте: React — Vue — Angular</text>
+    </svg>
+    <figcaption>Выбирают не по «мощности», а по размеру команды и сроку жизни проекта. Трём людям на полгода нужна свобода, тридцати на пять лет — одинаковая структура.</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Каркас</th>
+          <th>Что даёт</th>
+          <th>Чем платите</th>
+          <th>Когда брать</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Express</strong></td>
+          <td>Маршруты и промежуточные слои — и почти ничего сверх</td>
+          <td class="no">❌ структуру и правила придумываете сами</td>
+          <td class="yes">✅ учёба, небольшие сервисы, поддержка существующих проектов</td>
+        </tr>
+        <tr>
+          <td><strong>Fastify</strong></td>
+          <td>Схемы, встроенный журнал, заметно выше скорость</td>
+          <td>Сообщество меньше, готовых рецептов меньше</td>
+          <td class="yes">✅ новые сервисы, где важны проверка данных и нагрузка</td>
+        </tr>
+        <tr>
+          <td><strong>NestJS</strong></td>
+          <td>Готовая структура, внедрение зависимостей, всё в комплекте</td>
+          <td class="no">❌ высокий порог входа и много обвязки</td>
+          <td>Большая команда, долгий продукт, любовь к строгости</td>
+        </tr>
+        <tr>
+          <td><strong>Hono</strong></td>
+          <td>Очень лёгкий, работает и в Node, и в edge-средах</td>
+          <td>Молодой, экосистема скромнее</td>
+          <td>Serverless и пограничные (edge) среды</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc__section">
+  <h2>Практика: целый сервис от начала до конца</h2>
+  <p>Соберём всё, о чём говорилось на предыдущей странице, в один работающий кусок. Здесь есть журнал со сквозным номером, проверка данных, пять этапов обработчика, очередь для медленного и общий ловец ошибок:</p>
+  <app-code-block [code]="fullService" lang="javascript" />
+  <p>Обратите внимание на две детали, которые отличают учебный код от рабочего.</p>
+  <p>Первая — <strong>библиотека проверки схем</strong> (здесь это <code>zod</code>, но их несколько). Одна строка описания заменяет десяток ручных условий «а число ли это, а положительное ли, а не слишком ли большое». И, что важнее, она не даёт забыть проверку: описание лежит рядом с обработчиком и читается как договор.</p>
+  <p>Вторая — <strong>ловец ошибок в самом конце</strong>. Функция с четырьмя аргументами вместо трёх — так Express понимает, что перед ним обработчик ошибок. Без него любое неожиданное исключение внутри запроса оборвёт соединение без ответа, и клиент будет ждать до таймаута, не понимая, что произошло.</p>
+</section>
+
+<section class="doc__section">
+  <h2>TypeScript на сервере</h2>
+  <p>На бэкенде TypeScript полезнее, чем на фронте, и причина простая: цена ошибки выше. Опечатка в имени поля на клиенте испортит экран одному человеку; та же опечатка на сервере испортит данные в базе для всех.</p>
+  <app-code-block [code]="typescriptServer" lang="typescript" />
+  <p class="note"><strong>Ловушка номер один, и на неё попадаются все.</strong> Тип — это обещание на этапе <em>компиляции</em>. К моменту, когда программа работает, типов уже не существует: они стёрты. Если вы объявили, что тело запроса имеет тип <code>CreateOrderBody</code>, это <strong>ничего не проверяет</strong> — клиент по-прежнему может прислать строку вместо числа, и TypeScript этому не помешает. Поэтому на границе с внешним миром типов недостаточно: нужна настоящая проверка во время работы. Хороший приём — описать схему один раз и вывести тип из неё, как в последних строках примера.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Deno: тот же автор, работа над ошибками</h2>
+  <p>Deno придумал Райан Дал — тот же человек, который в 2009 году создал Node. Спустя десять лет он публично перечислил вещи, о которых жалеет, и сделал вторую попытку.</p>
+  <app-code-block [code]="denoExample" lang="typescript" />
+  <p>Три отличия, которые стоит знать:</p>
+  <ul class="rules">
+    <li><strong>Разрешения.</strong> По умолчанию программа не может ничего: ни в сеть, ни к файлам, ни к переменным окружения. Доступ выдаётся флагами при запуске. Смысл: случайно установленный вредоносный пакет не сможет прочитать ваши ключи и отправить их наружу — ему просто не дали сеть. В Node любой из тысяч установленных пакетов имеет все ваши права.</li>
+    <li><strong>TypeScript сразу.</strong> Без настройки, без отдельного шага сборки, без установки чего-либо.</li>
+    <li><strong>Браузерные стандарты вместо своих.</strong> В примере фигурируют <code>Request</code> и <code>Response</code> — те самые объекты, что и при работе с <code>fetch</code> в браузере. Знание переносится один в один.</li>
+  </ul>
+  <p>Честно о положении дел: Deno сделан аккуратно, но живых проектов на нём заметно меньше, а вакансий — тем более. Совместимость с пакетами из npm сильно выросла, но всё ещё бывают неровности.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Bun: ставка на скорость</h2>
+  <p>Bun заходит с другой стороны. Его авторы не переделывали идеологию — они взяли всё то же самое и сделали быстрее. Внутри у него другой движок (JavaScriptCore из Safari вместо V8), а сам он написан на низкоуровневом языке Zig.</p>
+  <app-code-block [code]="bunExample" lang="javascript" />
+  <p>Главная особенность Bun — он <strong>один заменяет четыре инструмента</strong>: среду запуска, пакетный менеджер, сборщик и запускалку тестов. И заметнее всего выигрыш не в обработке запросов, а в скучных ежедневных операциях: установка пакетов, запуск тестов, старт проекта.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Признак</th>
+          <th>Node.js</th>
+          <th>Deno</th>
+          <th>Bun</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Зрелость</strong></td>
+          <td class="yes">✅ с 2009 года, проверен всем</td>
+          <td>с 2020 года</td>
+          <td>самый молодой</td>
+        </tr>
+        <tr>
+          <td><strong>Вакансии и проекты</strong></td>
+          <td class="yes">✅ подавляющее большинство</td>
+          <td class="no">❌ мало</td>
+          <td class="no">❌ мало</td>
+        </tr>
+        <tr>
+          <td><strong>TypeScript</strong></td>
+          <td>нужна настройка или отдельный шаг</td>
+          <td class="yes">✅ сразу</td>
+          <td class="yes">✅ сразу</td>
+        </tr>
+        <tr>
+          <td><strong>Безопасность по умолчанию</strong></td>
+          <td class="no">❌ пакет может всё, что можете вы</td>
+          <td class="yes">✅ разрешения по флагам</td>
+          <td>как в Node</td>
+        </tr>
+        <tr>
+          <td><strong>Скорость установки пакетов</strong></td>
+          <td>обычная</td>
+          <td>быстрая</td>
+          <td class="yes">✅ заметно быстрее всех</td>
+        </tr>
+        <tr>
+          <td><strong>Совместимость с пакетами npm</strong></td>
+          <td class="yes">✅ стопроцентная по определению</td>
+          <td>высокая, но не полная</td>
+          <td>очень высокая, изредка сюрпризы</td>
+        </tr>
+        <tr>
+          <td><strong>Что брать новичку</strong></td>
+          <td class="yes">✅ Node — и не думать</td>
+          <td>из интереса</td>
+          <td>как инструмент разработки</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Практический совет без лишней дипломатии.</strong> Учитесь и работайте на Node. Он скучный, зрелый и понятный, а главное — именно его вы встретите в вакансиях и в существующих проектах. Deno и Bun стоит знать по названию и понимать, чем они интересны, но выбирать их для первого проекта — значит добровольно остаться без половины готовых ответов в интернете. Распространённый компромисс в командах: Bun как быстрый инструмент разработки, Node как среда запуска в бою.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как это живёт на боевом сервере</h2>
+  <p>Написать сервер — половина дела. Вторая половина — заставить его работать без вас месяцами.</p>
+  <app-code-block [code]="runningInProduction" lang="bash" />
+  <p>Три проблемы, которые решаются здесь, стоит разобрать отдельно:</p>
+  <ul class="rules">
+    <li><strong>Простаивающие ядра.</strong> Один процесс Node использует одно ядро процессора. На восьмиядерной машине семь бездельничают. Лечится запуском нескольких копий, которые делят между собой один порт.</li>
+    <li><strong>Падение среди ночи.</strong> Программа завершилась из-за неожиданной ошибки — и лежит до утра, пока кто-нибудь не заметит. Лечится менеджером процессов, который поднимает её обратно автоматически.</li>
+    <li><strong>Выкладка без обрыва.</strong> Если просто остановить и запустить заново, все, кто в этот момент оформлял заказ, получат ошибку. Лечится перезапуском по одной копии: пока обновляется первая, остальные обслуживают людей.</li>
+  </ul>
+  <p class="note"><strong>Строчка, которую забывают чаще всего.</strong> Переменная <code>NODE_ENV=production</code>. Без неё многие библиотеки, включая Express, работают в режиме разработки: медленнее и с подробными сообщениями об ошибках, которые видит посторонний. Это не микрооптимизация, а вопрос и скорости, и безопасности одновременно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда Node — отличный выбор, а когда плохой</h2>
+  <p>Соберём честный итог. Вопрос, на который надо ответить перед выбором, ровно один: <strong>чем сервер занят большую часть времени — ждёт или считает?</strong></p>
+  <app-code-block [code]="whenNode" lang="javascript" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Задача</th>
+          <th>Node подходит?</th>
+          <th>Почему</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Обычное API интернет-магазина</td>
+          <td class="yes">✅ отлично</td>
+          <td>Почти всё время ждёт базу. Ровно то, для чего Node сделан.</td>
+        </tr>
+        <tr>
+          <td>Чат, уведомления, совместное редактирование</td>
+          <td class="yes">✅ отлично</td>
+          <td>Тысячи открытых соединений, где почти всегда тишина, — идеальный случай.</td>
+        </tr>
+        <tr>
+          <td>Сервер для серверного рендеринга (Next.js, Nuxt)</td>
+          <td class="yes">✅ естественный выбор</td>
+          <td>Тот же язык и тот же код компонентов, что и на клиенте.</td>
+        </tr>
+        <tr>
+          <td>Прослойка, которая собирает данные из пяти чужих API</td>
+          <td class="yes">✅ отлично</td>
+          <td>Пять параллельных ожиданий — и ни одного собственного вычисления.</td>
+        </tr>
+        <tr>
+          <td>Обработка видео, пережатие тысяч изображений</td>
+          <td class="no">❌ плохой выбор</td>
+          <td>Чистые вычисления заблокируют единственный поток и всех пользователей.</td>
+        </tr>
+        <tr>
+          <td>Научные расчёты, машинное обучение</td>
+          <td class="no">❌ плохой выбор</td>
+          <td>И по производительности, и по отсутствию нужных библиотек — здесь <a routerLink="/ecosystem/backend/python">Python</a>.</td>
+        </tr>
+        <tr>
+          <td>Разбор файлов на гигабайты в памяти</td>
+          <td class="no">❌ плохо</td>
+          <td>Один поток плюс ограничение памяти процесса. Задача не для него.</td>
+        </tr>
+        <tr>
+          <td>Финансовые расчёты с деньгами</td>
+          <td>осторожно</td>
+          <td>В JavaScript только числа с плавающей точкой: <code>0.1 + 0.2</code> не равно <code>0.3</code>. Суммы хранят в копейках целыми числами или берут отдельную библиотеку.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Отдельно про «один язык на обе стороны».</strong> Это реальное преимущество, но его часто преувеличивают. Что действительно получается: общие типы и общая проверка данных между клиентом и сервером, один пакетный менеджер, один набор инструментов, один человек может починить задачу целиком. Чего <em>не</em> получается: серверный код не станет понятным сам собой. Базы данных, транзакции, очереди, права доступа, устойчивость к сбоям — это отдельные темы, и они одинаково новы и для того, кто пришёл с JavaScript, и для того, кто пришёл с любого другого языка.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Node.js — не язык, а программа,</strong> которая выполняет JavaScript вне браузера. Внутри — движок V8 (тот же, что в Chrome) плюс обвязка с доступом к файлам, сети и процессам.</li>
+    <li><strong>Язык одинаковый, окружение разное.</strong> На сервере нет <code>document</code>, <code>window</code> и <code>localStorage</code>, зато есть файлы, процессы, порты и настоящие секреты.</li>
+    <li><strong>Один поток на сервере опаснее, чем в браузере:</strong> он обслуживает не одного человека, а всех сразу. Один тяжёлый расчёт в обработчике останавливает весь сервер, включая проверку здоровья.</li>
+    <li><strong>Ожидание — не работа.</strong> Пока код ждёт базу или чужое API, поток свободен и берёт другие запросы. Именно поэтому Node прекрасно держит тысячи соединений.</li>
+    <li><strong>Вычисления уносят из запроса:</strong> в очередь (лучше всего), в отдельный поток-воркер или хотя бы нарезают на куски с передышками.</li>
+    <li><strong>Каркасы отличаются количеством принятых за вас решений:</strong> Express — почти ничего, Fastify — схемы и скорость, NestJS — всё в комплекте и строгая структура.</li>
+    <li><strong>TypeScript на сервере полезнее, чем на клиенте,</strong> но типы исчезают при компиляции. На границе с внешним миром нужна настоящая проверка данных схемой.</li>
+    <li><strong>Deno — работа над ошибками Node</strong> (разрешения, TypeScript сразу, браузерные стандарты). <strong>Bun</strong> — ставка на скорость и «всё в одном». Оба интересны, но учиться и работать сегодня стоит на Node.</li>
+    <li><strong>В бою нужны:</strong> несколько копий по числу ядер, менеджер процессов для автоподъёма, перезапуск по одной копии и обязательный <code>NODE_ENV=production</code>.</li>
+    <li><strong>Главный вопрос выбора:</strong> сервер ждёт или считает? Ждёт — Node отличен. Считает — берите что-то другое.</li>
+  </ul>
+  <p class="note">Дальше — <a routerLink="/ecosystem/backend/python">Python</a>: язык, который на вебе решает те же задачи, но пришёл в него с совершенно другой стороны и потому силён там, где Node беспомощен. Заодно разберём слово GIL, которое звучит страшно, а означает почти то же самое, что «один поток» на этой странице. Если хочется вернуться к общим обязанностям сервера — они на странице <a routerLink="/ecosystem/backend/what-backend-does">Что делает бэкенд</a>, а незнакомые слова ищите в <a routerLink="/ecosystem/intro/glossary">Словаре терминов</a>.</p>
+</section>
+</article>

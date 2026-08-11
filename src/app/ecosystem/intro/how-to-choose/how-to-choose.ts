@@ -56,15 +56,15 @@ npm ls --all`;
 
 // файл ЗаказКарточка.ts
 import moment from 'moment';
-const дата = moment(заказ.createdAt).format('DD.MM.YYYY');
+const date = moment(order.createdAt).format('DD.MM.YYYY');
 
 // файл ОтчётТаблица.ts
 import moment from 'moment';
-const период = moment(от).diff(moment(до), 'days');
+const days = moment(from).diff(moment(to), 'days');
 
 // файл Профиль.ts
 import moment from 'moment';
-const регистрация = moment(user.createdAt).fromNow();
+const registeredAgo = moment(user.createdAt).fromNow();
 
 // ...и ещё 77 таких файлов.
 
@@ -79,21 +79,21 @@ const регистрация = moment(user.createdAt).fromNow();
 // файл dates.ts — ЕДИНСТВЕННОЕ место, где упоминается чужая библиотека
 import dayjs from 'dayjs';
 
-export function показатьДату(значение: string): string {
-  return dayjs(значение).format('DD.MM.YYYY');
+export function formatDate(value: string): string {
+  return dayjs(value).format('DD.MM.YYYY');
 }
 
-export function сколькоДнейМежду(от: string, до: string): number {
-  return dayjs(до).diff(dayjs(от), 'day');
+export function daysBetween(from: string, to: string): number {
+  return dayjs(to).diff(dayjs(from), 'day');
 }
 
-export function какДавно(значение: string): string {
-  return dayjs(значение).fromNow();
+export function timeAgo(value: string): string {
+  return dayjs(value).fromNow();
 }
 
 // файл ЗаказКарточка.ts — про dayjs не знает вообще ничего
-import { показатьДату } from './dates';
-const дата = показатьДату(заказ.createdAt);
+import { formatDate } from './dates';
+const date = formatDate(order.createdAt);
 
 // Меняем библиотеку → правим ОДИН файл dates.ts.
 // Остальные 80 файлов не трогаем. Работа на полчаса вместо недели.

@@ -291,6 +291,60 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     ),
   'ecosystem/intro/glossary': () =>
     import('./ecosystem/intro/glossary/glossary').then((m) => m.EcosystemIntroGlossary),
+  'ecosystem/client/browser': () =>
+    import('./ecosystem/client/browser/browser').then((m) => m.EcosystemClientBrowser),
+  'ecosystem/client/why-frameworks': () =>
+    import('./ecosystem/client/why-frameworks/why-frameworks').then(
+      (m) => m.EcosystemClientWhyFrameworks,
+    ),
+  'ecosystem/client/frameworks': () =>
+    import('./ecosystem/client/frameworks/frameworks').then((m) => m.EcosystemClientFrameworks),
+  'ecosystem/client/meta-frameworks': () =>
+    import('./ecosystem/client/meta-frameworks/meta-frameworks').then(
+      (m) => m.EcosystemClientMetaFrameworks,
+    ),
+  'ecosystem/client/bundlers': () =>
+    import('./ecosystem/client/bundlers/bundlers').then((m) => m.EcosystemClientBundlers),
+  'ecosystem/client/package-managers': () =>
+    import('./ecosystem/client/package-managers/package-managers').then(
+      (m) => m.EcosystemClientPackageManagers,
+    ),
+  'ecosystem/client/styling': () =>
+    import('./ecosystem/client/styling/styling').then((m) => m.EcosystemClientStyling),
+  'ecosystem/client/state': () =>
+    import('./ecosystem/client/state/state').then((m) => m.EcosystemClientState),
+  'ecosystem/client/data-fetching': () =>
+    import('./ecosystem/client/data-fetching/data-fetching').then(
+      (m) => m.EcosystemClientDataFetching,
+    ),
+  'ecosystem/client/testing': () =>
+    import('./ecosystem/client/testing/testing').then((m) => m.EcosystemClientTesting),
+  'ecosystem/client/mobile-desktop': () =>
+    import('./ecosystem/client/mobile-desktop/mobile-desktop').then(
+      (m) => m.EcosystemClientMobileDesktop,
+    ),
+  'ecosystem/client/quality': () =>
+    import('./ecosystem/client/quality/quality').then((m) => m.EcosystemClientQuality),
+  'ecosystem/backend/what-backend-does': () =>
+    import('./ecosystem/backend/what-backend-does/what-backend-does').then(
+      (m) => m.EcosystemBackendWhatBackendDoes,
+    ),
+  'ecosystem/backend/node': () =>
+    import('./ecosystem/backend/node/node').then((m) => m.EcosystemBackendNode),
+  'ecosystem/backend/python': () =>
+    import('./ecosystem/backend/python/python').then((m) => m.EcosystemBackendPython),
+  'ecosystem/backend/go': () =>
+    import('./ecosystem/backend/go/go').then((m) => m.EcosystemBackendGo),
+  'ecosystem/backend/jvm-dotnet': () =>
+    import('./ecosystem/backend/jvm-dotnet/jvm-dotnet').then((m) => m.EcosystemBackendJvmDotnet),
+  'ecosystem/backend/php-ruby': () =>
+    import('./ecosystem/backend/php-ruby/php-ruby').then((m) => m.EcosystemBackendPhpRuby),
+  'ecosystem/backend/rust-cpp': () =>
+    import('./ecosystem/backend/rust-cpp/rust-cpp').then((m) => m.EcosystemBackendRustCpp),
+  'ecosystem/backend/how-to-choose': () =>
+    import('./ecosystem/backend/how-to-choose/how-to-choose').then(
+      (m) => m.EcosystemBackendHowToChoose,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

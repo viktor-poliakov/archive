@@ -1,0 +1,365 @@
+<article class="doc" style="--accent: #ffb86c">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Экосистема</span><span class="breadcrumbs__sep">/</span><a routerLink="/ecosystem/backend">Бэкенд</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Go</span></nav>
+
+<h1 class="doc__title">Go</h1>
+<p class="doc__lead">Go придумали в Google примерно из такого раздражения: компания огромная, кода миллионы строк, а языки, на которых он написан, слишком сложные — новый человек входит в чужой проект месяцами. Ответом стал язык, устроенный по противоположному принципу: в нём <strong>намеренно мало возможностей</strong>. Его учат за выходные, он компилируется в один файл, который просто копируют на сервер, и — самое интересное для нас после двух предыдущих страниц — в нём наконец нет разницы между «ждать» и «считать». На этой странице разберём, как он выглядит, почему в нём нет <code>try/catch</code>, что такое горутины и когда Go стоит брать, а когда он окажется лишней болью.</p>
+
+<section class="doc__section">
+  <h2>Первое впечатление: сервер без единой библиотеки</h2>
+  <p>Начнём с того, что удивляет сразу. Вот полноценный веб-сервер, отдающий JSON:</p>
+  <app-code-block [code]="helloServer" lang="go" />
+  <p>Обратите внимание: <strong>ни одной установленной зависимости</strong>. HTTP-сервер, работа с JSON, маршруты — всё это часть стандартной библиотеки языка. Для такой программы файл <code>go.mod</code> (местный аналог <code>package.json</code>) будет пустым.</p>
+  <p>Сравните с Node, где для того же результата вы поставите Express, и с Python, где поставите Flask или FastAPI. В Go базовых вещей хватает, чтобы дойти до боя без единого чужого пакета.</p>
+  <p class="note"><strong>Что бросается в глаза в синтаксисе.</strong> Тип пишется <em>после</em> имени: <code>Price int</code>, а не <code>int Price</code>. Публичность определяется <strong>заглавной буквой</strong>: <code>Name</code> видно снаружи пакета, <code>name</code> — нет; никаких слов <code>public</code> и <code>private</code> в языке просто нет. А строки в обратных кавычках после полей структуры — это пометки для преобразования в JSON: они говорят, как поле будет называться в ответе.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ошибки — это значения, а не исключения</h2>
+  <p>Вот черта, которая удивляет сильнее всего и вызывает больше всего споров. В Go <strong>нет <code>try/catch</code></strong>. Совсем.</p>
+  <app-code-block [code]="errorsAsValues" lang="go" />
+  <p>Первая реакция человека с любого другого языка одинаковая: «это же три лишние строки после каждого вызова». Так и есть — кода становится заметно больше.</p>
+  <p>Аргумент авторов языка такой. В языках с исключениями <strong>ошибка невидима в коде</strong>. Читая функцию, вы не можете сказать, какая из её строк способна всё уронить, — исключение может прилететь откуда угодно и пролететь через десять уровней вызовов, ничем себя не обозначив. В Go каждая точка возможного отказа помечена явно, и вы физически смотрите на неё.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 280" width="100%" role="img" aria-label="Слева цепочка вызовов с исключением, которое пролетает сквозь все уровни незаметно, справа явная передача ошибки на каждом уровне">
+      <text x="165" y="22" text-anchor="middle" fill="var(--orange)" font-size="12" font-weight="600">Исключения</text>
+      <text x="495" y="22" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">Ошибки как значения</text>
+
+      <rect x="52" y="40" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="165" y="61" text-anchor="middle" fill="var(--fg)" font-size="10.5">обработчик запроса</text>
+
+      <rect x="52" y="90" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="165" y="111" text-anchor="middle" fill="var(--fg)" font-size="10.5">сервис заказов</text>
+
+      <rect x="52" y="140" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="165" y="161" text-anchor="middle" fill="var(--fg)" font-size="10.5">работа с базой</text>
+
+      <rect x="52" y="190" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.8" />
+      <text x="165" y="211" text-anchor="middle" fill="var(--red)" font-size="10.5">здесь что-то упало</text>
+
+      <path d="M 296 207 C 330 200, 330 80, 296 60" fill="none" stroke="var(--red)" stroke-width="2.2" stroke-dasharray="5 4" />
+      <polygon points="300,66 292,54 306,54" fill="var(--red)" />
+      <text x="322" y="140" text-anchor="start" fill="var(--red)" font-size="9.5">пролетело</text>
+      <text x="322" y="154" text-anchor="start" fill="var(--red)" font-size="9.5">сквозь всех</text>
+      <text x="322" y="168" text-anchor="start" fill="var(--red)" font-size="9.5">незаметно</text>
+
+      <text x="165" y="248" text-anchor="middle" fill="var(--muted)" font-size="10">по коду среднего уровня не видно,</text>
+      <text x="165" y="264" text-anchor="middle" fill="var(--muted)" font-size="10">что через него что-то может пролететь</text>
+
+      <line x1="380" y1="30" x2="380" y2="270" stroke="var(--border)" stroke-width="1.4" stroke-dasharray="6 5" />
+
+      <rect x="400" y="40" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="513" y="61" text-anchor="middle" fill="var(--fg)" font-size="10.5">обработчик: if err != nil</text>
+
+      <rect x="400" y="90" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="513" y="111" text-anchor="middle" fill="var(--fg)" font-size="10.5">сервис: if err != nil</text>
+
+      <rect x="400" y="140" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="513" y="161" text-anchor="middle" fill="var(--fg)" font-size="10.5">база: if err != nil</text>
+
+      <rect x="400" y="190" width="226" height="34" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="513" y="211" text-anchor="middle" fill="var(--green)" font-size="10.5">здесь что-то упало</text>
+
+      <line x1="513" y1="190" x2="513" y2="176" stroke="var(--green)" stroke-width="2" />
+      <polygon points="507,176 513,166 519,176" fill="var(--green)" />
+      <line x1="513" y1="140" x2="513" y2="126" stroke="var(--green)" stroke-width="2" />
+      <polygon points="507,126 513,116 519,126" fill="var(--green)" />
+      <line x1="513" y1="90" x2="513" y2="76" stroke="var(--green)" stroke-width="2" />
+      <polygon points="507,76 513,66 519,76" fill="var(--green)" />
+
+      <text x="513" y="248" text-anchor="middle" fill="var(--muted)" font-size="10">каждый уровень явно решает,</text>
+      <text x="513" y="264" text-anchor="middle" fill="var(--muted)" font-size="10">что делать с ошибкой</text>
+    </svg>
+    <figcaption>Слева короче, справа честнее. Go выбрал многословность в обмен на то, что все пути отказа видны прямо в тексте программы.</figcaption>
+  </figure>
+  <p class="note"><strong>Приём, который стоит запомнить.</strong> Запись <code>fmt.Errorf("не удалось найти товар %d: %w", id, err)</code> называют «оборачиванием». Значок <code>%w</code> сохраняет внутри исходную ошибку, добавляя к ней контекст. В итоге в журнале вы видите не голое «строка не найдена», а цепочку: «не удалось оформить заказ: не удалось найти товар 7: строка не найдена». По ней сразу понятен весь путь, а не только последнее звено.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Горутины: то, чего не было в двух предыдущих главах</h2>
+  <p>Вот ради чего Go чаще всего и берут. На страницах про <a routerLink="/ecosystem/backend/node">Node</a> и <a routerLink="/ecosystem/backend/python">Python</a> мы дважды упирались в одно и то же ограничение: пока код <em>считает</em>, всё остальное стоит. В Go этого ограничения нет.</p>
+  <app-code-block [code]="goroutines" lang="go" />
+  <p><strong>Горутина</strong> — это «нить исполнения», которая запускается одним словом <code>go</code>. Ключевое в ней — цена. Поток операционной системы занимает около мегабайта памяти, поэтому их не бывает много. Горутина занимает около двух килобайт — в пятьсот раз меньше. Отсюда возможность держать сотни тысяч горутин одновременно.</p>
+  <p class="note"><strong>Аналогия: официанты и столики, продолжение.</strong> В Node был один официант, который прекрасно справлялся, пока гости ждали, и вставал намертво, если его отправляли чистить картошку. В Go официантов столько, сколько нужно, они почти ничего не стоят, и работают одновременно на всех кухнях ресторана. Отправили одного чистить картошку — остальные продолжают обслуживать зал. Ровно этого и не хватало на прошлых двух страницах.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Сервер занят вычислениями</th>
+          <th>Node.js</th>
+          <th>Python</th>
+          <th>Go</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Что происходит с другими запросами</td>
+          <td class="no">❌ стоят все</td>
+          <td class="no">❌ стоят все в этом процессе</td>
+          <td class="yes">✅ обслуживаются на других ядрах</td>
+        </tr>
+        <tr>
+          <td>Сколько ядер используется</td>
+          <td>одно на процесс</td>
+          <td>одно на процесс</td>
+          <td class="yes">✅ все, автоматически</td>
+        </tr>
+        <tr>
+          <td>Цена одной единицы параллельности</td>
+          <td>—</td>
+          <td>процесс: десятки МБ</td>
+          <td class="yes">✅ горутина: ~2 КБ</td>
+        </tr>
+        <tr>
+          <td>Что делать с тяжёлой задачей</td>
+          <td>воркер или очередь</td>
+          <td>отдельный процесс или очередь</td>
+          <td class="yes">✅ просто написать <code>go</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Планировщик Go раскладывает тысячи дешёвых горутин по четырём ядрам процессора; тяжёлая горутина занимает одно ядро, остальные продолжают работать">
+      <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">тысячи горутин раскладываются по ядрам автоматически</text>
+
+      <rect x="30" y="40" width="600" height="56" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5" />
+      <text x="330" y="60" text-anchor="middle" fill="var(--fg)" font-size="10.5">10 000 горутин · по ~2 КБ каждая · всего около 20 МБ</text>
+      <g fill="var(--bg)" stroke="var(--green)" stroke-width="1.2">
+        <rect x="48" y="68" width="20" height="16" rx="4" /><rect x="74" y="68" width="20" height="16" rx="4" />
+        <rect x="100" y="68" width="20" height="16" rx="4" /><rect x="126" y="68" width="20" height="16" rx="4" />
+        <rect x="152" y="68" width="20" height="16" rx="4" /><rect x="178" y="68" width="20" height="16" rx="4" />
+        <rect x="204" y="68" width="20" height="16" rx="4" /><rect x="230" y="68" width="20" height="16" rx="4" />
+        <rect x="256" y="68" width="20" height="16" rx="4" /><rect x="282" y="68" width="20" height="16" rx="4" />
+        <rect x="308" y="68" width="20" height="16" rx="4" /><rect x="334" y="68" width="20" height="16" rx="4" />
+        <rect x="360" y="68" width="20" height="16" rx="4" /><rect x="386" y="68" width="20" height="16" rx="4" />
+        <rect x="412" y="68" width="20" height="16" rx="4" /><rect x="438" y="68" width="20" height="16" rx="4" />
+        <rect x="464" y="68" width="20" height="16" rx="4" /><rect x="490" y="68" width="20" height="16" rx="4" />
+        <rect x="516" y="68" width="20" height="16" rx="4" /><rect x="542" y="68" width="20" height="16" rx="4" />
+      </g>
+      <rect x="568" y="68" width="44" height="16" rx="4" fill="var(--bg)" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="3 2" />
+      <text x="590" y="80" text-anchor="middle" fill="var(--muted)" font-size="8.5">и ещё…</text>
+
+      <line x1="330" y1="96" x2="330" y2="114" stroke="var(--accent)" stroke-width="1.8" />
+      <polygon points="324,114 330,124 336,114" fill="var(--accent)" />
+      <text x="392" y="112" text-anchor="start" fill="var(--accent)" font-size="10">планировщик Go раскладывает сам</text>
+
+      <rect x="40" y="130" width="132" height="82" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.7" />
+      <text x="106" y="150" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">ядро 1</text>
+      <text x="106" y="172" text-anchor="middle" fill="var(--fg)" font-size="9.5">обслуживает</text>
+      <text x="106" y="187" text-anchor="middle" fill="var(--fg)" font-size="9.5">запросы</text>
+      <text x="106" y="203" text-anchor="middle" fill="var(--muted)" font-size="9">по очереди, быстро</text>
+
+      <rect x="186" y="130" width="132" height="82" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.7" />
+      <text x="252" y="150" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">ядро 2</text>
+      <text x="252" y="172" text-anchor="middle" fill="var(--fg)" font-size="9.5">обслуживает</text>
+      <text x="252" y="187" text-anchor="middle" fill="var(--fg)" font-size="9.5">запросы</text>
+      <text x="252" y="203" text-anchor="middle" fill="var(--muted)" font-size="9">по очереди, быстро</text>
+
+      <rect x="332" y="130" width="132" height="82" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.7" />
+      <text x="398" y="150" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">ядро 3</text>
+      <text x="398" y="172" text-anchor="middle" fill="var(--fg)" font-size="9.5">обслуживает</text>
+      <text x="398" y="187" text-anchor="middle" fill="var(--fg)" font-size="9.5">запросы</text>
+      <text x="398" y="203" text-anchor="middle" fill="var(--muted)" font-size="9">по очереди, быстро</text>
+
+      <rect x="478" y="130" width="132" height="82" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="2" />
+      <text x="544" y="150" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="600">ядро 4</text>
+      <text x="544" y="172" text-anchor="middle" fill="var(--red)" font-size="9.5">тяжёлый расчёт</text>
+      <text x="544" y="187" text-anchor="middle" fill="var(--red)" font-size="9.5">занял его целиком</text>
+      <text x="544" y="203" text-anchor="middle" fill="var(--muted)" font-size="9">на 10 секунд</text>
+
+      <text x="330" y="248" text-anchor="middle" fill="var(--fg)" font-size="11">вот ради этого Go и берут: тяжёлая задача съела ОДНО ядро,</text>
+      <text x="330" y="266" text-anchor="middle" fill="var(--fg)" font-size="11">а три остальных продолжают обслуживать пользователей</text>
+      <text x="330" y="288" text-anchor="middle" fill="var(--muted)" font-size="11">в Node и Python на этом месте встало бы всё приложение</text>
+    </svg>
+    <figcaption>Сравните с диаграммой на странице про Node, где красный отрезок останавливал вообще всё. Здесь он занимает одну четвёртую часть мощности, и пользователи этого не замечают.</figcaption>
+  </figure>
+  <p>А как горутины общаются между собой — через <strong>каналы</strong>:</p>
+  <app-code-block [code]="channels" lang="go" />
+  <p>Девиз языка звучит так: «не общайтесь через общую память — общайтесь передачей сообщений». Канал — это труба: одна горутина кладёт значение, другая забирает. Пока значения нет, забирающая сторона просто ждёт.</p>
+  <p>Особенно приятна конструкция <code>select</code> в конце примера. Это готовый, встроенный в язык способ сказать «жду ответа, но не дольше двух секунд». В других языках таймаут — отдельная библиотека или ручная возня с отменой; здесь это две строки.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Контекст: механизм, которого нет больше нигде</h2>
+  <p>Раз уж зашла речь о таймаутах, разберём вещь, которая в Go встроена в культуру языка и очень заметно повышает надёжность сервисов.</p>
+  <app-code-block [code]="context" lang="go" />
+  <p>Проблема, которую это решает, есть у любого сервера на любом языке. Пользователь открыл тяжёлую страницу и через секунду закрыл вкладку. Сервер об этом не знает: он продолжает делать три запроса в базу, ходить в чужое API и тратить память — ради результата, на который уже никто не посмотрит. При тысяче таких пользователей это заметная часть всей нагрузки.</p>
+  <p>В Go у каждого запроса есть <strong>контекст</strong> — конверт, который передают первым аргументом во все вложенные вызовы. Он умеет сообщить: «отменяйте, клиент ушёл» или «прошло три секунды, хватит».</p>
+  <p class="note"><strong>Почему это важнее, чем кажется.</strong> Сервис без таймаутов — мина замедленного действия. Один медленный сосед по системе способен положить ваше приложение целиком: запросы к нему копятся, соединения не освобождаются, память кончается, и падает уже ваш сервер, хотя виноват был чужой. В Go передача контекста первым аргументом — общепринятая привычка, поэтому таймауты здесь ставят по умолчанию, а не «когда-нибудь потом». Это одна из причин, по которой на Go часто пишут именно инфраструктурные вещи.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Полноценный обработчик целиком</h2>
+  <p>Соберём всё вместе — те же пять этапов, что и на странице <a routerLink="/ecosystem/backend/what-backend-does">Что делает бэкенд</a>, но на Go:</p>
+  <app-code-block [code]="realServer" lang="go" />
+  <p>Сравните с версией на Node из прошлой главы. Логика буквально та же: кто пришёл, что прислали, можно ли, делаем, отвечаем. Разница только в многословности — здесь на каждый вызов приходится явная проверка ошибки.</p>
+  <p>Заметьте строку с маршрутом: <code>mux.HandleFunc("POST /api/orders", ...)</code>. Возможность указывать метод прямо в строке маршрута и использовать <code>&#123;id&#125;</code> появилась в стандартной библиотеке недавно — раньше ради этого ставили сторонний маршрутизатор. Сейчас для большинства сервисов хватает встроенного.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Структура проекта и работа с базой</h2>
+  <p>Раз уж обработчик мы написали, посмотрим, где всё это живёт и как разговаривает с базой данных.</p>
+  <app-code-block [code]="projectLayout" lang="bash" />
+  <p>Деление на три слоя — не особенность Go, а общая практика, которая работает на любом языке. Смысл в том, что каждый слой знает только про своё:</p>
+  <ul class="rules">
+    <li><strong>Обработчики</strong> знают про HTTP: какой пришёл запрос, какой отдать код ответа. Про базу они не знают ничего.</li>
+    <li><strong>Сервисы</strong> знают правила: можно ли оформить заказ, как посчитать скидку. Не знают ни про HTTP, ни про SQL.</li>
+    <li><strong>Хранилище</strong> знает про базу. Не знает, кто и зачем его вызвал.</li>
+  </ul>
+  <p>Выгода становится очевидной, когда появляется второй способ вызвать ту же логику. Понадобилась команда в терминале для администратора или обработчик очереди — слой сервисов используется всеми тремя без единой правки.</p>
+  <p>Теперь про базу. Здесь Go заметно отличается от языков из предыдущих глав: культура склоняется к обычному SQL, а не к тяжёлой ORM.</p>
+  <app-code-block [code]="database" lang="go" />
+  <p class="note"><strong>Про пул соединений — это важно на любом языке.</strong> Открывать соединение с базой на каждый запрос дорого: это отдельный разговор по сети и проверка пароля. Поэтому соединения открывают заранее и переиспользуют. И ограничивать их число обязательно: у базы тоже есть предел, обычно в несколько сотен соединений. Если десять копий вашего сервиса откроют по сто соединений каждая — база ляжет, и виновата будет ваша настройка, а не её мощность.</p>
+  <p>Отдельно стоит объяснить <strong>транзакцию</strong>, потому что это одно из главных понятий в работе с данными. Транзакция — это «либо всё, либо ничего». В примере списание товара со склада и создание заказа должны случиться вместе. Без транзакции возможна беда: товар списали, а заказ не создался из-за сбоя между двумя строками. Товара нет, заказа нет, деньги неизвестно где.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Тесты встроены в язык</h2>
+  <p>Ещё одна вещь, которую в Go не надо ставить отдельно: запускалка тестов входит в комплект.</p>
+  <app-code-block [code]="testing" lang="go" />
+  <p><strong>Табличные тесты</strong> — главная идиома языка в этой области. Вместо десяти похожих функций пишут одну и таблицу случаев; добавить новую проверку означает добавить строку. Именно поэтому в Go-проектах тесты обычно есть: писать их дёшево.</p>
+  <p class="note"><strong>Флаг, который стоит запомнить отдельно: <code>go test -race</code>.</strong> Он ищет <em>гонки данных</em> — ситуации, когда две горутины трогают одни и те же данные одновременно. Такие ошибки почти никогда не воспроизводятся вручную: они проявляются раз в неделю в бою и никогда на машине разработчика. Этот флаг находит их автоматически. На странице про <a routerLink="/ecosystem/backend/rust-cpp">Rust</a> мы увидим язык, который вообще не даёт такую ошибку написать, — но там за это платят порогом входа.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Намеренная простота: чего в языке нет</h2>
+  <p>Go — маленький язык, и это его главная особенность. Причём вещи в нём не «ещё не сделали» — их сознательно выбросили.</p>
+  <app-code-block [code]="simplicity" lang="go" />
+  <p>Цель формулировалась так: язык, на котором код прочитает любой инженер компании, даже увидев проект впервые. Чем меньше в языке способов выразить одну мысль, тем меньше диалектов и тем быстрее человек входит в чужой код.</p>
+  <ul class="rules">
+    <li><strong>Язык учится за выходные.</strong> Его спецификацию реально прочитать целиком за вечер — она помещается в один документ. Для сравнения, полное описание C++ занимает более полутора тысяч страниц.</li>
+    <li><strong>Единственный способ форматирования.</strong> Команда <code>gofmt</code> переписывает код по единым правилам. Споров об отступах, скобках и переносах в Go-командах не бывает в принципе — обсуждать нечего.</li>
+    <li><strong>Компилятор придирчив нарочно.</strong> Неиспользуемая переменная или неиспользуемый импорт — это <em>ошибка сборки</em>, а не предупреждение. Поначалу бесит, потом привыкаешь: мёртвый код просто не накапливается.</li>
+    <li><strong>Кода получается больше.</strong> То, что на Python занимает строку, здесь займёт пять. Это честная плата, и авторы языка её признают: читают код в десять раз чаще, чем пишут.</li>
+  </ul>
+  <p class="note"><strong>Кому эта философия не подойдёт.</strong> Если вам нравится выразительный код, продвинутая работа с типами и возможность придумать красивую абстракцию — в Go будет тесно. Он специально не даёт это делать. Многие приходят к нему не из любви к языку, а из любви к результату: предсказуемые сервисы, которые легко читать через год и легко эксплуатировать.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Один файл на выкладку</h2>
+  <p>Вот практическое преимущество, которое ощущается каждый день и которое трудно оценить, пока не попробуешь.</p>
+  <app-code-block [code]="singleBinary" lang="bash" />
+  <p>Компиляция Go даёт <strong>один файл</strong>. Внутри него уже всё: ваш код, все библиотеки и среда выполнения языка. Этот файл копируют на голый сервер и запускают. На сервере не нужно ставить Go — вообще ничего не нужно ставить.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Сравнение размеров образов и содержимого: Node с node_modules, Python с интерпретатором, Go с одним файлом">
+      <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">что нужно положить на сервер, чтобы приложение запустилось</text>
+
+      <rect x="24" y="42" width="190" height="180" rx="11" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.7" />
+      <text x="119" y="66" text-anchor="middle" fill="var(--orange)" font-size="12" font-weight="600">Node.js</text>
+      <rect x="44" y="80" width="150" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="119" y="97" text-anchor="middle" fill="var(--fg)" font-size="9.5">среда Node</text>
+      <rect x="44" y="112" width="150" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="119" y="129" text-anchor="middle" fill="var(--fg)" font-size="9.5">node_modules</text>
+      <rect x="44" y="144" width="150" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="119" y="161" text-anchor="middle" fill="var(--fg)" font-size="9.5">ваш код</text>
+      <text x="119" y="192" text-anchor="middle" fill="var(--orange)" font-size="13" font-weight="600">~150 МБ</text>
+      <text x="119" y="210" text-anchor="middle" fill="var(--muted)" font-size="9.5">старт: сотни мс</text>
+
+      <rect x="235" y="42" width="190" height="180" rx="11" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.7" />
+      <text x="330" y="66" text-anchor="middle" fill="var(--cyan)" font-size="12" font-weight="600">Python</text>
+      <rect x="255" y="80" width="150" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="330" y="97" text-anchor="middle" fill="var(--fg)" font-size="9.5">интерпретатор</text>
+      <rect x="255" y="112" width="150" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="330" y="129" text-anchor="middle" fill="var(--fg)" font-size="9.5">пакеты venv</text>
+      <rect x="255" y="144" width="150" height="26" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="330" y="161" text-anchor="middle" fill="var(--fg)" font-size="9.5">ваш код</text>
+      <text x="330" y="192" text-anchor="middle" fill="var(--cyan)" font-size="13" font-weight="600">~120 МБ</text>
+      <text x="330" y="210" text-anchor="middle" fill="var(--muted)" font-size="9.5">старт: сотни мс</text>
+
+      <rect x="446" y="42" width="190" height="180" rx="11" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="541" y="66" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">Go</text>
+      <rect x="466" y="80" width="150" height="90" rx="6" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="541" y="118" text-anchor="middle" fill="var(--green)" font-size="10.5" font-weight="600">один файл</text>
+      <text x="541" y="136" text-anchor="middle" fill="var(--muted)" font-size="9">код + библиотеки +</text>
+      <text x="541" y="150" text-anchor="middle" fill="var(--muted)" font-size="9">среда выполнения внутри</text>
+      <text x="541" y="192" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="600">~15 МБ</text>
+      <text x="541" y="210" text-anchor="middle" fill="var(--muted)" font-size="9.5">старт: миллисекунды</text>
+
+      <text x="330" y="252" text-anchor="middle" fill="var(--fg)" font-size="11">меньше образ — быстрее выкладка, дешевле хранение, меньше чужого кода внутри</text>
+      <text x="330" y="274" text-anchor="middle" fill="var(--muted)" font-size="11">а мгновенный старт решает всё для serverless-функций,</text>
+      <text x="330" y="290" text-anchor="middle" fill="var(--muted)" font-size="11">которые поднимаются заново на каждый запрос</text>
+    </svg>
+    <figcaption>Меньший образ — это не только про место на диске. Это ещё и меньше чужого кода, в котором может обнаружиться уязвимость, и меньше поводов для ночного разбирательства.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>Когда Go — правильный выбор</h2>
+  <app-code-block [code]="whenGo" lang="go" />
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Задача</th>
+          <th>Go подходит?</th>
+          <th>Почему</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Сервис с большой нагрузкой и жёсткими требованиями к задержке</td>
+          <td class="yes">✅ отлично</td>
+          <td>Компилируемый, многоядерный, предсказуемый по памяти.</td>
+        </tr>
+        <tr>
+          <td>Шлюз API, прокси, балансировщик, инфраструктурный сервис</td>
+          <td class="yes">✅ выбор по умолчанию</td>
+          <td>Docker, Kubernetes, Terraform и Prometheus написаны на Go неслучайно.</td>
+        </tr>
+        <tr>
+          <td>Утилита командной строки для команды</td>
+          <td class="yes">✅ отлично</td>
+          <td>Один файл, который можно просто раздать коллегам под любую систему.</td>
+        </tr>
+        <tr>
+          <td>Один нагруженный сервис внутри большой системы</td>
+          <td class="yes">✅ типичный сценарий</td>
+          <td>Переписать на Go узкое место, не трогая остальное приложение.</td>
+        </tr>
+        <tr>
+          <td>Serverless-функции</td>
+          <td class="yes">✅ очень хорошо</td>
+          <td>Мгновенный старт — там, где функция поднимается на каждый запрос.</td>
+        </tr>
+        <tr>
+          <td>Сайт с админкой, контентом и формами</td>
+          <td class="no">❌ не лучший</td>
+          <td>Ничего похожего на админку Django здесь нет — всё придётся писать руками.</td>
+        </tr>
+        <tr>
+          <td>Аналитика, машинное обучение, работа с ИИ</td>
+          <td class="no">❌ мимо</td>
+          <td>Экосистемы просто нет. Это территория <a routerLink="/ecosystem/backend/python">Python</a>.</td>
+        </tr>
+        <tr>
+          <td>Небольшой проект, который надо сделать быстро</td>
+          <td class="no">❌ спорно</td>
+          <td>Многословность заметно замедляет на маленьких задачах.</td>
+        </tr>
+        <tr>
+          <td>Первый язык бэкенда для новичка</td>
+          <td>можно, но</td>
+          <td>Язык простой, а вот готовых рецептов «сделай как в учебнике» меньше, чем у Python и Node.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Самый частый сценарий из жизни компаний.</strong> Проект начинают на Python или Node — быстро, много готового, легко нанимать. Через два года упираются в производительность <em>одного конкретного</em> куска: обработки платежей, шлюза API, сервиса уведомлений. И переписывают на Go <strong>только его</strong>. Именно поэтому Go так часто встречается в вакансиях <em>рядом</em> с другими языками, а не вместо них. Знать его вторым языком — очень выгодная позиция на рынке.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Веб-сервер пишется без единой библиотеки.</strong> HTTP, JSON и маршруты входят в стандартную библиотеку — многие сервисы доходят до боя с пустым списком зависимостей.</li>
+    <li><strong>Ошибки — обычные значения, а не исключения.</strong> Кода больше, зато все точки отказа видны прямо в тексте программы, и пролететь незаметно сквозь пять уровней ошибка не может.</li>
+    <li><strong>Горутины снимают ограничение, в которое мы упирались дважды.</strong> Тяжёлый расчёт занимает одно ядро, остальные продолжают обслуживать пользователей. Горутина стоит ~2 КБ, поэтому их запускают сотнями тысяч.</li>
+    <li><strong>Каналы — трубы для общения между горутинами.</strong> Конструкция <code>select</code> даёт встроенный таймаут в две строки.</li>
+    <li><strong>Контекст передаётся первым аргументом везде.</strong> Клиент ушёл — вложенные запросы отменяются; прошло три секунды — вызов прерывается сам. Из-за этой привычки на Go пишут надёжные инфраструктурные сервисы.</li>
+    <li><strong>Язык намеренно маленький.</strong> Нет классов, наследования, исключений, перегрузки. Цель — чтобы чужой код читался с первого раза. Плата — многословность.</li>
+    <li><strong>Один файл на выкладку.</strong> Никаких <code>node_modules</code> и виртуальных окружений: образ ~15 МБ вместо ~150 МБ и старт за миллисекунды.</li>
+    <li><strong>Берут для нагрузки, инфраструктуры и утилит.</strong> Не берут для сайтов с админкой, аналитики и машинного обучения.</li>
+    <li><strong>Типичный сценарий — второй язык в компании:</strong> переписать на Go одно узкое место, оставив остальное как есть.</li>
+  </ul>
+  <p class="note">Дальше — <a routerLink="/ecosystem/backend/jvm-dotnet">Java, Kotlin и C#/.NET</a>: миры, где живут банки, страховые и корпоративные системы, и где ценят совсем другие вещи — строгость, инструменты и предсказуемость на горизонте в десять лет. Заодно разберём, что такое «виртуальная машина» и почему один и тот же код работает где угодно. Общие обязанности сервера — на странице <a routerLink="/ecosystem/backend/what-backend-does">Что делает бэкенд</a>.</p>
+</section>
+</article>

@@ -1,0 +1,369 @@
+<article class="doc" style="--accent: #ffb86c">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Экосистема</span><span class="breadcrumbs__sep">/</span><a routerLink="/ecosystem/backend">Бэкенд</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Python</span></nav>
+
+<h1 class="doc__title">Python</h1>
+<p class="doc__lead">Python — второй по распространённости язык бэкенда после JavaScript, и попал он туда необычным путём. Node пришёл в веб из браузера, а Python — из научных лабораторий, системного администрирования и обработки данных. Из-за этого у него другие сильные стороны: там, где Node просто «тоже умеет», Python часто оказывается единственным разумным вариантом. На этой странице разберём, как язык выглядит и читается, три главных каркаса (Flask, FastAPI, Django), страшное слово GIL, которое означает почти то же самое, что «один поток» из прошлой страницы, и честно ответим, когда Python стоит брать, а когда нет.</p>
+
+<section class="doc__section">
+  <h2>Как это выглядит и почему без скобок</h2>
+  <p>Первое, что бросается в глаза человеку с JavaScript: в Python нет фигурных скобок и точек с запятой. Вложенность задаётся <strong>отступами</strong>, и они не оформление, а часть синтаксиса.</p>
+  <app-code-block [code]="pythonLooks" lang="python" />
+  <p>Реакция обычно одинаковая: «а если случайно сдвинуть строку?» Ответ: получите другую программу или ошибку. Именно поэтому в Python-проектах отступы никогда не обсуждают — их расставляет автоформатировщик, и спорить не о чем.</p>
+  <p class="note"><strong>Зачем так сделано.</strong> Логика простая: в любом языке аккуратные программисты и так выравнивают код отступами, чтобы его было видно глазами. Раз отступ всё равно есть и всё равно означает вложенность — зачем дублировать ту же мысль ещё и скобками? Побочный эффект оказался ценнее задумки: <em>любой</em> код на Python выглядит примерно одинаково, потому что криво отформатированный просто не работает.</p>
+  <p>Дальше идут вещи, которые вы уже знаете, — только называются иначе:</p>
+  <app-code-block [code]="pythonBasics" lang="python" />
+  <p>Массив здесь называется <strong>списком</strong>, объект — <strong>словарём</strong>, <code>this</code> — <strong>self</strong>, шаблонные строки — <strong>f-строками</strong>. Конструкция <code>[p for p in products if ...]</code> выглядит непривычно, но читается почти как фраза: «взять p для каждого p из products, если выполнено условие» — это аналог связки <code>map</code> и <code>filter</code>.</p>
+  <p class="note"><strong>Про читаемость без рекламы.</strong> У Python репутация «самого понятного языка», и она в основном заслуженная: код действительно похож на псевдокод из учебника, а обязательные отступы не дают ему превратиться в кашу. Но не ждите, что от этого станет проще <em>бэкенд</em>. Базы данных, транзакции, права доступа и очереди сложны сами по себе — на любом языке одинаково.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Типы: есть, но никто не заставляет</h2>
+  <p>Python — язык с динамической типизацией, как и JavaScript: переменная может содержать что угодно. Но с версии 3.5 в нём есть <strong>подсказки типов</strong>, и в серьёзных проектах ими пользуются повсеместно.</p>
+  <app-code-block [code]="typeHints" lang="python" />
+  <p>Здесь есть отличие от TypeScript, которое обязательно надо усвоить, иначе будет очень обидно. В TypeScript типы тоже стираются при сборке — но <strong>код с ошибкой типов просто не соберётся</strong>: компилятор стоит на пути и не пропустит.</p>
+  <p>В Python на пути не стоит никто. Подсказки типов — это <em>комментарии, которые понимает редактор</em>. Программа с грубым несоответствием типов запустится как ни в чём не бывало и упадёт уже во время работы. Чтобы проверка действительно произошла, надо отдельно запустить инструмент — <code>mypy</code> или <code>pyright</code> — и включить его в автоматические проверки проекта.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th>TypeScript</th>
+          <th>Python с подсказками типов</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Типы обязательны?</td>
+          <td>Нет, но проверка встроена в сборку</td>
+          <td>Нет, и проверки по умолчанию нет вообще</td>
+        </tr>
+        <tr>
+          <td>Кто проверяет</td>
+          <td class="yes">✅ компилятор, всегда</td>
+          <td>отдельный инструмент, если вы его запустили</td>
+        </tr>
+        <tr>
+          <td>Код с ошибкой типов</td>
+          <td class="yes">✅ не соберётся</td>
+          <td class="no">❌ запустится и упадёт во время работы</td>
+        </tr>
+        <tr>
+          <td>Проверка данных от клиента</td>
+          <td class="no">❌ нужна отдельная библиотека</td>
+          <td class="yes">✅ Pydantic делает это из тех же аннотаций</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Последняя строка — приятный сюрприз, и на нём построен весь FastAPI, к которому мы сейчас перейдём.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Три каркаса и как между ними выбрать</h2>
+  <p>В мире Python три основных каркаса, и различаются они тем же, чем различались фреймворки на клиенте: количеством решений, принятых за вас.</p>
+
+  <h3 class="doc__subtitle">Flask — минимальный</h3>
+  <app-code-block [code]="flaskExample" lang="python" />
+  <p>Flask по духу — это Express мира Python. Даёт маршруты и почти ничего сверх. Понятен за десять минут, но структуру, проверку данных и работу с базой вы собираете сами.</p>
+  <p>Строка со значком <code>&#64;</code> над функцией называется <strong>декоратором</strong>. Читается как «этот адрес обслуживает вот эта функция». Если вы видели Angular или NestJS — это ровно та же идея записи.</p>
+
+  <h3 class="doc__subtitle">FastAPI — современный выбор</h3>
+  <app-code-block [code]="fastapiExample" lang="python" />
+  <p>Главная идея FastAPI: раз вы всё равно пишете подсказки типов, пусть они работают по-настоящему. Из класса <code>CreateOrderRequest</code> каркас сам делает три вещи:</p>
+  <ul class="rules">
+    <li><strong>Проверяет входящие данные.</strong> Прислали строку вместо числа или количество <code>0</code> — обработчик даже не вызовется, клиент получит <code>422</code> с точным указанием, какое поле не подошло.</li>
+    <li><strong>Подсказывает в редакторе.</strong> Внутри функции <code>data</code> — не безымянный словарь, а объект с известными полями.</li>
+    <li><strong>Собирает документацию.</strong> Открываете адрес <code>/docs</code> — и там готовая интерактивная страница со всеми вашими адресами и формами для пробных запросов. Писать её не нужно вообще.</li>
+  </ul>
+  <p class="note"><strong>Последний пункт стоит оценить отдельно.</strong> Актуальная документация API — вечная боль команд: её пишут отдельно, забывают обновить, и через полгода она врёт. Здесь она собирается из того же кода, который обрабатывает запросы, — а значит, не может разойтись с действительностью. Формат этого описания называется OpenAPI, и про него подробнее — на странице <a routerLink="/ecosystem/api/contracts">Контракты API</a>.</p>
+
+  <h3 class="doc__subtitle">Django — всё в комплекте</h3>
+  <app-code-block [code]="djangoExample" lang="python" />
+  <p>Django исповедует принцип «батарейки в комплекте»: типовые задачи веба решены заранее. Вы описываете данные — и получаете таблицы в базе, язык запросов, формы, систему пользователей и права.</p>
+  <p>Но настоящий козырь Django — <strong>готовая административная панель</strong>. Три строки кода — и у вас полноценная панель управления со списками, поиском, фильтрами, созданием и редактированием записей. На других языках такое пишут неделями.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Три каркаса Python на шкале: Flask даёт минимум, FastAPI середина, Django всё в комплекте">
+      <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">сколько решений принято за вас</text>
+
+      <rect x="24" y="44" width="190" height="180" rx="12" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="119" y="68" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="600">Flask</text>
+      <text x="119" y="86" text-anchor="middle" fill="var(--muted)" font-size="10">минимальный</text>
+      <line x1="44" y1="96" x2="194" y2="96" stroke="var(--border)" stroke-width="1.2" />
+      <text x="119" y="116" text-anchor="middle" fill="var(--fg)" font-size="10">маршруты</text>
+      <text x="119" y="134" text-anchor="middle" fill="var(--muted)" font-size="10">база — сами</text>
+      <text x="119" y="152" text-anchor="middle" fill="var(--muted)" font-size="10">проверка — сами</text>
+      <text x="119" y="170" text-anchor="middle" fill="var(--muted)" font-size="10">админка — сами</text>
+      <text x="119" y="188" text-anchor="middle" fill="var(--muted)" font-size="10">структура — сами</text>
+      <text x="119" y="212" text-anchor="middle" fill="var(--green)" font-size="10">маленькие сервисы</text>
+
+      <rect x="234" y="44" width="190" height="180" rx="12" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
+      <text x="329" y="68" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">FastAPI</text>
+      <text x="329" y="86" text-anchor="middle" fill="var(--muted)" font-size="10">современный</text>
+      <line x1="254" y1="96" x2="404" y2="96" stroke="var(--border)" stroke-width="1.2" />
+      <text x="329" y="116" text-anchor="middle" fill="var(--fg)" font-size="10">маршруты</text>
+      <text x="329" y="134" text-anchor="middle" fill="var(--fg)" font-size="10">проверка данных ✓</text>
+      <text x="329" y="152" text-anchor="middle" fill="var(--fg)" font-size="10">документация ✓</text>
+      <text x="329" y="170" text-anchor="middle" fill="var(--fg)" font-size="10">асинхронность ✓</text>
+      <text x="329" y="188" text-anchor="middle" fill="var(--muted)" font-size="10">база — сами</text>
+      <text x="329" y="212" text-anchor="middle" fill="var(--accent)" font-size="10">новые API-сервисы</text>
+
+      <rect x="444" y="44" width="190" height="180" rx="12" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.8" />
+      <text x="539" y="68" text-anchor="middle" fill="var(--purple)" font-size="13" font-weight="600">Django</text>
+      <text x="539" y="86" text-anchor="middle" fill="var(--muted)" font-size="10">всё в комплекте</text>
+      <line x1="464" y1="96" x2="614" y2="96" stroke="var(--border)" stroke-width="1.2" />
+      <text x="539" y="116" text-anchor="middle" fill="var(--fg)" font-size="10">маршруты</text>
+      <text x="539" y="134" text-anchor="middle" fill="var(--fg)" font-size="10">ORM и миграции ✓</text>
+      <text x="539" y="152" text-anchor="middle" fill="var(--fg)" font-size="10">пользователи и права ✓</text>
+      <text x="539" y="170" text-anchor="middle" fill="var(--fg)" font-size="10">формы ✓</text>
+      <text x="539" y="188" text-anchor="middle" fill="var(--pink)" font-size="10" font-weight="600">админка ✓</text>
+      <text x="539" y="212" text-anchor="middle" fill="var(--purple)" font-size="10">магазины, CRM, порталы</text>
+
+      <text x="330" y="256" text-anchor="middle" fill="var(--fg)" font-size="11">берите Django, если в проекте есть «панель для сотрудников» —</text>
+      <text x="330" y="276" text-anchor="middle" fill="var(--fg)" font-size="11">это экономит недели работы и почти не имеет аналогов в других языках</text>
+    </svg>
+    <figcaption>Выбор здесь делается не по вкусу, а по типу проекта. Чистое API для мобильного приложения — FastAPI. Сайт с контентом и админкой — Django. Маленькая внутренняя утилита — Flask.</figcaption>
+  </figure>
+</section>
+
+<section class="doc__section">
+  <h2>GIL: страшное слово, знакомая мысль</h2>
+  <p>Про Python вы обязательно услышите аббревиатуру <strong>GIL</strong> и обычно с интонацией «вот поэтому он не годится». Разберёмся спокойно.</p>
+  <p>GIL расшифровывается как «глобальная блокировка интерпретатора» и означает следующее: <strong>внутри одного процесса Python код выполняет один поток за раз</strong>, даже если вы создали десять потоков.</p>
+  <app-code-block [code]="gilExplained" lang="python" />
+  <p>Заметили? Это ровно та же граница, что и в Node на прошлой странице, только достигнутая другим механизмом:</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Что делает сервер</th>
+          <th>Node.js</th>
+          <th>Python с GIL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ждёт базу, сеть, диск</td>
+          <td class="yes">✅ поток свободен, берёт другие запросы</td>
+          <td class="yes">✅ GIL отпущен, другие потоки работают</td>
+        </tr>
+        <tr>
+          <td>Считает в цикле</td>
+          <td class="no">❌ блокирует всех</td>
+          <td class="no">❌ блокирует всех в этом процессе</td>
+        </tr>
+        <tr>
+          <td>Как обойти</td>
+          <td>воркеры, очередь, несколько копий</td>
+          <td>несколько процессов, библиотеки на C, очередь</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Аналогия: одна касса и один пропуск.</strong> Представьте офис, где может работать много сотрудников, но говорить по телефону разрешено только тому, у кого в руках единственный пропуск. Пока сотрудник говорит — остальные ждут. Но как только он уходит на обед (то есть начинает <em>ждать</em> внешнего события), он кладёт пропуск на стол, и его берёт следующий. Если все сотрудники в основном ждут — офис работает прекрасно. Если все хотят говорить одновременно — очередь.</p>
+  <p>И три честных способа обойти ограничение:</p>
+  <app-code-block [code]="gilWorkaround" lang="python" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 270" width="100%" role="img" aria-label="Python как пульт управления: три строки на Python запускают вычисления на C и видеокарте, где и проходит всё время работы">
+      <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">почему «Python медленный» — правда про язык и неправда про применение</text>
+
+      <rect x="60" y="44" width="230" height="76" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.9" />
+      <text x="175" y="66" text-anchor="middle" fill="var(--accent)" font-size="11.5" font-weight="600">Ваш код на Python</text>
+      <text x="175" y="86" text-anchor="middle" fill="var(--fg)" font-size="10">данные.mean()</text>
+      <text x="175" y="103" text-anchor="middle" fill="var(--muted)" font-size="9.5">три строки, доли процента времени</text>
+
+      <line x1="290" y1="82" x2="330" y2="82" stroke="var(--muted)" stroke-width="2" />
+      <polygon points="330,76 342,82 330,88" fill="var(--muted)" />
+
+      <rect x="356" y="44" width="244" height="76" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="2" />
+      <text x="478" y="66" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">Код на C и видеокарта</text>
+      <text x="478" y="86" text-anchor="middle" fill="var(--fg)" font-size="10">здесь проходит 99% времени</text>
+      <text x="478" y="103" text-anchor="middle" fill="var(--muted)" font-size="9.5">GIL на это время отпущен</text>
+
+      <rect x="60" y="146" width="540" height="34" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1.4" />
+      <rect x="62" y="148" width="26" height="30" rx="6" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="330" y="168" text-anchor="middle" fill="var(--muted)" font-size="10">на что уходит время выполнения программы целиком</text>
+
+      <line x1="75" y1="184" x2="75" y2="200" stroke="var(--accent)" stroke-width="1.4" />
+      <text x="75" y="216" text-anchor="middle" fill="var(--accent)" font-size="9.5">Python</text>
+      <line x1="340" y1="184" x2="340" y2="200" stroke="var(--green)" stroke-width="1.4" />
+      <text x="340" y="216" text-anchor="middle" fill="var(--green)" font-size="9.5">C и видеокарта</text>
+
+      <text x="330" y="248" text-anchor="middle" fill="var(--fg)" font-size="11">скорость самого Python здесь почти ни на что не влияет —</text>
+      <text x="330" y="264" text-anchor="middle" fill="var(--fg)" font-size="11">он выступает пультом управления, а не мотором</text>
+    </svg>
+    <figcaption>Ровно та же роль у Python в машинном обучении и работе с ИИ. Вы пишете понятные строки, а считает высокооптимизированный чужой код, часто прямо на видеокарте.</figcaption>
+  </figure>
+  <p>Второй путь в этом примере — самый важный для понимания репутации Python. Фраза «Python медленный» верна применительно к самому языку и совершенно неверна применительно к тому, как его используют. В обработке данных и машинном обучении Python — это <strong>пульт управления</strong>: вы пишете три понятные строки, а считает высокооптимизированный код на C и видеокарта. Скорость самого Python при этом не имеет значения.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Два мира: синхронный и асинхронный</h2>
+  <p>Тут есть особенность, которой нет ни в Node, ни в Go: в Python веб-разработка существует <strong>в двух параллельных вариантах</strong>, и путать их болезненно.</p>
+  <app-code-block [code]="syncAsync" lang="python" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Синхронная модель с четырьмя рабочими процессами против асинхронной модели с одним процессом и множеством ожиданий">
+      <text x="165" y="22" text-anchor="middle" fill="var(--cyan)" font-size="12" font-weight="600">Синхронно (Django, Flask)</text>
+      <text x="495" y="22" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">Асинхронно (FastAPI)</text>
+
+      <rect x="24" y="40" width="64" height="52" rx="8" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.6" />
+      <text x="56" y="62" text-anchor="middle" fill="var(--cyan)" font-size="10">рабочий 1</text>
+      <text x="56" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт базу</text>
+
+      <rect x="96" y="40" width="64" height="52" rx="8" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.6" />
+      <text x="128" y="62" text-anchor="middle" fill="var(--cyan)" font-size="10">рабочий 2</text>
+      <text x="128" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт базу</text>
+
+      <rect x="168" y="40" width="64" height="52" rx="8" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.6" />
+      <text x="200" y="62" text-anchor="middle" fill="var(--cyan)" font-size="10">рабочий 3</text>
+      <text x="200" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт базу</text>
+
+      <rect x="240" y="40" width="64" height="52" rx="8" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.6" />
+      <text x="272" y="62" text-anchor="middle" fill="var(--cyan)" font-size="10">рабочий 4</text>
+      <text x="272" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт базу</text>
+
+      <rect x="24" y="104" width="280" height="42" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="164" y="122" text-anchor="middle" fill="var(--red)" font-size="10.5">пятый пользователь СТОИТ В ОЧЕРЕДИ</text>
+      <text x="164" y="138" text-anchor="middle" fill="var(--muted)" font-size="9.5">свободных рабочих нет, хотя все четверо просто ждут</text>
+
+      <text x="164" y="176" text-anchor="middle" fill="var(--fg)" font-size="10.5">одновременных пользователей столько,</text>
+      <text x="164" y="192" text-anchor="middle" fill="var(--fg)" font-size="10.5">сколько рабочих вы оплатили памятью</text>
+      <text x="164" y="216" text-anchor="middle" fill="var(--muted)" font-size="10">каждый рабочий — отдельный процесс</text>
+      <text x="164" y="232" text-anchor="middle" fill="var(--muted)" font-size="10">и десятки мегабайт памяти</text>
+
+      <line x1="330" y1="32" x2="330" y2="270" stroke="var(--border)" stroke-width="1.4" stroke-dasharray="6 5" />
+
+      <rect x="386" y="40" width="220" height="52" rx="9" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="496" y="62" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">один процесс</text>
+      <text x="496" y="80" text-anchor="middle" fill="var(--muted)" font-size="9.5">цикл событий, как в Node</text>
+
+      <line x1="496" y1="92" x2="496" y2="106" stroke="var(--green)" stroke-width="1.6" />
+      <polygon points="490,106 496,116 502,106" fill="var(--green)" />
+
+      <rect x="356" y="120" width="60" height="30" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="386" y="139" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт</text>
+      <rect x="422" y="120" width="60" height="30" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="452" y="139" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт</text>
+      <rect x="488" y="120" width="60" height="30" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="518" y="139" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт</text>
+      <rect x="554" y="120" width="60" height="30" rx="6" fill="var(--surface)" stroke="var(--border)" stroke-width="1.2" />
+      <text x="584" y="139" text-anchor="middle" fill="var(--muted)" font-size="9">ждёт</text>
+
+      <text x="496" y="176" text-anchor="middle" fill="var(--green)" font-size="10.5">пятый, сотый и тысячный обслуживаются тоже</text>
+      <text x="496" y="196" text-anchor="middle" fill="var(--fg)" font-size="10.5">ожидание почти ничего не стоит</text>
+      <text x="496" y="220" text-anchor="middle" fill="var(--muted)" font-size="10">но одна синхронная библиотека внутри</text>
+      <text x="496" y="236" text-anchor="middle" fill="var(--red)" font-size="10">заблокирует весь цикл — и всё сломается</text>
+
+      <text x="330" y="290" text-anchor="middle" fill="var(--fg)" font-size="11">выбрав асинхронный каркас, следите, чтобы ВСЕ библиотеки тоже были асинхронными</text>
+    </svg>
+    <figcaption>Слева одновременных пользователей ровно столько, сколько рабочих процессов вы оплатили памятью. Справа их могут быть тысячи — но ценой строгого правила про библиотеки.</figcaption>
+  </figure>
+  <p class="note"><strong>Ловушка, на которой обжигаются все.</strong> Вы взяли FastAPI ради асинхронности, а внутри обработчика вызвали привычную библиотеку <code>requests</code> — синхронную. Она не умеет отпускать поток, и на время её работы <em>весь цикл событий стоит</em>. Асинхронность превращается в тыкву, причём молча: ошибок нет, просто сервер держит не тысячу пользователей, а десять. Правило: асинхронный каркас — асинхронные библиотеки (<code>httpx</code> вместо <code>requests</code>, <code>asyncpg</code> вместо синхронного драйвера базы).</p>
+</section>
+
+<section class="doc__section">
+  <h2>ORM и главная ошибка производительности</h2>
+  <p>Работа с базой — сильная сторона Python. Здесь принято обращаться к данным не строками SQL, а объектами языка. Такой слой называют <strong>ORM</strong> (объектно-реляционное отображение).</p>
+  <app-code-block [code]="ormExample" lang="python" />
+  <p>Обратите особое внимание на вторую половину примера. Ошибка «N + 1» — самая частая причина медленных страниц во всём вебе, и делают её на всех языках одинаково. Код выглядит совершенно невинно: цикл по заказам, внутри обращение к пользователю. А в базу при этом уходит сто один запрос вместо одного.</p>
+  <p>Коварство в том, что на вашей машине с двадцатью тестовыми заказами всё летает. Проблема появляется только на боевых данных — и появляется резко.</p>
+  <p class="note"><strong>Как поймать это заранее.</strong> Включите в режиме разработки вывод всех SQL-запросов в консоль. Открыли страницу, увидели в журнале сто одинаковых запросов подряд — нашли проблему за минуту. В Django для этого есть отдельная панель отладки, которая показывает число запросов прямо на странице. Подробнее про устройство баз — в подразделе <a routerLink="/ecosystem/data/orm">Данные и хранилища</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Настоящая суперсила: то, что рядом с вебом</h2>
+  <p>А теперь главное, ради чего Python вообще стоит рассматривать. Как веб-язык он хорош, но не уникален — Node и Go делают ту же работу не хуже. Уникальным его делает <strong>всё, что находится рядом</strong>.</p>
+  <app-code-block [code]="whereStrong" lang="python" />
+  <p>Разберём, почему это важно для выбора языка на бэкенде. Представьте интернет-магазин, которому через год понадобится:</p>
+  <ul class="rules">
+    <li><strong>Аналитика</strong> — сводные отчёты по продажам, когорты покупателей, прогноз спроса.</li>
+    <li><strong>Рекомендации</strong> — «с этим товаром часто покупают».</li>
+    <li><strong>Обработка отзывов</strong> — автоматическая оценка тональности или выжимка.</li>
+    <li><strong>Функции на основе ИИ</strong> — поиск по смыслу, помощник в поддержке, генерация описаний.</li>
+  </ul>
+  <p>Если бэкенд на Python, всё это добавляется <em>в тот же проект теми же людьми</em>. Если бэкенд на другом языке — в компании появляется второй язык, второй набор инструментов и вечный вопрос, как две части между собой связывать.</p>
+  <p class="note"><strong>Про ИИ отдельно.</strong> Практически все официальные библиотеки для работы с языковыми моделями выходят сначала на Python, а всё, что связано с обучением моделей, существует <em>только</em> на Python. Это не мода, а сложившаяся за пятнадцать лет экосистема. Если в вашем продукте предполагается что-то содержательное на основе ИИ — этот аргумент часто перевешивает все остальные. Подробнее — в подразделе <a routerLink="/ecosystem/ai/llm-api">ИИ в продукте</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как это запускают в бою</h2>
+  <p>Здесь есть неочевидная деталь, на которой спотыкаются все новички.</p>
+  <app-code-block [code]="deployment" lang="bash" />
+  <p>Команда <code>python manage.py runserver</code>, которую вы увидите в каждом учебнике, — это сервер <strong>для разработки</strong>. Он однопоточный, медленный и не рассчитан на посторонних. В бою вместо него ставят отдельный сервер приложений: <code>gunicorn</code> для синхронных каркасов, <code>uvicorn</code> для асинхронных.</p>
+  <p>Параметр <code>--workers</code> — это количество процессов-копий вашего приложения. Помните про GIL? Один процесс использует одно ядро. Четыре процесса — четыре ядра. Обычный ориентир — по числу ядер машины.</p>
+  <p class="note"><strong>Виртуальное окружение — обязательная привычка.</strong> Без него пакеты ставятся в систему целиком, и два проекта, которым нужны разные версии одной библиотеки, начинают конфликтовать. Команда <code>python -m venv .venv</code> создаёт проекту собственную папку с пакетами — по смыслу это тот же <code>node_modules</code>, только его надо завести явно. Из современных инструментов стоит знать <code>uv</code>: он делает то же самое, что <code>pip</code>, но в разы быстрее.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Когда Python — правильный выбор</h2>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Задача</th>
+          <th>Python подходит?</th>
+          <th>Почему</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Продукт с аналитикой, рекомендациями или ИИ</td>
+          <td class="yes">✅ лучший выбор</td>
+          <td>Весь мир данных и машинного обучения живёт здесь. Не придётся заводить второй язык.</td>
+        </tr>
+        <tr>
+          <td>Магазин, CRM, портал с админкой</td>
+          <td class="yes">✅ отлично</td>
+          <td>Django даёт готовую панель управления, пользователей и права почти бесплатно.</td>
+        </tr>
+        <tr>
+          <td>API для мобильного приложения</td>
+          <td class="yes">✅ отлично</td>
+          <td>FastAPI: проверка данных и документация собираются сами из типов.</td>
+        </tr>
+        <tr>
+          <td>Автоматизация, интеграции, разбор выгрузок</td>
+          <td class="yes">✅ язык по умолчанию</td>
+          <td>Для любого формата и любого API есть готовая библиотека.</td>
+        </tr>
+        <tr>
+          <td>Первый язык для обучения бэкенду</td>
+          <td class="yes">✅ хороший вариант</td>
+          <td>Читаемый синтаксис, много материалов, широкий рынок.</td>
+        </tr>
+        <tr>
+          <td>Высоконагруженная система с жёсткими требованиями к задержке</td>
+          <td class="no">❌ не лучший</td>
+          <td>Python в разы медленнее компилируемых языков. Здесь смотрят на <a routerLink="/ecosystem/backend/go">Go</a>.</td>
+        </tr>
+        <tr>
+          <td>Сервис с очень экономным потреблением памяти</td>
+          <td class="no">❌ плохо</td>
+          <td>Синхронная модель требует процессов, а каждый процесс стоит десятки мегабайт.</td>
+        </tr>
+        <tr>
+          <td>Серверный рендеринг React-приложения</td>
+          <td class="no">❌ мимо</td>
+          <td>Нужен тот же язык, что и на клиенте, — то есть <a routerLink="/ecosystem/backend/node">Node</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Честно про скорость.</strong> Python действительно медленный как язык — раз в десять-пятьдесят медленнее Go на чистых вычислениях. Но помните вывод предыдущей страницы: обычное веб-приложение почти всё время <em>ждёт базу</em>, а не считает. На фоне ожидания в 40 миллисекунд разница между 0,1 и 2 миллисекундами вашего кода незаметна. Скорость языка становится решающей заметно реже, чем принято думать, — а вот наличие нужных библиотек решает почти всегда.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>Отступы вместо скобок — часть синтаксиса.</strong> Из-за этого любой Python-код выглядит одинаково: криво отформатированный просто не работает.</li>
+    <li><strong>Подсказки типов есть, но никто не проверяет их сам.</strong> В отличие от TypeScript, код с ошибкой типов запустится. Проверка — отдельный инструмент (<code>mypy</code>), который надо включить осознанно.</li>
+    <li><strong>Три каркаса под три ситуации:</strong> Flask — минимум, FastAPI — проверка данных и документация из типов, Django — всё в комплекте плюс готовая админка.</li>
+    <li><strong>GIL — это «один поток» другими словами.</strong> Пока код ждёт сеть или базу, ограничение не мешает; как только начинает считать — упирается. Обходят процессами, библиотеками на C или очередью.</li>
+    <li><strong>«Python медленный» — правда про язык и неправда про применение.</strong> В обработке данных он пульт управления, а считает код на C и видеокарта.</li>
+    <li><strong>Два мира — синхронный и асинхронный,</strong> и смешивать их нельзя: одна синхронная библиотека внутри асинхронного обработчика молча убивает всю асинхронность.</li>
+    <li><strong>ORM удобна, но приносит ошибку «N + 1»:</strong> цикл по ста заказам с обращением к пользователю внутри — это сто один запрос вместо одного. Самая частая причина медленных страниц.</li>
+    <li><strong>Главная причина выбрать Python — не веб, а то, что рядом:</strong> аналитика, машинное обучение, работа с ИИ, автоматизация. Здесь у него практически нет конкурентов.</li>
+    <li><strong>В бою нужен отдельный сервер приложений</strong> (<code>gunicorn</code> или <code>uvicorn</code>) и виртуальное окружение — встроенный <code>runserver</code> для боя не предназначен.</li>
+  </ul>
+  <p class="note">Дальше — <a routerLink="/ecosystem/backend/go">Go</a>: язык, устроенный по противоположному принципу. Если Python старается дать вам как можно больше способов сделать что угодно, то Go сознательно даёт как можно меньше — и мы разберём, почему это оказалось преимуществом. Заодно посмотрим, как решается проблема, из-за которой мы дважды упирались в «один поток». Общие обязанности сервера — на странице <a routerLink="/ecosystem/backend/what-backend-does">Что делает бэкенд</a>.</p>
+</section>
+</article>

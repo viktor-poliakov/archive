@@ -30,16 +30,16 @@ Content-Type: application/json
 // Задача клиента — показать данные и поймать действия человека.
 
 // 1. Просим у сервера список товаров.
-const ответ = await fetch('/api/products?page=1');
-const данные = await ответ.json();
+const res = await fetch('/api/products?page=1');
+const data = await res.json();
 
 // 2. Рисуем то, что пришло.
-for (const товар of данные.products) {
-  добавитьКарточкуНаСтраницу(товар.name, товар.price);
+for (const product of data.products) {
+  addProductCard(product.name, product.price);
 }
 
 // 3. Ждём действий пользователя.
-кнопкаКупить.addEventListener('click', () => {
+buyButton.addEventListener('click', () => {
   fetch('/api/cart', {
     method: 'POST',
     body: JSON.stringify({ productId: 1 }),
@@ -52,20 +52,20 @@ for (const товар of данные.products) {
   protected readonly serverCode = `// ЭТО РАБОТАЕТ НА СЕРВЕРЕ — на чужом компьютере в дата-центре.
 // Задача сервера — принять запрос, проверить, посчитать, сходить в базу.
 
-app.get('/api/products', async (запрос, ответ) => {
+app.get('/api/products', async (req, res) => {
   // 1. Кто к нам пришёл? Проверяем, что человек вошёл в аккаунт.
-  const пользователь = await найтиПользователяПоCookie(запрос.cookies.session);
-  if (!пользователь) {
-    return ответ.status(401).json({ error: 'Сначала войдите' });
+  const user = await findUserByCookie(req.cookies.session);
+  if (!user) {
+    return res.status(401).json({ error: 'Сначала войдите' });
   }
 
   // 2. Идём в базу данных за товарами.
-  const товары = await база.запрос(
+  const products = await db.req(
     'SELECT id, name, price FROM products WHERE active = true LIMIT 20',
   );
 
   // 3. Отдаём результат обратно в браузер.
-  ответ.json({ products: товары, total: товары.length });
+  res.json({ products: products, total: products.length });
 });
 
 // Сервер — единственный, кто имеет право трогать базу данных.
@@ -74,15 +74,15 @@ app.get('/api/products', async (запрос, ответ) => {
   protected readonly trustClientBad = `// ❌ ОПАСНО: считаем цену заказа в браузере и верим ей.
 
 // В браузере:
-const итог = корзина.reduce((сумма, товар) => сумма + товар.цена, 0);
+const total = cart.reduce((sum, product) => sum + product.price, 0);
 fetch('/api/order', {
   method: 'POST',
-  body: JSON.stringify({ товары: корзина, кОплате: итог }), // ← 1780 ₽
+  body: JSON.stringify({ products: cart, totalDue: total }), // ← 1780 ₽
 });
 
 // На сервере:
-app.post('/api/order', (запрос, ответ) => {
-  создатьЗаказ(запрос.body.товары, запрос.body.кОплате); // просто верим
+app.post('/api/order', (req, res) => {
+  createOrder(req.body.products, req.body.totalDue); // просто верим
 });
 
 // ПОЧЕМУ ЭТО КАТАСТРОФА:
@@ -96,18 +96,18 @@ app.post('/api/order', (запрос, ответ) => {
 // В браузере — только «что человек хочет купить»:
 fetch('/api/order', {
   method: 'POST',
-  body: JSON.stringify({ товары: [{ id: 1, кол: 2 }, { id: 7, кол: 1 }] }),
+  body: JSON.stringify({ products: [{ id: 1, qty: 2 }, { id: 7, qty: 1 }] }),
 });
 
 // На сервере — цены берём ИЗ БАЗЫ, а не из запроса:
-app.post('/api/order', async (запрос, ответ) => {
-  let итог = 0;
-  for (const позиция of запрос.body.товары) {
-    const товар = await база.найтиТовар(позиция.id); // ← настоящая цена
-    итог += товар.price * позиция.кол;
+app.post('/api/order', async (req, res) => {
+  let total = 0;
+  for (const line of req.body.products) {
+    const product = await db.findProduct(line.id); // ← настоящая цена
+    total += product.price * line.qty;
   }
-  await создатьЗаказ(запрос.body.товары, итог);
-  ответ.json({ кОплате: итог });
+  await createOrder(req.body.products, total);
+  res.json({ totalDue: total });
 });
 
 // Теперь подделать цену невозможно: пользователь не управляет базой.
@@ -130,6 +130,6 @@ VALUES (42, 1780, NOW());
 
 -- База данных — это не просто файл. Это отдельная программа,
 -- которая умеет быстро искать среди миллионов записей,
--- не терять данные при отключении света и обслуживать
+-- не терять data при отключении света и обслуживать
 -- тысячу одновременных запросов, ничего не перепутав.`;
 }

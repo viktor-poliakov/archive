@@ -1,0 +1,588 @@
+<article class="doc" style="--accent: #ffb86c">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Экосистема</span><span class="breadcrumbs__sep">/</span><a routerLink="/ecosystem/client">Клиент</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Мобильные и десктопные приложения</span></nav>
+
+<h1 class="doc__title">Мобильные и десктопные приложения</h1>
+<p class="doc__lead">Вы научились делать сайты. И тут к вам приходят со словами: «нужно приложение — чтобы скачивалось в App Store, было в Google Play и ещё чтобы работала программа для Windows». Первая мысль — что всё придётся выбросить и с нуля учить три новых языка. Это неправда. Между «просто сайт» и «настоящее нативное приложение» лежит целая лестница промежуточных ступеней, и на большинстве из них вы остаётесь веб-разработчиком. Эта страница проходит лестницу снизу вверх и на каждой ступени честно называет цену: что вы получаете и чем за это платите.</p>
+
+<section class="doc__section">
+  <h2>Что на самом деле просит заказчик</h2>
+  <p>Слово «приложение» звучит как что-то одно, единое и понятное. На самом деле за ним прячется как минимум шесть разных вещей, которые различаются по сроку разработки в десять раз и по стоимости — тоже. Прежде чем что-то выбирать, нужно понять, что именно человек имеет в виду.</p>
+  <p>Чаще всего под «нужно приложение» скрывается одно из трёх желаний, и они совершенно разные по цене:</p>
+  <ul class="rules">
+    <li><strong>«Хочу иконку на телефоне»</strong> — чтобы люди заходили одним касанием, а не набирали адрес в браузере. Это самое дешёвое желание, и его закрывают почти без работы.</li>
+    <li><strong>«Хочу быть в магазине приложений»</strong> — чтобы компанию находили в App Store и Google Play, чтобы были отзывы и звёздочки. Это уже про упаковку и про чужие правила, но всё ещё не про переписывание кода.</li>
+    <li><strong>«Хочу возможности телефона»</strong> — камеру, уведомления, геолокацию в фоне, работу без интернета, Bluetooth. Вот здесь начинается настоящая цена, и именно здесь принимаются серьёзные решения.</li>
+  </ul>
+  <p><strong>Аналогия: где продавать кофе.</strong> Представьте, что вы варите отличный кофе и хотите его продавать. Можно поставить термос и складной столик на улице — открылись за день, никаких согласований, но зайти к вам «в гости» нельзя и в справочнике торговых точек вас нет. Можно арендовать угол в торговом центре — теперь у вас вывеска в общем каталоге, мимо ходят люди, есть свет и вода; но администрация утверждает вашу вывеску, диктует часы работы и берёт процент с каждой продажи. А можно построить собственное здание — делаете что хотите, всё идеально под вас, но стройка стоит как десять лет аренды. Ни один из вариантов не «лучше»: они просто для разных ситуаций и разных денег. С приложениями буквально так же.</p>
+  <p>Вот вся лестница целиком. Дальше мы разберём каждую ступень отдельно, но сначала посмотрите на главное отличие между ними — <strong>кто именно рисует то, что человек видит на экране</strong>. Это не мелочь: от этого зависит и ощущение от приложения, и то, сколько вашего кода удастся переиспользовать.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 300" width="100%" role="img" aria-label="Шкала из шести ступеней от адаптивного сайта до нативной разработки: для каждой указано, кто рисует экран и сколько веб-кода переиспользуется">
+      <text x="340" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">шесть ступеней: главный вопрос — кто рисует то, что видит человек</text>
+
+      <rect x="12" y="44" width="106" height="150" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="65" y="68" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">Адаптивный</text>
+      <text x="65" y="82" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">сайт</text>
+      <text x="65" y="106" text-anchor="middle" fill="var(--muted)" font-size="9">рисует экран:</text>
+      <text x="65" y="122" text-anchor="middle" fill="var(--fg)" font-size="10">браузер</text>
+      <text x="65" y="136" text-anchor="middle" fill="var(--fg)" font-size="10">пользователя</text>
+      <line x1="24" y1="152" x2="106" y2="152" stroke="var(--border)" stroke-width="1.2" />
+      <text x="65" y="172" text-anchor="middle" fill="var(--green)" font-size="10">веб-код: 100%</text>
+      <text x="65" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">магазина нет</text>
+
+      <rect x="122" y="44" width="106" height="150" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
+      <text x="175" y="68" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="600">PWA</text>
+      <text x="175" y="82" text-anchor="middle" fill="var(--muted)" font-size="9">сайт с иконкой</text>
+      <text x="175" y="106" text-anchor="middle" fill="var(--muted)" font-size="9">рисует экран:</text>
+      <text x="175" y="122" text-anchor="middle" fill="var(--fg)" font-size="10">браузер, но без</text>
+      <text x="175" y="136" text-anchor="middle" fill="var(--fg)" font-size="10">адресной строки</text>
+      <line x1="134" y1="152" x2="216" y2="152" stroke="var(--border)" stroke-width="1.2" />
+      <text x="175" y="172" text-anchor="middle" fill="var(--green)" font-size="10">веб-код: 100%</text>
+      <text x="175" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">офлайн, иконка</text>
+
+      <rect x="232" y="44" width="106" height="150" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="285" y="68" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="600">Обёртка</text>
+      <text x="285" y="82" text-anchor="middle" fill="var(--muted)" font-size="9">Capacitor, Ionic</text>
+      <text x="285" y="106" text-anchor="middle" fill="var(--muted)" font-size="9">рисует экран:</text>
+      <text x="285" y="122" text-anchor="middle" fill="var(--fg)" font-size="10">браузер системы</text>
+      <text x="285" y="136" text-anchor="middle" fill="var(--fg)" font-size="10">внутри окна</text>
+      <line x1="244" y1="152" x2="326" y2="152" stroke="var(--border)" stroke-width="1.2" />
+      <text x="285" y="172" text-anchor="middle" fill="var(--accent)" font-size="10">веб-код: почти всё</text>
+      <text x="285" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">магазин, камера</text>
+
+      <rect x="342" y="44" width="106" height="150" rx="10" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8" />
+      <text x="395" y="68" text-anchor="middle" fill="var(--orange)" font-size="11" font-weight="600">React Native</text>
+      <text x="395" y="82" text-anchor="middle" fill="var(--muted)" font-size="9">и Expo</text>
+      <text x="395" y="106" text-anchor="middle" fill="var(--muted)" font-size="9">рисует экран:</text>
+      <text x="395" y="122" text-anchor="middle" fill="var(--fg)" font-size="10">сама система,</text>
+      <text x="395" y="136" text-anchor="middle" fill="var(--fg)" font-size="10">JS ей управляет</text>
+      <line x1="354" y1="152" x2="436" y2="152" stroke="var(--border)" stroke-width="1.2" />
+      <text x="395" y="172" text-anchor="middle" fill="var(--orange)" font-size="10">веб-код: 30–60%</text>
+      <text x="395" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">экраны заново</text>
+
+      <rect x="452" y="44" width="106" height="150" rx="10" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.8" />
+      <text x="505" y="68" text-anchor="middle" fill="var(--purple)" font-size="11" font-weight="600">Flutter</text>
+      <text x="505" y="82" text-anchor="middle" fill="var(--muted)" font-size="9">язык Dart</text>
+      <text x="505" y="106" text-anchor="middle" fill="var(--muted)" font-size="9">рисует экран:</text>
+      <text x="505" y="122" text-anchor="middle" fill="var(--fg)" font-size="10">сам Flutter,</text>
+      <text x="505" y="136" text-anchor="middle" fill="var(--fg)" font-size="10">по пикселям</text>
+      <line x1="464" y1="152" x2="546" y2="152" stroke="var(--border)" stroke-width="1.2" />
+      <text x="505" y="172" text-anchor="middle" fill="var(--red)" font-size="10">веб-код: 0%</text>
+      <text x="505" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">другой язык</text>
+
+      <rect x="562" y="44" width="106" height="150" rx="10" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.8" />
+      <text x="615" y="68" text-anchor="middle" fill="var(--cyan)" font-size="11" font-weight="600">Нативно</text>
+      <text x="615" y="82" text-anchor="middle" fill="var(--muted)" font-size="9">Swift и Kotlin</text>
+      <text x="615" y="106" text-anchor="middle" fill="var(--muted)" font-size="9">рисует экран:</text>
+      <text x="615" y="122" text-anchor="middle" fill="var(--fg)" font-size="10">сама система,</text>
+      <text x="615" y="136" text-anchor="middle" fill="var(--fg)" font-size="10">напрямую</text>
+      <line x1="574" y1="152" x2="656" y2="152" stroke="var(--border)" stroke-width="1.2" />
+      <text x="615" y="172" text-anchor="middle" fill="var(--red)" font-size="10">веб-код: 0%</text>
+      <text x="615" y="186" text-anchor="middle" fill="var(--muted)" font-size="9">две команды</text>
+
+      <line x1="20" y1="222" x2="644" y2="222" stroke="var(--muted)" stroke-width="1.8" />
+      <polygon points="644,216 660,222 644,228" fill="var(--muted)" />
+      <text x="24" y="244" text-anchor="start" fill="var(--green)" font-size="11">дешевле, быстрее, ближе к вебу</text>
+      <text x="656" y="244" text-anchor="end" fill="var(--cyan)" font-size="11">дороже, дольше, ближе к системе</text>
+      <text x="340" y="274" text-anchor="middle" fill="var(--fg)" font-size="11">переход на одну ступень вправо — это всегда обмен денег и времени</text>
+      <text x="340" y="290" text-anchor="middle" fill="var(--fg)" font-size="11">на качество ощущений и доступ к возможностям устройства</text>
+    </svg>
+    <figcaption>Двигаться по этой лестнице можно постепенно: начать с сайта, потом добавить PWA, потом при необходимости завернуть в обёртку. Прыгать сразу на верхнюю ступень «на всякий случай» — самая дорогая из возможных ошибок.</figcaption>
+  </figure>
+  <p class="note"><strong>Что значит «нативный».</strong> Английское <em>native</em> — «родной». Нативное приложение написано на родном для системы языке (Swift для iPhone, Kotlin для Android) и пользуется родными элементами интерфейса: теми же переключателями, списками и клавиатурой, что и встроенные приложения телефона. Слово «нативный» вы будете встречать постоянно, и оно всегда означает одно: «сделанное так, как задумала сама операционная система».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ступени 1 и 2: адаптивный сайт и PWA</h2>
+
+  <h3 class="doc__subtitle">Адаптивный сайт: вы уже это умеете</h3>
+  <p>Самая нижняя ступень — обычный сайт, который нормально выглядит на маленьком экране. «Адаптивный» означает, что вёрстка подстраивается под ширину: на компьютере три колонки, на телефоне одна. Делается это средствами CSS, и никакого отдельного «мобильного проекта» для этого не нужно.</p>
+  <p>Что вы получаете бесплатно: сайт открывается вообще везде — на iPhone, на Android, на планшете, на ноутбуке коллеги, на чужом компьютере в отпуске. Вы выкатываете исправление, и через пять минут его видят все, без чьего-либо разрешения. Ссылку на конкретную страницу можно отправить в мессенджере, и она откроется именно там, куда вела.</p>
+  <p>Чего у вас нет:</p>
+  <ul class="rules">
+    <li><strong>Иконки на домашнем экране.</strong> Чтобы вернуться, человек должен вспомнить адрес или найти вкладку среди тридцати других. Это звучит мелочью, но именно здесь теряется огромная доля возвращающихся посетителей.</li>
+    <li><strong>Присутствия в магазине приложений.</strong> Если ваши покупатели ищут услуги через App Store, они вас там просто не найдут.</li>
+    <li><strong>Работы без интернета.</strong> В метро, в самолёте или в подвале торгового центра страница не откроется вообще.</li>
+    <li><strong>Многих возможностей устройства.</strong> Браузер намеренно ограничивает доступ к телефону ради вашей же безопасности — подробнее об этих границах написано на странице <a routerLink="/ecosystem/client/browser">Браузер как платформа</a>.</li>
+  </ul>
+
+  <h3 class="doc__subtitle">PWA: сайт, который ведёт себя как приложение</h3>
+  <p>PWA расшифровывается как <em>Progressive Web App</em> — «постепенно улучшаемое веб-приложение». За страшной аббревиатурой прячется простая вещь: это <strong>ваш обычный сайт плюс два дополнительных файла</strong>. После них телефон начинает относиться к сайту как к приложению: предлагает поставить иконку на домашний экран, запускает на весь экран без адресной строки браузера и позволяет открывать без интернета.</p>
+  <p>Файл первый — <strong>манифест</strong>. Это анкета приложения: как называется, какие иконки, какого цвета фон при запуске. Обычный текстовый файл в формате JSON:</p>
+  <app-code-block [code]="pwaManifest" lang="json" />
+  <p>Разберём ключевые строки. Поле <code>name</code> — полное имя, оно видно на экране запуска; <code>short_name</code> — короткое, оно помещается под иконкой на домашнем экране. Поле <code>start_url</code> говорит, какую страницу открывать при запуске с иконки. Самое интересное — <code>"display": "standalone"</code>: именно оно убирает адресную строку и кнопки браузера, из-за чего приложение перестаёт выглядеть как сайт. Иконки нужны в нескольких размерах, потому что разные телефоны берут разные.</p>
+  <p>Подключается манифест одной строкой в разметке страницы:</p>
+  <app-code-block [code]="manifestLink" lang="html" />
+  <p>Файл второй — <strong>сервис-воркер</strong> (<em>service worker</em>, дословно «служебный работник»). Вот он и есть настоящая магия PWA. Это отдельный кусочек JavaScript, который браузер запускает в фоне, <em>рядом</em> со страницей, а не внутри неё. Его работа — сидеть между вашей страницей и интернетом и перехватывать все запросы.</p>
+  <p class="note"><strong>Аналогия: диспетчер на складе.</strong> Раньше курьер (страница) за каждой коробкой ездил на завод (в интернет). Теперь на входе сидит диспетчер: курьер просит коробку у него. Если такая коробка лежит на складе — диспетчер отдаёт её мгновенно. Если нет — сам едет на завод. А если завод закрыт (интернета нет) — отдаёт ту копию, что осталась со вчерашнего дня. Курьер при этом вообще не знает, что появился диспетчер: он просит точно так же, как просил раньше.</p>
+  <app-code-block [code]="serviceWorkerOffline" lang="javascript" />
+  <p>Что здесь произошло по шагам. Первые три строки — обычный код страницы, он просто сообщает браузеру адрес файла-диспетчера. Дальше идёт сам диспетчер. Событие <code>install</code> случается один раз при установке: в этот момент мы заранее складываем на «склад» файлы, без которых приложение не откроется. Событие <code>fetch</code> случается на каждый запрос: мы сначала пробуем сходить в сеть, а если не вышло — отдаём сохранённую копию. Именно эти пятнадцать строк превращают ваш сайт в нечто, что открывается в самолёте.</p>
+  <p>Третья способность PWA — <strong>push-уведомления</strong>: сообщения, которые всплывают на телефоне, когда приложение закрыто. Механизм такой же — их принимает и показывает всё тот же сервис-воркер.</p>
+  <p class="note"><strong>Честно про iPhone.</strong> На Android PWA работает почти как настоящее приложение. На iPhone возможности заметно скромнее: установка на домашний экран делается неочевидным способом через кнопку «Поделиться», уведомления появились сильно позже и работают только для установленных PWA, а объём данных, который разрешено хранить, ограничен и может быть очищен системой, если приложением давно не пользовались. Поэтому если ваша аудитория — преимущественно владельцы iPhone и вам критично важны уведомления, на PWA рассчитывать нельзя. Это не придирка, а частая причина, по которой команды поднимаются на ступень выше.</p>
+  <p>И общее ограничение всех PWA: <strong>их нет в App Store и Google Play</strong>. Человек должен сначала прийти на сайт, а уже потом установить. Если задача звучит как «мы хотим, чтобы нас находили в магазине» — PWA её не решает.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ступень 3: тот же сайт, но в рамке приложения</h2>
+  <p>Следующая идея очень простая и очень старая: раз наше приложение — это веб-страница, давайте возьмём настоящее нативное приложение, у которого ровно один экран — окно браузера во весь дисплей, — и загрузим туда наш сайт. Снаружи это полноценное приложение: его можно выложить в магазин, у него есть иконка, оно устанавливается. Внутри — ваш веб-код без изменений.</p>
+  <p>Такое окно браузера внутри приложения называется <strong>WebView</strong> (дословно «веб-вид»). Инструмент, который делает эту обёртку, сегодня чаще всего <strong>Capacitor</strong>. Рядом с ним часто упоминают <strong>Ionic</strong> — это набор готовых компонентов интерфейса (кнопки, списки, вкладки), стилизованных под iOS и Android, чтобы веб-страница внутри обёртки хотя бы выглядела как приложение.</p>
+  <app-code-block [code]="capacitorStart" lang="bash" />
+  <p>Обратите внимание на команду <code>npx cap add ios</code>. Она создаёт настоящую папку нативного проекта — ту самую, которую открывают в среде разработки Apple. Вы в неё обычно не заглядываете, но она существует, и именно она уходит в магазин.</p>
+  <p>Теперь про главное преимущество обёртки перед PWA — <strong>плагины</strong>. Плагин — это готовый мостик: с одной стороны у него привычный вызов на JavaScript, с другой — настоящий нативный код, который умеет то, чего браузеру не разрешают. Камера, файлы, контакты, отпечаток пальца, работа в фоне.</p>
+  <app-code-block [code]="capacitorCamera" lang="javascript" />
+  <p>Внешне это выглядит как обычный импорт из пакета <code>&#64;capacitor/camera</code> и обычный <code>await</code>. Но под этой строчкой происходит переход границы: ваш JavaScript просит нативную часть открыть системную камеру, ждёт результат и получает обратно путь к файлу. Вот как это устроено на уровне слоёв — и заодно сравнение с двумя соседними ступенями:</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 680 340" width="100%" role="img" aria-label="Три стопки слоёв: обёртка WebView, React Native и нативная разработка — показано, что лежит между вашим кодом и экраном">
+      <text x="340" y="20" text-anchor="middle" fill="var(--muted)" font-size="12">что лежит между вашим кодом и картинкой на экране</text>
+
+      <text x="120" y="44" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">Обёртка (Capacitor)</text>
+      <text x="340" y="44" text-anchor="middle" fill="var(--orange)" font-size="12" font-weight="600">React Native</text>
+      <text x="560" y="44" text-anchor="middle" fill="var(--cyan)" font-size="12" font-weight="600">Нативно</text>
+
+      <rect x="20" y="56" width="200" height="42" rx="9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8" />
+      <text x="120" y="74" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="600">ваш код</text>
+      <text x="120" y="90" text-anchor="middle" fill="var(--fg)" font-size="10">HTML, CSS, JavaScript</text>
+
+      <rect x="240" y="56" width="200" height="42" rx="9" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.8" />
+      <text x="340" y="74" text-anchor="middle" fill="var(--orange)" font-size="11" font-weight="600">ваш код</text>
+      <text x="340" y="90" text-anchor="middle" fill="var(--fg)" font-size="10">JavaScript и React</text>
+
+      <rect x="460" y="56" width="200" height="42" rx="9" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.8" />
+      <text x="560" y="74" text-anchor="middle" fill="var(--cyan)" font-size="11" font-weight="600">ваш код</text>
+      <text x="560" y="90" text-anchor="middle" fill="var(--fg)" font-size="10">Swift или Kotlin</text>
+
+      <line x1="120" y1="98" x2="120" y2="112" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="114,112 120,122 126,112" fill="var(--muted)" />
+      <line x1="340" y1="98" x2="340" y2="112" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="334,112 340,122 346,112" fill="var(--muted)" />
+      <line x1="560" y1="98" x2="560" y2="112" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="554,112 560,122 566,112" fill="var(--muted)" />
+
+      <rect x="20" y="124" width="200" height="42" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="6 4" />
+      <text x="120" y="142" text-anchor="middle" fill="var(--fg)" font-size="11">мост-плагин</text>
+      <text x="120" y="158" text-anchor="middle" fill="var(--muted)" font-size="9">только ради камеры и файлов</text>
+
+      <rect x="240" y="124" width="200" height="42" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="6 4" />
+      <text x="340" y="142" text-anchor="middle" fill="var(--fg)" font-size="11">мост</text>
+      <text x="340" y="158" text-anchor="middle" fill="var(--muted)" font-size="9">через него идёт весь интерфейс</text>
+
+      <rect x="460" y="124" width="200" height="42" rx="9" fill="var(--bg)" stroke="var(--border)" stroke-width="1.2" stroke-dasharray="3 5" />
+      <text x="560" y="149" text-anchor="middle" fill="var(--muted)" font-size="10">моста нет</text>
+
+      <line x1="120" y1="166" x2="120" y2="180" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="114,180 120,190 126,180" fill="var(--muted)" />
+      <line x1="340" y1="166" x2="340" y2="180" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="334,180 340,190 346,180" fill="var(--muted)" />
+      <line x1="560" y1="166" x2="560" y2="180" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="554,180 560,190 566,180" fill="var(--muted)" />
+
+      <rect x="20" y="192" width="200" height="42" rx="9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
+      <text x="120" y="210" text-anchor="middle" fill="var(--fg)" font-size="11">WebView</text>
+      <text x="120" y="226" text-anchor="middle" fill="var(--muted)" font-size="9">браузер системы внутри окна</text>
+
+      <rect x="240" y="192" width="200" height="42" rx="9" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.6" />
+      <text x="340" y="210" text-anchor="middle" fill="var(--fg)" font-size="11">системные элементы</text>
+      <text x="340" y="226" text-anchor="middle" fill="var(--muted)" font-size="9">кнопки и списки самой iOS</text>
+
+      <rect x="460" y="192" width="200" height="42" rx="9" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.6" />
+      <text x="560" y="210" text-anchor="middle" fill="var(--fg)" font-size="11">системные элементы</text>
+      <text x="560" y="226" text-anchor="middle" fill="var(--muted)" font-size="9">те же самые, но напрямую</text>
+
+      <line x1="120" y1="234" x2="120" y2="248" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="114,248 120,258 126,248" fill="var(--muted)" />
+      <line x1="340" y1="234" x2="340" y2="248" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="334,248 340,258 346,248" fill="var(--muted)" />
+      <line x1="560" y1="234" x2="560" y2="248" stroke="var(--muted)" stroke-width="1.6" />
+      <polygon points="554,248 560,258 566,248" fill="var(--muted)" />
+
+      <rect x="20" y="260" width="200" height="34" rx="9" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="120" y="281" text-anchor="middle" fill="var(--red)" font-size="11">на экране: веб-страница</text>
+
+      <rect x="240" y="260" width="200" height="34" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="340" y="281" text-anchor="middle" fill="var(--green)" font-size="11">на экране: родные элементы</text>
+
+      <rect x="460" y="260" width="200" height="34" rx="9" fill="var(--surface)" stroke="var(--green)" stroke-width="1.6" />
+      <text x="560" y="281" text-anchor="middle" fill="var(--green)" font-size="11">на экране: родные элементы</text>
+
+      <text x="340" y="320" text-anchor="middle" fill="var(--fg)" font-size="11">чем меньше слоёв между кодом и экраном, тем «роднее» ощущение — и тем дороже разработка</text>
+    </svg>
+    <figcaption>В обёртке экран рисует браузер, поэтому прокрутка и анимации ведут себя по-браузерному. В React Native мост используется постоянно, зато на экране настоящие системные элементы. В нативной версии посредников нет вообще.</figcaption>
+  </figure>
+  <p>Теперь честно про цену обёртки. Приложение снаружи настоящее, а внутри веб-страница — и люди это <em>чувствуют</em>, даже если не могут объяснить словами. Прокрутка длинного списка чуть менее плавная. Инерция при быстром пролистывании не совсем такая, как в остальных приложениях телефона. Клавиатура появляется с задержкой и подпрыгивает. Жест «назад» свайпом от края работает не так, как ожидается. Ничего из этого не смертельно, но в сумме создаёт ощущение «что-то тут не то».</p>
+  <p class="note"><strong>Когда обёртка — правильный выбор.</strong> Внутренний рабочий инструмент для сотрудников, приложение-каталог, личный кабинет, форма заявки, приложение для события или конференции. Всё, где люди приходят решить конкретную задачу и уйти, а не проводят в приложении час в день. Плохой выбор — соцсеть, лента, игра, редактор, карты: там качество прокрутки и анимаций и есть главный продукт.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ступень 4: React Native и Expo</h2>
+  <p>Здесь проходит важная граница. <strong>React Native</strong> тоже позволяет писать на JavaScript и React, но экран он рисует <em>принципиально иначе</em>. Никакой веб-страницы внутри нет. Ваш код на JavaScript управляет настоящими элементами интерфейса операционной системы: когда вы пишете «список», на экране появляется системный список iOS — тот самый, что в приложении «Настройки», со всеми его инерцией, отскоком и плавностью.</p>
+  <p>Отсюда сразу вытекает главное практическое следствие, о котором новичкам обычно забывают сказать: <strong>вёрстка с сайта не переносится</strong>. Совсем. Сравните два экрана — сначала веб-версия:</p>
+  <app-code-block [code]="webListScreen" lang="javascript" />
+  <p>А теперь тот же экран в React Native:</p>
+  <app-code-block [code]="reactNativeScreen" lang="javascript" />
+  <p>Логика узнаётся сразу: тот же <code>orders.map</code>, те же пропсы, та же структура компонента. А вот всё остальное другое. Тегов <code>&lt;div&gt;</code> и <code>&lt;span&gt;</code> не существует — вместо них <code>&lt;View&gt;</code> (коробка) и <code>&lt;Text&gt;</code> (текст). Любая буква обязана лежать внутри <code>&lt;Text&gt;</code>, иначе приложение упадёт с ошибкой. Обработчик называется <code>onPress</code>, а не <code>onClick</code>. И самое болезненное для верстальщика: CSS-файлов нет вообще, стили описываются объектом прямо в коде, свойств заметно меньше, нет каскада и нет медиазапросов.</p>
+  <p class="note"><strong>Это не «почти CSS», это другой язык раскладки.</strong> Знание CSS помогает: понятия отступов, флексбокса и выравнивания те же. Но привычные приёмы — вложенные селекторы, наследование шрифта от родителя, единицы вроде <code>vh</code>, тени через одну строчку — работают иначе или не работают вовсе. Заложите время на переучивание: обычно это одна-две недели заметного дискомфорта, после которых становится нормально.</p>
+  <p><strong>Expo</strong> — это готовый набор инструментов вокруг React Native, и сегодня начинать стоит именно с него. Без Expo первый рабочий день уходит на установку сред разработки Apple и Google, настройку эмуляторов, сертификатов и подписей. С Expo вы за минуту получаете работающий проект, а приложение запускается прямо на вашем настоящем телефоне по QR-коду.</p>
+  <app-code-block [code]="expoCommands" lang="bash" />
+  <p>Обратите внимание на команду <code>eas build</code>: сборка происходит в облаке. Это важнее, чем кажется. Собрать приложение для iPhone можно только на компьютере Apple — таково требование самой компании. Облачная сборка снимает это ограничение: у вас может быть обычный ноутбук с Windows.</p>
+  <p>Цена этой ступени: вам нужен второй набор экранов, вторая система стилей, вторая очередь тестирования на реальных устройствах. Плюс появляется целый класс задач, которых в вебе не было: разрешения на камеру и уведомления, поведение при звонке, экономия батареи, вырез под фронтальную камеру, кнопка «назад» на Android.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ступени 5 и 6: Flutter и нативная разработка</h2>
+  <p>Эти две ступени лежат за границей мира JavaScript, но знать про них надо: вы будете постоянно встречать их в вакансиях и обсуждениях, и иногда правильный ответ — именно они.</p>
+  <p><strong>Flutter</strong> — набор инструментов от Google, главный конкурент React Native. Пишут на языке <strong>Dart</strong>. Это отдельный язык, не JavaScript: ваш опыт в React пригодится идеями (компоненты, состояние, перерисовка), но ни строчки кода не переедет.</p>
+  <p>Главная особенность Flutter в том, <em>как</em> он рисует. React Native просит систему показать её родные элементы. Flutter не просит никого: он рисует каждый пиксель сам, как игровой движок, на пустом холсте. Отсюда два следствия. Хорошее: приложение выглядит абсолютно одинаково на iPhone и на Android, и вы точно контролируете каждую точку — это очень удобно для брендового дизайна. Спорное: оно выглядит одинаково <em>везде</em>, а значит, ни там, ни там не выглядит по-настоящему родным.</p>
+  <p class="note"><strong>Аналогия: мебель на кухне.</strong> React Native — это когда вы заказываете шкафы у местной фабрики: они точно встанут по размеру и будут в стиле дома, но в каждом городе фабрика чуть своя. Flutter — это когда вы привозите свою мебель отовсюду одинаковую: она гарантированно такая, как на картинке, но в каждом доме чуть-чуть выбивается из обстановки. Оба подхода нормальны, и спор между ними идёт годами без победителя.</p>
+  <p><strong>Нативная разработка</strong> — верхняя ступень. Для iPhone это язык Swift и набор инструментов SwiftUI, для Android — язык Kotlin и Jetpack Compose. Здесь вы получаете всё: максимальную плавность, самый быстрый доступ к новым возможностям системы (обычно они появляются для нативного кода сразу, а для остальных подходов — месяцы спустя), лучшую работу с батареей, полный доступ к фоновым режимам и датчикам.</p>
+  <p>Цена честная и очень большая: это <strong>две отдельные кодовые базы и, как правило, две отдельные команды</strong>. Каждую задачу делают дважды. Каждую ошибку чинят дважды. Каждый эксперимент проверяют дважды. Для маленькой компании это обычно неподъёмно, и именно поэтому существуют все нижние ступени лестницы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Сравнение мобильных подходов</h2>
+  <p>Сведём всё в одну таблицу. Читайте её не как рейтинг, а как прайс-лист: каждая строка справа — это то, что вы покупаете, а каждая строка слева — цена.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th>Адаптивный сайт</th>
+          <th>PWA</th>
+          <th>Обёртка</th>
+          <th>React Native</th>
+          <th>Нативно</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Скорость разработки</strong></td>
+          <td class="yes">✅ уже сделано</td>
+          <td class="yes">✅ плюс день-два</td>
+          <td class="yes">✅ плюс неделя</td>
+          <td>⚠️ экраны заново</td>
+          <td class="no">❌ дольше всех, дважды</td>
+        </tr>
+        <tr>
+          <td><strong>Ощущение «настоящего приложения»</strong></td>
+          <td class="no">❌ это сайт</td>
+          <td>⚠️ похоже, но заметно</td>
+          <td>⚠️ чувствуется веб</td>
+          <td class="yes">✅ почти неотличимо</td>
+          <td class="yes">✅ эталон</td>
+        </tr>
+        <tr>
+          <td><strong>Есть в App Store и Google Play</strong></td>
+          <td class="no">❌ нет</td>
+          <td class="no">❌ нет</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+          <td class="yes">✅ да</td>
+        </tr>
+        <tr>
+          <td><strong>Камера, файлы, отпечаток пальца</strong></td>
+          <td>⚠️ частично</td>
+          <td>⚠️ частично</td>
+          <td class="yes">✅ через плагины</td>
+          <td class="yes">✅ через плагины</td>
+          <td class="yes">✅ всё сразу</td>
+        </tr>
+        <tr>
+          <td><strong>Фон, Bluetooth, здоровье, геолокация в фоне</strong></td>
+          <td class="no">❌ нет</td>
+          <td class="no">❌ почти нет</td>
+          <td>⚠️ если есть плагин</td>
+          <td>⚠️ если есть плагин</td>
+          <td class="yes">✅ полностью</td>
+        </tr>
+        <tr>
+          <td><strong>Нужна ли отдельная команда</strong></td>
+          <td class="yes">✅ нет</td>
+          <td class="yes">✅ нет</td>
+          <td class="yes">✅ нет</td>
+          <td>⚠️ те же люди, но новые навыки</td>
+          <td class="no">❌ да, обычно две</td>
+        </tr>
+        <tr>
+          <td><strong>Стоимость поддержки</strong></td>
+          <td class="yes">✅ одна кодовая база</td>
+          <td class="yes">✅ одна кодовая база</td>
+          <td>⚠️ плюс сборки и магазины</td>
+          <td>⚠️ веб и мобильное отдельно</td>
+          <td class="no">❌ три кодовые базы с сайтом</td>
+        </tr>
+        <tr>
+          <td><strong>Типичные примеры</strong></td>
+          <td>блог, лендинг, каталог</td>
+          <td>заказ еды, расписание, доска задач</td>
+          <td>внутренний инструмент, личный кабинет</td>
+          <td>маркетплейс, соцсеть, доставка</td>
+          <td>карты, камера, игры, банк</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Главный вывод из таблицы: <strong>подниматься по лестнице стоит только тогда, когда текущая ступень мешает жить</strong>. Не «на всякий случай», не «потому что это выглядит серьёзнее», а потому что конкретная нужная вещь на нынешней ступени не делается. Ровно тот же принцип разбирается на странице <a routerLink="/ecosystem/intro/how-to-choose">Как выбирать технологию</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Десктоп: программа для компьютера</h2>
+  <p>Вторая половина задачи — «нужна программа для Windows». Здесь выбор проще, потому что вариантов меньше, и почти все они снова про веб-код.</p>
+  <p><strong>Electron</strong> — самый известный способ. Идея та же, что у мобильной обёртки, но доведённая до конца: внутрь вашей программы кладут <em>целый браузер Chromium</em> и <em>целый Node.js</em>. Браузер рисует интерфейс — то есть ваш обычный сайт. Node.js даёт доступ к файлам, процессам и системным возможностям, которых у сайта в браузере нет. Так сделаны редактор кода VS Code, мессенджеры Slack и Discord, множество других программ, которыми вы пользуетесь каждый день, не догадываясь, что внутри веб-страница.</p>
+  <app-code-block [code]="electronMain" lang="javascript" />
+  <p>Обратите внимание на строку <code>win.loadFile('dist/index.html')</code> — это буквально ваш собранный сайт, тот же самый файл, который вы выкладывали на хостинг. Всё остальное в этом коде — про окно: размер, меню, безопасность.</p>
+  <p>А теперь про цену. Раз внутрь пакета уезжает целый браузер, программа получается тяжёлой: установщик на 120–200 мегабайт для приложения, которое умеет показать список задач. И оперативной памяти такое приложение ест как открытая вкладка Chrome — потому что это и есть открытая вкладка Chrome. Если у пользователя запущено пять Electron-программ, у него запущено пять браузеров.</p>
+  <p><strong>Tauri</strong> — более молодой ответ на эту проблему. Он рассуждает так: в каждой операционной системе уже есть встроенный движок для показа веб-страниц. Зачем тащить свой? Возьмём системный, а вокруг напишем маленькое ядро на языке Rust.</p>
+  <app-code-block [code]="tauriStart" lang="bash" />
+  <figure class="diagram">
+    <svg viewBox="0 0 660 300" width="100%" role="img" aria-label="Сравнение состава пакета Electron и Tauri: в Electron внутрь уезжает браузер и Node.js, в Tauri браузер берётся из системы">
+      <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">что именно скачивает пользователь при установке</text>
+
+      <text x="160" y="48" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600">Electron</text>
+      <text x="500" y="48" text-anchor="middle" fill="var(--green)" font-size="12" font-weight="600">Tauri</text>
+
+      <rect x="30" y="58" width="260" height="164" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
+      <rect x="44" y="72" width="232" height="30" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="160" y="92" text-anchor="middle" fill="var(--fg)" font-size="10">ваш собранный сайт — около 5 МБ</text>
+
+      <rect x="44" y="110" width="232" height="62" rx="7" fill="var(--bg)" stroke="var(--red)" stroke-width="1.6" />
+      <text x="160" y="136" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="600">Chromium</text>
+      <text x="160" y="154" text-anchor="middle" fill="var(--fg)" font-size="10">целый браузер — около 120 МБ</text>
+
+      <rect x="44" y="180" width="232" height="32" rx="7" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.4" />
+      <text x="160" y="200" text-anchor="middle" fill="var(--fg)" font-size="10">Node.js — около 30 МБ</text>
+
+      <text x="160" y="246" text-anchor="middle" fill="var(--red)" font-size="13" font-weight="600">итого около 150 МБ</text>
+      <text x="160" y="266" text-anchor="middle" fill="var(--muted)" font-size="10">зато одинаково на всех системах</text>
+
+      <rect x="370" y="58" width="260" height="82" rx="10" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <rect x="384" y="72" width="232" height="30" rx="7" fill="var(--bg)" stroke="var(--border)" stroke-width="1.4" />
+      <text x="500" y="92" text-anchor="middle" fill="var(--fg)" font-size="10">ваш собранный сайт — около 5 МБ</text>
+
+      <rect x="384" y="106" width="232" height="26" rx="7" fill="var(--bg)" stroke="var(--green)" stroke-width="1.4" />
+      <text x="500" y="124" text-anchor="middle" fill="var(--fg)" font-size="10">ядро на Rust — около 5 МБ</text>
+
+      <rect x="370" y="156" width="260" height="56" rx="10" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="7 5" />
+      <text x="500" y="178" text-anchor="middle" fill="var(--muted)" font-size="10">webview операционной системы</text>
+      <text x="500" y="196" text-anchor="middle" fill="var(--muted)" font-size="10">уже стоит у пользователя — 0 МБ</text>
+
+      <text x="500" y="246" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="600">итого около 10 МБ</text>
+      <text x="500" y="266" text-anchor="middle" fill="var(--muted)" font-size="10">но браузеры на системах разные</text>
+
+      <text x="330" y="292" text-anchor="middle" fill="var(--fg)" font-size="11">пунктир = то, что лежит вне вашего пакета и вами не контролируется</text>
+    </svg>
+    <figcaption>Electron платит весом за предсказуемость: вы точно знаете, какой браузер рисует ваш интерфейс. Tauri платит предсказуемостью за вес: браузер у каждого свой, и различия придётся ловить руками.</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th>Electron</th>
+          <th>Tauri</th>
+          <th>PWA на десктопе</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Размер установщика</strong></td>
+          <td class="no">❌ 120–200 МБ</td>
+          <td class="yes">✅ около 10 МБ</td>
+          <td class="yes">✅ ничего не качается</td>
+        </tr>
+        <tr>
+          <td><strong>Одинаково ли выглядит везде</strong></td>
+          <td class="yes">✅ да, браузер свой</td>
+          <td>⚠️ браузер системный, бывают отличия</td>
+          <td>⚠️ зависит от браузера пользователя</td>
+        </tr>
+        <tr>
+          <td><strong>Готовые рецепты и ответы</strong></td>
+          <td class="yes">✅ очень много</td>
+          <td>⚠️ заметно меньше</td>
+          <td>⚠️ мало практики</td>
+        </tr>
+        <tr>
+          <td><strong>Нужен ли новый язык</strong></td>
+          <td class="yes">✅ нет, только JavaScript</td>
+          <td class="no">❌ часть задач на Rust</td>
+          <td class="yes">✅ нет</td>
+        </tr>
+        <tr>
+          <td><strong>Глубина доступа к системе</strong></td>
+          <td class="yes">✅ полная, через Node.js</td>
+          <td class="yes">✅ полная, через Rust</td>
+          <td class="no">❌ ограничения браузера</td>
+        </tr>
+        <tr>
+          <td><strong>Когда брать</strong></td>
+          <td>серьёзный продукт, нужна предсказуемость</td>
+          <td>важен вес и расход памяти</td>
+          <td>достаточно окна без адресной строки</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Самый дешёвый вариант десктопа — не Electron.</strong> Если вашей программе не нужен доступ к файлам компьютера и системным возможностям, то PWA уже решает задачу: современные браузеры умеют устанавливать сайт как отдельное окно с иконкой в панели задач. Пользователь нажимает одну кнопку в адресной строке — и получает программу, которая запускается без браузера. Ноль дополнительной работы, если PWA у вас уже сделана для мобильных.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Магазины приложений: новые правила игры</h2>
+  <p>Как только вы попадаете в App Store или Google Play, между вами и пользователями появляется третья сторона, которой раньше не было. К этому надо быть готовым заранее, потому что привычки веб-разработчика здесь ломаются.</p>
+  <ul class="rules">
+    <li><strong>Ревью — проверка перед публикацией.</strong> Живой человек (и автоматика) в компании Apple или Google смотрит ваше приложение и решает, пускать ли его. Обычно это от нескольких часов до нескольких дней. У Apple проверка строже и придирчивее, у Google чаще автоматическая и быстрее.</li>
+    <li><strong>Отказы — это нормально.</strong> Причины бывают неожиданными: нет политики конфиденциальности, приложение «слишком похоже на сайт» и не даёт ничего сверх него, непонятно, как проверяющему войти в тестовый аккаунт, используется чужой бренд. Заложите в план как минимум одну итерацию отказа: почти никто не проходит с первого раза.</li>
+    <li><strong>Комиссия за платежи.</strong> Если внутри приложения продаётся цифровой товар — подписка, доступ к контенту, монеты в игре, — магазин требует использовать свою систему оплаты и удерживает процент (исторически около 30%, для малого бизнеса и подписок часто меньше). Правила здесь регулярно меняются и различаются по странам. Продажа физических товаров и услуг офлайн под это обычно не подпадает.</li>
+    <li><strong>Ежегодная плата и формальности.</strong> Аккаунт разработчика платный, для магазина Apple нужен компьютер Apple или облачная сборка, нужны сертификаты и подписи, юридические данные, возрастной рейтинг и описание того, какие данные вы собираете.</li>
+  </ul>
+  <p>Но самое непривычное для веб-разработчика — <strong>как теперь выходят обновления</strong>. В вебе вы правите строчку, выкатываете и через пять минут исправление видят все. В мире магазинов между вами и пользователем встают два ожидания: сначала проверка, потом решение самого человека нажать «обновить».</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 660 290" width="100%" role="img" aria-label="Три конвейера обновлений: сайт, магазин приложений и обновление по воздуху — с разным числом шагов и разным сроком">
+      <text x="330" y="20" text-anchor="middle" fill="var(--muted)" font-size="12">путь одной исправленной строчки до пользователя</text>
+
+      <text x="8" y="70" text-anchor="start" fill="var(--green)" font-size="11" font-weight="600">Сайт</text>
+      <text x="8" y="86" text-anchor="start" fill="var(--green)" font-size="10">5–15 минут</text>
+      <rect x="120" y="50" width="120" height="40" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+      <text x="180" y="66" text-anchor="middle" fill="var(--fg)" font-size="9">правка в коде</text>
+      <text x="180" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">одна строчка</text>
+      <rect x="250" y="50" width="120" height="40" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+      <text x="310" y="66" text-anchor="middle" fill="var(--fg)" font-size="9">сборка</text>
+      <text x="310" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">пара минут</text>
+      <rect x="380" y="50" width="120" height="40" rx="8" fill="var(--bg)" stroke="var(--green)" stroke-width="1.5" />
+      <text x="440" y="66" text-anchor="middle" fill="var(--fg)" font-size="9">выкладка</text>
+      <text x="440" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">на хостинг</text>
+      <rect x="510" y="50" width="130" height="40" rx="8" fill="var(--surface)" stroke="var(--green)" stroke-width="2" />
+      <text x="575" y="66" text-anchor="middle" fill="var(--green)" font-size="9" font-weight="600">видят ВСЕ</text>
+      <text x="575" y="80" text-anchor="middle" fill="var(--muted)" font-size="9">сразу и без спроса</text>
+
+      <text x="8" y="140" text-anchor="start" fill="var(--red)" font-size="11" font-weight="600">Магазин</text>
+      <text x="8" y="156" text-anchor="start" fill="var(--red)" font-size="10">дни и недели</text>
+      <rect x="120" y="120" width="96" height="40" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.5" />
+      <text x="168" y="136" text-anchor="middle" fill="var(--fg)" font-size="9">правка</text>
+      <text x="168" y="150" text-anchor="middle" fill="var(--muted)" font-size="9">и сборка</text>
+      <rect x="222" y="120" width="96" height="40" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.5" />
+      <text x="270" y="136" text-anchor="middle" fill="var(--fg)" font-size="9">отправка</text>
+      <text x="270" y="150" text-anchor="middle" fill="var(--muted)" font-size="9">в магазин</text>
+      <rect x="324" y="120" width="96" height="40" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="2" />
+      <text x="372" y="136" text-anchor="middle" fill="var(--red)" font-size="9" font-weight="600">ревью</text>
+      <text x="372" y="150" text-anchor="middle" fill="var(--muted)" font-size="9">часы или дни</text>
+      <rect x="426" y="120" width="96" height="40" rx="8" fill="var(--bg)" stroke="var(--red)" stroke-width="1.5" />
+      <text x="474" y="136" text-anchor="middle" fill="var(--fg)" font-size="9">публикация</text>
+      <text x="474" y="150" text-anchor="middle" fill="var(--muted)" font-size="9">версия доступна</text>
+      <rect x="528" y="120" width="112" height="40" rx="8" fill="var(--surface)" stroke="var(--red)" stroke-width="2" />
+      <text x="584" y="136" text-anchor="middle" fill="var(--red)" font-size="9" font-weight="600">человек обновит</text>
+      <text x="584" y="150" text-anchor="middle" fill="var(--muted)" font-size="9">когда захочет</text>
+
+      <text x="8" y="210" text-anchor="start" fill="var(--orange)" font-size="11" font-weight="600">По воздуху</text>
+      <text x="8" y="226" text-anchor="start" fill="var(--orange)" font-size="10">минуты</text>
+      <rect x="120" y="190" width="160" height="40" rx="8" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.5" />
+      <text x="200" y="206" text-anchor="middle" fill="var(--fg)" font-size="9">правка JavaScript</text>
+      <text x="200" y="220" text-anchor="middle" fill="var(--muted)" font-size="9">только JS-часть</text>
+      <rect x="290" y="190" width="160" height="40" rx="8" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.5" />
+      <text x="370" y="206" text-anchor="middle" fill="var(--fg)" font-size="9">публикация обновления</text>
+      <text x="370" y="220" text-anchor="middle" fill="var(--muted)" font-size="9">мимо магазина</text>
+      <rect x="460" y="190" width="180" height="40" rx="8" fill="var(--surface)" stroke="var(--orange)" stroke-width="2" />
+      <text x="550" y="206" text-anchor="middle" fill="var(--orange)" font-size="9" font-weight="600">подтянется при запуске</text>
+      <text x="550" y="220" text-anchor="middle" fill="var(--muted)" font-size="9">пользователь не заметит</text>
+
+      <text x="330" y="262" text-anchor="middle" fill="var(--fg)" font-size="11">чем длиннее конвейер, тем дороже стоит каждая ваша ошибка</text>
+      <text x="330" y="280" text-anchor="middle" fill="var(--muted)" font-size="10">на сайте опечатку правят за минуту, в магазине — живут с ней неделю</text>
+    </svg>
+    <figcaption>Третья дорожка — обходной путь: Expo и похожие инструменты умеют обновлять JavaScript-часть приложения без похода в магазин. Но нативные библиотеки так не обновить, и правила магазинов ограничивают, что именно так менять допустимо.</figcaption>
+  </figure>
+  <p class="note"><strong>Практическое следствие.</strong> Заметьте, что даже после публикации остаётся последний шаг, которым вы не управляете: человек должен обновить приложение. Часть пользователей не обновляется месяцами. Поэтому в мобильной разработке всегда живут <em>сразу несколько версий вашего приложения одновременно</em>, и сервер обязан уметь отвечать всем. Об этом стоит помнить, когда будете читать про договорённости между клиентом и сервером на странице <a routerLink="/ecosystem/api/http">HTTP</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Честно про «один код везде»</h2>
+  <p>Это самое частое обещание маркетинга и самое частое разочарование новичка. Фразу «пиши один раз — работай везде» повторяют так часто, что легко поверить: сделал сайт, нажал кнопку, получил приложение. Так не бывает. Разберём, что переносится на самом деле.</p>
+  <p>Мысленно разрежьте своё приложение на два слоя. Нижний — правила и данные: как считается сумма заказа, что такое «пользователь», как обратиться к серверу, что делать при ошибке. Верхний — экраны: какие кнопки, где отступы, как выглядит список. Нижний слой переезжает целиком. Верхний почти всегда пишется заново.</p>
+  <app-code-block [code]="sharedLogic" lang="typescript" />
+  <p>Разберём, почему именно этот файл переносится без изменений. В нём нет ни одного упоминания интерфейса: только описание данных, арифметика и обращение к серверу. Функция <code>fetch</code> есть и в браузере, и в React Native, и в Electron. Типы данных вообще не зависят от платформы. Поэтому такой файл можно положить в общую папку и подключить из всех трёх приложений сразу — и правило скидки будет посчитано одинаково везде.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Часть приложения</th>
+          <th>Переезжает?</th>
+          <th>Почему</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Типы данных и структуры</td>
+          <td class="yes">✅ полностью</td>
+          <td>Это просто описание формы данных, оно ни к чему не привязано.</td>
+        </tr>
+        <tr>
+          <td>Расчёты и бизнес-правила</td>
+          <td class="yes">✅ полностью</td>
+          <td>Арифметика одинакова на любой платформе.</td>
+        </tr>
+        <tr>
+          <td>Обращения к серверу</td>
+          <td class="yes">✅ почти полностью</td>
+          <td><code>fetch</code> работает везде; различаются только мелочи вроде хранения токена.</td>
+        </tr>
+        <tr>
+          <td>Проверка форм</td>
+          <td class="yes">✅ логика да</td>
+          <td>Правила проверки переносятся, а вот показ ошибки на экране — нет.</td>
+        </tr>
+        <tr>
+          <td>Навигация между экранами</td>
+          <td class="no">❌ переписывается</td>
+          <td>В вебе это адреса страниц, в мобильном — стопка экранов с жестами.</td>
+        </tr>
+        <tr>
+          <td>Вёрстка и стили</td>
+          <td class="no">❌ переписывается</td>
+          <td>CSS против объектов стилей: разные свойства, разные правила раскладки.</td>
+        </tr>
+        <tr>
+          <td>Анимации и жесты</td>
+          <td class="no">❌ переписывается</td>
+          <td>Свайпы, инерция и отклик на касание — это отдельный мир, которого в вебе почти нет.</td>
+        </tr>
+        <tr>
+          <td>Работа с устройством</td>
+          <td class="no">❌ пишется заново</td>
+          <td>Разрешения, уведомления, камера, фон — этого в вебе просто не существовало.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Реалистичная цифра — 30–60%, а не 100%.</strong> Чем больше в вашем приложении расчётов и работы с данными, тем ближе к верхней границе. Чем больше в нём уникального интерфейса, анимаций и жестов, тем ближе к нижней. Если кто-то обещает вам сто процентов — он либо продаёт инструмент, либо не делал по-настоящему сложного приложения. И это <em>всё равно отличная сделка</em>: переиспользовать половину — значит сэкономить примерно половину бюджета.</p>
+  <p>Отсюда практический совет, который окупается в любом проекте: <strong>с самого начала отделяйте логику от экранов</strong>. Не потому, что «так правильно», а потому, что в тот день, когда понадобится мобильная версия, вы просто перенесёте одну папку вместо того, чтобы выковыривать расчёты из обработчиков нажатий. Тот же приём помогает и в тестировании — об этом на странице <a routerLink="/ecosystem/client/testing">Тестирование</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Чек-лист: девять вопросов перед решением</h2>
+  <p>Не спорьте о фреймворках. Ответьте на эти вопросы честно и вслух — после них выбор обычно делается сам, потому что большинство вариантов отсеются.</p>
+  <ol class="rules">
+    <li><strong>Нужна ли работа без интернета?</strong> Если приложением пользуются в метро, в поле, на складе без связи — сразу отпадает обычный сайт. Минимум PWA с сервис-воркером.</li>
+    <li><strong>Нужны ли push-уведомления?</strong> Если да и ваша аудитория на iPhone — обычной PWA может не хватить, скорее всего понадобится обёртка или React Native.</li>
+    <li><strong>Нужна ли тяжёлая графика или сложные анимации?</strong> Карта с тысячей точек, редактор фото, игра, диаграммы в реальном времени — здесь веб внутри рамки начнёт заметно тормозить.</li>
+    <li><strong>Нужен ли фоновый режим?</strong> То есть работа, когда приложение закрыто: считать шаги, отслеживать маршрут, синхронизировать данные. Это почти всегда означает React Native или нативную разработку.</li>
+    <li><strong>Нужны ли Bluetooth, датчики здоровья, NFC, геолокация в фоне?</strong> Проверьте по каждому пункту, есть ли готовый плагин. Если нет — вы платите за написание своего нативного кода.</li>
+    <li><strong>Важно ли присутствие в магазине?</strong> Иногда это не про удобство, а про доверие: заказчику нужно, чтобы компанию находили в App Store. Тогда обёртка решает задачу за неделю.</li>
+    <li><strong>Есть ли деньги на две команды?</strong> Нативная разработка — это две кодовые базы плюс сайт. Если бюджет не выдержит трёх параллельных проектов, вопрос закрыт.</li>
+    <li><strong>Как часто надо выкатывать изменения?</strong> Если вы правите продукт по десять раз в неделю, конвейер через ревью магазина будет мучением. Веб-часть в этом смысле недосягаема.</li>
+    <li><strong>Что вы будете делать через год?</strong> Самый недооценённый вопрос. Обёртку легко заменить позже, если вы отделили логику от экранов. Нативную кодовую базу выбросить намного дороже.</li>
+  </ol>
+  <p class="note"><strong>Совет по умолчанию.</strong> Для подавляющего большинства проектов правильный порядок такой: сначала сделайте хороший адаптивный сайт. Потом, если нужны иконка и офлайн, добавьте PWA — это дни работы. Потом, если нужен магазин и немного возможностей телефона, заверните в обёртку — это недели. И только когда упрётесь в потолок по ощущениям или возможностям, переходите на React Native. Начинать сразу сверху имеет смысл лишь тогда, когда вы точно знаете, что приложение — это и есть ваш продукт, а не дополнение к нему.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Коротко</h2>
+  <ul class="rules">
+    <li><strong>«Нужно приложение» — это шесть разных вещей.</strong> Сначала выясните, чего хотят на самом деле: иконку на экране, присутствие в магазине или возможности телефона. Цена у этих желаний различается в десятки раз.</li>
+    <li><strong>Есть лестница, а не выбор «сайт или натив»:</strong> адаптивный сайт → PWA → обёртка WebView → React Native → Flutter → нативная разработка. Отличаются они тем, кто рисует экран.</li>
+    <li><strong>PWA — это ваш сайт плюс два файла:</strong> манифест (анкета приложения) и сервис-воркер (диспетчер между страницей и сетью). Даёт иконку, офлайн и уведомления, но не даёт магазина, а на iPhone заметно ограничена.</li>
+    <li><strong>Обёртка (Capacitor, Ionic) — самый дешёвый вход в магазин.</strong> Внутри всё тот же сайт, доступ к камере и файлам через плагины. Цена — при прокрутке и анимациях чувствуется, что это веб.</li>
+    <li><strong>React Native даёт настоящие системные элементы,</strong> но вёрстка с сайта не переносится: вместо <code>&lt;div&gt;</code> и <code>&lt;span&gt;</code> — <code>&lt;View&gt;</code> и <code>&lt;Text&gt;</code>, вместо CSS — объекты стилей. Начинать стоит с Expo: он снимает почти всю боль первого дня.</li>
+    <li><strong>На десктопе Electron кладёт браузер внутрь пакета</strong> (150 МБ, но предсказуемо — так сделаны VS Code, Slack, Discord), а Tauri берёт браузер из системы (10 МБ, но отличия придётся ловить руками). Самый дешёвый вариант — установить PWA как окно.</li>
+    <li><strong>Магазин — это третья сторона между вами и пользователем:</strong> ревью, отказы, комиссия за цифровые платежи и обновления, которые доходят днями. Частично лечится обновлением JavaScript-части «по воздуху».</li>
+    <li><strong>«Один код везде» — это про логику, а не про интерфейс.</strong> Реально переиспользуется 30–60%: типы, расчёты и работа с сервером переезжают, экраны пишутся заново. Отделяйте логику от экранов с первого дня — это окупается всегда.</li>
+    <li><strong>Поднимайтесь по лестнице только тогда, когда текущая ступень мешает.</strong> Не «на всякий случай» и не «чтобы выглядело серьёзнее».</li>
+  </ul>
+  <p class="note">Мы прошли весь подраздел «Клиент»: от <a routerLink="/ecosystem/client/browser">браузера</a> и <a routerLink="/ecosystem/client/frameworks">фреймворков</a> до упаковки в приложение. Осталась последняя, но, пожалуй, самая недооценённая тема — <a routerLink="/ecosystem/client/quality">Доступность, i18n и Core Web Vitals</a>: сможет ли вашим приложением пользоваться человек, который не видит экран или не держит мышь; получится ли перевести его на другой язык, не переписывая заново; и дождётся ли обычный посетитель загрузки на слабом телефоне. Именно эти три вещи решают, сколько людей вообще доберётся до вашей кнопки. И это одинаково важно для сайта, мобильного приложения и десктопной программы.</p>
+</section>
+</article>

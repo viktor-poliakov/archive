@@ -42,8 +42,14 @@ o.status = 'loading'; // ✅ разрешено! Полю status можно пр
 // «заморозь значение как есть: самый УЗКИЙ (литеральный) тип
 //  и всё только для чтения (readonly)».
 
-const a = 'idle' as const; // тип: 'idle'  (а не string)
-const b = 42 as const;     // тип: 42      (а не number)
+// Для примитивов берём именно let: у const литерал сохраняется и БЕЗ as const
+// (мы видели это выше), а let без него расширился бы до string / number.
+let a = 'idle' as const; // тип: 'idle'  (а не string)
+let b = 42 as const;     // тип: 42      (а не number)
+
+a = 'loading';
+// ❌ Type '"loading"' is not assignable to type '"idle"'.
+//    Тип застыл на литерале — переприсвоить другое значение уже нельзя.
 
 const o = {
   status: 'idle',
