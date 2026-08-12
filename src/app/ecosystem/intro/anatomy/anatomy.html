@@ -69,8 +69,8 @@
       <rect x="196" y="90" width="130" height="96" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.6" stroke-dasharray="6 5" />
       <text x="261" y="122" text-anchor="middle" fill="var(--fg)" font-size="13" font-weight="600">Интернет</text>
       <text x="261" y="142" text-anchor="middle" fill="var(--muted)" font-size="10">провода и вышки</text>
-      <text x="261" y="160" text-anchor="middle" fill="var(--fg)" font-size="10">просто дорога</text>
-      <text x="261" y="176" text-anchor="middle" fill="var(--fg)" font-size="10">между двумя</text>
+      <text x="261" y="160" text-anchor="middle" fill="var(--fg)" font-size="10">просто дорога между</text>
+      <text x="261" y="176" text-anchor="middle" fill="var(--fg)" font-size="10">браузером и сервером</text>
 
       <rect x="368" y="90" width="130" height="96" rx="12" fill="var(--bg)" stroke="var(--accent)" stroke-width="2" />
       <text x="433" y="122" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">Сервер</text>
@@ -92,17 +92,17 @@
       <polygon points="526,106 538,112 526,118" fill="var(--green)" />
       <text x="340" y="72" text-anchor="middle" fill="var(--green)" font-size="12">запрос: «дай мне товары» →</text>
 
-      <line x1="526" y1="166" x2="500" y2="166" stroke="var(--orange)" stroke-width="2" />
-      <polygon points="500,160 488,166 500,172" fill="var(--orange)" />
-      <line x1="354" y1="166" x2="328" y2="166" stroke="var(--orange)" stroke-width="2" />
-      <polygon points="328,160 316,166 328,172" fill="var(--orange)" />
-      <line x1="182" y1="166" x2="156" y2="166" stroke="var(--orange)" stroke-width="2" />
-      <polygon points="156,160 144,166 156,172" fill="var(--orange)" />
+      <line x1="538" y1="166" x2="512" y2="166" stroke="var(--orange)" stroke-width="2" />
+      <polygon points="500,166 512,160 512,172" fill="var(--orange)" />
+      <line x1="366" y1="166" x2="340" y2="166" stroke="var(--orange)" stroke-width="2" />
+      <polygon points="328,166 340,160 340,172" fill="var(--orange)" />
+      <line x1="194" y1="166" x2="168" y2="166" stroke="var(--orange)" stroke-width="2" />
+      <polygon points="156,166 168,160 168,172" fill="var(--orange)" />
       <text x="340" y="212" text-anchor="middle" fill="var(--orange)" font-size="12">← ответ: данные едут обратно</text>
 
-      <text x="89" y="252" text-anchor="middle" fill="var(--muted)" font-size="11">вы этим управляете</text>
+      <text x="175" y="252" text-anchor="middle" fill="var(--muted)" font-size="11">этим управляет пользователь, а не вы</text>
       <text x="519" y="252" text-anchor="middle" fill="var(--muted)" font-size="11">это под вашим контролем как разработчика</text>
-      <line x1="24" y1="264" x2="154" y2="264" stroke="var(--border)" stroke-width="1.4" />
+      <line x1="24" y1="264" x2="326" y2="264" stroke="var(--border)" stroke-width="1.4" />
       <line x1="368" y1="264" x2="670" y2="264" stroke="var(--border)" stroke-width="1.4" />
       <text x="340" y="292" text-anchor="middle" fill="var(--red)" font-size="11">граница доверия проходит здесь: всё слева от сервера может быть подделано</text>
     </svg>
@@ -260,7 +260,7 @@
   <h2>Практика: путь одного лайка</h2>
   <p>Сложим всё вместе на самом обычном действии. Пользователь нажал сердечко под постом. Вот что произойдёт за следующие 200 миллисекунд:</p>
   <figure class="diagram">
-    <svg viewBox="0 0 660 400" width="100%" role="img" aria-label="Семь шагов прохождения лайка от клика до обновления экрана">
+    <svg viewBox="0 0 660 400" width="100%" role="img" aria-label="Шесть шагов прохождения лайка от клика до обновления экрана">
       <rect x="30" y="34" width="600" height="38" rx="9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6" />
       <text x="50" y="52" text-anchor="start" fill="var(--accent)" font-size="12" font-weight="600">1 · Браузер</text>
       <text x="50" y="66" text-anchor="start" fill="var(--fg)" font-size="11">поймал клик и сразу закрасил сердечко — не дожидаясь ответа, чтобы не тормозило</text>
