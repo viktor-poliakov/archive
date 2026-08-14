@@ -124,7 +124,7 @@ console.log(new Account().balance); // 0
 // Важно: value = undefined (поля ещё нет в момент декорирования).
 // Вернули функцию — она поправит начальное значение. Вот и все возможности.`;
 
-  protected readonly fieldFactory = `// Фабрика-версия: @defaultTo подставляет значение по умолчанию,
+  protected readonly fieldFactory = `// Версия с настройкой: @defaultTo подставляет значение по умолчанию,
 // если поле создали без явного значения (undefined).
 function defaultTo<T>(fallback: T) {
   return function (value: undefined, context: ClassFieldDecoratorContext) {

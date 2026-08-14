@@ -53,14 +53,14 @@
 </section>
 
 <section class="doc__section">
-  <h2>Декоратор с настройкой: фабрика</h2>
-  <p>Часто наклейку хочется <strong>настроить</strong> — например, передать префикс для лога или имя роли. Но сам значок <code>&#64;</code> аргументы не принимает. Приём такой: пишут функцию, которая <em>принимает настройку</em> и <em>возвращает</em> уже готовый декоратор. Такую функцию называют <strong>фабрикой декораторов</strong> — «фабрика наклеек»: говоришь ей, какую наклейку напечатать, и она выдаёт именно такую.</p>
+  <h2>Декоратор с настройкой</h2>
+  <p>Часто наклейку хочется <strong>настроить</strong> — например, передать префикс для лога или имя роли. Но сам значок <code>&#64;</code> аргументы не принимает. Приём такой: пишут <strong>функцию, которая принимает настройку и возвращает уже готовый декоратор</strong>. Работает она как автомат для печати наклеек: говорите ему, что напечатать, а он выдаёт готовую наклейку — и вот её вы уже приклеиваете.</p>
   <app-code-block [code]="factory" lang="typescript" />
   <figure class="diagram">
-    <svg viewBox="0 0 640 220" width="100%" role="img" aria-label="Фабрика декораторов: вызов с аргументом возвращает декоратор, который вешается на класс">
+    <svg viewBox="0 0 640 220" width="100%" role="img" aria-label="Декоратор с настройкой: вызов функции с аргументом возвращает декоратор, который вешается на класс">
       <rect x="20" y="70" width="180" height="70" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
       <text x="110" y="100" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">logWithPrefix('...')</text>
-      <text x="110" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">вызов фабрики (со скобками)</text>
+      <text x="110" y="122" text-anchor="middle" fill="var(--muted)" font-size="11">вызов функции (со скобками)</text>
 
       <line x1="200" y1="105" x2="266" y2="105" stroke="var(--muted)" stroke-width="2" />
       <polygon points="266,99 280,105 266,111" fill="var(--muted)" />
@@ -77,11 +77,12 @@
       <rect x="538" y="70" width="90" height="70" rx="12" fill="var(--bg)" stroke="var(--border)" stroke-width="1.6" />
       <text x="583" y="110" text-anchor="middle" fill="var(--fg)" font-family="monospace" font-size="13">Order</text>
     </svg>
-    <figcaption><code>&#64;logWithPrefix('...')</code> — это сначала <em>вызов</em> фабрики (обратите внимание на скобки), она возвращает настоящий декоратор, и уже он вешается на класс. Так устроены <code>&#64;Component(&#123;...&#125;)</code> в Angular и <code>&#64;Module(&#123;...&#125;)</code> в NestJS.</figcaption>
+    <figcaption><code>&#64;logWithPrefix('...')</code> — это сначала <em>вызов</em> функции (обратите внимание на скобки), она возвращает настоящий декоратор, и уже он вешается на класс. Так устроены <code>&#64;Component(&#123;...&#125;)</code> в Angular и <code>&#64;Module(&#123;...&#125;)</code> в NestJS.</figcaption>
   </figure>
   <p>Отсюда рождается частая путаница новичков — со скобками или без. Разница принципиальная:</p>
   <app-code-block [code]="factoryVsPlain" lang="typescript" />
-  <p class="note"><strong>Правило.</strong> <code>&#64;имя</code> (без скобок) — это уже готовый декоратор. <code>&#64;имя(...)</code> (со скобками) — это фабрика, которую нужно <em>вызвать</em>, чтобы она вернула декоратор. Перепутаете — получите ошибку. Если видите скобки после <code>&#64;</code> — значит, автор написал фабрику.</p>
+  <p class="note"><strong>Правило.</strong> <code>&#64;имя</code> (без скобок) — это уже готовый декоратор. <code>&#64;имя(...)</code> (со скобками) — это функция, которую нужно <em>вызвать</em>, чтобы она вернула декоратор. Перепутаете — получите ошибку. Если видите скобки после <code>&#64;</code> — значит, у декоратора есть настройка.</p>
+  <p class="note"><strong>Одно слово, которое встретится вам в статьях.</strong> Такую функцию — ту, что принимает настройку и возвращает готовый декоратор, — часто называют <strong>фабрикой декораторов</strong> (по-английски <em>decorator factory</em>). Слово «фабрика» в программировании означает всего лишь «функция, которая изготавливает и отдаёт что-то другое» — здесь она изготавливает декораторы. Мы на этом сайте обходимся без этого слова и говорим просто «декоратор с настройкой», но знать его стоит: в документации Angular и NestJS оно встречается постоянно.</p>
 </section>
 
 <section class="doc__section">
@@ -100,7 +101,7 @@
       <tbody>
         <tr>
           <td>Откуда взялись</td>
-          <td>Часть самого JavaScript (стандарт)</td>
+          <td>Общее предложение для JavaScript (TC39), в стандарт пока не вошло</td>
           <td>Ранняя версия из TypeScript</td>
         </tr>
         <tr>
@@ -126,7 +127,8 @@
       </tbody>
     </table>
   </div>
-  <p>На этом сайте мы учим <strong>стандартные</strong> декораторы: они уже часть языка, работают без настроек и являются будущим. Но старые встречаются повсюду (весь Angular на них построен), поэтому мы будем показывать, чем они отличаются, чтобы вы узнавали их в чужом коде. Самый простой способ отличить — по аргументам: у стандартных <strong>всегда</strong> <code>(value, context)</code>, а у старых сигнатура зависит от того, что декорируют (класс — <code>(constructor)</code>, метод — <code>(target, key, descriptor)</code>, свойство — <code>(target, key)</code>).</p>
+  <p class="note"><strong>Осторожно со словом «стандартные» — оно обманывает.</strong> Оно означает не «уже есть в JavaScript», а «сделаны по общему предложению, а не по самодельным правилам TypeScript». Декораторы — это <strong>предложение TC39</strong> (это комитет, который развивает JavaScript), и оно находится на <strong>третьей стадии из четырёх</strong>: текст спецификации готов, но в сам язык они ещё не приняты. Практический вывод простой и важный: <strong>написать декоратор в обычном <code>.js</code>-файле и запустить его в браузере или в Node нельзя</strong> — они этот синтаксис не понимают. Работает это только потому, что TypeScript при компиляции <em>переписывает</em> декораторы в обычный код, в котором никаких собачек уже нет. То же самое умеет делать Babel для чистого JavaScript. Когда предложение дойдёт до четвёртой стадии и его реализуют в движках, декораторы заработают и в JS напрямую — но этого пока не произошло.</p>
+  <p>На этом сайте мы учим <strong>стандартные</strong> декораторы: они работают в TypeScript без настроек и являются будущим. Но старые встречаются повсюду (весь Angular на них построен), поэтому мы будем показывать, чем они отличаются, чтобы вы узнавали их в чужом коде. Самый простой способ отличить — по аргументам: у стандартных <strong>всегда</strong> <code>(value, context)</code>, а у старых сигнатура зависит от того, что декорируют (класс — <code>(constructor)</code>, метод — <code>(target, key, descriptor)</code>, свойство — <code>(target, key)</code>).</p>
   <p class="note"><strong>Не смешивайте два режима в одном проекте.</strong> Если в <code>tsconfig.json</code> включён флаг <code>experimentalDecorators</code>, работают старые правила; если выключен — новые. Скопировать декоратор из Angular-примера в проект со стандартными декораторами и ждать, что он «просто заработает», — нельзя: сигнатуры разные. Подробнее — на странице <a routerLink="/typescript/decorators/pitfalls">нюансы и подводные камни</a>.</p>
 </section>
 
@@ -138,23 +140,33 @@
     <svg viewBox="0 0 620 250" width="100%" role="img" aria-label="Карта мест, куда можно ставить декораторы: класс, свойство, метод, геттер, аксессор">
       <rect x="150" y="20" width="320" height="210" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" />
       <text x="310" y="46" text-anchor="middle" fill="var(--accent)" font-family="monospace" font-size="14">&#64; class Widget</text>
-      <text x="486" y="46" text-anchor="start" fill="var(--muted)" font-size="11">← класс</text>
+      <polygon points="483,35 473,41 483,47" fill="var(--muted)" />
+      <line x1="483" y1="41" x2="501" y2="41" stroke="var(--muted)" stroke-width="1.6" />
+      <text x="507" y="45" text-anchor="start" fill="var(--muted)" font-size="11">класс</text>
 
       <rect x="176" y="66" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
       <text x="192" y="88" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; title = '...'</text>
-      <text x="452" y="88" text-anchor="start" fill="var(--muted)" font-size="11">← свойство</text>
+      <polygon points="483,77 473,83 483,89" fill="var(--muted)" />
+      <line x1="483" y1="83" x2="501" y2="83" stroke="var(--muted)" stroke-width="1.6" />
+      <text x="507" y="87" text-anchor="start" fill="var(--muted)" font-size="11">свойство</text>
 
       <rect x="176" y="108" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
       <text x="192" y="130" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; render()</text>
-      <text x="452" y="130" text-anchor="start" fill="var(--muted)" font-size="11">← метод</text>
+      <polygon points="483,119 473,125 483,131" fill="var(--muted)" />
+      <line x1="483" y1="125" x2="501" y2="125" stroke="var(--muted)" stroke-width="1.6" />
+      <text x="507" y="129" text-anchor="start" fill="var(--muted)" font-size="11">метод</text>
 
       <rect x="176" y="150" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
       <text x="192" y="172" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; get size()</text>
-      <text x="452" y="172" text-anchor="start" fill="var(--muted)" font-size="11">← геттер</text>
+      <polygon points="483,161 473,167 483,173" fill="var(--muted)" />
+      <line x1="483" y1="167" x2="501" y2="167" stroke="var(--muted)" stroke-width="1.6" />
+      <text x="507" y="171" text-anchor="start" fill="var(--muted)" font-size="11">геттер</text>
 
       <rect x="176" y="192" width="268" height="34" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1.3" />
       <text x="192" y="214" text-anchor="start" fill="var(--fg)" font-family="monospace" font-size="12">&#64; accessor volume</text>
-      <text x="452" y="214" text-anchor="start" fill="var(--muted)" font-size="11">← аксессор</text>
+      <polygon points="483,203 473,209 483,215" fill="var(--muted)" />
+      <line x1="483" y1="209" x2="501" y2="209" stroke="var(--muted)" stroke-width="1.6" />
+      <text x="507" y="213" text-anchor="start" fill="var(--muted)" font-size="11">аксессор</text>
     </svg>
     <figcaption>Декоратор можно поставить на весь класс и на любой его член. Параметры функций декорируются только в старом, экспериментальном режиме.</figcaption>
   </figure>
@@ -166,7 +178,7 @@
     <li><strong>Декоратор</strong> — это наклейка-функция, которую вешают через значок <code>&#64;</code> на класс или его часть, чтобы добавить поведение снаружи, не меняя тело.</li>
     <li><strong>Это обычная функция.</strong> Стандартный декоратор получает <code>(value, context)</code>: <code>value</code> — то, что декорируют, <code>context</code> — «паспорт» с видом (<code>kind</code>) и именем (<code>name</code>).</li>
     <li><strong>Срабатывает один раз</strong> — при объявлении класса, а не на каждый <code>new</code>. Это ключевой момент, где путаются новички.</li>
-    <li><strong>Фабрика декораторов</strong> — функция, которая принимает настройку и возвращает декоратор. <code>&#64;имя</code> — готовый декоратор; <code>&#64;имя(...)</code> — вызов фабрики.</li>
+    <li><strong>Декоратор с настройкой</strong> — это функция, которая принимает настройку и возвращает декоратор. <code>&#64;имя</code> — готовый декоратор; <code>&#64;имя(...)</code> — вызов такой функции. В чужих статьях её называют «фабрикой декораторов».</li>
     <li><strong>Два поколения:</strong> стандартные <code>(value, context)</code> — работают в TS 5.0+ без настроек (учим их); экспериментальные <code>(target, key, descriptor)</code> — по флагу <code>experimentalDecorators</code>, их используют Angular и NestJS.</li>
     <li><strong>Ставить можно</strong> на класс, свойство, метод, геттер/сеттер и авто-аксессор. Параметры — только в старом режиме.</li>
   </ul>

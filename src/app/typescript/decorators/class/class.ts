@@ -53,7 +53,7 @@ class Config {
 // Общий реестр команд.
 const commands: Function[] = [];
 
-// Декоратор-фабрика: принимает имя команды и регистрирует класс.
+// Декоратор с настройкой: принимает имя команды и регистрирует класс.
 function command(name: string) {
   return function (value: Function, context: ClassDecoratorContext) {
     console.log('Регистрирую команду:', name);
@@ -112,7 +112,7 @@ console.log(doc.createdAt);  // текущая дата — это добави�
 // Правило: вернул класс — он заменяет исходный; ничего не вернул (undefined) —
 // остаётся исходный. Возвращать МОЖНО только класс (или ничего), не число и не строку.`;
 
-  protected readonly factoryEntity = `// Фабрика + сохранение настройки. Похоже на @Entity('users') из ORM.
+  protected readonly factoryEntity = `// Настройка + её сохранение. Похоже на @Entity('users') из ORM.
 // Настройку (имя таблицы) сохраняем прямо на класс, чтобы прочитать позже.
 
 function entity(tableName: string) {

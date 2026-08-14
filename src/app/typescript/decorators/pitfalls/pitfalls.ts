@@ -65,7 +65,8 @@ function countPerObject(value: Function, context: ClassMethodDecoratorContext) {
 // Обычный декоратор — вешаем БЕЗ скобок:
 function sealed(value: Function, context: ClassDecoratorContext) {}
 
-// Фабрика — ВЫЗЫВАЕМ со скобками, она вернёт декоратор:
+// Декоратор с настройкой — это ФУНКЦИЯ, её ВЫЗЫВАЕМ со скобками,
+// и она вернёт декоратор:
 function role(name: string) {
   return function (value: Function, context: ClassDecoratorContext) {};
 }
@@ -73,13 +74,14 @@ function role(name: string) {
 @sealed        // ✅ верно: sealed сам является декоратором
 class A {}
 
-@role('admin') // ✅ верно: вызвали фабрику, получили декоратор
+@role('admin') // ✅ верно: вызвали функцию, получили декоратор
 class B {}
 
 // @sealed()   // ❌ sealed вернёт undefined — «undefined не является декоратором»
-// @role       // ❌ повесили саму фабрику: она ждёт (name), а получит (value, context)
+// @role       // ❌ повесили саму функцию: она ждёт (name), а получит (value, context)
 
-// Правило: скобки после @ есть тогда и только тогда, когда это фабрика.`;
+// Правило: скобки после @ есть тогда и только тогда,
+// когда у декоратора есть настройка.`;
 
   protected readonly mixGenerations = `// Опасность: скопировать декоратор из Angular-примера (старый стиль)
 // в проект со стандартными (новыми) декораторами. Сигнатуры несовместимы.
