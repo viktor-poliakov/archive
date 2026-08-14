@@ -54,7 +54,9 @@ export class Typescript<Section><Child> {
 }
 ```
 
-`CodeBlock` API: `[code]` (required string) and `lang` (defaults to `'typescript'`; use `'javascript'`, `'bash'`, `'json'`, `'html'`, etc. as needed).
+`CodeBlock` API: `[code]` (required string) and `lang` (defaults to `'typescript'`).
+
+**Only languages registered in [`code/highlighter.service.ts`](code/highlighter.service.ts) are highlighted** — anything else silently falls back to plain `text`, with no build error to warn you. Currently registered: `javascript`, `typescript`, `html`, `css`, `json`, `bash`, `http`, `yaml`, `graphql`, `proto`, `sql`, `python`, `go`, `java`, `kotlin`, `csharp`, `php`, `ruby`, `rust`, `cpp`. Need another one? Add an `import('shiki/langs/<name>.mjs')` to the `langs` array there (check `node_modules/@shikijs/langs/` for the exact grammar id — e.g. the Protobuf file is `proto.mjs` and its id is `proto`).
 
 ## Template skeleton
 

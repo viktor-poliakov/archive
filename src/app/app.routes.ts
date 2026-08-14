@@ -345,6 +345,22 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/backend/how-to-choose/how-to-choose').then(
       (m) => m.EcosystemBackendHowToChoose,
     ),
+  'ecosystem/api/http': () =>
+    import('./ecosystem/api/http/http').then((m) => m.EcosystemApiHttp),
+  'ecosystem/api/rest': () =>
+    import('./ecosystem/api/rest/rest').then((m) => m.EcosystemApiRest),
+  'ecosystem/api/graphql': () =>
+    import('./ecosystem/api/graphql/graphql').then((m) => m.EcosystemApiGraphql),
+  'ecosystem/api/grpc': () =>
+    import('./ecosystem/api/grpc/grpc').then((m) => m.EcosystemApiGrpc),
+  'ecosystem/api/realtime': () =>
+    import('./ecosystem/api/realtime/realtime').then((m) => m.EcosystemApiRealtime),
+  'ecosystem/api/queues': () =>
+    import('./ecosystem/api/queues/queues').then((m) => m.EcosystemApiQueues),
+  'ecosystem/api/webhooks': () =>
+    import('./ecosystem/api/webhooks/webhooks').then((m) => m.EcosystemApiWebhooks),
+  'ecosystem/api/contracts': () =>
+    import('./ecosystem/api/contracts/contracts').then((m) => m.EcosystemApiContracts),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
