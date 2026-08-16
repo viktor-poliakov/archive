@@ -361,6 +361,57 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/api/webhooks/webhooks').then((m) => m.EcosystemApiWebhooks),
   'ecosystem/api/contracts': () =>
     import('./ecosystem/api/contracts/contracts').then((m) => m.EcosystemApiContracts),
+  'ecosystem/data/relational': () =>
+    import('./ecosystem/data/relational/relational').then((m) => m.EcosystemDataRelational),
+  'ecosystem/data/nosql': () =>
+    import('./ecosystem/data/nosql/nosql').then((m) => m.EcosystemDataNosql),
+  'ecosystem/data/redis': () =>
+    import('./ecosystem/data/redis/redis').then((m) => m.EcosystemDataRedis),
+  'ecosystem/data/search': () =>
+    import('./ecosystem/data/search/search').then((m) => m.EcosystemDataSearch),
+  'ecosystem/data/analytics': () =>
+    import('./ecosystem/data/analytics/analytics').then((m) => m.EcosystemDataAnalytics),
+  'ecosystem/data/timeseries': () =>
+    import('./ecosystem/data/timeseries/timeseries').then((m) => m.EcosystemDataTimeseries),
+  'ecosystem/data/vector': () =>
+    import('./ecosystem/data/vector/vector').then((m) => m.EcosystemDataVector),
+  'ecosystem/data/object-storage': () =>
+    import('./ecosystem/data/object-storage/object-storage').then(
+      (m) => m.EcosystemDataObjectStorage,
+    ),
+  'ecosystem/data/orm': () => import('./ecosystem/data/orm/orm').then((m) => m.EcosystemDataOrm),
+  'ecosystem/data/fundamentals': () =>
+    import('./ecosystem/data/fundamentals/fundamentals').then((m) => m.EcosystemDataFundamentals),
+  'ecosystem/data/how-to-choose': () =>
+    import('./ecosystem/data/how-to-choose/how-to-choose').then(
+      (m) => m.EcosystemDataHowToChoose,
+    ),
+  'ecosystem/infra/deploy-basics': () =>
+    import('./ecosystem/infra/deploy-basics/deploy-basics').then(
+      (m) => m.EcosystemInfraDeployBasics,
+    ),
+  'ecosystem/infra/docker': () =>
+    import('./ecosystem/infra/docker/docker').then((m) => m.EcosystemInfraDocker),
+  'ecosystem/infra/kubernetes': () =>
+    import('./ecosystem/infra/kubernetes/kubernetes').then((m) => m.EcosystemInfraKubernetes),
+  'ecosystem/infra/serverless': () =>
+    import('./ecosystem/infra/serverless/serverless').then((m) => m.EcosystemInfraServerless),
+  'ecosystem/infra/hosting': () =>
+    import('./ecosystem/infra/hosting/hosting').then((m) => m.EcosystemInfraHosting),
+  'ecosystem/infra/nginx': () =>
+    import('./ecosystem/infra/nginx/nginx').then((m) => m.EcosystemInfraNginx),
+  'ecosystem/infra/cdn': () =>
+    import('./ecosystem/infra/cdn/cdn').then((m) => m.EcosystemInfraCdn),
+  'ecosystem/infra/dns-tls': () =>
+    import('./ecosystem/infra/dns-tls/dns-tls').then((m) => m.EcosystemInfraDnsTls),
+  'ecosystem/infra/cicd': () =>
+    import('./ecosystem/infra/cicd/cicd').then((m) => m.EcosystemInfraCicd),
+  'ecosystem/infra/iac': () =>
+    import('./ecosystem/infra/iac/iac').then((m) => m.EcosystemInfraIac),
+  'ecosystem/infra/environments': () =>
+    import('./ecosystem/infra/environments/environments').then(
+      (m) => m.EcosystemInfraEnvironments,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
