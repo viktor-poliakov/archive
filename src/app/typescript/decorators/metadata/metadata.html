@@ -8,6 +8,7 @@
   <h2>Общий блокнот класса</h2>
   <p><code>context.metadata</code> — это обычный объект-«блокнот», <strong>один на класс</strong>. Все декораторы этого класса пишут в один и тот же блокнот, а снаружи его можно прочитать через <code>Класс[Symbol.metadata]</code>:</p>
   <app-code-block [code]="intro" lang="typescript" />
+  <p class="note"><strong>Две первые строчки — не часть идеи, а плата за новизну.</strong> <code>Symbol.metadata</code> настолько свежий, что его пока нет ни в браузерах, ни в Node, и TypeScript по умолчанию про него тоже не знает. Уберите строку с <code>&lt;reference lib="esnext.decorators" /&gt;</code> — и получите три ошибки подряд: <code>'context.metadata' is possibly 'undefined'</code>, <code>Element implicitly has an 'any' type…</code> и <code>Property 'metadata' does not exist on type 'SymbolConstructor'</code>. Уберите полифилл — код скомпилируется, но упадёт при запуске с <code>TypeError: Cannot set properties of undefined</code>. В настоящем проекте вместо строки с <code>reference</code> пишут <code>"lib": ["ESNext"]</code> в <code>tsconfig.json</code>; подробный разбор — ниже, в разделе «Что нужно для <code>Symbol.metadata</code>». В остальных примерах страницы обе строчки подразумеваются и не повторяются.</p>
   <p>Ключевая мысль: блокнот <strong>общий</strong>. Сколько бы декораторов ни сработало на разных полях и методах класса, все они дописывают в один и тот же объект <code>metadata</code>. Поэтому декоратор одного поля может «накапливать» список вместе с декораторами других полей — чем мы сейчас и воспользуемся.</p>
 </section>
 
@@ -57,9 +58,47 @@
 
 <section class="doc__section">
   <h2>Что нужно для <code>Symbol.metadata</code></h2>
-  <p>Пара технических деталей, чтобы всё заработало. <code>Symbol.metadata</code> — это новый <a routerLink="/javascript/symbol/well-known">системный символ</a>, под которым язык хранит блокнот на классе. Он совсем свежий, поэтому в некоторых средах его ещё нет — тогда добавляют короткий полифилл, а в <code>tsconfig.json</code> подключают современный набор библиотек:</p>
+  <p>Пара технических деталей, без которых ничего из написанного выше не запустится. <code>Symbol.metadata</code> — это новый <a routerLink="/javascript/symbol/well-known">системный символ</a>, под которым язык хранит блокнот на классе. Он настолько свежий, что <strong>его пока нет ни в браузерах, ни в Node</strong>. Поэтому нужны две независимые вещи: типы для компилятора и полифилл для запуска. И есть ловушка: последняя из трёх ошибок советует сменить <code>lib</code> на <code>esnext</code>, а рука тянется поставить <code>target: ESNext</code> — ошибки пропадут, но код перестанет запускаться вовсе.</p>
   <app-code-block [code]="symbolPolyfill" lang="typescript" />
-  <p class="note"><strong>Если <code>Класс[Symbol.metadata]</code> оказался <code>undefined</code></strong> — почти наверняка забыт полифилл или устаревший <code>lib</code> в конфиге. Также помните: блокнот появляется, только если у класса <em>есть хоть один</em> декоратор, который в него что-то записал.</p>
+  <div class="table-wrap">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Что забыли</th>
+          <th>Когда это вылезет</th>
+          <th>Что вы увидите</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Подключить типы через <code>lib</code></td>
+          <td>Сразу, при проверке типов</td>
+          <td class="no">❌ три ошибки, последняя прямо советует сменить <code>lib</code> на <code>esnext</code></td>
+        </tr>
+        <tr>
+          <td>Поставили <code>target: ESNext</code> вместо <code>lib</code></td>
+          <td>При запуске, ещё до выполнения кода</td>
+          <td class="no">❌ <code>SyntaxError: Invalid or unexpected token</code> на строке с декоратором</td>
+        </tr>
+        <tr>
+          <td>Полифилл</td>
+          <td>При запуске, на первом же декораторе</td>
+          <td class="no">❌ <code>TypeError: Cannot set properties of undefined</code></td>
+        </tr>
+        <tr>
+          <td>Записать хоть что-нибудь в блокнот</td>
+          <td>При чтении снаружи</td>
+          <td class="no">❌ <code>Класс[Symbol.metadata]</code> равен <code>undefined</code></td>
+        </tr>
+        <tr>
+          <td>Ничего не забыли</td>
+          <td>—</td>
+          <td class="yes">✅ объект с вашими заметками</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><strong>Две мелочи, которые удивляют при первом запуске.</strong> Во-первых, блокнот появляется, только если у класса <em>есть хоть один</em> декоратор, который в него что-то записал: у класса без записей <code>Класс[Symbol.metadata]</code> так и останется <code>undefined</code>, и это нормально. Во-вторых, объект метаданных создаётся без прототипа, поэтому в консоли Node он печатается как <code>[Object: null prototype] &#123; … &#125;</code> — данные в нём обычные, просто у него нет унаследованных методов вроде <code>hasOwnProperty</code>.</p>
 </section>
 
 <section class="doc__section">

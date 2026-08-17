@@ -14,6 +14,16 @@ export class TypescriptDecoratorsMetadata {
 // Все декораторы одного класса пишут в один и тот же блокнот, а потом
 // другой код читает его через Class[Symbol.metadata].
 
+// Две служебные строчки, без которых пример не заработает. Они не про идею
+// метаданных, а про новизну Symbol.metadata — подробный разбор в разделе ниже.
+
+// 1. Подключаем типы: без этого TypeScript не знает про Symbol.metadata.
+//    В настоящем проекте то же самое делают строкой "lib" в tsconfig.json.
+/// <reference lib="esnext.decorators" />
+
+// 2. Полифилл: самого Symbol.metadata пока нет ни в браузерах, ни в Node.
+(Symbol as any).metadata ??= Symbol.for('Symbol.metadata');
+
 function note(value: any, context: ClassMethodDecoratorContext) {
   // Оставляем заметку в блокноте класса.
   context.metadata['подпись'] = 'здесь был декоратор';
@@ -87,17 +97,49 @@ console.log(schema);
 // CREATE TABLE product (title text, price int, sku text)`;
 
   protected readonly symbolPolyfill = `// Symbol.metadata — новый системный символ, ключ, под которым язык хранит
-// блокнот на классе. В некоторых средах его пока нет — тогда добавляют
-// полифилл ОДИН раз, в самом начале приложения:
-(Symbol as any).metadata ??= Symbol.for('Symbol.metadata');
+// блокнот на классе. Ни браузеры, ни Node его пока не реализовали, поэтому
+// нужны ДВЕ независимые вещи: настройка компилятора и полифилл.
+// Забыли первую — не скомпилируется. Забыли вторую — упадёт при запуске.
 
-// А в tsconfig.json нужен современный набор библиотек, чтобы TypeScript
-// вообще знал про Symbol.metadata и тип context.metadata:
+// ═══ 1. ТИПЫ: чтобы TypeScript знал про Symbol.metadata ═══
+// В проекте это одна строка в tsconfig.json:
 // {
 //   "compilerOptions": {
-//     "lib": ["ESNext"]   // здесь живёт тип для Symbol.metadata
+//     "lib": ["ESNext"]   // здесь живут типы для Symbol.metadata
 //   }
-// }`;
+// }
+//
+// Точечный вариант, если не хочется тянуть весь ESNext:
+//   "lib": ["ES2022", "ESNext.Decorators"]
+//
+// А в TS Playground, где конфиг править неудобно, тот же эффект даёт
+// строчка в самом верху файла, до любого кода:
+//   /// <reference lib="esnext.decorators" />
+//
+// Без этого будут ровно три ошибки, и все три про одно и то же:
+//   'context.metadata' is possibly 'undefined'
+//   Element implicitly has an 'any' type because expression of type 'any'
+//     can't be used to index type 'typeof Demo'
+//   Property 'metadata' does not exist on type 'SymbolConstructor'
+
+// ВНИМАНИЕ, ЛОВУШКА. Последняя ошибка советует сменить lib на esnext,
+// и очень хочется вместо этого поставить "target": "ESNext" — ошибки
+// действительно пропадут. Но появится другая беда: при таком target
+// TypeScript оставляет декораторы в выводе как есть, а их пока не понимает
+// ни один движок, и файл падает ещё при разборе:
+//   SyntaxError: Invalid or unexpected token
+// Поэтому меняют именно lib, а target оставляют прежним (ES2022 и подобные) —
+// тогда TypeScript сам превращает декораторы в обычные вызовы функций.
+
+// ═══ 2. ПОЛИФИЛЛ: чтобы блокнот появился во время работы ═══
+// Одна строка в самом начале приложения, до первого декоратора:
+(Symbol as any).metadata ??= Symbol.for('Symbol.metadata');
+//
+// Без неё код скомпилируется, но упадёт на первом же декораторе:
+//   TypeError: Cannot set properties of undefined (setting 'подпись')
+//
+// Причина простая: не видя Symbol.metadata, среда вообще не создаёт объект
+// метаданных, и context.metadata оказывается undefined.`;
 
   protected readonly legacyReflect = `// В СТАРОМ мире (Angular, NestJS) метаданные устроены совершенно иначе:
 // через библиотеку reflect-metadata и флаг "emitDecoratorMetadata": true.
