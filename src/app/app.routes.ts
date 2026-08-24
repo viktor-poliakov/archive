@@ -412,6 +412,50 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/infra/environments/environments').then(
       (m) => m.EcosystemInfraEnvironments,
     ),
+  'ecosystem/security/authn-authz': () =>
+    import('./ecosystem/security/authn-authz/authn-authz').then(
+      (m) => m.EcosystemSecurityAuthnAuthz,
+    ),
+  'ecosystem/security/sessions-jwt': () =>
+    import('./ecosystem/security/sessions-jwt/sessions-jwt').then(
+      (m) => m.EcosystemSecuritySessionsJwt,
+    ),
+  'ecosystem/security/auth-services': () =>
+    import('./ecosystem/security/auth-services/auth-services').then(
+      (m) => m.EcosystemSecurityAuthServices,
+    ),
+  'ecosystem/security/owasp': () =>
+    import('./ecosystem/security/owasp/owasp').then((m) => m.EcosystemSecurityOwasp),
+  'ecosystem/security/browser-security': () =>
+    import('./ecosystem/security/browser-security/browser-security').then(
+      (m) => m.EcosystemSecurityBrowserSecurity,
+    ),
+  'ecosystem/security/secrets': () =>
+    import('./ecosystem/security/secrets/secrets').then((m) => m.EcosystemSecuritySecrets),
+  'ecosystem/security/privacy': () =>
+    import('./ecosystem/security/privacy/privacy').then((m) => m.EcosystemSecurityPrivacy),
+  'ecosystem/security/abuse': () =>
+    import('./ecosystem/security/abuse/abuse').then((m) => m.EcosystemSecurityAbuse),
+  'ecosystem/observability/logs': () =>
+    import('./ecosystem/observability/logs/logs').then((m) => m.EcosystemObservabilityLogs),
+  'ecosystem/observability/metrics': () =>
+    import('./ecosystem/observability/metrics/metrics').then(
+      (m) => m.EcosystemObservabilityMetrics,
+    ),
+  'ecosystem/observability/tracing': () =>
+    import('./ecosystem/observability/tracing/tracing').then(
+      (m) => m.EcosystemObservabilityTracing,
+    ),
+  'ecosystem/observability/errors': () =>
+    import('./ecosystem/observability/errors/errors').then((m) => m.EcosystemObservabilityErrors),
+  'ecosystem/observability/uptime': () =>
+    import('./ecosystem/observability/uptime/uptime').then((m) => m.EcosystemObservabilityUptime),
+  'ecosystem/observability/product-analytics': () =>
+    import('./ecosystem/observability/product-analytics/product-analytics').then(
+      (m) => m.EcosystemObservabilityProductAnalytics,
+    ),
+  'ecosystem/observability/slo': () =>
+    import('./ecosystem/observability/slo/slo').then((m) => m.EcosystemObservabilitySlo),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
