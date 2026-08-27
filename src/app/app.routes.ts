@@ -456,6 +456,20 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     ),
   'ecosystem/observability/slo': () =>
     import('./ecosystem/observability/slo/slo').then((m) => m.EcosystemObservabilitySlo),
+  'ecosystem/process/git': () =>
+    import('./ecosystem/process/git/git').then((m) => m.EcosystemProcessGit),
+  'ecosystem/process/linters': () =>
+    import('./ecosystem/process/linters/linters').then((m) => m.EcosystemProcessLinters),
+  'ecosystem/process/tests': () =>
+    import('./ecosystem/process/tests/tests').then((m) => m.EcosystemProcessTests),
+  'ecosystem/process/static-analysis': () =>
+    import('./ecosystem/process/static-analysis/static-analysis').then(
+      (m) => m.EcosystemProcessStaticAnalysis,
+    ),
+  'ecosystem/process/docs': () =>
+    import('./ecosystem/process/docs/docs').then((m) => m.EcosystemProcessDocs),
+  'ecosystem/process/trackers': () =>
+    import('./ecosystem/process/trackers/trackers').then((m) => m.EcosystemProcessTrackers),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
