@@ -1,7 +1,51 @@
 import { Injectable } from '@angular/core';
-import type { HighlighterCore } from 'shiki/core';
+import type { HighlighterCore, ShikiTransformer } from 'shiki/core';
 
 const THEME = 'dracula';
+
+/**
+ * Marks a line as an error: a trailing `[!error]`, optionally preceded by the
+ * language's comment characters. The marker is stripped before highlighting, so
+ * it never reaches the screen or the clipboard.
+ */
+const ERROR_MARKER = /[ \t]*(?:\/\/|#|--|;)?[ \t]*\[!error\][ \t]*$/;
+
+/** Removes the markers so the copy button yields clean, runnable text. */
+export function stripErrorMarkers(code: string): string {
+  return code
+    .split('\n')
+    .map((line) => line.replace(ERROR_MARKER, ''))
+    .join('\n');
+}
+
+/**
+ * Tags lines ending in `[!error]` with a class the global stylesheet paints red.
+ * A fresh instance per `codeToHtml` call keeps the line set from leaking between
+ * concurrently highlighted blocks.
+ */
+function errorLineTransformer(): ShikiTransformer {
+  let errorLines = new Set<number>();
+
+  return {
+    name: 'error-lines',
+    preprocess(code) {
+      errorLines = new Set();
+      return code
+        .split('\n')
+        .map((line, index) => {
+          if (!ERROR_MARKER.test(line)) return line;
+          errorLines.add(index + 1);
+          return line.replace(ERROR_MARKER, '');
+        })
+        .join('\n');
+    },
+    line(node, lineNumber) {
+      if (!errorLines.has(lineNumber)) return;
+      const existing = node.properties['class'];
+      node.properties['class'] = existing ? `${existing} line--error` : 'line--error';
+    },
+  };
+}
 
 /**
  * Lazily creates a single Shiki highlighter and reuses it for every code block.
@@ -15,7 +59,11 @@ export class HighlighterService {
   async highlight(code: string, lang: string): Promise<string> {
     const highlighter = await this.getHighlighter();
     const language = highlighter.getLoadedLanguages().includes(lang) ? lang : 'text';
-    return highlighter.codeToHtml(code, { lang: language, theme: THEME });
+    return highlighter.codeToHtml(code, {
+      lang: language,
+      theme: THEME,
+      transformers: [errorLineTransformer()],
+    });
   }
 
   private getHighlighter(): Promise<HighlighterCore> {

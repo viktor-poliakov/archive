@@ -44,6 +44,6 @@
   @if (html(); as html) {
     <div class="code-block__shiki" [innerHTML]="html"></div>
   } @else {
-    <pre class="code-block__fallback"><code>{{ code() }}</code></pre>
+    <pre class="code-block__fallback"><code>{{ plainCode() }}</code></pre>
   }
 </div>

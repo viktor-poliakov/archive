@@ -80,20 +80,20 @@ describe('formatPrice', () => {
 
  ❯ src/format-price.test.js (3 tests | 1 failed) 6ms
    ✓ formatPrice > показывает рубли и копейки
-   × formatPrice > дописывает ноль, если копеек меньше десяти
+   × formatPrice > дописывает ноль, если копеек меньше десяти [!error]
    ✓ formatPrice > ругается, если передали не число
 
- FAIL  src/format-price.test.js > formatPrice > дописывает ноль
+ FAIL  src/format-price.test.js > formatPrice > дописывает ноль [!error]
 
- AssertionError: expected '10,5 ₽' to be '10,05 ₽'
+ AssertionError: expected '10,5 ₽' to be '10,05 ₽' [!error]
 
  - Ожидали:  "10,05 ₽"
- + Получили: "10,5 ₽"
+ + Получили: "10,5 ₽" [!error]
 
    at src/format-price.test.js:16:38
 
- Test Files  1 failed (1)
-      Tests  1 failed | 2 passed (3)
+ Test Files  1 failed (1) [!error]
+      Tests  1 failed | 2 passed (3) [!error]
 
 # Красный вывод — это подробный отчёт, а не ругань.
 # В нём сразу три вещи: КАКОЕ поведение сломалось (название теста),

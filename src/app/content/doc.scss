@@ -120,6 +120,16 @@ a {
     white-space: nowrap;
   }
 
+  /* The first column holds the key of the row — a command, a status code, an
+     identifier — and must read as one token: `git clone`, not `git` / `clone`.
+     Deliberately limited to that column: forcing nowrap on the wide description
+     columns pushes long names (HTTP headers and the like) past the table width
+     and makes the whole table scroll sideways, which is worse than a wrap. */
+  td:first-child code,
+  th:first-child code {
+    white-space: nowrap;
+  }
+
   td.yes {
     color: var(--green);
   }

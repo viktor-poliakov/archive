@@ -104,6 +104,13 @@ body {
     padding-right: 2.25rem;
   }
 
+  /* Lines marked `[!error]` in the source: the failure itself, painted red.
+     Shiki writes the theme colour inline on every token, so overriding needs
+     !important. */
+  .line--error span {
+    color: var(--red) !important;
+  }
+
   .line::before {
     counter-increment: line;
     content: counter(line);

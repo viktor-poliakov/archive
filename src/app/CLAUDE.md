@@ -56,6 +56,17 @@ export class Typescript<Section><Child> {
 
 `CodeBlock` API: `[code]` (required string) and `lang` (defaults to `'typescript'`).
 
+**Painting a line red.** In terminal output, stack traces and "broken code" samples, end a line with `[!error]` to render it in `var(--red)`:
+
+```ts
+protected readonly run = `$ npm test
+ ✓ formatPrice > shows roubles
+ × formatPrice > pads the kopecks [!error]
+ Tests  1 failed | 2 passed (3) [!error]`;
+```
+
+The marker may be preceded by the language's comment characters (`// [!error]`, `# [!error]`), and it is stripped before highlighting — it never reaches the screen or the clipboard. Implemented as a Shiki transformer in [`code/highlighter.service.ts`](code/highlighter.service.ts), styled by `.line--error` in `src/styles.scss`. Mark only the lines that *report the failure*, not the whole block — the contrast is the point.
+
 **Only languages registered in [`code/highlighter.service.ts`](code/highlighter.service.ts) are highlighted** — anything else silently falls back to plain `text`, with no build error to warn you. Currently registered: `javascript`, `typescript`, `html`, `css`, `json`, `bash`, `http`, `yaml`, `graphql`, `proto`, `sql`, `python`, `go`, `java`, `kotlin`, `csharp`, `php`, `ruby`, `rust`, `cpp`. Need another one? Add an `import('shiki/langs/<name>.mjs')` to the `langs` array there (check `node_modules/@shikijs/langs/` for the exact grammar id — e.g. the Protobuf file is `proto.mjs` and its id is `proto`).
 
 ## Template skeleton

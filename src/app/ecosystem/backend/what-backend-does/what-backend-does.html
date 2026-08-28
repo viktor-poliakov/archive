@@ -68,7 +68,7 @@
     </svg>
     <figcaption>Когда вы запускаете проект и открываете <code>localhost:3000</code>, вы обращаетесь к квартире 3000 в собственном компьютере. Слово <code>localhost</code> означает «этот же компьютер».</figcaption>
   </figure>
-  <p>Стоит объяснить и первую квартиру на схеме, потому что она встречается в любом настоящем проекте. Ваше приложение обычно <strong>не смотрит в интернет напрямую</strong>. Перед ним ставят отдельную программу — чаще всего <strong>nginx</strong>, — которая занимает порт 443 (это стандартный порт для защищённых соединений) и работает швейцаром: принимает все запросы из интернета, занимается шифрованием, отдаёт картинки и файлы сама, а всё остальное передаёт внутрь, на порт 3000. Зачем так сложно, подробно разбирается в подразделе «Инфраструктура»; сейчас достаточно знать, что такой швейцар обычно есть.</p>
+  <p>Стоит объяснить и первую квартиру на схеме, потому что она встречается в любом настоящем проекте. Ваше приложение обычно <strong>не смотрит в интернет напрямую</strong>. Перед ним ставят отдельную программу — чаще всего <strong>nginx</strong>, — которая занимает порт 443 (это стандартный порт для защищённых соединений) и работает швейцаром: принимает все запросы из интернета, занимается шифрованием, отдаёт картинки и файлы сама, а всё остальное передаёт внутрь, на порт 3000. Зачем так сложно, подробно разбирается на странице <a routerLink="/ecosystem/infra/nginx">Nginx, Caddy, Traefik</a>; сейчас достаточно знать, что такой швейцар обычно есть.</p>
 </section>
 
 <section class="doc__section">
@@ -246,8 +246,10 @@
       <text x="241" y="62" text-anchor="middle" fill="var(--fg)" font-size="11">Борис</text>
       <text x="241" y="80" text-anchor="middle" fill="var(--muted)" font-size="9.5">кладёт кепку</text>
 
-      <line x1="89" y1="92" x2="130" y2="122" stroke="var(--muted)" stroke-width="1.5" />
-      <line x1="241" y1="92" x2="200" y2="122" stroke="var(--muted)" stroke-width="1.5" />
+      <line x1="89" y1="92" x2="89" y2="114" stroke="var(--muted)" stroke-width="1.5" />
+      <polygon points="83,114 89,124 95,114" fill="var(--muted)" />
+      <line x1="241" y1="92" x2="241" y2="114" stroke="var(--muted)" stroke-width="1.5" />
+      <polygon points="235,114 241,124 247,114" fill="var(--muted)" />
 
       <rect x="60" y="126" width="210" height="70" rx="10" fill="var(--surface)" stroke="var(--red)" stroke-width="1.8" />
       <text x="165" y="148" text-anchor="middle" fill="var(--red)" font-size="11.5" font-weight="600">процесс сервера</text>
@@ -268,8 +270,10 @@
       <text x="571" y="62" text-anchor="middle" fill="var(--fg)" font-size="11">Борис</text>
       <text x="571" y="80" text-anchor="middle" fill="var(--muted)" font-size="9.5">с пропуском №77</text>
 
-      <line x1="421" y1="92" x2="460" y2="118" stroke="var(--muted)" stroke-width="1.5" />
-      <line x1="571" y1="92" x2="532" y2="118" stroke="var(--muted)" stroke-width="1.5" />
+      <line x1="421" y1="92" x2="421" y2="110" stroke="var(--muted)" stroke-width="1.5" />
+      <polygon points="415,110 421,120 427,110" fill="var(--muted)" />
+      <line x1="571" y1="92" x2="571" y2="110" stroke="var(--muted)" stroke-width="1.5" />
+      <polygon points="565,110 571,120 577,110" fill="var(--muted)" />
 
       <rect x="386" y="122" width="220" height="46" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.8" />
       <text x="496" y="141" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">любая копия сервера</text>
@@ -362,42 +366,49 @@
   <h2>Пять обязанностей, ради которых бэкенд существует</h2>
   <p>Соберём в одном месте всё, чем на самом деле занимается серверная часть. Обязанностей пять, и ни одну из них принципиально нельзя переложить на браузер.</p>
   <figure class="diagram">
-    <svg viewBox="0 0 660 330" width="100%" role="img" aria-label="Пять обязанностей бэкенда вокруг центрального блока: доступ, правила, данные, чужие сервисы, фоновая работа">
+    <svg viewBox="0 0 660 400" width="100%" role="img" aria-label="Пять обязанностей бэкенда: от центрального блока стрелки ведут к доступу, правилам, данным, чужим сервисам и фоновой работе">
       <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">то, что физически не может жить на устройстве пользователя</text>
 
-      <rect x="245" y="140" width="170" height="56" rx="11" fill="var(--bg)" stroke="var(--accent)" stroke-width="2.4" />
-      <text x="330" y="164" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">Бэкенд</text>
-      <text x="330" y="182" text-anchor="middle" fill="var(--muted)" font-size="10">ваша серверная программа</text>
+      <rect x="24" y="44" width="150" height="338" rx="11" fill="var(--bg)" stroke="var(--accent)" stroke-width="2.4" />
+      <text x="99" y="207" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="600">Бэкенд</text>
+      <text x="99" y="225" text-anchor="middle" fill="var(--muted)" font-size="10">ваша серверная</text>
+      <text x="99" y="239" text-anchor="middle" fill="var(--muted)" font-size="10">программа</text>
 
-      <rect x="24" y="44" width="180" height="62" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.7" />
-      <text x="114" y="66" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">1 · Кто и что может</text>
-      <text x="114" y="84" text-anchor="middle" fill="var(--fg)" font-size="10">вход, пропуска, права</text>
-      <text x="114" y="99" text-anchor="middle" fill="var(--muted)" font-size="9.5">спрятать кнопку — не защита</text>
+      <line x1="174" y1="73" x2="238" y2="73" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="238,67 248,73 238,79" fill="var(--border)" />
+      <line x1="174" y1="143" x2="238" y2="143" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="238,137 248,143 238,149" fill="var(--border)" />
+      <line x1="174" y1="213" x2="238" y2="213" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="238,207 248,213 238,219" fill="var(--border)" />
+      <line x1="174" y1="283" x2="238" y2="283" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="238,277 248,283 238,289" fill="var(--border)" />
+      <line x1="174" y1="353" x2="238" y2="353" stroke="var(--border)" stroke-width="1.6" />
+      <polygon points="238,347 248,353 238,359" fill="var(--border)" />
 
-      <rect x="456" y="44" width="180" height="62" rx="10" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.7" />
-      <text x="546" y="66" text-anchor="middle" fill="var(--cyan)" font-size="11.5" font-weight="600">2 · Правила</text>
-      <text x="546" y="84" text-anchor="middle" fill="var(--fg)" font-size="10">цены, скидки, остатки</text>
-      <text x="546" y="99" text-anchor="middle" fill="var(--muted)" font-size="9.5">единственный источник правды</text>
+      <rect x="250" y="44" width="386" height="58" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.7" />
+      <text x="443" y="66" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">1 · Кто и что может</text>
+      <text x="443" y="82" text-anchor="middle" fill="var(--fg)" font-size="10">вход, пропуска, права</text>
+      <text x="443" y="96" text-anchor="middle" fill="var(--muted)" font-size="9.5">спрятать кнопку — не защита</text>
 
-      <rect x="24" y="230" width="180" height="62" rx="10" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.7" />
-      <text x="114" y="252" text-anchor="middle" fill="var(--purple)" font-size="11.5" font-weight="600">4 · Чужие сервисы</text>
-      <text x="114" y="270" text-anchor="middle" fill="var(--fg)" font-size="10">оплата, письма, карты</text>
-      <text x="114" y="285" text-anchor="middle" fill="var(--muted)" font-size="9.5">по секретным ключам</text>
+      <rect x="250" y="114" width="386" height="58" rx="10" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.7" />
+      <text x="443" y="136" text-anchor="middle" fill="var(--cyan)" font-size="11.5" font-weight="600">2 · Правила</text>
+      <text x="443" y="152" text-anchor="middle" fill="var(--fg)" font-size="10">цены, скидки, остатки</text>
+      <text x="443" y="166" text-anchor="middle" fill="var(--muted)" font-size="9.5">единственный источник правды</text>
 
-      <rect x="456" y="230" width="180" height="62" rx="10" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.7" />
-      <text x="546" y="252" text-anchor="middle" fill="var(--orange)" font-size="11.5" font-weight="600">5 · Фоновая работа</text>
-      <text x="546" y="270" text-anchor="middle" fill="var(--fg)" font-size="10">отчёты, рассылки, чистка</text>
-      <text x="546" y="285" text-anchor="middle" fill="var(--muted)" font-size="9.5">когда никто не смотрит</text>
+      <rect x="250" y="184" width="386" height="58" rx="10" fill="var(--bg)" stroke="var(--pink)" stroke-width="1.7" />
+      <text x="443" y="206" text-anchor="middle" fill="var(--pink)" font-size="11.5" font-weight="600">3 · Данные</text>
+      <text x="443" y="222" text-anchor="middle" fill="var(--fg)" font-size="10">единственный ключ от базы</text>
+      <text x="443" y="236" text-anchor="middle" fill="var(--muted)" font-size="9.5">браузеру его не отдают никогда</text>
 
-      <rect x="245" y="252" width="170" height="56" rx="10" fill="var(--bg)" stroke="var(--pink)" stroke-width="1.7" />
-      <text x="330" y="274" text-anchor="middle" fill="var(--pink)" font-size="11.5" font-weight="600">3 · Данные</text>
-      <text x="330" y="292" text-anchor="middle" fill="var(--fg)" font-size="10">единственный ключ от базы</text>
+      <rect x="250" y="254" width="386" height="58" rx="10" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.7" />
+      <text x="443" y="276" text-anchor="middle" fill="var(--purple)" font-size="11.5" font-weight="600">4 · Чужие сервисы</text>
+      <text x="443" y="292" text-anchor="middle" fill="var(--fg)" font-size="10">оплата, письма, карты</text>
+      <text x="443" y="306" text-anchor="middle" fill="var(--muted)" font-size="9.5">по секретным ключам</text>
 
-      <line x1="204" y1="82" x2="256" y2="138" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="456" y1="82" x2="404" y2="138" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="204" y1="256" x2="243" y2="228" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="456" y1="256" x2="417" y2="228" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="330" y1="196" x2="330" y2="250" stroke="var(--border)" stroke-width="1.5" />
+      <rect x="250" y="324" width="386" height="58" rx="10" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.7" />
+      <text x="443" y="346" text-anchor="middle" fill="var(--orange)" font-size="11.5" font-weight="600">5 · Фоновая работа</text>
+      <text x="443" y="362" text-anchor="middle" fill="var(--fg)" font-size="10">отчёты, рассылки, чистка</text>
+      <text x="443" y="376" text-anchor="middle" fill="var(--muted)" font-size="9.5">когда никто не смотрит</text>
     </svg>
     <figcaption>Первые три обязанности невозможно отдать клиенту по соображениям доверия. Четвёртую — потому что ключи стали бы публичными. Пятую — потому что браузер закрывается вместе с вкладкой, а работа должна продолжаться.</figcaption>
   </figure>

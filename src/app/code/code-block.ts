@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -8,7 +9,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-import { HighlighterService } from './highlighter.service';
+import { HighlighterService, stripErrorMarkers } from './highlighter.service';
 
 @Component({
   selector: 'app-code-block',
@@ -27,6 +28,9 @@ export class CodeBlock {
   protected readonly html = signal<SafeHtml | null>(null);
   protected readonly copied = signal(false);
 
+  /** Shown before highlighting finishes — without the `[!error]` markers. */
+  protected readonly plainCode = computed(() => stripErrorMarkers(this.code()));
+
   constructor() {
     effect(() => {
       const code = this.code();
@@ -38,7 +42,7 @@ export class CodeBlock {
   }
 
   async copy(): Promise<void> {
-    await navigator.clipboard.writeText(this.code());
+    await navigator.clipboard.writeText(stripErrorMarkers(this.code()));
     this.copied.set(true);
     setTimeout(() => this.copied.set(false), 2000);
   }
