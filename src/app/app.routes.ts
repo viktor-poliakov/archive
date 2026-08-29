@@ -470,6 +470,22 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/process/docs/docs').then((m) => m.EcosystemProcessDocs),
   'ecosystem/process/trackers': () =>
     import('./ecosystem/process/trackers/trackers').then((m) => m.EcosystemProcessTrackers),
+  'ecosystem/architecture/monolith-microservices': () =>
+    import('./ecosystem/architecture/monolith-microservices/monolith-microservices').then(
+      (m) => m.EcosystemArchitectureMonolithMicroservices,
+    ),
+  'ecosystem/architecture/request-path': () =>
+    import('./ecosystem/architecture/request-path/request-path').then(
+      (m) => m.EcosystemArchitectureRequestPath,
+    ),
+  'ecosystem/architecture/caching': () =>
+    import('./ecosystem/architecture/caching/caching').then(
+      (m) => m.EcosystemArchitectureCaching,
+    ),
+  'ecosystem/architecture/background-jobs': () =>
+    import('./ecosystem/architecture/background-jobs/background-jobs').then(
+      (m) => m.EcosystemArchitectureBackgroundJobs,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
