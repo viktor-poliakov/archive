@@ -1,0 +1,85 @@
+.prompt {
+  width: min(440px, calc(100vw - 3rem));
+  padding: 1.5rem 1.6rem 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--fg);
+
+  &::backdrop {
+    background: rgb(0 0 0 / 55%);
+  }
+}
+
+.prompt__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 650;
+}
+
+.prompt__lead {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.prompt__place {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.prompt__where {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.prompt__what {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.prompt__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.35rem;
+}
+
+.prompt__btn {
+  padding: 0.5rem 0.95rem;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.prompt__btn--ghost {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--fg);
+  }
+}
+
+.prompt__btn--primary {
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--fg);
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
+  }
+}

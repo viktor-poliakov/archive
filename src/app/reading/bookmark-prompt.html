@@ -1,0 +1,26 @@
+@if (bookmark(); as anchor) {
+  <dialog
+    #dialog
+    class="prompt"
+    [style.--accent]="sectionColor()"
+    (close)="dismiss()"
+    (cancel)="dismiss()"
+  >
+    <h2 class="prompt__title">Продолжить чтение?</h2>
+    <p class="prompt__lead">У вас сохранена закладка:</p>
+
+    <p class="prompt__place">
+      <span class="prompt__where">{{ sectionLabel() }} · {{ anchor.title }}</span>
+      <span class="prompt__what">{{ anchor.heading ?? 'начало страницы' }}</span>
+    </p>
+
+    <div class="prompt__actions">
+      <button type="button" class="prompt__btn prompt__btn--ghost" (click)="dismiss()">
+        Остаться здесь
+      </button>
+      <button type="button" class="prompt__btn prompt__btn--primary" (click)="accept()" autofocus>
+        Перейти к закладке
+      </button>
+    </div>
+  </dialog>
+}

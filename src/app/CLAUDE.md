@@ -103,6 +103,19 @@ The marker may be preceded by the language's comment characters (`// [!error]`, 
 - `.doc__title` (`<h1>`), `.doc__lead` (intro `<p>`), `.doc__section` (wraps each `<h2>` block).
 - `.rules` — annotated `<ul>`; `.note` — callout `<p>`; `table.compare` — comparison table; `figure.diagram` — inline `<svg>` + `<figcaption>` (see `typescript/classes/basics/basics.html` for a rich diagram example).
 
+## Headings carry the bookmark UI
+
+At runtime every `<h2>` / `<h3>` inside `.doc` gets an `id` derived from its text, plus a bookmark button appended inside it ([`reading/bookmark.service.ts`](reading/bookmark.service.ts)). Content pages therefore must **not** write `id` attributes on headings, and heading markup must stay text-only — a `<button>` or other interactive element inside an `<h2>` would collide.
+
+The button is injected imperatively, so component-scoped styles never reach it: its CSS lives globally in `src/styles.scss` alongside the `.shiki` rules, for the same reason.
+
+Two consequences when editing an existing page:
+
+- **Renaming a heading invalidates a bookmark pointing at it.** The reader is not stranded — the jump falls back to matching the saved heading text, and failing that the page opens from the top — but the exact spot is lost. Reword knowingly.
+- **Two headings with identical text on one page** get suffixed slugs (`-2`), which are position-dependent and therefore fragile. There are currently zero such duplicates; keep it that way.
+
+The slug algorithm is part of the storage contract — changing it requires bumping the key version in [`reading/reading-storage.ts`](reading/reading-storage.ts).
+
 ## ⚠️ Brace / angle-bracket trap (this WILL break the build)
 
 Inside the `.html` template, Angular reads a raw `{` as the start of an ICU expression and fails with `NG5002 Invalid ICU message`. In prose, inline `<code>`, and SVG `<text>`, escape every literal:

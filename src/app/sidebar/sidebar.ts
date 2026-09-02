@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 
 import { NAV_SECTIONS, NavChild } from '../nav/nav.data';
+import { findNav } from '../nav/nav.lookup';
 import { TruncateTooltip } from './truncate-tooltip';
 
 @Component({
@@ -28,17 +29,20 @@ export class Sidebar {
     { initialValue: this.router.url },
   );
 
-  /** URL split into path segments, e.g. ['javascript', 'functions', 'basics']. */
-  private readonly segments = computed(() => this.url().split('/').filter(Boolean));
+  /** Текущий узел дерева навигации; null — корневой экран «все разделы». */
+  private readonly match = computed(() => findNav(this.url()));
 
   /** The section selected via its route, or null when on the root "all sections" view. */
-  protected readonly activeSection = computed(() => {
-    const segment = this.segments()[0];
-    return this.sections.find((section) => section.id === segment) ?? null;
-  });
+  protected readonly activeSection = computed(() => this.match()?.section ?? null);
 
-  /** The currently selected child id (second URL segment), used to highlight its group. */
-  protected readonly activeChildId = computed(() => this.segments()[1] ?? null);
+  /**
+   * Второй сегмент URL: для трёхуровневого пути это id группы, для
+   * двухуровневого — id самого ребёнка. Используется для подсветки группы.
+   */
+  protected readonly activeChildId = computed(() => {
+    const match = this.match();
+    return match?.group?.id ?? match?.child?.id ?? null;
+  });
 
   /**
    * Groups that are currently expanded. On navigation an effect resets this to

@@ -83,6 +83,53 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+/* Кнопка-закладка у заголовка. Вставляется в разметку скриптом
+   (reading/bookmark.service.ts), поэтому стили компонента страницы до неё не
+   дотягиваются — правила обязаны быть глобальными, как и у .shiki ниже.
+
+   Кнопка строчная, а не абсолютная: она стоит в одной строке с текстом
+   заголовка и никуда не выезжает за колонку. Флексом заголовок сделать нельзя —
+   в 426 заголовках есть вложенный <code>, и флекс разорвал бы их перенос. */
+.heading-bookmark {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  /* Кнопка видна всегда, поэтому в покое она приглушена — иначе две тысячи
+     флажков перетянули бы внимание на себя. */
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: var(--fg);
+    background: var(--surface-hover);
+  }
+
+  &:focus-visible {
+    outline: none;
+    background: var(--surface-hover);
+  }
+
+  /* Заложенное место — единственное на весь сайт, поэтому его видно издалека. */
+  &--on {
+    color: var(--green);
+  }
+
+  &--on:hover {
+    color: var(--green);
+  }
+}
+
 /* Shiki output (inserted via [innerHTML], so styled globally). */
 .shiki {
   margin: 0;

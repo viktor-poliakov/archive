@@ -494,6 +494,10 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/architecture/resilience/resilience').then(
       (m) => m.EcosystemArchitectureResilience,
     ),
+  'ecosystem/architecture/multitenancy': () =>
+    import('./ecosystem/architecture/multitenancy/multitenancy').then(
+      (m) => m.EcosystemArchitectureMultitenancy,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
