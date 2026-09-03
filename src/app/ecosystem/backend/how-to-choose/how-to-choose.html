@@ -269,46 +269,44 @@
   <p>А теперь самое важное на странице, и оно снимает большую часть тревоги вокруг выбора. Язык — это примерно пятая часть того, что нужно знать серверному разработчику. <strong>Остальные четыре пятых одинаковы везде</strong>, и учить их придётся в любом случае.</p>
   <app-code-block [code]="whatToLearnAfter" lang="javascript" />
   <figure class="diagram">
-    <svg viewBox="0 0 660 320" width="100%" role="img" aria-label="Круговая схема: язык занимает малую долю знаний бэкендера, остальное — базы данных, сеть, безопасность, эксплуатация и культура разработки">
+    <svg viewBox="0 0 660 332" width="100%" role="img" aria-label="Схема: в центре язык, вокруг него базы данных, разговор по сети, безопасность, эксплуатация и культура разработки">
       <text x="330" y="22" text-anchor="middle" fill="var(--muted)" font-size="12">что на самом деле нужно знать бэкенд-разработчику</text>
 
-      <rect x="255" y="140" width="150" height="52" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="2.4" />
-      <text x="330" y="162" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="600">Язык</text>
-      <text x="330" y="180" text-anchor="middle" fill="var(--muted)" font-size="10">пара месяцев</text>
+      <rect x="255" y="120" width="150" height="116" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="2.4" />
+      <text x="330" y="174" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="600">Язык</text>
+      <text x="330" y="192" text-anchor="middle" fill="var(--muted)" font-size="10">пара месяцев</text>
 
-      <rect x="24" y="44" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.7" />
-      <text x="118" y="66" text-anchor="middle" fill="var(--purple)" font-size="11.5" font-weight="600">Базы данных</text>
-      <text x="118" y="84" text-anchor="middle" fill="var(--fg)" font-size="9.5">SQL, индексы, транзакции,</text>
-      <text x="118" y="99" text-anchor="middle" fill="var(--fg)" font-size="9.5">миграции, ошибка N + 1</text>
+      <rect x="24" y="104" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.7" />
+      <text x="118" y="126" text-anchor="middle" fill="var(--purple)" font-size="11.5" font-weight="600">Базы данных</text>
+      <text x="118" y="144" text-anchor="middle" fill="var(--fg)" font-size="9.5">SQL, индексы, транзакции,</text>
+      <text x="118" y="159" text-anchor="middle" fill="var(--fg)" font-size="9.5">миграции, ошибка N + 1</text>
 
-      <rect x="448" y="44" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.7" />
-      <text x="542" y="66" text-anchor="middle" fill="var(--cyan)" font-size="11.5" font-weight="600">Разговор по сети</text>
-      <text x="542" y="84" text-anchor="middle" fill="var(--fg)" font-size="9.5">HTTP, REST, JSON,</text>
-      <text x="542" y="99" text-anchor="middle" fill="var(--fg)" font-size="9.5">таймауты и повторы</text>
+      <rect x="448" y="104" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--cyan)" stroke-width="1.7" />
+      <text x="542" y="126" text-anchor="middle" fill="var(--cyan)" font-size="11.5" font-weight="600">Разговор по сети</text>
+      <text x="542" y="144" text-anchor="middle" fill="var(--fg)" font-size="9.5">HTTP, REST, JSON,</text>
+      <text x="542" y="159" text-anchor="middle" fill="var(--fg)" font-size="9.5">таймауты и повторы</text>
 
-      <rect x="24" y="226" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.7" />
-      <text x="118" y="248" text-anchor="middle" fill="var(--red)" font-size="11.5" font-weight="600">Безопасность</text>
-      <text x="118" y="266" text-anchor="middle" fill="var(--fg)" font-size="9.5">кто вы и что вам можно,</text>
-      <text x="118" y="281" text-anchor="middle" fill="var(--fg)" font-size="9.5">пароли, типовые дыры</text>
+      <rect x="24" y="186" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--red)" stroke-width="1.7" />
+      <text x="118" y="208" text-anchor="middle" fill="var(--red)" font-size="11.5" font-weight="600">Безопасность</text>
+      <text x="118" y="226" text-anchor="middle" fill="var(--fg)" font-size="9.5">кто вы и что вам можно,</text>
+      <text x="118" y="241" text-anchor="middle" fill="var(--fg)" font-size="9.5">пароли, типовые дыры</text>
 
-      <rect x="448" y="226" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.7" />
-      <text x="542" y="248" text-anchor="middle" fill="var(--orange)" font-size="11.5" font-weight="600">Эксплуатация</text>
-      <text x="542" y="266" text-anchor="middle" fill="var(--fg)" font-size="9.5">контейнеры, журналы,</text>
-      <text x="542" y="281" text-anchor="middle" fill="var(--fg)" font-size="9.5">очереди, кэш, метрики</text>
+      <rect x="448" y="186" width="188" height="66" rx="10" fill="var(--bg)" stroke="var(--orange)" stroke-width="1.7" />
+      <text x="542" y="208" text-anchor="middle" fill="var(--orange)" font-size="11.5" font-weight="600">Эксплуатация</text>
+      <text x="542" y="226" text-anchor="middle" fill="var(--fg)" font-size="9.5">контейнеры, журналы,</text>
+      <text x="542" y="241" text-anchor="middle" fill="var(--fg)" font-size="9.5">очереди, кэш, метрики</text>
 
-      <rect x="236" y="240" width="188" height="52" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.7" />
-      <text x="330" y="262" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">Культура разработки</text>
-      <text x="330" y="280" text-anchor="middle" fill="var(--fg)" font-size="9.5">git, тесты, ревью, документация</text>
+      <rect x="236" y="268" width="188" height="52" rx="10" fill="var(--bg)" stroke="var(--green)" stroke-width="1.7" />
+      <text x="330" y="290" text-anchor="middle" fill="var(--green)" font-size="11.5" font-weight="600">Культура разработки</text>
+      <text x="330" y="308" text-anchor="middle" fill="var(--fg)" font-size="9.5">git, тесты, ревью, документация</text>
 
-      <line x1="212" y1="86" x2="262" y2="136" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="448" y1="86" x2="398" y2="136" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="212" y1="252" x2="252" y2="196" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="448" y1="252" x2="408" y2="196" stroke="var(--border)" stroke-width="1.5" />
-      <line x1="330" y1="192" x2="330" y2="236" stroke="var(--border)" stroke-width="1.5" />
-
-      <text x="330" y="112" text-anchor="middle" fill="var(--fg)" font-size="11">всё, что вокруг, — это годы, и оно ОДИНАКОВО на любом языке</text>
+      <line x1="212" y1="137" x2="255" y2="137" stroke="var(--border)" stroke-width="1.5" />
+      <line x1="212" y1="219" x2="255" y2="219" stroke="var(--border)" stroke-width="1.5" />
+      <line x1="405" y1="137" x2="448" y2="137" stroke="var(--border)" stroke-width="1.5" />
+      <line x1="405" y1="219" x2="448" y2="219" stroke="var(--border)" stroke-width="1.5" />
+      <line x1="330" y1="236" x2="330" y2="268" stroke="var(--border)" stroke-width="1.5" />
     </svg>
-    <figcaption>Центральный прямоугольник переносится на другой язык за недели. Всё, что вокруг него, переносится целиком и бесплатно — потому что от языка не зависит.</figcaption>
+    <figcaption>Центральный прямоугольник переносится на другой язык за недели. Всё, что вокруг него, — это годы, и оно одинаково на любом языке: переносится целиком и бесплатно, потому что от языка не зависит.</figcaption>
   </figure>
   <p class="note"><strong>Вот почему выбор первого языка не так страшен, как кажется в момент выбора.</strong> На язык вы потратите пару месяцев, на список вокруг — годы. И весь этот список переносится куда угодно. Человек, который отлично знает базы данных, сеть и безопасность, но пишет на «неправильном» языке, стоит на рынке дороже, чем человек с идеальным знанием модного синтаксиса и без понимания, что такое индекс.</p>
 </section>
