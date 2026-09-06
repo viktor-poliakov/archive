@@ -502,6 +502,26 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/services/payments/payments').then(
       (m) => m.EcosystemServicesPayments,
     ),
+  'ecosystem/services/notifications': () =>
+    import('./ecosystem/services/notifications/notifications').then(
+      (m) => m.EcosystemServicesNotifications,
+    ),
+  'ecosystem/services/media': () =>
+    import('./ecosystem/services/media/media').then(
+      (m) => m.EcosystemServicesMedia,
+    ),
+  'ecosystem/services/maps': () =>
+    import('./ecosystem/services/maps/maps').then(
+      (m) => m.EcosystemServicesMaps,
+    ),
+  'ecosystem/services/cms': () =>
+    import('./ecosystem/services/cms/cms').then((m) => m.EcosystemServicesCms),
+  'ecosystem/services/experiments': () =>
+    import('./ecosystem/services/experiments/experiments').then(
+      (m) => m.EcosystemServicesExperiments,
+    ),
+  'ecosystem/services/seo': () =>
+    import('./ecosystem/services/seo/seo').then((m) => m.EcosystemServicesSeo),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

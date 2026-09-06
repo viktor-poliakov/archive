@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode" :  "bypassPermissions",
     "allow": [
       "mcp__Claude_Browser__read_page",
       "mcp__Claude_Browser__get_page_text",
