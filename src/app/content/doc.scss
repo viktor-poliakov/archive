@@ -122,11 +122,17 @@ a {
 
   /* The first column holds the key of the row — a command, a status code, an
      identifier — and must read as one token: `git clone`, not `git` / `clone`.
-     Deliberately limited to that column: forcing nowrap on the wide description
+     Verdict cells carry the same kind of payload: in «так делают / так принято»
+     tables both compared columns are marked .yes/.no and hold a short token
+     (`GET /products`), which broke across two lines as soon as it landed in the
+     second column.
+     Still deliberately limited to these: forcing nowrap on the wide description
      columns pushes long names (HTTP headers and the like) past the table width
      and makes the whole table scroll sideways, which is worse than a wrap. */
   td:first-child code,
-  th:first-child code {
+  th:first-child code,
+  td.yes code,
+  td.no code {
     white-space: nowrap;
   }
 

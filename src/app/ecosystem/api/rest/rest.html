@@ -254,43 +254,43 @@
       </thead>
       <tbody>
         <tr>
-          <td class="no">❌ <code>GET /getProducts</code></td>
-          <td class="yes">✅ <code>GET /products</code></td>
+          <td class="no">❌&nbsp;<code>GET /getProducts</code></td>
+          <td class="yes">✅&nbsp;<code>GET /products</code></td>
           <td>Глагол уже сказан методом. В адресе он повторяется зря — это как сказать «покажи покажи товары»</td>
         </tr>
         <tr>
-          <td class="no">❌ <code>POST /createOrder</code></td>
-          <td class="yes">✅ <code>POST /orders</code></td>
+          <td class="no">❌&nbsp;<code>POST /createOrder</code></td>
+          <td class="yes">✅&nbsp;<code>POST /orders</code></td>
           <td>POST к коллекции и означает «создай в ней новую вещь». Слово create ничего не добавляет</td>
         </tr>
         <tr>
-          <td class="no">❌ <code>POST /deleteUser?id=5</code></td>
-          <td class="yes">✅ <code>DELETE /users/5</code></td>
+          <td class="no">❌&nbsp;<code>POST /deleteUser?id=5</code></td>
+          <td class="yes">✅&nbsp;<code>DELETE /users/5</code></td>
           <td>Удаление — это метод. Спрятав его в текст адреса, вы лишаете себя всех проверок, которые про DELETE знают кэши и промежуточные слои</td>
         </tr>
         <tr>
-          <td class="no">❌ <code>GET /product/7</code></td>
-          <td class="yes">✅ <code>GET /products/7</code></td>
+          <td class="no">❌&nbsp;<code>GET /product/7</code></td>
+          <td class="yes">✅&nbsp;<code>GET /products/7</code></td>
           <td>Коллекция всегда во множественном числе — иначе <code>/product</code> без номера читается странно, а список назвать будет нечем</td>
         </tr>
         <tr>
-          <td class="no">❌ <code>GET /getOrdersForUserNew</code></td>
-          <td class="yes">✅ <code>GET /orders?userId=7</code></td>
+          <td class="no">❌&nbsp;<code>GET /getOrdersForUserNew</code></td>
+          <td class="yes">✅&nbsp;<code>GET /orders?userId=7</code></td>
           <td>Слово New в имени адреса — признак того, что старый боятся трогать. Через год их станет три</td>
         </tr>
         <tr>
-          <td class="no">❌ <code>GET /orders/list</code></td>
-          <td class="yes">✅ <code>GET /orders</code></td>
+          <td class="no">❌&nbsp;<code>GET /orders/list</code></td>
+          <td class="yes">✅&nbsp;<code>GET /orders</code></td>
           <td>Коллекция и так список. Иначе завтра появятся <code>/orders/all</code> и <code>/orders/items</code>, и никто не вспомнит разницу</td>
         </tr>
         <tr>
-          <td class="no">❌ <code>GET /user_info/5</code></td>
-          <td class="yes">✅ <code>GET /users/5</code></td>
+          <td class="no">❌&nbsp;<code>GET /user_info/5</code></td>
+          <td class="yes">✅&nbsp;<code>GET /users/5</code></td>
           <td>Манера письма должна быть одна на весь проект. Принято нижний регистр и дефис между словами: <code>/order-items</code></td>
         </tr>
         <tr>
-          <td class="no">❌ <code>POST /updateProductPrice</code></td>
-          <td class="yes">✅ <code>PATCH /products/7</code></td>
+          <td class="no">❌&nbsp;<code>POST /updateProductPrice</code></td>
+          <td class="yes">✅&nbsp;<code>PATCH /products/7</code></td>
           <td>Цена — это поле товара, а не отдельная вещь. Иначе на каждое поле заведётся свой адрес</td>
         </tr>
       </tbody>

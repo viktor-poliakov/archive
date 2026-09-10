@@ -483,20 +483,20 @@
       <tbody>
         <tr>
           <td>Цена, сумма, баланс</td>
-          <td class="no">❌ <code>real</code>, <code>double precision</code></td>
-          <td class="yes">✅ <code>integer</code> в копейках или <code>numeric(12, 2)</code></td>
+          <td class="no">❌&nbsp;<code>real</code>, <code>double precision</code></td>
+          <td class="yes">✅&nbsp;<code>integer</code> в копейках или <code>numeric(12, 2)</code></td>
           <td>Итоги не сходятся на копейки, причину не найти</td>
         </tr>
         <tr>
           <td>Момент события</td>
-          <td class="no">❌ <code>timestamp</code> или строка</td>
-          <td class="yes">✅ <code>timestamptz</code>, а хранить в UTC</td>
+          <td class="no">❌&nbsp;<code>timestamp</code> или строка</td>
+          <td class="yes">✅&nbsp;<code>timestamptz</code>, а хранить в UTC</td>
           <td>События из разных поясов сравниваются как равные</td>
         </tr>
         <tr>
           <td>Признак «да/нет»</td>
-          <td class="no">❌ <code>integer</code> 0/1, строка «yes»</td>
-          <td class="yes">✅ <code>boolean</code></td>
+          <td class="no">❌&nbsp;<code>integer</code> 0/1, строка «yes»</td>
+          <td class="yes">✅&nbsp;<code>boolean</code></td>
           <td>В колонке заводятся значения 2 и «Y», и код обрастает проверками</td>
         </tr>
         <tr>
@@ -508,7 +508,7 @@
         <tr>
           <td>Данные без известной формы</td>
           <td class="no">❌ текст с JSON внутри</td>
-          <td class="yes">✅ <code>jsonb</code></td>
+          <td class="yes">✅&nbsp;<code>jsonb</code></td>
           <td>По содержимому нельзя ни искать, ни строить индекс</td>
         </tr>
         <tr>
@@ -648,7 +648,7 @@
         </tr>
         <tr>
           <td>Данные без фиксированной формы</td>
-          <td class="yes">✅ <code>jsonb</code> с индексами</td>
+          <td class="yes">✅&nbsp;<code>jsonb</code> с индексами</td>
           <td>Есть JSON, возможностей меньше</td>
           <td>Есть функции для JSON</td>
         </tr>
