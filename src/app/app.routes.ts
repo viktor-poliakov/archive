@@ -522,6 +522,10 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     ),
   'ecosystem/services/seo': () =>
     import('./ecosystem/services/seo/seo').then((m) => m.EcosystemServicesSeo),
+  'ecosystem/ai/llm-api': () =>
+    import('./ecosystem/ai/llm-api/llm-api').then((m) => m.EcosystemAiLlmApi),
+  'ecosystem/ai/rag': () =>
+    import('./ecosystem/ai/rag/rag').then((m) => m.EcosystemAiRag),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
