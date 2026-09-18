@@ -526,6 +526,12 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/ai/llm-api/llm-api').then((m) => m.EcosystemAiLlmApi),
   'ecosystem/ai/rag': () =>
     import('./ecosystem/ai/rag/rag').then((m) => m.EcosystemAiRag),
+  'ecosystem/ai/agents': () =>
+    import('./ecosystem/ai/agents/agents').then((m) => m.EcosystemAiAgents),
+  'ecosystem/ai/what-to-delegate': () =>
+    import('./ecosystem/ai/what-to-delegate/what-to-delegate').then(
+      (m) => m.EcosystemAiWhatToDelegate,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
