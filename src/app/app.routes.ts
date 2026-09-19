@@ -532,6 +532,10 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/ai/what-to-delegate/what-to-delegate').then(
       (m) => m.EcosystemAiWhatToDelegate,
     ),
+  'ecosystem/ai/prompting-stack': () =>
+    import('./ecosystem/ai/prompting-stack/prompting-stack').then(
+      (m) => m.EcosystemAiPromptingStack,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
