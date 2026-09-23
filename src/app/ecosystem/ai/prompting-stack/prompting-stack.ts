@@ -332,7 +332,8 @@ protected readonly badRequest = `
 
   пример на Angular 20             Angular 22 требует строго  сборка не
   с TypeScript 5.8                 TypeScript 6.0.x и         стартует         [!error]
-                                   Node.js не ниже 22.22.3
+                                   Node.js 22.22.3+, 24.15+
+                                   или 26 (23 и 25 не годятся)
 
 
 ═══ ПАРА 2. REACT 18 ПРОТИВ 19 ═══
@@ -579,8 +580,8 @@ protected readonly anatomy = `
       кнопка активна только когда оба поля валидны
 
   «сделай красиво»                                               [!error]
-    → используем существующие классы из doc.scss, новых цветов
-      не вводим, отступы кратны 4 px, шрифт наследуется
+    → используем существующие классы из src/styles/tokens.scss,
+      новых цветов не вводим, отступы кратны 4 px, шрифт наследуется
 
   «чтобы не падало»                                              [!error]
     → если в ответе сервера нет поля discount, компонент всё равно
@@ -1243,6 +1244,8 @@ apps/web — витрина, apps/api — бэкенд, packages/shared — об
 // Все суммы — целые копейки: 300000 это 3000 рублей.
 // Функции ещё нет, тест красный. Это и есть задача.
 
+import { describe, it, expect } from 'vitest';
+
 describe('calcDelivery', () => {
   it('пустая корзина: доставки нет', () => {
     const cost = calcDelivery({
@@ -1302,6 +1305,8 @@ describe('calcDelivery', () => {
 ═══ КАК НЕ НАДО: ТЕСТЫ, КОТОРЫЕ НИЧЕГО НЕ ПРОВЕРЯЮТ ═══
 
 --- начало файла ---
+
+import { it, expect, vi } from 'vitest';
 
 it('работает', () => {
   expect(calcDelivery(order)).toBeDefined();  // пройдёт и с NaN         [!error]
@@ -1375,9 +1380,9 @@ protected readonly askingAboutError = `
   а не список общих причин.
 
   ОКРУЖЕНИЕ
-    Node 22, pnpm 9, TypeScript 5.9, Fastify 5
+    Node.js 24, npm, TypeScript 6.0, Fastify 5
     Prisma 6.4 — обновили сегодня, до этого была 5.22
-    Команда, которой получена ошибка: pnpm build  (под ней tsc -p tsconfig.json)
+    Команда, которой получена ошибка: npm run build  (под ней tsc -p tsconfig.json)
 
   ТЕКСТ ОШИБКИ ЦЕЛИКОМ, СКОПИРОВАН КАК ЕСТЬ
     --- начало вывода ---
@@ -1939,7 +1944,7 @@ protected readonly hallucinatedDeps = `
 ═══ ЧЕГО ЭТИ ПРОВЕРКИ НЕ ДЕЛАЮТ ═══
 
   • число загрузок не доказывает подлинность
-      демонстрационный пустой пакет huggingface-cli скачали 30 000+ раз
+      демонстрационный пустой пакет huggingface-cli скачали 15 000+ раз
       за три месяца (эксперимент Lasso Security, The Register, март 2024)
   • «свежий» не равно «вредоносный» — возрастные настройки снижают риск,
       но это не детектор вредоносного кода
@@ -1964,7 +1969,7 @@ protected readonly hallucinatedDeps = `
 ═══ ТА ЖЕ ЗАДАЧА С ОДНОЙ ДОБАВЛЕННОЙ СТРОКОЙ ═══
 
   «Сделай постраничный вывод заказов в ручке GET /api/orders.
-   Стек: Node 22, Fastify 5, Prisma, строгий TypeScript.
+   Стек: Node.js 24, Fastify 5, Prisma, строгий TypeScript.
    Новые зависимости не добавляй — используй только то, что уже
    есть в package.json. Если считаешь, что без новой библиотеки
    не обойтись, напиши об этом отдельной строкой и НЕ устанавливай её.»
@@ -2194,7 +2199,7 @@ protected readonly hallucinatedDeps = `
 
 ═══ ЗАДАЧА НА ИСПРАВЛЕНИЕ, ПОСТАВЛЕННАЯ НОРМАЛЬНО ═══
 
-  «Перепиши обработчик GET /api/orders. Стек: Node 22, Fastify 5,
+  «Перепиши обработчик GET /api/orders. Стек: Node.js 24, Fastify 5,
    Prisma, строгий TypeScript, any запрещён.
    Требования:
      1. userId бери из проверенной сессии, а не из query;
@@ -2352,7 +2357,7 @@ protected readonly templates = `
 
 ═══ ЗАГОТОВКА 2. ИСПРАВЛЕНИЕ ОШИБКИ ═══
 
-  Стек: Node.js 22, Fastify 5, PostgreSQL 16, Prisma, строгий TypeScript.
+  Стек: Node.js 24, Fastify 5, PostgreSQL 16, Prisma 7, строгий TypeScript 6.0.
 
   Что я делаю:    <шаги по порядку, которые приводят к ошибке>
   Что ожидаю:     <какое поведение я считаю правильным>
@@ -2501,7 +2506,7 @@ protected readonly templates = `
     «почини сортировку, она глючит»                                     [!error]
 
   ХОРОШО
-    Node 22, Fastify 5, Prisma, PostgreSQL 16.
+    Node.js 24, Fastify 5, Prisma, PostgreSQL 16.
     GET /api/products?sort=price должен отдавать товары по возрастанию цены;
     сейчас при одинаковых ценах порядок каждый раз разный.
     Нужна стабильная сортировка: при равных ценах — по id по возрастанию.
@@ -2534,7 +2539,7 @@ protected readonly templates = `
   [ ] 1. НАЗВАН СТЕК С ВЕРСИЯМИ
          язык и версия · фреймворк и мажорная версия · рантайм
          пример: «Angular 22, standalone, сигналы; TypeScript строгий;
-                  Node 22, Fastify 5»
+                  Node.js 24, Fastify 5»
          проверка: по моему тексту видно, что это не React и не Angular 15
 
   [ ] 2. СКАЗАНО, ЧТО ДОЛЖНО ПОЛУЧИТЬСЯ
