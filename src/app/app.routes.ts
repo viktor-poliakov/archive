@@ -536,6 +536,8 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/ai/prompting-stack/prompting-stack').then(
       (m) => m.EcosystemAiPromptingStack,
     ),
+  'ecosystem/recipes/landing': () =>
+    import('./ecosystem/recipes/landing/landing').then((m) => m.EcosystemRecipesLanding),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
