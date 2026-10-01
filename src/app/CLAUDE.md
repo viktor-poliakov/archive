@@ -5,18 +5,22 @@ Every page under this folder is one standalone Angular component (a `.ts` + `.ht
 
 ## JS vs TS page layout
 
-| | JavaScript page | TypeScript page |
-|---|---|---|
-| Folder | `src/app/<section>/<child>/` | `src/app/typescript/<section>/<child>/` |
-| `styleUrls` | `['../../content/doc.scss']` | `['../../../content/doc.scss']` |
-| `PAGE_OVERRIDES` key | `javascript/<section>/<child>` | `typescript/<section>/<child>` |
-| `import()` path | `./<section>/<child>/<child>` | `./typescript/<section>/<child>/<child>` |
+| | JavaScript page | TypeScript page | Ecosystem page |
+|---|---|---|---|
+| Folder | `src/app/<section>/<child>/` | `src/app/typescript/<section>/<child>/` | `src/app/ecosystem/<section>/<child>/` |
+| `styleUrls` | `['../../content/doc.scss']` | `['../../../content/doc.scss']` | `['../../../content/doc.scss']` |
+| `PAGE_OVERRIDES` key | `javascript/<section>/<child>` | `typescript/<section>/<child>` | `ecosystem/<section>/<child>` |
+| `import()` path | `./<section>/<child>/<child>` | `./typescript/<section>/<child>/<child>` | `./ecosystem/<section>/<child>/<child>` |
 
-Note the asymmetry: **JavaScript content lives directly under `src/app/<section>/…`** (no `javascript/` folder) but is **registered under the `javascript/…` key**. TypeScript content lives under `src/app/typescript/…` and is registered under `typescript/…`.
+Note the asymmetry: **JavaScript content lives directly under `src/app/<section>/…`** (no `javascript/` folder) but is **registered under the `javascript/…` key**. TypeScript and ecosystem content are the straightforward cases — folder and key agree (`src/app/typescript/…` → `typescript/…`, `src/app/ecosystem/…` → `ecosystem/…`). JavaScript is the only odd one out.
 
 ### selector & class name are NOT uniform across sections
 
-Examples: `app-classes-basics` / `ClassesBasics` (JS); `app-typescript-classes-basics` / `TypescriptClassesBasics` (TS); but `app-basic-types-primitives` / `BasicTypesPrimitives` (older TS section, no `typescript` prefix). Only two hard rules:
+Examples: `app-classes-basics` / `ClassesBasics` (JS); `app-typescript-classes-basics` / `TypescriptClassesBasics` (TS); but `app-basic-types-primitives` / `BasicTypesPrimitives` (older TS section, no `typescript` prefix).
+
+**The `ecosystem` section is the exception that is uniform**: every one of its pages uses `app-ecosystem-<section>-<child>` / `Ecosystem<Section><Child>`. Follow that pattern there without checking a neighbour.
+
+Only two hard rules:
 
 1. the `selector` must be globally unique;
 2. the **exported class name must match** the `m.<Name>` you write in the `PAGE_OVERRIDES` entry.
@@ -67,7 +71,7 @@ protected readonly run = `$ npm test
 
 The marker may be preceded by the language's comment characters (`// [!error]`, `# [!error]`), and it is stripped before highlighting — it never reaches the screen or the clipboard. Implemented as a Shiki transformer in [`code/highlighter.service.ts`](code/highlighter.service.ts), styled by `.line--error` in `src/styles.scss`. Mark only the lines that *report the failure*, not the whole block — the contrast is the point.
 
-**Only languages registered in [`code/highlighter.service.ts`](code/highlighter.service.ts) are highlighted** — anything else silently falls back to plain `text`, with no build error to warn you. Currently registered: `javascript`, `typescript`, `html`, `css`, `json`, `bash`, `http`, `yaml`, `graphql`, `proto`, `sql`, `python`, `go`, `java`, `kotlin`, `csharp`, `php`, `ruby`, `rust`, `cpp`. Need another one? Add an `import('shiki/langs/<name>.mjs')` to the `langs` array there (check `node_modules/@shikijs/langs/` for the exact grammar id — e.g. the Protobuf file is `proto.mjs` and its id is `proto`).
+**Only languages registered in [`code/highlighter.service.ts`](code/highlighter.service.ts) are highlighted** — anything else silently falls back to plain `text`, with no build error to warn you. Currently registered (23): `javascript`, `typescript`, `html`, `xml`, `css`, `json`, `bash`, `http`, `yaml`, `graphql`, `proto`, `sql`, `python`, `go`, `java`, `kotlin`, `csharp`, `php`, `ruby`, `rust`, `cpp`, `markdown`, `astro`. Need another one? Add an `import('shiki/langs/<name>.mjs')` to the `langs` array there (check `node_modules/@shikijs/langs/` for the exact grammar id — e.g. the Protobuf file is `proto.mjs` and its id is `proto`).
 
 ## Template skeleton
 
@@ -102,6 +106,11 @@ The marker may be preceded by the language's comment characters (`// [!error]`, 
 - `nav.breadcrumbs` → `.breadcrumbs__root`, `.breadcrumbs__sep`, `.breadcrumbs__current`.
 - `.doc__title` (`<h1>`), `.doc__lead` (intro `<p>`), `.doc__section` (wraps each `<h2>` block).
 - `.rules` — annotated `<ul>`; `.note` — callout `<p>`; `table.compare` — comparison table; `figure.diagram` — inline `<svg>` + `<figcaption>` (see `typescript/classes/basics/basics.html` for a rich diagram example).
+
+**Two conventions inside `figure.diagram`, enforced on review and easy to miss:**
+
+- **Colors are CSS variables only** — `var(--bg)`, `var(--fg)`, `var(--muted)`, `var(--green)`, `var(--cyan)`, `var(--orange)`, `var(--purple)`, `var(--red)`. There is not a single hex literal in any diagram in the repo; don't introduce the first one.
+- **Arrows are strictly horizontal or vertical.** No diagonals, no L-shaped elbows. Pick the axis so the line lands inside both the source and target block; the head is an isosceles `<polygon>` 12 wide and 10 long, tip 2px off the target's edge. Older pages still contain diagonal lines — they are a backlog, not a precedent.
 
 ## Headings carry the bookmark UI
 
@@ -140,6 +149,10 @@ This does **not** apply inside the backtick code strings in the `.ts` — those 
 // JS page (folder is NOT under a javascript/ dir, but the key is):
 'javascript/<section>/<child>': () =>
   import('./<section>/<child>/<child>').then((m) => m.<Section><Child>),
+
+// Ecosystem page:
+'ecosystem/<section>/<child>': () =>
+  import('./ecosystem/<section>/<child>/<child>').then((m) => m.Ecosystem<Section><Child>),
 ```
 
 ## Nav entry snippet (`nav/nav.data.ts` → `NAV_SECTIONS`)

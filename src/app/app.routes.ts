@@ -538,6 +538,10 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     ),
   'ecosystem/recipes/landing': () =>
     import('./ecosystem/recipes/landing/landing').then((m) => m.EcosystemRecipesLanding),
+  'ecosystem/recipes/blog': () =>
+    import('./ecosystem/recipes/blog/blog').then((m) => m.EcosystemRecipesBlog),
+  'ecosystem/recipes/ecommerce': () =>
+    import('./ecosystem/recipes/ecommerce/ecommerce').then((m) => m.EcosystemRecipesEcommerce),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

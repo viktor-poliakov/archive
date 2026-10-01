@@ -103,6 +103,8 @@ export class HighlighterService {
         import('shiki/langs/ruby.mjs'),
         import('shiki/langs/rust.mjs'),
         import('shiki/langs/cpp.mjs'),
+        import('shiki/langs/markdown.mjs'),
+        import('shiki/langs/astro.mjs'),
       ],
       engine: createOnigurumaEngine(import('shiki/wasm')),
     });
