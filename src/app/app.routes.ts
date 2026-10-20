@@ -542,6 +542,12 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/recipes/blog/blog').then((m) => m.EcosystemRecipesBlog),
   'ecosystem/recipes/ecommerce': () =>
     import('./ecosystem/recipes/ecommerce/ecommerce').then((m) => m.EcosystemRecipesEcommerce),
+  'ecosystem/recipes/saas': () =>
+    import('./ecosystem/recipes/saas/saas').then((m) => m.EcosystemRecipesSaas),
+  'ecosystem/recipes/marketplace': () =>
+    import('./ecosystem/recipes/marketplace/marketplace').then(
+      (m) => m.EcosystemRecipesMarketplace,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
