@@ -554,6 +554,14 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/recipes/mobile-app/mobile-app').then(
       (m) => m.EcosystemRecipesMobileApp,
     ),
+  'ecosystem/recipes/admin-tool': () =>
+    import('./ecosystem/recipes/admin-tool/admin-tool').then(
+      (m) => m.EcosystemRecipesAdminTool,
+    ),
+  'ecosystem/recipes/ai-service': () =>
+    import('./ecosystem/recipes/ai-service/ai-service').then(
+      (m) => m.EcosystemRecipesAiService,
+    ),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
