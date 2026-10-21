@@ -701,6 +701,107 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     ],
   },
   {
+    id: 'claude',
+    label: 'Claude',
+    short: 'CL',
+    color: '#d97757',
+    children: [
+      {
+        id: 'intro',
+        label: 'Введение',
+        children: [
+          { id: 'what-is', label: 'Что такое Claude' },
+          { id: 'surfaces', label: 'CLI, десктоп, IDE, веб' },
+          { id: 'models', label: 'Модели и выбор' },
+          { id: 'pricing', label: 'Тарифы и лимиты' },
+        ],
+      },
+      {
+        id: 'basics',
+        label: 'Основы Claude Code',
+        children: [
+          { id: 'claude-md', label: 'CLAUDE.md' },
+          { id: 'memory', label: 'Память' },
+          { id: 'permissions', label: 'Разрешения и режимы' },
+          { id: 'settings', label: 'Настройки settings.json' },
+          { id: 'slash-commands', label: 'Слэш-команды' },
+          { id: 'plan-mode', label: 'Plan mode' },
+          { id: 'context', label: 'Контекст и компактизация' },
+        ],
+      },
+      {
+        id: 'agents',
+        label: 'Агенты',
+        children: [
+          { id: 'what-is', label: 'Что такое агент' },
+          { id: 'subagents', label: 'Субагенты' },
+          { id: 'custom', label: 'Свой субагент' },
+          { id: 'parallel', label: 'Параллельные сессии' },
+          { id: 'agent-sdk', label: 'Agent SDK' },
+        ],
+      },
+      {
+        id: 'skills',
+        label: 'Скиллы',
+        children: [
+          { id: 'what-is', label: 'Что такое скилл' },
+          { id: 'using', label: 'Подключение и вызов' },
+          { id: 'custom', label: 'Свой скилл' },
+        ],
+      },
+      {
+        id: 'plugins',
+        label: 'Плагины',
+        children: [
+          { id: 'what-is', label: 'Что такое плагин' },
+          { id: 'install', label: 'Установка' },
+          { id: 'marketplaces', label: 'Маркетплейсы' },
+          { id: 'custom', label: 'Свой плагин' },
+        ],
+      },
+      {
+        id: 'mcp',
+        label: 'MCP',
+        children: [
+          { id: 'what-is', label: 'Что такое MCP' },
+          { id: 'connect', label: 'Подключение сервера' },
+          { id: 'popular', label: 'Полезные серверы' },
+          { id: 'custom', label: 'Свой MCP-сервер' },
+        ],
+      },
+      {
+        id: 'automation',
+        label: 'Автоматизация',
+        children: [
+          { id: 'hooks', label: 'Хуки' },
+          { id: 'headless', label: 'Headless-режим' },
+          { id: 'github-actions', label: 'GitHub Actions' },
+          { id: 'scheduled', label: 'Задачи по расписанию' },
+        ],
+      },
+      {
+        id: 'api',
+        label: 'Claude API',
+        children: [
+          { id: 'messages', label: 'Messages API' },
+          { id: 'tool-use', label: 'Tool use' },
+          { id: 'caching', label: 'Prompt caching' },
+          { id: 'managed-agents', label: 'Managed Agents' },
+        ],
+      },
+      {
+        id: 'practice',
+        label: 'Практика',
+        children: [
+          { id: 'prompting', label: 'Как ставить задачи' },
+          { id: 'workflows', label: 'Типовые сценарии' },
+          { id: 'tokens', label: 'Экономия токенов' },
+          { id: 'security', label: 'Безопасность' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'react',
     label: 'React',
     short: 'R',

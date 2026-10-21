@@ -14,6 +14,12 @@ Every page under this folder is one standalone Angular component (a `.ts` + `.ht
 
 Note the asymmetry: **JavaScript content lives directly under `src/app/<section>/…`** (no `javascript/` folder) but is **registered under the `javascript/…` key**. TypeScript and ecosystem content are the straightforward cases — folder and key agree (`src/app/typescript/…` → `typescript/…`, `src/app/ecosystem/…` → `ecosystem/…`). JavaScript is the only odd one out.
 
+### The `claude` section (reference on working with Claude)
+
+Laid out exactly like `ecosystem`: folder `src/app/claude/<section>/<child>/`, key `claude/<section>/<child>`, selector `app-claude-<section>-<child>`, class `Claude<Section><Child>`, `styleUrls: ['../../../content/doc.scss']`, accent `#d97757`. All its leaves are currently mock `SectionPage`s.
+
+Pages here are **deliberately short** — a reference card, not an article. Each covers three things: **what it is for**, **how to set it up / connect it**, **what it gives you** (plus a minimal config or command where one exists). Don't pad them to the length of `ecosystem` pages. Vendor-neutral concepts (LLM API, agents/tool use/MCP in general, prompting) already live in `ecosystem/ai/*` — link there instead of re-explaining them.
+
 ### selector & class name are NOT uniform across sections
 
 Examples: `app-classes-basics` / `ClassesBasics` (JS); `app-typescript-classes-basics` / `TypescriptClassesBasics` (TS); but `app-basic-types-primitives` / `BasicTypesPrimitives` (older TS section, no `typescript` prefix).
