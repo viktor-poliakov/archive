@@ -1,0 +1,46 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/basics">Основы Claude Code</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Память</span></nav>
+
+<h1 class="doc__title">Память</h1>
+<p class="doc__lead"><strong>Автопамять</strong> (auto memory) — заметки, которые Claude Code ведёт сам: ваши поправки и предпочтения, а также контекст проекта, которого не видно в коде. В следующей сессии Claude их помнит, и одно и то же не приходится объяснять заново. Автопамять включена по умолчанию, настраивать ничего не нужно.</p>
+
+<section class="doc__section">
+  <h2>Чем отличается от CLAUDE.md</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th></th><th><a routerLink="/claude/basics/claude-md">CLAUDE.md</a></th><th>Автопамять</th></tr></thead>
+    <tbody>
+      <tr><td>Кто пишет</td><td>Вы</td><td>Claude</td></tr>
+      <tr><td>Что внутри</td><td>Инструкции и правила</td><td>Выводы и наблюдения</td></tr>
+      <tr><td>Для кого</td><td>Проект, вы или вся организация</td><td>Только вы, один репозиторий</td></tr>
+      <tr><td>В git</td><td>Обычно да</td><td>Нет, лежит только на вашем компьютере</td></tr>
+      <tr><td>Для чего</td><td>Стандарты кода, процессы, архитектура</td><td>Ваши предпочтения, поправки, контекст, которого нет в коде</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Как устроена</h2>
+  <p>Заметки — обычные markdown-файлы в папке проекта внутри <code>~/.claude</code>:</p>
+  <app-code-block [code]="layout" lang="text" />
+  <ul class="rules">
+    <li><strong>MEMORY.md</strong> — оглавление. В начале сессии загружаются его первые 200 строк или 25 КБ, смотря что наступит раньше. Сами заметки Claude открывает, когда они нужны.</li>
+    <li><strong>Типы заметок</strong> — <code>user</code> (кто вы), <code>feedback</code> (как вам удобно работать), <code>project</code> (контекст проекта), <code>reference</code> (где что искать).</li>
+    <li><strong>Что не записывается</strong> — то, что видно из кода или истории git, и то, что уже есть в CLAUDE.md.</li>
+    <li><strong>Где действует</strong> — только на этом компьютере. Общая для всех worktree одного репозитория, но в облачные сессии и на другие машины не переносится.</li>
+  </ul>
+  <p>Примерно так выглядит одна заметка:</p>
+  <app-code-block [code]="note" lang="markdown" />
+</section>
+
+<section class="doc__section">
+  <h2>Как управлять</h2>
+  <ul class="rules">
+    <li><strong>Запомнить</strong> — скажите прямо: «запомни: используем pnpm, а не npm». Заметка уйдёт в автопамять. Если сказать «добавь это в CLAUDE.md», правило попадёт в файл проекта.</li>
+    <li><strong>Посмотреть и поправить</strong> — <code>/memory</code> → папка автопамяти. Файлы можно править и удалять руками.</li>
+    <li><strong>Забыть</strong> — удалите файл заметки и её строку в <code>MEMORY.md</code> (или попросите об этом Claude).</li>
+    <li><strong>Выключить</strong> — переключатель в <code>/memory</code>, переменная окружения <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code> или настройка в <code>.claude/settings.json</code> проекта:</li>
+  </ul>
+  <app-code-block [code]="disable" lang="json" />
+  <p class="note"><strong>Совет.</strong> Изредка заглядывайте в <code>/memory</code>: Claude записывает то, что счёл важным, и заметка может устареть. Если заметка пригодится всей команде, перенесите её в CLAUDE.md — автопамять видите только вы.</p>
+</section>
+</article>

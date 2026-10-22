@@ -1,0 +1,52 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/basics">Основы Claude Code</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">CLAUDE.md</span></nav>
+
+<h1 class="doc__title">CLAUDE.md</h1>
+<p class="doc__lead"><code>CLAUDE.md</code> — файл с инструкциями, который Claude Code читает в начале каждой сессии. В него пишут то, что Claude не узнает из кода: команды сборки и тестов, соглашения команды, подводные камни. Плюс в том, что одно и то же не нужно объяснять каждый раз, а вся команда получает одинаковое поведение агента.</p>
+
+<section class="doc__section">
+  <h2>Как создать</h2>
+  <p>Проще всего начать с <code>/init</code>: Claude изучит проект и сам напишет черновик. Если файл уже есть, команда предложит улучшения вместо того, чтобы перезаписывать его. Черновик вычитайте, сократите и закоммитьте.</p>
+  <app-code-block [code]="commands" lang="bash" />
+  <p>Пример хорошего CLAUDE.md — коротко и только то, чего не видно из кода:</p>
+  <app-code-block [code]="example" lang="markdown" />
+</section>
+
+<section class="doc__section">
+  <h2>Где лежит</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Файл</th><th>Для кого</th><th>В git</th></tr></thead>
+    <tbody>
+      <tr><td><code>./CLAUDE.md</code> или <code>./.claude/CLAUDE.md</code></td><td>Вся команда, этот проект</td><td class="yes">Да</td></tr>
+      <tr><td><code>./CLAUDE.local.md</code></td><td>Только вы, этот проект</td><td class="no">Нет, добавьте в <code>.gitignore</code></td></tr>
+      <tr><td><code>~/.claude/CLAUDE.md</code></td><td>Только вы, все проекты</td><td>—</td></tr>
+      <tr><td>Системный (managed)</td><td>Вся организация, ставит администратор</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Читаются все сразу</strong> — Claude собирает CLAUDE.md из текущей папки и всех папок выше и склеивает их, а не выбирает один.</li>
+    <li><strong>Подпапки</strong> — CLAUDE.md внутри подпапки подгружается, когда Claude начинает работать с её файлами. Удобно для монорепозиториев.</li>
+    <li><strong>AGENTS.md</strong> — если CLAUDE.md нет совсем, Claude Code прочитает <code>AGENTS.md</code>. Пригодится, если команда уже ведёт его для других агентов.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Импорты и правила по путям</h2>
+  <p><strong>Импорт</strong> — строка <code>&#64;путь/к/файлу</code> подтягивает другой файл, как <code>&#64;docs/architecture.md</code> в примере выше. Путь считается от самого CLAUDE.md, глубина вложенности — до четырёх уровней. Контекст это не экономит: импортированный файл загружается целиком.</p>
+  <p><strong>Правила по путям</strong> — отдельные файлы в <code>.claude/rules/</code>, по одной теме на файл. Если в шапке указать <code>paths</code>, правило загрузится только тогда, когда Claude откроет подходящий файл:</p>
+  <app-code-block [code]="rule" lang="markdown" />
+</section>
+
+<section class="doc__section">
+  <h2>Что писать, а что нет</h2>
+  <ul class="rules">
+    <li><strong>Писать</strong> — команды, которые не угадать; правила стиля, отличные от стандартных; как запускать тесты; соглашения о ветках и PR; неочевидные ловушки.</li>
+    <li><strong>Не писать</strong> — то, что видно из кода; стандартные соглашения языка; длинную документацию (лучше дать ссылку); то, что часто меняется.</li>
+    <li><strong>Проверка строки</strong> — «если её убрать, Claude начнёт ошибаться?» Если нет — вычёркивайте.</li>
+    <li><strong>Размер</strong> — до ~200 строк. Чем длиннее файл, тем хуже Claude его соблюдает.</li>
+    <li><strong>Конкретность</strong> — «отступ 2 пробела», а не «форматируй аккуратно». <code>IMPORTANT</code> ставьте на одну-две действительно важные строки, иначе выделение перестаёт работать.</li>
+    <li><strong>Обязательные шаги</strong> (например, линтер перед каждым коммитом) — не в CLAUDE.md, а в <a routerLink="/claude/automation/hooks">хуки</a>: они срабатывают всегда.</li>
+  </ul>
+  <p class="note"><strong>Это контекст, а не жёсткие правила.</strong> Claude обычно следует CLAUDE.md, но гарантии нет. Зато после <code>/compact</code> корневой CLAUDE.md заново читается с диска, а инструкции, данные только в чате, могут потеряться. Всё, что должно жить дольше одной сессии, — в файл. Подробнее о сжатии — в <a routerLink="/claude/basics/context">Контексте и компактизации</a>.</p>
+</section>
+</article>
