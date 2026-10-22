@@ -1,0 +1,52 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/basics">Основы Claude Code</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Plan mode</span></nav>
+
+<h1 class="doc__title">Plan mode</h1>
+<p class="doc__lead"><strong>Plan mode</strong> — режим, в котором Claude только изучает проект и пишет план, ничего не меняя. Править файлы он начнёт после того, как вы план одобрите. Поправить план — минута, а переделывать код, написанный не в ту сторону, долго и дорого.</p>
+
+<section class="doc__section">
+  <h2>Когда нужен</h2>
+  <ul class="rules">
+    <li><strong>Изменение затрагивает много файлов</strong> — новая фича, миграция, рефакторинг.</li>
+    <li><strong>Код незнакомый</strong> — сначала пусть Claude разберётся и расскажет, как всё устроено.</li>
+    <li><strong>Подходов несколько</strong> — хотите выбрать решение до того, как на него потрачены время и токены.</li>
+    <li><strong>Не нужен</strong> для мелочей: если правку можно описать одной фразой, план её только замедлит.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как включить</h2>
+  <app-code-block [code]="enter" lang="bash" />
+  <ul class="rules">
+    <li><strong><code>Shift+Tab</code></strong> — переключает режимы по кругу; в plan mode под полем ввода видно <code>⏸ plan mode on</code>.</li>
+    <li><strong>Десктоп и VS Code</strong> — выберите <strong>Plan</strong> в переключателе режима рядом с полем ввода. В десктопе он действует только на текущую сессию.</li>
+    <li><strong>По умолчанию для проекта</strong> — <code>defaultMode</code> в <code>.claude/settings.json</code> (см. <a routerLink="/claude/basics/settings">Настройки settings.json</a>):</li>
+  </ul>
+  <app-code-block [code]="defaultMode" lang="json" />
+</section>
+
+<section class="doc__section">
+  <h2>Как проходит</h2>
+  <p>Хорошая постановка задачи для плана — что сделать, где смотреть и что должно быть в плане:</p>
+  <app-code-block [code]="prompt" lang="text" />
+  <ul class="rules">
+    <li><strong>Исследование</strong> — Claude читает файлы и запускает команды, которые ничего не меняют: поиск, <code>git log</code>, просмотр структуры. Может задать уточняющие вопросы.</li>
+    <li><strong>План</strong> — готовый план Claude показывает целиком и спрашивает, что дальше. Варианты ответа:</li>
+  </ul>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Вариант</th><th>Что произойдёт</th></tr></thead>
+    <tbody>
+      <tr><td>Yes, and use auto mode</td><td>Одобрить и выполнять в режиме <code>auto</code>, без вопросов на каждую правку. Если auto недоступен — Yes, auto-accept edits</td></tr>
+      <tr><td>Yes, manually approve edits</td><td>Одобрить, но каждую правку подтверждать вручную</td></tr>
+      <tr><td>No, keep planning</td><td>Остаться в plan mode и написать, что изменить в плане</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong><code>Ctrl+G</code></strong> — открыть план в текстовом редакторе и поправить руками, прежде чем одобрить.</li>
+    <li><strong>После одобрения</strong> plan mode выключается и Claude начинает править. Спланировать следующий шаг — снова <code>/plan</code> или <code>Shift+Tab</code>.</li>
+    <li><strong>Выйти без одобрения</strong> — <code>Shift+Tab</code>.</li>
+    <li><strong>Где лежат планы</strong> — файлами в <code>~/.claude/plans/</code>. Ключ <code>plansDirectory</code> в settings.json переносит их, например, в папку репозитория.</li>
+  </ul>
+  <p class="note"><strong>Это режим разрешений, а не просьба в промпте.</strong> Правки файлов в plan mode блокирует сам Claude Code — см. <a routerLink="/claude/basics/permissions">Разрешения и режимы</a>. А модель <code>opusplan</code> планирует на Opus и переключается на Sonnet, когда план выполняется, — подробнее в <a routerLink="/claude/intro/models">Моделях и выборе</a>.</p>
+</section>
+</article>

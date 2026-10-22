@@ -581,6 +581,12 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./claude/basics/permissions/permissions').then((m) => m.ClaudeBasicsPermissions),
   'claude/basics/settings': () =>
     import('./claude/basics/settings/settings').then((m) => m.ClaudeBasicsSettings),
+  'claude/basics/slash-commands': () =>
+    import('./claude/basics/slash-commands/slash-commands').then(
+      (m) => m.ClaudeBasicsSlashCommands,
+    ),
+  'claude/basics/plan-mode': () =>
+    import('./claude/basics/plan-mode/plan-mode').then((m) => m.ClaudeBasicsPlanMode),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

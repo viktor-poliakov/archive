@@ -1,0 +1,68 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/basics">Основы Claude Code</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Слэш-команды</span></nav>
+
+<h1 class="doc__title">Слэш-команды</h1>
+<p class="doc__lead">Слэш-команда — сообщение, которое начинается с <code>/</code>. Встроенные команды управляют самой сессией — моделью, контекстом, разрешениями, — а свои команды и скиллы подставляют заранее написанный промпт. Наберите <code>/</code> в поле ввода — появится меню всех доступных команд, дальше можно фильтровать по буквам.</p>
+
+<section class="doc__section">
+  <h2>Как вызывать</h2>
+  <p>Команда распознаётся только в начале сообщения. Всё, что написано после её имени, — аргументы:</p>
+  <app-code-block [code]="usage" lang="text" />
+  <ul class="rules">
+    <li><strong>Во время ответа</strong> — команда встанет в очередь и выполнится, когда Claude закончит. Некоторые, например <code>/status</code> и <code>/usage</code>, срабатывают сразу.</li>
+    <li><strong>Не у всех одинаково</strong> — набор команд зависит от платформы, тарифа и подключённых плагинов. Точный список — в меню по <code>/</code> или в <code>/help</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Самые нужные</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Команда</th><th>Что делает</th></tr></thead>
+    <tbody>
+      <tr><td><code>/init</code></td><td>Создать <a routerLink="/claude/basics/claude-md">CLAUDE.md</a> по проекту</td></tr>
+      <tr><td><code>/memory</code></td><td>Править CLAUDE.md и <a routerLink="/claude/basics/memory">автопамять</a></td></tr>
+      <tr><td><code>/permissions</code></td><td>Правила <a routerLink="/claude/basics/permissions">разрешений</a>: что можно без вопросов</td></tr>
+      <tr><td><code>/config</code></td><td>Меню <a routerLink="/claude/basics/settings">настроек</a>: тема, модель, стиль ответов</td></tr>
+      <tr><td><code>/mcp</code></td><td>Подключённые <a routerLink="/claude/mcp/what-is">MCP-серверы</a> и вход в них</td></tr>
+      <tr><td><code>/plan [задача]</code></td><td>Включить <a routerLink="/claude/basics/plan-mode">plan mode</a>: сначала план, потом правки</td></tr>
+      <tr><td><code>/model [имя]</code></td><td>Сменить <a routerLink="/claude/intro/models">модель</a></td></tr>
+      <tr><td><code>/effort [уровень]</code></td><td>Сколько модель думает: от <code>low</code> до <code>max</code></td></tr>
+      <tr><td><code>/context</code></td><td>Показать, чем занят контекст</td></tr>
+      <tr><td><code>/compact [что сохранить]</code></td><td>Сжать переписку в краткое изложение, чтобы освободить контекст</td></tr>
+      <tr><td><code>/btw вопрос</code></td><td>Вопрос «в сторону» — ответ не попадёт в историю разговора</td></tr>
+      <tr><td><code>/add-dir путь</code></td><td>Дать доступ к ещё одной папке</td></tr>
+      <tr><td><code>/diff</code></td><td>Посмотреть изменения в рабочем дереве, включая правки Claude</td></tr>
+      <tr><td><code>/code-review</code></td><td>Проверить дифф на ошибки (короче — <code>/review</code>)</td></tr>
+      <tr><td><code>/security-review</code></td><td>Проверить изменения ветки на уязвимости</td></tr>
+      <tr><td><code>/clear</code></td><td>Начать новый разговор с пустым контекстом (или <code>/new</code>)</td></tr>
+      <tr><td><code>/resume</code></td><td>Вернуться к прошлому разговору</td></tr>
+      <tr><td><code>/rewind</code></td><td>Откатить код и разговор к контрольной точке (или <code>/undo</code>)</td></tr>
+      <tr><td><code>/usage</code></td><td>Расход и <a routerLink="/claude/intro/pricing">лимиты</a> тарифа (или <code>/cost</code>)</td></tr>
+      <tr><td><code>/doctor</code></td><td>Проверить установку и настройки, предложить исправления</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong><code>/clear</code> или <code>/compact</code>?</strong> Начинаете другую задачу — <code>/clear</code>: старая переписка только мешает. Продолжаете ту же, но контекст забит — <code>/compact</code>: Claude сожмёт историю и продолжит с краткого изложения. Подробнее — в <a routerLink="/claude/basics/context">Контексте и компактизации</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Свои команды</h2>
+  <p>Своя команда — markdown-файл с промптом. Файл <code>.claude/commands/fix-tests.md</code> в проекте создаёт команду <code>/fix-tests</code>:</p>
+  <app-code-block [code]="custom" lang="markdown" />
+  <p>Вызов — имя файла и аргументы:</p>
+  <app-code-block [code]="customRun" lang="text" />
+  <ul class="rules">
+    <li><strong><code>$ARGUMENTS</code></strong> — всё, что написано после команды. Отдельные аргументы — <code>$0</code>, <code>$1</code>… (счёт с нуля).</li>
+    <li><strong><code>!`команда`</code></strong> — выполняется до отправки, и Claude получает уже её вывод, а не саму команду.</li>
+    <li><strong>Шапка</strong> — <code>description</code> показывается в меню, <code>argument-hint</code> — подсказка к аргументам, <code>model</code> — модель для этой команды, <code>allowed-tools</code> — инструменты, которые можно без вопросов.</li>
+    <li><strong>Подпапки</strong> — <code>.claude/commands/db/migrate.md</code> превращается в <code>/db:migrate</code>.</li>
+    <li><strong>Для всей команды</strong> — закоммитьте <code>.claude/commands/</code>, и команды появятся у всех, кто клонирует репозиторий.</li>
+  </ul>
+  <p class="note"><strong>Команды теперь — часть скиллов.</strong> Файл <code>.claude/skills/fix-tests/SKILL.md</code> создаёт ту же <code>/fix-tests</code>, но рядом можно положить скрипты и шаблоны, а Claude умеет вызывать скилл сам, когда задача подходит. Личные команды для всех проектов кладут в <code>~/.claude/skills/</code>. Старые файлы в <code>.claude/commands/</code> продолжают работать. Подробнее — в <a routerLink="/claude/skills/custom">Своём скилле</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Команды из плагинов и MCP</h2>
+  <p><a routerLink="/claude/plugins/what-is">Плагины</a> добавляют команды с префиксом своего имени, а MCP-серверы могут отдавать готовые промпты — они тоже появляются в меню по <code>/</code>:</p>
+  <app-code-block [code]="external" lang="text" />
+</section>
+</article>
