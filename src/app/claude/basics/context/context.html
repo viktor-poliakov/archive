@@ -1,0 +1,56 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/basics">Основы Claude Code</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Контекст и компактизация</span></nav>
+
+<h1 class="doc__title">Контекст и компактизация</h1>
+<p class="doc__lead"><strong>Контекст</strong> (контекстное окно) — всё, что Claude видит в текущей сессии: инструкции, CLAUDE.md, прочитанные файлы, вывод команд, вся переписка. Объём ограничен, и когда окно заполняется, Claude Code <strong>компактизирует</strong> его — заменяет переписку кратким изложением. Чем меньше в контексте лишнего, тем точнее работает Claude и тем дешевле каждое сообщение.</p>
+
+<section class="doc__section">
+  <h2>Что занимает контекст</h2>
+  <ul class="rules">
+    <li><strong>До первого сообщения</strong> — системные инструкции, <a routerLink="/claude/basics/claude-md">CLAUDE.md</a>, <a routerLink="/claude/basics/memory">автопамять</a>, описания скиллов и имена инструментов <a routerLink="/claude/mcp/what-is">MCP</a>. Полные тексты скиллов и описания MCP-инструментов подгружаются, только когда понадобятся.</li>
+    <li><strong>По ходу работы</strong> — каждый прочитанный файл, вывод команд и тестов, ответы Claude, правила по путям, когда Claude открывает подходящий файл.</li>
+    <li><strong>Размер</strong> — у актуальных моделей (Fable, Sonnet 5, Haiku 5.5, Opus 4.7 и новее) окно на 1 млн токенов. Но даже большое окно лучше не забивать: старая переписка стоит токенов на каждом сообщении и мешает Claude сосредоточиться на новой задаче.</li>
+  </ul>
+  <p>Посмотреть, чем занято окно, — <code>/context</code>: цветная сетка по категориям и подсказки, что можно ужать.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Компактизация</h2>
+  <ul class="rules">
+    <li><strong>Автоматически</strong> — когда окно подходит к пределу (у моделей на 1 млн — примерно на 967 тыс. токенов), Claude Code сначала убирает старые выводы инструментов, а потом заменяет переписку структурированным кратким изложением. Сессия продолжается как ни в чём не бывало.</li>
+    <li><strong>Вручную</strong> — <code>/compact</code>. С текстом после команды Claude сохранит в изложении то, что вы назвали, а не то, что сочтёт важным сам. Удобно перед следующим большим этапом работы.</li>
+  </ul>
+  <app-code-block [code]="commands" lang="bash" />
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Что было в контексте</th><th>После сжатия</th></tr></thead>
+    <tbody>
+      <tr><td>CLAUDE.md в корне проекта, правила без <code>paths</code>, автопамять</td><td class="yes">Перечитываются с диска</td></tr>
+      <tr><td>План из <a routerLink="/claude/basics/plan-mode">plan mode</a></td><td class="yes">Перечитывается с диска</td></tr>
+      <tr><td>Файлы, которые Claude читал и правил</td><td class="yes">До пяти последних перечитываются заново</td></tr>
+      <tr><td>Использованные скиллы</td><td>Возвращаются, но длинные обрезаются до 5 тыс. токенов, а самые старые могут выпасть</td></tr>
+      <tr><td>Правила с <code>paths</code>, CLAUDE.md в подпапках</td><td>Подгрузятся снова, когда Claude откроет подходящий файл</td></tr>
+      <tr><td>Инструкции, данные в чате</td><td class="no">Только в пересказе — детали могут потеряться</td></tr>
+    </tbody>
+  </table></div>
+  <p>Подсказать, что сохранять при любом сжатии, включая автоматическое, можно разделом в CLAUDE.md:</p>
+  <app-code-block [code]="compactInstructions" lang="markdown" />
+</section>
+
+<section class="doc__section">
+  <h2>Как экономить контекст</h2>
+  <ul class="rules">
+    <li><strong>Новая задача — <code>/clear</code></strong>. Переписка о прошлой задаче только мешает. Вернуться к ней можно через <code>/resume</code>.</li>
+    <li><strong>Правила — в CLAUDE.md, а не в чат</strong>. После сжатия чат пересказывается, а корневой CLAUDE.md перечитывается с диска.</li>
+    <li><strong>Большие исследования — <a routerLink="/claude/agents/subagents">субагенту</a></strong>. Он читает файлы в своём контексте, а в ваш возвращается только итог.</li>
+    <li><strong>Вопрос не по теме — <code>/btw</code></strong>. Ответ не попадёт в историю разговора.</li>
+    <li><strong>Сжать только часть</strong> — <code>/rewind</code>, выбрать сообщение и <strong>Summarize from here</strong> или <strong>Summarize up to here</strong>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Настройка</h2>
+  <p>Порог автосжатия задаётся командой <code>/autocompact</code> (от 100 тыс. до 1 млн токенов) или ключом в <a routerLink="/claude/basics/settings">settings.json</a>:</p>
+  <app-code-block [code]="settings" lang="json" />
+  <p class="note"><strong>Выключить автосжатие</strong> можно ключом <code>"autoCompactEnabled": false</code> или переменной <code>DISABLE_AUTO_COMPACT=1</code> — тогда следить за заполнением и вызывать <code>/compact</code> придётся самим. Если один огромный файл или вывод команды забивает окно сразу после каждого сжатия, Claude Code через несколько попыток перестанет сжимать и покажет ошибку: такой вывод лучше сократить или отдать субагенту.</p>
+</section>
+</article>
