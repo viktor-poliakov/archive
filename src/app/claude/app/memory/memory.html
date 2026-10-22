@@ -1,0 +1,62 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/app">Приложение Claude</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Память и поиск по чатам</span></nav>
+
+<h1 class="doc__title">Память и поиск по чатам</h1>
+<p class="doc__lead">Две функции, чтобы не объяснять Claude одно и то же в каждом новом чате. <strong>Память</strong> — Claude сам запоминает важное о вас и вашей работе и учитывает это дальше. <strong>Поиск по чатам</strong> — Claude находит нужное в прошлых разговорах, когда вы на них ссылаетесь.</p>
+
+<section class="doc__section">
+  <h2>Чем отличаются</h2>
+  <table class="compare">
+    <thead><tr><th></th><th>Память</th><th>Поиск по чатам</th></tr></thead>
+    <tbody>
+      <tr><td>Что хранит</td><td>Короткие темы: кто вы, над чем работаете, как вам отвечать</td><td>Ничего отдельно — ищет по полному тексту прошлых чатов</td></tr>
+      <tr><td>Когда работает</td><td>Всегда, в каждом новом чате</td><td>Когда вы ссылаетесь на прошлое: «мы обсуждали…», «как мы тогда…»</td></tr>
+      <tr><td>Тарифы</td><td>Все. На Team и Enterprise владелец включает её для организации, а каждый участник — для себя</td><td>Pro, Max, Team, Enterprise</td></tr>
+      <tr><td>Переключатель</td><td>Generate memory from chats</td><td>Search and reference chats</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Не повторять контекст</strong> — профессия, стек, язык и стиль ответов, текущие проекты.</li>
+    <li><strong>Продолжить начатое</strong> — вернуться к плану или черновику из прошлого чата, не копируя его.</li>
+    <li><strong>Найти решение</strong> — вспомнить, как уже решали похожую задачу.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как включить</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> Откройте <strong>Settings → Memory</strong>.</li>
+    <li><strong>2.</strong> Включите <strong>Generate memory from chats</strong> (память) и <strong>Search and reference chats</strong> (поиск). На Free, Pro и Max они обычно уже включены.</li>
+    <li><strong>3.</strong> Чувствительные темы по умолчанию не запоминаются. Если нужно, включите <strong>Include sensitive topics in memory</strong>. Номера документов и банковских счетов не сохраняются никогда.</li>
+  </ul>
+  <p class="note"><strong>Видите Memory в Settings → Capabilities, а не отдельным пунктом?</strong> Это старая версия памяти, она осталась у части организаций на Team и Enterprise. В ней память обновляется раз в сутки, а не сразу.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как управлять</h2>
+  <ul class="rules">
+    <li><strong>Прямо в чате</strong> — попросите запомнить, исправить или забыть что-то. Примеры ниже.</li>
+    <li><strong>В настройках</strong> — <strong>Settings → Memory → Topics</strong>: всё, что Claude помнит, по темам. Тему можно открыть, поправить или удалить (<strong>Delete</strong>).</li>
+    <li><strong>Пауза и сброс</strong> — при выключении памяти Claude предложит <strong>Pause memory</strong> (сохранить, но не использовать и не пополнять) или <strong>Reset memory</strong> (стереть всё, включая память проектов, без возможности восстановить).</li>
+    <li><strong>Один чат без памяти</strong> — до первого сообщения нажмите <strong>+</strong> в поле ввода и выключите <strong>Memory</strong>.</li>
+    <li><strong>Инкогнито</strong> — значок призрака справа вверху в новом чате вне проекта. Такой чат не попадает ни в историю, ни в память, и поиск его потом не найдёт.</li>
+    <li><strong>Проекты</strong> — у каждого <a routerLink="/claude/app/projects">проекта</a> своя память. Внутри него Claude видит её и общую память, но не память других проектов.</li>
+  </ul>
+  <app-code-block [code]="phrases" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Перенос из другого ассистента</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> <strong>Settings → Memory → Start import</strong>. Claude покажет готовый запрос — отправьте его прежнему ассистенту (ChatGPT, Gemini и т. п.). Тот выпишет всё, что о вас помнит.</li>
+    <li><strong>2.</strong> Вставьте ответ в окно импорта и нажмите <strong>Add to memory</strong>. Claude разложит его по темам.</li>
+    <li><strong>3.</strong> Проверьте результат в <strong>Topics</strong>. Функция экспериментальная: часть фактов может не сохраниться, особенно личные, не связанные с работой.</li>
+  </ul>
+  <p>Обратно, для резервной копии, — попросите Claude в чате дословно выписать всё, что он помнит.</p>
+  <p class="note"><strong>Аналог в Claude Code.</strong> Там память — обычные файлы на диске: <a routerLink="/claude/basics/claude-md">CLAUDE.md</a> пишете вы, <a routerLink="/claude/basics/memory">автопамять</a> ведёт Claude. Их можно открыть и поправить руками.</p>
+</section>
+</article>
