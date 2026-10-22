@@ -1,0 +1,108 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/agents">Агенты</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Agent SDK</span></nav>
+
+<h1 class="doc__title">Agent SDK</h1>
+<p class="doc__lead"><strong>Claude Agent SDK</strong> — Claude Code в виде библиотеки для TypeScript и Python. Это тот же <a routerLink="/claude/agents/what-is">агентный цикл</a> и те же встроенные инструменты: чтение и правка файлов, Bash, поиск, веб. Есть разрешения, сессии, хуки и субагенты. Вы передаёте задачу и настройки, а цикл SDK ведёт сам. Работает агент в вашем процессе и на ваших серверах.</p>
+
+<section class="doc__section">
+  <h2>Когда брать</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Нужно</th><th>Что взять</th></tr></thead>
+    <tbody>
+      <tr><td>Работать с агентом самому, в терминале или IDE</td><td>Claude Code</td></tr>
+      <tr><td>Встроить агента с файлами, Bash и поиском в своё приложение, CI или внутренний сервис</td><td><strong>Agent SDK</strong></td></tr>
+      <tr><td>Свой цикл и только свои инструменты, полный контроль над каждым запросом</td><td><a routerLink="/claude/api/tool-use">Claude API и tool use</a></td></tr>
+      <tr><td>Агент на серверах Anthropic, с готовой песочницей</td><td><a routerLink="/claude/api/managed-agents">Managed Agents</a></td></tr>
+      <tr><td>Тот же агент из другого языка</td><td><code>claude -p --output-format json</code> как подпроцесс — см. <a routerLink="/claude/automation/headless">Headless-режим</a></td></tr>
+    </tbody>
+  </table></div>
+  <p>Типичные задачи для SDK: бот, который чинит упавшие тесты в CI; ревью пул-реквестов; агент поддержки со своими инструментами для заказов и тикетов; разбор логов с заведением задачи в трекере.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Установка</h2>
+  <app-code-block [code]="install" lang="bash" />
+  <ul class="rules">
+    <li><strong>Claude Code ставить не нужно</strong> — его движок идёт внутри пакета.</li>
+    <li><strong>Ключ берётся из окружения</strong>. Файл <code>.env</code> SDK сам не читает — загрузите его, например, через <code>dotenv</code>.</li>
+    <li><strong>Bedrock, Google Cloud, Foundry</strong> — вместо ключа задайте <code>CLAUDE_CODE_USE_BEDROCK=1</code>, <code>CLAUDE_CODE_USE_VERTEX=1</code> или <code>CLAUDE_CODE_USE_FOUNDRY=1</code> и учётные данные облака.</li>
+    <li><strong>Только API-ключ</strong> — вход через аккаунт claude.ai и лимиты подписки в своём продукте использовать нельзя, если Anthropic не одобрила это отдельно.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Первый агент</h2>
+  <p>Агент, который ищет и чинит ошибки в файле. Сохраните как <code>agent.ts</code> и запустите <code>npx tsx agent.ts</code> (для <code>await</code> на верхнем уровне в <code>package.json</code> нужен <code>"type": "module"</code>):</p>
+  <app-code-block [code]="firstAgent" lang="typescript" />
+  <ul class="rules">
+    <li><strong><code>query()</code></strong> запускает цикл и возвращает асинхронный поток сообщений: рассуждения, вызовы инструментов, их результаты.</li>
+    <li><strong>Сообщение <code>result</code></strong> — последнее, с итогом, стоимостью (<code>total_cost_usd</code>) и <code>session_id</code>.</li>
+    <li><strong>Если задача упала с ошибкой</strong>, <code>query()</code> выдаёт <code>result</code> с ошибкой, а потом бросает исключение — оборачивайте цикл в <code>try/catch</code>.</li>
+  </ul>
+  <p>В Python всё то же самое: <code>query()</code> и <code>ClaudeAgentOptions</code>, опции в snake_case.</p>
+  <app-code-block [code]="firstAgentPython" lang="python" />
+</section>
+
+<section class="doc__section">
+  <h2>Главные опции</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Опция</th><th>Что задаёт</th></tr></thead>
+    <tbody>
+      <tr><td><code>allowedTools</code></td><td>Инструменты, которые работают без подтверждения. Остальные не исчезают, просто спрашивают разрешение</td></tr>
+      <tr><td><code>tools</code>, <code>disallowedTools</code></td><td>Какие встроенные инструменты вообще есть у агента. <code>tools: []</code> — только ваши</td></tr>
+      <tr><td><code>permissionMode</code></td><td><code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>dontAsk</code>, <code>auto</code>, <code>bypassPermissions</code> — как <a routerLink="/claude/basics/permissions">режимы в Claude Code</a></td></tr>
+      <tr><td><code>canUseTool</code></td><td>Ваша функция, которая решает запросы разрешений — например, спрашивает пользователя в интерфейсе</td></tr>
+      <tr><td><code>systemPrompt</code></td><td>По умолчанию минимальный, без правил Claude Code. <code>&#123; type: "preset", preset: "claude_code", append: "…" &#125;</code> — промпт Claude Code плюс ваши правила; строка — полностью свой</td></tr>
+      <tr><td><code>settingSources</code></td><td>По умолчанию SDK читает <code>CLAUDE.md</code>, настройки, скиллы и субагентов из <code>.claude/</code>, как CLI. <code>[]</code> — ничего с диска</td></tr>
+      <tr><td><code>cwd</code>, <code>model</code></td><td>Рабочая папка агента и модель</td></tr>
+      <tr><td><code>maxTurns</code>, <code>maxBudgetUsd</code></td><td>Лимит шагов и лимит денег на один запуск</td></tr>
+      <tr><td><code>mcpServers</code>, <code>agents</code>, <code>hooks</code></td><td>Инструменты, субагенты и хуки — ниже</td></tr>
+      <tr><td><code>resume</code>, <code>continue</code>, <code>forkSession</code></td><td>Продолжить сессию по ID, продолжить последнюю или ответвиться от неё</td></tr>
+      <tr><td><code>env</code></td><td>Переменные окружения. В TypeScript заменяет окружение целиком — добавляйте <code>...process.env</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Свои инструменты</h2>
+  <p>Инструмент — функция с описанием и схемой аргументов на Zod. SDK заворачивает её в <a routerLink="/claude/mcp/what-is">MCP</a>-сервер, который работает прямо в вашем процессе:</p>
+  <app-code-block [code]="customTool" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Имя для <code>allowedTools</code></strong> — <code>mcp__&lt;сервер&gt;__&lt;инструмент&gt;</code>. Все инструменты сервера — <code>mcp__shop__*</code>.</li>
+    <li><strong>Ошибку возвращайте с <code>isError: true</code></strong> и понятным текстом — Claude прочитает его и попробует по-другому. Исключение из обработчика цикл не роняет, но Claude увидит голое сообщение об ошибке.</li>
+    <li><strong>Готовые внешние MCP-серверы</strong> (GitHub, БД, браузер) подключаются через тот же <code>mcpServers</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Субагенты, хуки и лимиты</h2>
+  <p><a routerLink="/claude/agents/subagents">Субагентов</a> задают в коде, в опции <code>agents</code>: поля те же, что во frontmatter <a routerLink="/claude/agents/custom">своего субагента</a>. <a routerLink="/claude/automation/hooks">Хуки</a> — обычные функции, которые срабатывают до или после вызова инструмента:</p>
+  <app-code-block [code]="agentsAndHooks" lang="typescript" />
+  <ul class="rules">
+    <li><strong><code>Agent</code> в <code>allowedTools</code></strong> — иначе каждый запуск субагента будет ждать разрешения.</li>
+    <li><strong>Субагенты из <code>.claude/agents/</code></strong> тоже подхватываются. При совпадении имени побеждает тот, что задан в коде.</li>
+    <li><strong>Хук на <code>PreToolUse</code></strong> может запретить вызов: причину отказа Claude получит как результат инструмента.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Сессии</h2>
+  <p>Каждый <code>query()</code> по умолчанию — новый разговор. Чтобы продолжить прошлый, сохраните <code>session_id</code> из сообщения <code>result</code> и передайте его в <code>resume</code>:</p>
+  <app-code-block [code]="sessions" lang="typescript" />
+  <ul class="rules">
+    <li><strong><code>continue: true</code></strong> — продолжить последнюю сессию в этой папке, без ID.</li>
+    <li><strong><code>forkSession: true</code></strong> вместе с <code>resume</code> — новая сессия с копией истории. Оригинал не меняется.</li>
+    <li><strong>Сессия — это только разговор</strong>, а не файлы. Правки, которые агент уже сделал, остаются на диске.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Перед продом</h2>
+  <ul class="rules">
+    <li><strong>Лимиты</strong> — всегда задавайте <code>maxTurns</code> и <code>maxBudgetUsd</code>: агент сам решает, сколько шагов делать и сколько субагентов звать.</li>
+    <li><strong>Минимум прав</strong> — в <code>allowedTools</code> только то, что нужно задаче. <code>bypassPermissions</code> — только в изолированном контейнере.</li>
+    <li><strong>Несколько клиентов</strong> — у каждого своя файловая система, <code>settingSources: []</code> и <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code> в <code>env</code>, иначе агент подхватит чужие настройки и память.</li>
+    <li><strong>Название</strong> — свой продукт нельзя называть «Claude Code». Можно «Claude Agent» или «&lt;Имя&gt; Powered by Claude».</li>
+  </ul>
+</section>
+</article>
