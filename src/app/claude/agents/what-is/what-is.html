@@ -1,0 +1,73 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/agents">Агенты</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Что такое агент</span></nav>
+
+<h1 class="doc__title">Что такое агент</h1>
+<p class="doc__lead"><strong>Агент</strong> — модель, которая решает задачу сама, в несколько шагов: выбирает действие, выполняет его через инструмент, смотрит на результат и решает, что делать дальше. Обычный чат отвечает текстом за один ход, а агент работает, пока задача не решена. Claude Code — агент для разработки; свои агенты есть и в приложении Claude, и в API.</p>
+
+<section class="doc__section">
+  <h2>Из чего состоит</h2>
+  <ul class="rules">
+    <li><strong>Модель</strong> — думает: понимает задачу, разбивает её на шаги, выбирает следующий.</li>
+    <li><strong>Инструменты</strong> (tools) — действуют: читают и правят файлы, запускают команды, ищут в интернете, работают с сервисами через <a routerLink="/claude/mcp/what-is">MCP</a>. Без них модель может только писать текст.</li>
+    <li><strong>Обвязка</strong> (harness) — программа вокруг модели: даёт ей инструменты, выполняет их вызовы, следит за контекстом и разрешениями. Claude Code и есть такая обвязка.</li>
+  </ul>
+  <p class="note"><strong>Как это устроено на уровне API</strong> — вызов инструментов, цикл в коде, ограничители, MCP — разобрано без привязки к Claude на странице <a routerLink="/ecosystem/ai/agents">Агенты, tool use, MCP</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Агентный цикл</h2>
+  <p>Агент работает по кругу: <strong>собирает контекст → действует → проверяет результат</strong>. Сколько будет кругов, модель решает по ходу дела. Например, Claude Code на просьбу «почини падающие тесты»:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Шаг</th><th>Что делает</th><th>Инструмент</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Запускает тесты и смотрит, что упало</td><td><code>Bash</code></td></tr>
+      <tr><td>2</td><td>Ищет файлы, связанные с ошибкой</td><td><code>Grep</code>, <code>Glob</code></td></tr>
+      <tr><td>3</td><td>Читает их</td><td><code>Read</code></td></tr>
+      <tr><td>4</td><td>Исправляет код</td><td><code>Edit</code></td></tr>
+      <tr><td>5</td><td>Снова запускает тесты. Если что-то падает — возвращается к шагу 2</td><td><code>Bash</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Вопросу о коде хватит одного сбора контекста, а большой рефакторинг займёт десятки кругов.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Где в Claude есть агенты</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Где</th><th>Агент</th><th>Что делает</th></tr></thead>
+    <tbody>
+      <tr><td>Приложение</td><td><a routerLink="/claude/app/tasks">Задачи</a></td><td>Выполняет работу целиком: файлы, сайты, сервисы. Можно поставить на расписание</td></tr>
+      <tr><td>Приложение</td><td><a routerLink="/claude/app/chrome">Claude in Chrome</a></td><td>Сам работает в браузере: кликает, заполняет формы</td></tr>
+      <tr><td>Приложение</td><td><a routerLink="/claude/app/research">Research</a></td><td>Делает много поисков подряд и собирает ответ со ссылками</td></tr>
+      <tr><td>Claude Code</td><td>Claude Code и <a routerLink="/claude/agents/subagents">субагенты</a></td><td>Пишет и правит код, запускает команды, раздаёт части работы помощникам</td></tr>
+      <tr><td>API</td><td><a routerLink="/claude/agents/agent-sdk">Agent SDK</a></td><td>Движок Claude Code в виде библиотеки — для своего агента</td></tr>
+      <tr><td>API</td><td><a routerLink="/claude/api/managed-agents">Managed Agents</a></td><td>Агент на серверах Anthropic, с готовой песочницей</td></tr>
+      <tr><td>API</td><td><a routerLink="/claude/api/tool-use">Tool use</a></td><td>Свой цикл вручную: вы описываете инструменты и сами выполняете вызовы</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Как ставить задачу агенту</h2>
+  <p>Как коллеге: цель, где смотреть и как понять, что готово. Какие файлы читать и какие команды запускать, агент решит сам.</p>
+  <app-code-block [code]="prompt" lang="text" />
+  <ul class="rules">
+    <li><strong>Критерий готовности</strong> — тесты, сборка, скриншот. Агенту есть чем себя проверить, и он не остановится на полпути.</li>
+    <li><strong>Крупную задачу</strong> сначала обсудите в <a routerLink="/claude/basics/plan-mode">Plan mode</a>: поправить план дешевле, чем переделывать код.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как держать агента под контролем</h2>
+  <p>Агент работает сам, но вмешаться можно в любой момент. В Claude Code:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Действие</th><th>Что произойдёт</th></tr></thead>
+    <tbody>
+      <tr><td><code>Esc</code></td><td>Остановить сразу. Текущий вызов инструмента отменяется</td></tr>
+      <tr><td>Текст + <code>Enter</code> во время работы</td><td>Поправка без остановки: Claude прочитает её после текущего шага и учтёт</td></tr>
+      <tr><td><code>Esc</code> <code>Esc</code></td><td>Откатить файлы к одной из прошлых точек (checkpoint)</td></tr>
+      <tr><td><code>Shift+Tab</code></td><td>Сменить режим разрешений: спрашивать перед каждой правкой или нет</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Чекпоинты возвращают только файлы.</strong> Запись в базу, деплой или отправленное сообщение не откатить — такие действия ограничивают <a routerLink="/claude/basics/permissions">разрешениями</a>.</p>
+</section>
+</article>

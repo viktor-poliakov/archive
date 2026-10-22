@@ -1,0 +1,84 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/agents">Агенты</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Субагенты</span></nav>
+
+<h1 class="doc__title">Субагенты</h1>
+<p class="doc__lead"><strong>Субагент</strong> (subagent) — помощник, которому Claude Code передаёт часть работы. У него своё окно контекста, свой системный промпт, свои инструменты и модель. Задачу он делает сам, а в основной разговор возвращает только итог — как коллега, которого попросили разобраться и рассказать вывод.</p>
+
+<section class="doc__section">
+  <h2>Зачем</h2>
+  <ul class="rules">
+    <li><strong>Чистый контекст</strong> — субагент может прочитать сорок файлов, а к вам придёт выжимка на полэкрана. Основной разговор позже упирается в <a routerLink="/claude/basics/context">компактизацию</a>.</li>
+    <li><strong>Параллельность</strong> — несколько субагентов работают одновременно: каждый проверяет свой модуль или ищет своё.</li>
+    <li><strong>Ограниченные права</strong> — ревьюеру можно оставить только чтение, и он ничего не поправит, даже если захочет.</li>
+    <li><strong>Экономия</strong> — простую вспомогательную работу можно отдать дешёвой модели, например Haiku.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Встроенные субагенты</h2>
+  <p>Они есть сразу, устанавливать ничего не нужно. Подходящего Claude выбирает сам.</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Субагент</th><th>Для чего</th><th>Права</th></tr></thead>
+    <tbody>
+      <tr><td><code>Explore</code></td><td>Быстрый поиск по коду: где что лежит и как связано. Тщательность Claude задаёт сам: quick, medium или very thorough</td><td>Только чтение</td></tr>
+      <tr><td><code>Plan</code></td><td>Изучает проект в <a routerLink="/claude/basics/plan-mode">Plan mode</a>, чтобы составить план</td><td>Только чтение</td></tr>
+      <tr><td><code>general-purpose</code></td><td>Многошаговые задачи, где нужно и искать, и править</td><td>Все инструменты</td></tr>
+      <tr><td><code>claude</code></td><td>Универсальный — для всего, что не подошло остальным</td><td>Все инструменты</td></tr>
+      <tr><td><code>claude-code-guide</code></td><td>Отвечает на вопросы о самом Claude Code. Работает на Haiku</td><td>Чтение и веб-поиск</td></tr>
+      <tr><td><code>statusline-setup</code></td><td>Настраивает строку состояния по команде <code>/statusline</code></td><td>Чтение и правка настроек</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Как вызвать</h2>
+  <ul class="rules">
+    <li><strong>Ничего не делать</strong> — Claude сам отдаёт работу субагенту, если задача подходит под его описание. Поиск по большому проекту обычно уходит в <code>Explore</code>. В ленте такой вызов виден строкой вида <code>Explore(Найти проверку токена)</code>.</li>
+    <li><strong>Попросить словами</strong> — назовите субагента или просто попросите разделить работу:</li>
+  </ul>
+  <app-code-block [code]="ask" lang="text" />
+  <ul class="rules">
+    <li><strong>&#64;-упоминание</strong> — гарантирует запуск именно этого субагента. Наберите <code>&#64;</code> и выберите его из списка или напишите <code>&#64;agent-имя</code>:</li>
+  </ul>
+  <app-code-block [code]="mention" lang="text" />
+  <ul class="rules">
+    <li><strong>Вся сессия как субагент</strong> — флаг <code>--agent</code> (или ключ <code>"agent"</code> в <a routerLink="/claude/basics/settings">settings.json</a>): Claude работает с промптом, инструментами и моделью этого субагента.</li>
+    <li><strong>Форк</strong> (fork) — <code>/subtask &lt;задача&gt;</code> запускает в фоне копию текущего разговора. Ему не нужно заново собирать контекст, и стоит он дешевле обычного субагента: кеш промпта общий с основной сессией.</li>
+  </ul>
+  <app-code-block [code]="cli" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>Фон и контроль</h2>
+  <ul class="rules">
+    <li><strong><code>Ctrl+B</code></strong> — отправить работающего субагента в фон и продолжить разговор. В VS Code — кнопка <strong>Run in background</strong>.</li>
+    <li><strong>Разрешения</strong> — запросы фоновых субагентов приходят в основную сессию с именем субагента. <code>Esc</code> отклоняет один вызов, но субагента не останавливает.</li>
+    <li><strong><code>/tasks</code></strong> — список субагентов. <code>Enter</code> открывает транскрипт выбранного: видно, что он читал и запускал.</li>
+    <li><strong>Продолжить</strong> — попросите Claude продолжить работу прошлого субагента, и тот вернётся со всей своей историей. <code>Explore</code> и <code>Plan</code> одноразовые, их не продолжить.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Ограничения</h2>
+  <ul class="rules">
+    <li><strong>Не видит ваш разговор</strong> — получает только задание от Claude и <code>CLAUDE.md</code> (<code>Explore</code> и <code>Plan</code> пропускают даже его). Исключение — форк.</li>
+    <li><strong>Не задаёт вопросов</strong> — спросить вас посреди работы субагент не может, поэтому всё нужное должно быть в задании.</li>
+    <li><strong>Возвращает только итог</strong> — промежуточные шаги остаются в его транскрипте.</li>
+    <li><strong>Старт с нуля стоит времени и токенов</strong> — для быстрой правки и задач с частыми уточнениями лучше основной разговор. Всего токенов уходит больше, зато основной контекст остаётся чистым.</li>
+    <li><strong>Лимиты</strong> — одновременно до 20 субагентов; субагент может запустить своего, но не глубже трёх уровней.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Свой субагент</h2>
+  <p>Субагент — это Markdown-файл: во frontmatter имя, описание, инструменты и модель, ниже — системный промпт. Проще всего попросить Claude: «создай субагента-ревьюера в <code>.claude/agents/</code>, только чтение, модель Sonnet».</p>
+  <app-code-block [code]="agentFile" lang="markdown" />
+  <ul class="rules">
+    <li><strong><code>.claude/agents/</code></strong> — субагенты проекта. Лежат в git, и ими пользуется вся команда.</li>
+    <li><strong><code>~/.claude/agents/</code></strong> — ваши личные, работают во всех проектах.</li>
+    <li><strong><code>description</code></strong> — по нему Claude решает, когда звать субагента. Пишите коротко и конкретно; фраза «используй сразу после…» подталкивает звать его без напоминаний.</li>
+    <li><strong><code>/agents</code></strong> в свежих версиях только напоминает про эти папки — мастера создания больше нет.</li>
+  </ul>
+  <p class="note"><strong>Подробнее.</strong> Все поля frontmatter, хуки и память субагента — на странице <a routerLink="/claude/agents/custom">Свой субагент</a>. Субагенты живут внутри одной сессии; несколько независимых сессий — в <a routerLink="/claude/agents/parallel">Параллельных сессиях</a>. В <a routerLink="/claude/agents/agent-sdk">Agent SDK</a> субагентов задают прямо в коде, а в приложении Claude их не настраивают: <a routerLink="/claude/app/research">Research</a> и <a routerLink="/claude/app/tasks">задачи</a> сами раздают части работы параллельным помощникам.</p>
+</section>
+</article>
