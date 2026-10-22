@@ -1,0 +1,84 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/agents">Агенты</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Свой субагент</span></nav>
+
+<h1 class="doc__title">Свой субагент</h1>
+<p class="doc__lead"><strong>Свой субагент</strong> — Markdown-файл, в котором описан помощник: когда его звать, какие инструменты ему можно, на какой модели работать и что делать. Написали один раз — дальше Claude сам зовёт его, когда задача подходит. Если файл лежит в git, субагент есть у всей команды. Как субагенты работают и как их вызывать — на странице <a routerLink="/claude/agents/subagents">Субагенты</a>.</p>
+
+<section class="doc__section">
+  <h2>Когда стоит заводить</h2>
+  <ul class="rules">
+    <li><strong>Роль повторяется</strong> — ревью, прогон тестов, миграции БД, проверка доступности вёрстки.</li>
+    <li><strong>Нужны ограничения</strong> — например, ревьюер, который физически не может править код.</li>
+    <li><strong>Рутину хочется удешевить</strong> — перевести её на Haiku или Sonnet.</li>
+    <li><strong>Не нужен</strong> для разовой задачи — проще попросить словами. А если инструкция должна работать в основном разговоре, а не в отдельном контексте, — это <a routerLink="/claude/skills/what-is">скилл</a>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как создать</h2>
+  <p>Проще всего — попросить Claude. Он напишет файл сам, останется проверить frontmatter:</p>
+  <app-code-block [code]="ask" lang="text" />
+  <p>Или написать файл руками. Вверху frontmatter с настройками, ниже — системный промпт субагента:</p>
+  <app-code-block [code]="testRunner" lang="markdown" />
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Где лежит</th><th>Для кого</th></tr></thead>
+    <tbody>
+      <tr><td><code>.claude/agents/</code></td><td>Текущий проект. Кладут в git — субагент есть у всей команды</td></tr>
+      <tr><td><code>~/.claude/agents/</code></td><td>Вы, во всех проектах</td></tr>
+      <tr><td>Папка <code>agents/</code> плагина</td><td>Везде, где включён <a routerLink="/claude/plugins/what-is">плагин</a></td></tr>
+      <tr><td>Флаг <code>--agents</code></td><td>Только текущая сессия, файл не нужен</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Совпали имена</strong> — побеждает флаг <code>--agents</code>, потом проект, потом личные, потом плагин.</li>
+    <li><strong>Правки подхватываются сами</strong> за несколько секунд. Перезапуск нужен, только если папки <code>agents</code> до старта сессии не было.</li>
+  </ul>
+  <app-code-block [code]="cliAgents" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>Поля frontmatter</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Поле</th><th>Что задаёт</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>Имя, обязательное. Без двоеточий</td></tr>
+      <tr><td><code>description</code></td><td>Когда звать субагента, обязательное. По нему Claude решает, отдавать ли задачу</td></tr>
+      <tr><td><code>tools</code></td><td>Разрешённые инструменты. Без поля — все, что есть у сессии</td></tr>
+      <tr><td><code>disallowedTools</code></td><td>Запрещённые инструменты, например <code>Write, Edit</code></td></tr>
+      <tr><td><code>model</code></td><td><code>haiku</code>, <code>sonnet</code>, <code>opus</code>, <code>fable</code> или <code>inherit</code> — как у сессии</td></tr>
+      <tr><td><code>permissionMode</code></td><td>Свой <a routerLink="/claude/basics/permissions">режим разрешений</a>, например <code>plan</code> или <code>acceptEdits</code></td></tr>
+      <tr><td><code>isolation</code></td><td><code>worktree</code> — работать в отдельной копии репозитория, чтобы правки не мешали вашим</td></tr>
+      <tr><td><code>background</code></td><td><code>true</code> — всегда работать в фоне</td></tr>
+      <tr><td><code>memory</code></td><td>Своя память между сессиями: <code>project</code>, <code>user</code> или <code>local</code></td></tr>
+      <tr><td><code>skills</code>, <code>mcpServers</code>, <code>hooks</code></td><td>Скиллы, MCP-серверы и <a routerLink="/claude/automation/hooks">хуки</a> только для этого субагента</td></tr>
+      <tr><td><code>maxTurns</code></td><td>Сколько шагов субагент может сделать</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Опечатку в поле никто не заметит.</strong> Неизвестные поля Claude Code молча пропускает. Если субагент ведёт себя не так, как написано во frontmatter, сначала проверьте названия полей.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как написать, чтобы работало</h2>
+  <ul class="rules">
+    <li><strong><code>description</code> — коротко и конкретно</strong>. Описания всех субагентов постоянно лежат в контексте, а когда вместе они переходят за 15 000 токенов, Claude Code предупреждает об этом при старте. Подробности переносите в промпт: он загружается, только когда субагент запущен.</li>
+    <li><strong>«Используй сразу после…»</strong> в описании подталкивает Claude звать субагента без напоминаний.</li>
+    <li><strong>В промпте — роль, шаги и формат отчёта.</strong> В основной разговор вернётся только отчёт, поэтому заранее скажите, что в нём должно быть.</li>
+    <li><strong>Минимум инструментов</strong> — без <code>Edit</code> и <code>Write</code> субагент не испортит код, даже если захочет.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Идеи и нужные поля</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Субагент</th><th>Как настроить</th></tr></thead>
+    <tbody>
+      <tr><td>Ревьюер</td><td><code>tools: Read, Grep, Glob, Bash</code> — без правки файлов</td></tr>
+      <tr><td>Дешёвый поиск по коду</td><td>Свой субагент с именем <code>Explore</code> и <code>model: haiku</code> — заменяет встроенный</td></tr>
+      <tr><td>Массовый рефакторинг</td><td><code>isolation: worktree</code> — правки в отдельной копии, вы потом смотрите diff</td></tr>
+      <tr><td>Аналитик БД</td><td><code>tools: Bash</code> и хук <code>PreToolUse</code>, который пропускает только <code>SELECT</code></td></tr>
+      <tr><td>Знаток проекта</td><td><code>memory: project</code> — заметки копятся в <code>.claude/agent-memory/&lt;name&gt;/</code></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Проверить субагента</strong> — попросите «используй test-runner, чтобы прогнать тесты» или напишите <code>&#64;agent-test-runner</code>. У субагентов из плагинов поля <code>hooks</code>, <code>mcpServers</code> и <code>permissionMode</code> не работают; если они нужны, скопируйте файл в <code>.claude/agents/</code>. В приложении Claude своих субагентов нет: повторяющиеся инструкции там оформляют <a routerLink="/claude/skills/what-is">скиллами</a> или <a routerLink="/claude/app/projects">проектами</a>.</p>
+</section>
+</article>

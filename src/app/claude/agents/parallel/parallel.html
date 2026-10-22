@@ -1,0 +1,68 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/agents">Агенты</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Параллельные сессии</span></nav>
+
+<h1 class="doc__title">Параллельные сессии</h1>
+<p class="doc__lead">Несколько сессий Claude Code одновременно, у каждой своя задача: одна пишет фичу, вторая чинит баг, третья гоняет миграцию. В отличие от <a routerLink="/claude/agents/subagents">субагентов</a>, ими управляете вы, а не Claude. Главное правило — сессии не должны править одни и те же файлы, для этого есть <strong>worktree</strong>.</p>
+
+<section class="doc__section">
+  <h2>Сессии или субагенты</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th></th><th>Субагенты</th><th>Параллельные сессии</th></tr></thead>
+    <tbody>
+      <tr><td>Кто управляет</td><td>Claude внутри одной сессии</td><td>Вы</td></tr>
+      <tr><td>Разговор</td><td>Итог возвращается в основной</td><td>У каждой сессии свой, полноценный</td></tr>
+      <tr><td>Подходит для</td><td>Поиска, проверки, побочной задачи</td><td>Независимых задач, каждая со своим результатом: веткой, PR</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Токены.</strong> Каждая сессия тратит свои токены, а лимит тарифа у всех общий — см. <a routerLink="/claude/intro/pricing">Тарифы и лимиты</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Worktree: своя копия файлов</h2>
+  <p><strong>Git worktree</strong> — отдельная папка с отдельной веткой, но общей историей репозитория. Каждая сессия правит свою копию, и правки не перемешиваются.</p>
+  <app-code-block [code]="worktree" lang="bash" />
+  <ul class="rules">
+    <li><strong>Где</strong> — <code>.claude/worktrees/&lt;имя&gt;/</code>, ветка <code>worktree-&lt;имя&gt;</code>. Добавьте <code>.claude/worktrees/</code> в <code>.gitignore</code>.</li>
+    <li><strong>От чего ветвится</strong> — от основной ветки на удалённом репозитории. Чтобы начать от текущей работы, задайте <code>"worktree": &#123; "baseRef": "head" &#125;</code> в <a routerLink="/claude/basics/settings">settings.json</a>.</li>
+    <li><strong>Это чистая копия</strong> — зависимости ставятся заново, а файлов из <code>.gitignore</code> в ней нет. Чтобы <code>.env</code> и секреты копировались сами, перечислите их в <code>.worktreeinclude</code> в корне проекта:</li>
+  </ul>
+  <app-code-block [code]="worktreeInclude" lang="text" />
+  <ul class="rules">
+    <li><strong>При выходе</strong> пустой worktree удаляется сам. Если в нём есть правки, Claude спросит, оставить ли его.</li>
+    <li><strong>Внутри сессии</strong> достаточно попросить «работай в worktree» — Claude создаст его сам.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Фоновые сессии</h2>
+  <p>Сессию можно запустить в фоне и не держать для неё терминал. Все фоновые сессии видны на одном экране — <strong>agent view</strong> (research preview, интерфейс ещё меняется).</p>
+  <app-code-block [code]="background" lang="bash" />
+  <ul class="rules">
+    <li><strong>Статусы</strong> — работает, ждёт вас (жёлтый: вопрос или разрешение), свободна, готово (зелёный), ошибка (красный).</li>
+    <li><strong><code>Space</code></strong> — подсмотреть сессию и ответить, не выходя из списка. <strong><code>Enter</code></strong> — открыть весь разговор. <strong><code>←</code></strong> в пустом поле — вернуться к списку; сессия при этом продолжает работать.</li>
+    <li><strong>Файлы</strong> — запущенная из agent view сессия перед первой правкой сама переходит в свой worktree.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В десктопе и в облаке</h2>
+  <ul class="rules">
+    <li><strong>Десктоп</strong> — новая сессия: <strong>+ New</strong> или <code>Ctrl+N</code> (<code>Cmd+N</code> на macOS). Две рядом — <code>Alt</code>+клик (<code>Option</code> на macOS) по сессии в боковой панели или правый клик → <strong>Open in → Split view</strong>. Свой worktree включается переключателем <strong>Worktree</strong> под полем ввода до старта сессии.</li>
+    <li><strong>Облако</strong> — сессия работает на серверах Anthropic, даже когда ноутбук закрыт. Следить за ней можно на <code>claude.ai/code</code> или в мобильном приложении. Облако клонирует ветку с GitHub, а не вашу локальную папку, поэтому сначала сделайте push. Доступно на Pro, Max, Team и Enterprise.</li>
+  </ul>
+  <app-code-block [code]="cloud" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>Когда сессиям нужно договориться</h2>
+  <p>Сессии на одной машине могут писать друг другу. Попросите Claude передать находку соседу или упомяните сессию через <code>&#64;имя</code>:</p>
+  <app-code-block [code]="message" lang="text" />
+  <ul class="rules">
+    <li><strong><code>/list-agents</code></strong> — с кем сессия может связаться.</li>
+    <li><strong>Сообщение от сессии — не ваше слово</strong>: оно не одобряет разрешения и не меняет настройки, все запросы прав по-прежнему приходят вам.</li>
+    <li><strong>Agent teams</strong> — следующий шаг: ведущая сессия сама делит работу между «напарниками», у них общий список задач и переписка. Это экспериментальная функция, она выключена по умолчанию и тратит заметно больше токенов. Включается так:</li>
+  </ul>
+  <app-code-block [code]="teams" lang="json" />
+  <p class="note"><strong>Напарники в команде не получают отдельных worktree</strong> — делите работу так, чтобы каждый правил свои файлы. А чтобы разложить одну большую правку на 5–30 субагентов, каждый в своём worktree, есть встроенный скилл <code>/batch</code>.</p>
+</section>
+</article>
