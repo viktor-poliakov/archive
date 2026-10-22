@@ -1,0 +1,55 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/intro">Введение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Модели и выбор</span></nav>
+
+<h1 class="doc__title">Модели и выбор</h1>
+<p class="doc__lead">Claude — линейка моделей: чем старше модель, тем она умнее, но медленнее и дороже. Правильный выбор экономит и время, и лимиты. Если не знаете, что выбрать, — берите <strong>Opus 5.5</strong>: Anthropic советует начинать с неё, и в Claude Code она стоит по умолчанию на всех тарифах.</p>
+
+<section class="doc__section">
+  <h2>Актуальные модели</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Модель</th><th>Для чего</th><th>Алиас в Claude Code</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Fable 5.1</strong></td><td>Самые сложные рассуждения и долгая автономная работа. Самая сильная модель из открытых всем</td><td><code>fable</code></td></tr>
+      <tr><td><strong>Opus 5.5</strong></td><td>Долгие агентные задачи в коде и аналитике. Модель по умолчанию</td><td><code>opus</code></td></tr>
+      <tr><td><strong>Sonnet 5.5</strong></td><td>Баланс скорости и ума: повседневный код и агенты</td><td><code>sonnet</code></td></tr>
+      <tr><td><strong>Haiku 5.5</strong></td><td>Быстро и дёшево: классификация, извлечение данных, маршрутизация запросов</td><td><code>haiku</code></td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Контекст</strong> — у всех четырёх до 1 млн токенов на вход и до 128 тыс. на выход.</li>
+    <li><strong>Цена</strong> — каждая ступень заметно дороже предыдущей: Fable в 2,5 раза дороже Opus, Opus вдвое дороже Sonnet, а Haiku в 20 раз дешевле Sonnet. Точные цифры — в <a routerLink="/claude/intro/pricing">Тарифах и лимитах</a>.</li>
+    <li><strong>Mythos 5.1</strong> — вариант с возможностями Fable, но только для организаций, прошедших проверку Anthropic.</li>
+    <li><strong>Старые модели</strong> (Opus 5, Sonnet 5, линейка 4.x) пока доступны, но новую работу лучше начинать на актуальных.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как выбрать</h2>
+  <ul class="rules">
+    <li><strong>Не уверены</strong> — Opus 5.5.</li>
+    <li><strong>Обычные правки, хочется быстрее и экономнее</strong> — Sonnet 5.5.</li>
+    <li><strong>Много однотипных простых запросов</strong> (в своём продукте через API) — Haiku 5.5.</li>
+    <li><strong>Opus не справляется даже на высоком effort</strong> — Fable 5.1.</li>
+  </ul>
+  <p class="note"><strong>Совет Anthropic.</strong> Часто выгоднее не менять модель, а поднять или опустить <em>effort</em> — о нём ниже.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как переключить в Claude Code</h2>
+  <app-code-block [code]="switchModel" lang="bash" />
+  <p><code>/model</code> запоминает выбор в настройках пользователя, и он сохранится для следующих сессий. Задать модель для проекта можно в <code>.claude/settings.json</code> (подробнее — в <a routerLink="/claude/basics/settings">Настройках settings.json</a>):</p>
+  <app-code-block [code]="settings" lang="json" />
+  <ul class="rules">
+    <li><code>best</code> — Fable, если она доступна на вашем тарифе, иначе Opus.</li>
+    <li><code>opusplan</code> — Opus, пока в <a routerLink="/claude/basics/plan-mode">plan mode</a> составляется план, и Sonnet, когда план выполняется.</li>
+    <li><code>default</code> — сбросить выбор и вернуть модель по умолчанию.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Effort и быстрый режим</h2>
+  <p><strong>Effort</strong> — сколько модель думает перед ответом. Уровни: <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code>, <code>max</code>. Выше уровень — точнее результат, но дольше ответ и больше расход лимитов. По умолчанию у Opus, Sonnet и Haiku 5.5 стоит <code>medium</code>, у Fable — <code>high</code>.</p>
+  <app-code-block [code]="effort" lang="bash" />
+  <p class="note"><strong>Быстрый режим</strong> (<code>/fast</code>) работает только с Opus: отвечает до 2,5 раза быстрее, но стоит вдвое дороже. Пока это research preview.</p>
+</section>
+</article>

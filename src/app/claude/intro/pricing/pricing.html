@@ -1,0 +1,67 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/intro">Введение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Тарифы и лимиты</span></nav>
+
+<h1 class="doc__title">Тарифы и лимиты</h1>
+<p class="doc__lead">Платить за Claude можно двумя способами. <strong>Подписка</strong> — фиксированная сумма в месяц и лимит использования. <strong>API</strong> — оплата за каждый потраченный токен. Claude Code работает с обоими.</p>
+
+<section class="doc__section">
+  <h2>Подписки</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Тариф</th><th>Цена в месяц</th><th>Кому</th><th>Claude Code</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Free</strong></td><td>$0</td><td>Попробовать чат</td><td class="no">Нет</td></tr>
+      <tr><td><strong>Pro</strong></td><td>$20 ($17 при оплате за год)</td><td>Работать с Claude время от времени</td><td class="yes">Да</td></tr>
+      <tr><td><strong>Max 5x</strong></td><td>$100</td><td>Работать каждый день: лимит в 5 раз больше, чем у Pro</td><td class="yes">Да</td></tr>
+      <tr><td><strong>Max 20x</strong></td><td>$200</td><td>Работать весь день: лимит в 20 раз больше, чем у Pro</td><td class="yes">Да</td></tr>
+      <tr><td><strong>Team</strong></td><td>$25 за место, Premium — $125 ($20 и $100 при оплате за год)</td><td>Команды от 2 до 150 человек</td><td class="yes">Да</td></tr>
+      <tr><td><strong>Enterprise</strong></td><td>$20 за место плюс использование по ценам API, только годовой договор</td><td>Компании от 20 человек</td><td class="yes">Да</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Цены указаны в долларах и без налогов.</strong> В некоторых странах их показывают в местной валюте, а налог либо уже входит в цену, либо добавляется при оплате.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как устроены лимиты</h2>
+  <ul class="rules">
+    <li><strong>Окно в 5 часов</strong> — лимит считается в скользящем пятичасовом окне. На платных тарифах сверху есть ещё недельный лимит.</li>
+    <li><strong>Общий счёт</strong> — чат и Claude Code тратят один и тот же лимит.</li>
+    <li><strong>Что тратит быстрее</strong> — длинные переписки, большие файлы, старшие модели, высокий <a routerLink="/claude/intro/models">effort</a>, многошаговые задачи агентов.</li>
+    <li><strong>Fable 5.1</strong> — на Pro доступна только за usage credits, на Max и Team Premium на неё можно потратить до половины недельного лимита.</li>
+    <li><strong>Лимит закончился</strong> — подождите сброса, перейдите на тариф выше или включите <strong>usage credits</strong>: доплату по ценам API с предоплатой и потолком трат.</li>
+  </ul>
+  <p>Посмотреть расход: в Claude Code — командой ниже, на сайте — Settings → Usage.</p>
+  <app-code-block [code]="usage" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>API</h2>
+  <p>Оплата за токены через Claude Console. Новым пользователям дают немного бесплатных кредитов, чтобы попробовать.</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Модель</th><th>Вход, $ за 1 млн токенов</th><th>Выход, $ за 1 млн токенов</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Fable 5.1</strong></td><td>10</td><td>50</td></tr>
+      <tr><td><strong>Opus 5.5</strong></td><td>4</td><td>20</td></tr>
+      <tr><td><strong>Sonnet 5.5</strong></td><td>2</td><td>10</td></tr>
+      <tr><td><strong>Haiku 5.5</strong></td><td>0,10 (запрос больше 100 тыс. токенов — 0,50)</td><td>0,50 (2,50)</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong><a routerLink="/claude/api/caching">Prompt caching</a></strong> — повторно отправленный кусок запроса читается из кэша за 2,5–10% обычной цены. Запись в кэш стоит в 1,25–2 раза дороже обычного входа.</li>
+    <li><strong>Batch API</strong> — скидка 50%, если ответ может подождать.</li>
+    <li><strong>Claude Code по API</strong> — по данным Anthropic, в среднем около $13 за активный день и $150–250 в месяц на разработчика.</li>
+  </ul>
+  <p class="note"><strong>Частая ловушка.</strong> Если в системе задана переменная <code>ANTHROPIC_API_KEY</code>, Claude Code использует её вместо подписки, и вы платите по API.</p>
+  <app-code-block [code]="apiKey" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>Что выбрать</h2>
+  <ul class="rules">
+    <li><strong>Только посмотреть</strong> — Free, но без Claude Code.</li>
+    <li><strong>Claude Code время от времени</strong> — Pro.</li>
+    <li><strong>Claude Code — основной инструмент</strong> — Max: лимиты кончаются заметно реже.</li>
+    <li><strong>Свой продукт или автоматизация</strong> — API.</li>
+  </ul>
+  <p>Как тратить меньше лимитов — на странице <a routerLink="/claude/practice/tokens">Экономия токенов</a>.</p>
+</section>
+</article>
