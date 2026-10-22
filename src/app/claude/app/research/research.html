@@ -1,0 +1,45 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/app">Приложение Claude</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Research и веб-поиск</span></nav>
+
+<h1 class="doc__title">Research и веб-поиск</h1>
+<p class="doc__lead"><strong>Веб-поиск</strong> (web search) — Claude ищет в интернете свежую информацию и отвечает со ссылками на источники. <strong>Research</strong> — режим глубокого исследования: много поисков подряд, каждый уточняет предыдущий, а в итоге подробный ответ с цитатами.</p>
+
+<section class="doc__section">
+  <h2>Чем отличаются</h2>
+  <table class="compare">
+    <thead><tr><th></th><th>Веб-поиск</th><th>Research</th></tr></thead>
+    <tbody>
+      <tr><td>Для чего</td><td>Быстрый факт: новости, цены, версия библиотеки, содержимое ссылки</td><td>Разобрать тему с разных сторон: обзор рынка, сравнение, бриф</td></tr>
+      <tr><td>Время</td><td>Секунды</td><td>Минуты</td></tr>
+      <tr><td>Где ищет</td><td>В интернете и по ссылкам, которые вы дали</td><td>В интернете и в подключённых <a routerLink="/claude/app/connectors">коннекторах</a>: Gmail, Calendar, Google Docs и других</td></tr>
+      <tr><td>Тарифы</td><td>Все</td><td>Pro, Max, Team, Enterprise</td></tr>
+      <tr><td>Как включить</td><td><strong>+</strong> → <strong>Web search</strong></td><td><strong>+</strong> → <strong>Research</strong></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="doc__section">
+  <h2>Веб-поиск</h2>
+  <ul class="rules">
+    <li><strong>Включить</strong> — в чате нажмите <strong>+</strong> в левом нижнем углу и выберите <strong>Web search</strong>: появится галочка. Повторное нажатие выключает. В новом интерфейсе Claude такого переключателя нет: Claude сам решает, когда искать.</li>
+    <li><strong>Ссылки</strong> — дайте URL, и Claude прочитает страницу целиком.</li>
+    <li><strong>Источники</strong> — в ответе есть ссылки и цитаты. Проверяйте по ним важные цифры и даты.</li>
+    <li><strong>Лимиты</strong> — поиск и чтение страниц тратят лимит тарифа. На Free длинная статья может съесть заметную его часть.</li>
+    <li><strong>Team и Enterprise</strong> — сначала владелец включает поиск для всей организации: Organization settings → Capabilities.</li>
+  </ul>
+  <app-code-block [code]="searchPrompts" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Research</h2>
+  <ul class="rules">
+    <li><strong>Включить</strong> — <strong>+</strong> → <strong>Research</strong>. Внизу чата появится синий индикатор, нажатие по нему выключает режим. Веб-поиск при этом должен быть включён.</li>
+    <li><strong>Как работает</strong> — Claude сам планирует, что искать, идёт от вопроса к вопросу и по ходу решает, что копнуть глубже. Research всегда работает на старшей модели Opus, какую бы модель вы ни выбрали в чате.</li>
+    <li><strong>Свои данные</strong> — подключённые коннекторы Research использует без отдельного подтверждения на каждый вызов. В мобильном приложении он ищет только в интернете, поэтому исследования по почте и документам запускайте в браузере или Claude Desktop.</li>
+    <li><strong>Лимиты</strong> — общие с обычными чатами, но тратятся быстрее: источников много и ответ длинный.</li>
+    <li><strong>Если Claude не исследует</strong> — попросите прямо: «используй Research, чтобы…».</li>
+  </ul>
+  <app-code-block [code]="researchPrompts" lang="text" />
+  <p class="note"><strong>Аналог в Claude Code.</strong> Там веб-поиск — встроенные инструменты <code>WebSearch</code> и <code>WebFetch</code>: Claude вызывает их сам, когда нужна документация или свежие данные. Отдельного режима Research нет — длинное исследование можно поручить <a routerLink="/claude/agents/subagents">субагенту</a>.</p>
+</section>
+</article>

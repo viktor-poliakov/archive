@@ -1,0 +1,48 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/app">Приложение Claude</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Коннекторы</span></nav>
+
+<h1 class="doc__title">Коннекторы</h1>
+<p class="doc__lead"><strong>Коннектор</strong> (connector) подключает Claude к вашему сервису: почте, календарю, диску, таск-трекеру. Через него Claude читает ваши данные и может действовать: создать задачу, написать черновик письма. Внутри это <a routerLink="/claude/mcp/what-is">MCP</a>-сервер, но знать об этом не обязательно — подключение делается в пару кликов.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Вопросы по своим данным</strong> — что в календаре, где нужный документ, что писал клиент.</li>
+    <li><strong>Действия в сервисах</strong> — задача в Linear, сообщение в Slack, черновик письма в Gmail.</li>
+    <li><strong>Сводки из нескольких мест</strong> — письма, встречи и задачи в одном ответе.</li>
+    <li><strong>Живые данные в <a routerLink="/claude/app/artifacts">артефактах</a></strong> — дашборд, который подтягивает свежие цифры при каждом открытии.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как подключить</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> Откройте <strong>Customize → Connectors</strong> и нажмите <strong>+</strong> рядом с Connectors. Из чата то же самое: <strong>+</strong> → <strong>Connectors</strong> → <strong>Manage connectors</strong>.</li>
+    <li><strong>2.</strong> Выберите сервис в каталоге. В карточке видно, что он умеет и только ли читает данные или может их менять. Нажмите <strong>Connect</strong>.</li>
+    <li><strong>3.</strong> Войдите в аккаунт сервиса и разрешите доступ.</li>
+    <li><strong>4.</strong> В чате нажмите <strong>+</strong> → <strong>Connectors</strong> и включите нужные для этого разговора. Подключённый сервис Claude может взять и сам, если он подходит к вопросу.</li>
+  </ul>
+  <p>Примеры запросов:</p>
+  <app-code-block [code]="prompts" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Свой коннектор</h2>
+  <ul class="rules">
+    <li><strong>Удалённый MCP-сервер</strong> — <strong>Customize → Connectors → Add → Custom → Web</strong>, затем имя, URL сервера и способ входа. Сервер должен быть доступен из интернета: запросы к нему идут из облака Anthropic, а не с вашего компьютера. На Free можно добавить только один такой коннектор.</li>
+    <li><strong>Локальное расширение</strong> — только в Claude Desktop: <strong>Settings → Extensions</strong>, там каталог расширений. Своё ставится из файла <code>.mcpb</code>: <strong>Advanced settings → Install Extension…</strong>. Расширение работает на вашем компьютере и может достать до локальных файлов и программ.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Что важно знать</h2>
+  <ul class="rules">
+    <li><strong>Права как у вас</strong> — Claude видит в сервисе только то, что можете открыть вы сами.</li>
+    <li><strong>Подключайте только то, чему доверяете</strong> — коннектор может менять данные. Свои коннекторы Anthropic не проверяет. Неиспользуемые лучше отключить.</li>
+    <li><strong>Много коннекторов</strong> — если их больше десяти, в <strong>+</strong> → <strong>Connectors</strong> переключите <strong>Tool access</strong> с <strong>Auto</strong> на <strong>On demand</strong>. Тогда Claude загружает инструменты по мере надобности и не забивает ими контекст.</li>
+    <li><strong>Team и Enterprise</strong> — владелец сначала добавляет коннектор для организации (Organization settings → Connectors), а потом каждый входит своим аккаунтом. Владелец же задаёт для инструментов <strong>Always allow</strong>, <strong>Needs approval</strong> или <strong>Blocked</strong>.</li>
+    <li><strong>Тарифы</strong> — каталог коннекторов доступен на всех тарифах, включая Free, в браузере, Claude Desktop и мобильных приложениях.</li>
+  </ul>
+  <p class="note"><strong>Аналог в Claude Code.</strong> Если войти в Claude Code аккаунтом claude.ai (<code>/login</code>), ваши коннекторы появятся там сами: <code>/mcp</code> покажет их как <code>claude.ai Gmail</code> и т. п. Другие серверы подключаются командой <code>claude mcp add</code> — см. <a routerLink="/claude/mcp/connect">Подключение сервера</a>.</p>
+</section>
+</article>
