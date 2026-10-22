@@ -717,6 +717,20 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ],
       },
       {
+        id: 'app',
+        label: 'Приложение Claude',
+        children: [
+          { id: 'projects', label: 'Проекты' },
+          { id: 'artifacts', label: 'Artifacts' },
+          { id: 'memory', label: 'Память и поиск по чатам' },
+          { id: 'connectors', label: 'Коннекторы' },
+          { id: 'research', label: 'Research и веб-поиск' },
+          { id: 'files', label: 'Создание файлов' },
+          { id: 'chrome', label: 'Claude in Chrome' },
+          { id: 'tasks', label: 'Задачи и расписание' },
+        ],
+      },
+      {
         id: 'basics',
         label: 'Основы Claude Code',
         children: [

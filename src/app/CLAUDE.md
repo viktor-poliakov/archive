@@ -16,7 +16,9 @@ Note the asymmetry: **JavaScript content lives directly under `src/app/<section>
 
 ### The `claude` section (reference on working with Claude)
 
-Laid out exactly like `ecosystem`: folder `src/app/claude/<section>/<child>/`, key `claude/<section>/<child>`, selector `app-claude-<section>-<child>`, class `Claude<Section><Child>`, `styleUrls: ['../../../content/doc.scss']`, accent `#d97757`. All its leaves are currently mock `SectionPage`s.
+Laid out exactly like `ecosystem`: folder `src/app/claude/<section>/<child>/`, key `claude/<section>/<child>`, selector `app-claude-<section>-<child>`, class `Claude<Section><Child>`, `styleUrls: ['../../../content/doc.scss']`, accent `#d97757`. Most of its leaves are still mock `SectionPage`s.
+
+**Scope is all of Claude, not just Claude Code**: the app (claude.ai, desktop, mobile — the `app` group), Claude Code and the API. Topics that exist on both sides (skills, plugins, MCP/connectors, memory) should say how they work in the app as well as in Claude Code.
 
 Pages here are **deliberately short** — a reference card, not an article. Each covers three things: **what it is for**, **how to set it up / connect it**, **what it gives you** (plus a minimal config or command where one exists). Don't pad them to the length of `ecosystem` pages. Vendor-neutral concepts (LLM API, agents/tool use/MCP in general, prompting) already live in `ecosystem/ai/*` — link there instead of re-explaining them.
 

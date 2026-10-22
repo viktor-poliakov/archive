@@ -1,0 +1,51 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/app">Приложение Claude</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Проекты</span></nav>
+
+<h1 class="doc__title">Проекты</h1>
+<p class="doc__lead"><strong>Проект</strong> (Projects) — отдельное рабочее пространство в приложении Claude со своими чатами, файлами и инструкциями. Материалы и инструкции проекта Claude видит в каждом чате внутри него. Не нужно заново загружать одни и те же документы и объяснять задачу с нуля.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Книга или большой текст</strong> — персонажи, мир и план глав лежат в проекте, а каждая глава пишется в своём чате.</li>
+    <li><strong>Учёба</strong> — методичка, лекции и требования к курсовой всегда под рукой.</li>
+    <li><strong>Работа с документацией</strong> — регламенты, договоры или описание продукта, по которым Claude отвечает на вопросы.</li>
+    <li><strong>Повторяющиеся задачи</strong> — письма клиентам, отчёты, ревью текстов по одним и тем же правилам.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как создать</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> Слева нажмите <strong>Projects</strong> (или откройте claude.ai/projects), затем <strong>+ New Project</strong>.</li>
+    <li><strong>2.</strong> Задайте название и описание. Они нужны вам — Claude их не читает.</li>
+    <li><strong>3.</strong> В блоке знаний справа нажмите <strong>+</strong> и загрузите файлы: документы, тексты, код.</li>
+    <li><strong>4.</strong> Нажмите <strong>Set project instructions</strong> и опишите, как Claude должен работать в этом проекте.</li>
+    <li><strong>5.</strong> Новые чаты начинайте внутри проекта. Старый чат можно перенести: стрелка рядом с его названием → <strong>Add to project</strong>.</li>
+  </ul>
+  <p>Пример инструкций для проекта с книгой:</p>
+  <app-code-block [code]="instructions" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Как это работает</h2>
+  <ul class="rules">
+    <li><strong>Чаты друг друга не видят</strong> — переписка из одного чата в другой не попадает. Если в чате получилось что-то важное, добавьте это в знания проекта.</li>
+    <li><strong>Своя память</strong> — чаты проекта видят его память и общую <a routerLink="/claude/app/memory">память аккаунта</a>, но не память других проектов. Чтобы отключить общую, на странице проекта в разделе Memory выключите <strong>Use account memory</strong>.</li>
+    <li><strong>Много материалов</strong> — на платных тарифах, когда знания подходят к пределу контекста, включается RAG. Claude ищет нужные фрагменты, а не читает всё подряд, и в проект помещается до 10 раз больше.</li>
+    <li><strong>Тарифы</strong> — проекты есть на всех тарифах, на Free их можно создать не больше пяти. RAG доступен только на платных.</li>
+    <li><strong>Совместная работа</strong> — на Team и Enterprise проектом можно поделиться с коллегами (кнопка <strong>Share project</strong>, права <strong>Can view</strong> или <strong>Can edit</strong>) или сразу открыть его всей организации.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Советы</h2>
+  <ul class="rules">
+    <li><strong>Понятные имена файлов</strong> — «Персонажи.md», а не «doc1.md»: так Claude быстрее найдёт нужное.</li>
+    <li><strong>Полные материалы</strong> — лучше загрузить документ целиком, чем выдержку без контекста.</li>
+    <li><strong>Ссылайтесь на файл</strong> — «сверься с „Планом глав“» работает точнее, чем «вспомни план».</li>
+    <li><strong>Одна тема — один проект</strong> — смешанные материалы мешают Claude находить нужное.</li>
+  </ul>
+  <p class="note"><strong>Аналог в Claude Code.</strong> Там проект — это просто папка с кодом, а роль инструкций проекта играет <a routerLink="/claude/basics/claude-md">CLAUDE.md</a>.</p>
+</section>
+</article>
