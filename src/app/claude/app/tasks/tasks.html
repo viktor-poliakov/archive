@@ -1,0 +1,53 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/app">Приложение Claude</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Задачи и расписание</span></nav>
+
+<h1 class="doc__title">Задачи и расписание</h1>
+<p class="doc__lead"><strong>Задача</strong> (task) — работа, которую Claude выполняет сам, а не просто отвечает на сообщение: планирует шаги, работает с файлами, сайтами и сервисами и отдаёт готовый результат. Раньше для этого был отдельный режим <strong>Cowork</strong>, в новом интерфейсе он слился с обычным чатом. Задачу можно поставить <strong>на расписание</strong>, и Claude будет повторять её сам.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Работа с файлами</strong> — разобрать папку, собрать отчёт из сканов, привести таблицы к одному виду.</li>
+    <li><strong>Документы из материалов</strong> — отчёт по расшифровкам встреч, презентация из заметок, таблица с формулами.</li>
+    <li><strong>Длинные цепочки шагов</strong> — найти, сравнить, свести, оформить. Claude сам делит работу на подзадачи и может вести несколько параллельно.</li>
+    <li><strong>Регулярная рутина</strong> — утренние сводки, еженедельные отчёты, мониторинг новостей. Для неё есть расписание.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как поставить задачу</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> Откройте Claude в браузере, Claude Desktop или на телефоне. Если в поле ввода есть переключатель <strong>Chat</strong> / <strong>Cowork</strong>, выберите <strong>Cowork</strong>. В новом интерфейсе его нет: Claude сам решает, хватит ли ответа или нужна задача.</li>
+    <li><strong>2.</strong> Опишите задачу. Если нужны файлы с компьютера, подключите папку: Claude читает и пишет только в подключённых папках.</li>
+    <li><strong>3.</strong> Проверьте план и запускайте. По ходу работы можно уточнять и менять направление, в том числе с другого устройства.</li>
+    <li><strong>4.</strong> Готовые файлы появятся в той же сессии: их можно посмотреть и скачать.</li>
+  </ul>
+  <app-code-block [code]="taskPrompts" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Подтверждения и ограничения</h2>
+  <ul class="rules">
+    <li><strong>Manual</strong> — вы разрешаете или запрещаете каждое действие. В новом интерфейсе это режим по умолчанию.</li>
+    <li><strong>Auto</strong> — Claude сам проверяет каждое действие и блокирует опасные. Быстрее, но тратит больше лимита.</li>
+    <li><strong>Skip all approvals</strong> — без проверок. Только если полностью доверяете задаче и источникам.</li>
+    <li><strong>Удаление файлов</strong> — перед безвозвратным удалением Claude всегда спрашивает разрешение.</li>
+    <li><strong>Компьютер</strong> — к локальным файлам, браузеру и управлению компьютером Claude обращается через <strong>Claude Desktop</strong> (macOS, Windows), поэтому приложение должно быть открыто.</li>
+    <li><strong>Тарифы и лимиты</strong> — Pro, Max, Team, Enterprise. Многошаговая задача расходует лимит заметно быстрее короткого вопроса.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Расписание</h2>
+  <ul class="rules">
+    <li><strong>Создать в новом интерфейсе</strong> — напишите в чате, что и как часто делать, и ответьте на уточняющие вопросы. Проверьте название, расписание и инструкции и нажмите <strong>Schedule</strong>.</li>
+    <li><strong>Создать в Cowork</strong> — слева <strong>Scheduled</strong> → <strong>New task</strong>. Дальше <strong>Create with Claude</strong> (настроить в диалоге) или <strong>Set up manually</strong> (заполнить имя, промпт, режим подтверждений, частоту, модель и папку).</li>
+    <li><strong>Частота</strong> — каждый час, день, неделю, по будням или только вручную.</li>
+    <li><strong>Где выполняется</strong> — в облаке, так что задача сработает, даже если компьютер спит, а Claude Desktop закрыт. Исключение — задачи, которым нужны локальные файлы или программы: они запускаются только на компьютере.</li>
+    <li><strong>Управление</strong> — на странице <strong>Scheduled</strong>: прошлые и будущие запуски, правка, пауза, запуск вне расписания, удаление.</li>
+    <li><strong>Что доступно</strong> — <a routerLink="/claude/app/connectors">коннекторы</a>, скиллы и плагины. Каждый запуск — отдельная сессия, результат смотрите в ней.</li>
+  </ul>
+  <app-code-block [code]="schedulePrompts" lang="text" />
+  <p class="note"><strong>Другие расписания.</strong> В <a routerLink="/claude/app/chrome">Claude in Chrome</a> по расписанию запускаются ярлыки браузера. В Claude Code есть свои механизмы, <code>/loop</code> и облачные задачи <code>/schedule</code>, — см. <a routerLink="/claude/automation/scheduled">Задачи по расписанию</a>.</p>
+</section>
+</article>
