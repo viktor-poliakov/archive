@@ -10,6 +10,7 @@ import { SectionPage } from './section-page/section-page';
 const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
   javascript: () => import('./javascript/javascript').then((m) => m.JavascriptOverview),
   typescript: () => import('./typescript/typescript').then((m) => m.TypescriptOverview),
+  claude: () => import('./claude/claude').then((m) => m.ClaudeOverview),
   'typescript/basic-types/primitives': () =>
     import('./typescript/basic-types/primitives/primitives').then((m) => m.BasicTypesPrimitives),
   'typescript/basic-types/arrays-tuples': () =>

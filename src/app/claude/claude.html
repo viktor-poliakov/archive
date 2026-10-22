@@ -1,0 +1,47 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span></nav>
+
+<h1 class="doc__title">Claude</h1>
+<p class="doc__lead"><strong>Claude</strong> — семейство ИИ-моделей американской компании <strong>Anthropic</strong>. Этот раздел — короткий справочник по работе с ним: где запускать, как подключить агентов, скиллы, плагины и MCP и что каждая из этих вещей даёт.</p>
+
+<section class="doc__section">
+  <h2>Кто делает Claude</h2>
+  <p>Anthropic основали в <strong>январе 2021 года</strong> в Сан-Франциско бывшие сотрудники OpenAI. Компанию возглавляют брат и сестра Амодеи: <strong>Дарио Амодеи</strong> — генеральный директор (CEO), до этого вице-президент OpenAI по исследованиям, и <strong>Даниэла Амодеи</strong> — президент. Среди сооснователей также Джаред Каплан, Джек Кларк, Крис Ола, Том Браун, Сэм Маккэндлиш и Бен Манн.</p>
+  <p>Главной темой компании с самого начала была безопасность ИИ. Это видно и по тому, как она устроена:</p>
+  <ul class="rules">
+    <li><strong>Public benefit corporation</strong> — по уставу компания обязана учитывать не только прибыль, но и заявленную общественную миссию.</li>
+    <li><strong>Long-Term Benefit Trust</strong> — независимый совет из пяти человек без финансового интереса в компании. Он назначает часть совета директоров, а с апреля 2026 года — большинство.</li>
+    <li><strong>Responsible Scaling Policy</strong> — внутренние правила: чем сильнее модель, тем строже её проверки и защита перед выпуском.</li>
+    <li><strong>Инвесторы</strong> — крупнейшие ранние партнёры Amazon (в сумме $8 млрд за 2023–2024 годы) и Google.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Немного истории</h2>
+  <ul class="rules">
+    <li><strong>2021</strong> — основание Anthropic.</li>
+    <li><strong>2022</strong> — статья о <strong>Constitutional AI</strong>: модель учат по письменному своду принципов («конституции»), и она сама критикует и исправляет свои ответы, а не опирается только на оценки людей.</li>
+    <li><strong>2023</strong> — в марте выходит первый Claude, поначалу только для одобренных пользователей. В июле — Claude 2, первая общедоступная версия. Осенью в компанию вкладываются Amazon и Google.</li>
+    <li><strong>2024</strong> — в марте Claude 3: сразу три модели разного размера — <strong>Haiku, Sonnet и Opus</strong>; эти имена живут до сих пор. В июне — Claude 3.5 Sonnet и <strong>Artifacts</strong>: код и документы в отдельной панели рядом с чатом. В октябре — <strong>computer use</strong>: Claude управляет компьютером по скриншотам, мышью и клавиатурой. В ноябре — открытый протокол <strong>MCP</strong> для подключения моделей к внешним данным и инструментам.</li>
+    <li><strong>2025</strong> — в феврале Claude 3.7 Sonnet и первая версия <strong>Claude Code</strong> (research preview). В мае — Claude 4 (Opus 4 и Sonnet 4), а Claude Code становится общедоступным. Осенью — линейка 4.5.</li>
+    <li><strong>2026</strong> — весной Opus 4.6–4.8 и Sonnet 4.6. В июне — поколение 5: <strong>Fable 5</strong> (по словам Anthropic, самая сильная модель из открытых всем клиентам) и Sonnet 5, в июле — Opus 5. В сентябре и октябре — Fable 5.1, Opus 5.5, Sonnet 5.5 и Haiku 5.5. Отдельно существует линейка Mythos, доступная только участникам закрытой программы Project Glasswing.</li>
+  </ul>
+  <p class="note"><strong>Откуда имя.</strong> Его часто связывают с <strong>Клодом Шенноном</strong>, математиком и основателем теории информации. По данным The New York Times, так считают некоторые сотрудники компании.</p>
+  <p>Чем модели отличаются и какую когда брать — на странице <a routerLink="/claude/intro/models">Модели и выбор</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что в разделе</h2>
+  <p>Каждая страница — короткая карточка: для чего нужно, как подключить, что даёт.</p>
+  <ul class="rules">
+    <li><a routerLink="/claude/intro">Введение</a> — что такое Claude, где он работает, модели и тарифы.</li>
+    <li><a routerLink="/claude/basics">Основы Claude Code</a> — CLAUDE.md, память, разрешения, настройки и команды.</li>
+    <li><a routerLink="/claude/agents">Агенты</a> — субагенты, параллельные сессии, Agent SDK.</li>
+    <li><a routerLink="/claude/skills">Скиллы</a> и <a routerLink="/claude/plugins">плагины</a> — как расширять Claude готовыми и своими наборами инструкций и инструментов.</li>
+    <li><a routerLink="/claude/mcp">MCP</a> — подключение внешних сервисов и свой MCP-сервер.</li>
+    <li><a routerLink="/claude/automation">Автоматизация</a> — хуки, headless-режим, GitHub Actions, задачи по расписанию.</li>
+    <li><a routerLink="/claude/api">Claude API</a> — Claude внутри своего продукта.</li>
+    <li><a routerLink="/claude/practice">Практика</a> — постановка задач, типовые сценарии, экономия токенов, безопасность.</li>
+  </ul>
+</section>
+</article>
