@@ -1,0 +1,61 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/intro">Введение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Что такое Claude</span></nav>
+
+<h1 class="doc__title">Что такое Claude</h1>
+<p class="doc__lead"><strong>Claude</strong> — семейство ИИ-моделей компании Anthropic. Одна и та же модель доступна в трёх продуктах: в чате, в агенте для разработки <strong>Claude Code</strong> и через <strong>API</strong>. Этот раздел в основном про Claude Code — как подключить и настроить его под свою работу.</p>
+
+<section class="doc__section">
+  <h2>Три продукта</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Продукт</th><th>Для чего</th><th>Где взять</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Claude</strong> (чат)</td>
+        <td>Вопросы, тексты, разбор документов и картинок</td>
+        <td>claude.ai, приложения для компьютера и телефона</td>
+      </tr>
+      <tr>
+        <td><strong>Claude Code</strong></td>
+        <td>Агент для разработки: сам читает проект, правит файлы, запускает команды</td>
+        <td>Терминал, IDE, десктоп, веб — см. <a routerLink="/claude/intro/surfaces">где работает</a></td>
+      </tr>
+      <tr>
+        <td><strong>Claude API</strong></td>
+        <td>Встроить модель в свой продукт</td>
+        <td>Claude Console, оплата за токены — см. <a routerLink="/claude/api/messages">Messages API</a></td>
+      </tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Чат и Claude Code: в чём разница</h2>
+  <p>В чате вы описываете задачу, получаете ответ и сами переносите код в проект. Claude Code работает <strong>прямо в проекте</strong>: открывает нужные файлы, вносит правки и проверяет результат.</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th></th><th>Чат</th><th>Claude Code</th></tr></thead>
+    <tbody>
+      <tr><td>Видит проект</td><td class="no">Только то, что вставили или загрузили</td><td class="yes">Весь репозиторий</td></tr>
+      <tr><td>Меняет ваши файлы</td><td class="no">Нет, вы копируете ответ</td><td class="yes">Да, сам</td></tr>
+      <tr><td>Запускает команды</td><td class="no">Нет</td><td class="yes">Тесты, сборку, git — <a routerLink="/claude/basics/permissions">с вашего разрешения</a></td></tr>
+    </tbody>
+  </table></div>
+  <p>Как это выглядит — одна просьба, остальное агент делает сам:</p>
+  <app-code-block [code]="session" lang="text" />
+  <p class="note"><strong>Что такое агент в общем виде</strong> (цикл «подумал → вызвал инструмент → посмотрел результат») — на странице <a routerLink="/ecosystem/ai/agents">Агенты, tool use, MCP</a> раздела «Экосистема».</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что нужно, чтобы начать</h2>
+  <ul class="rules">
+    <li><strong>Чат</strong> — бесплатного аккаунта на claude.ai хватит, чтобы попробовать. Платные тарифы поднимают лимиты.</li>
+    <li><strong>Claude Code</strong> — подписка Pro, Max, Team или Enterprise либо аккаунт Claude Console с оплатой по API. <strong>Бесплатный план Claude Code не включает.</strong> Компании могут подключать его через Amazon Bedrock, Google Cloud или Microsoft Foundry.</li>
+    <li><strong>API</strong> — аккаунт в Claude Console и API-ключ, платите за израсходованные токены.</li>
+  </ul>
+  <p class="note"><strong>Подробнее о ценах и лимитах</strong> — на странице <a routerLink="/claude/intro/pricing">Тарифы и лимиты</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Модели</h2>
+  <p>Claude — это не одна модель, а линейка. Старшие модели умнее, но медленнее и дороже, младшие — быстрые и дешёвые. В Claude Code модель переключается командой <code>/model</code>. Какую когда брать — на странице <a routerLink="/claude/intro/models">Модели и выбор</a>.</p>
+</section>
+</article>

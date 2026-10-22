@@ -1,0 +1,69 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/intro">Введение</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">CLI, десктоп, IDE, веб</span></nav>
+
+<h1 class="doc__title">CLI, десктоп, IDE, веб</h1>
+<p class="doc__lead">Claude Code — один движок в нескольких оболочках. <code>CLAUDE.md</code>, настройки и MCP-серверы проекта работают везде одинаково, поэтому оболочку выбирают по удобству, а не по возможностям.</p>
+
+<section class="doc__section">
+  <h2>Где работает</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Где</th><th>Что это</th><th>Когда удобно</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Терминал</strong></td><td>Команда <code>claude</code> в папке проекта</td><td>Привычен терминал, нужны скрипты и CI</td></tr>
+      <tr><td><strong>Десктоп</strong></td><td>Вкладка Code в приложении Claude (macOS, Windows, Linux — бета)</td><td>Не хочется в терминал; удобно смотреть diff и вести несколько сессий рядом</td></tr>
+      <tr><td><strong>VS Code, Cursor</strong></td><td>Расширение «Claude Code»</td><td>Правки видны прямо в редакторе</td></tr>
+      <tr><td><strong>JetBrains</strong></td><td>Плагин для IntelliJ IDEA, WebStorm, PyCharm и других</td><td>Работаете в IDE от JetBrains</td></tr>
+      <tr><td><strong>Веб</strong></td><td>claude.ai/code, работает в облачной виртуальной машине</td><td>Долгие задачи: идут, даже когда ноутбук закрыт</td></tr>
+      <tr><td><strong>Телефон</strong></td><td>Вкладка Code в приложении Claude для iOS и Android</td><td>Запустить или проверить задачу на ходу</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Терминал</h2>
+  <p>Установка одной командой. Обновляется сам в фоне, Node.js не нужен.</p>
+  <app-code-block [code]="install" lang="bash" />
+  <p>Дальше заходите в папку проекта и запускаете:</p>
+  <app-code-block [code]="firstRun" lang="bash" />
+  <ul class="rules">
+    <li><strong>Система</strong> — macOS 13+, Windows 10 (1809) и новее, Ubuntu 20.04+, Debian 10+; от 4 ГБ памяти.</li>
+    <li><strong>Windows</strong> — желательно поставить Git for Windows, тогда Claude сможет пользоваться bash. Без него работает через PowerShell.</li>
+    <li><strong>Другие способы</strong> — <code>brew install --cask claude-code</code>, <code>winget install Anthropic.ClaudeCode</code> или npm (нужен Node.js 22+). Сами они не обновляются.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Десктоп</h2>
+  <p>Скачайте приложение Claude, откройте вкладку <strong>Code</strong> и выберите папку проекта. Терминал не нужен, но нужна платная подписка. Настройки приложение берёт из тех же файлов, что и CLI.</p>
+</section>
+
+<section class="doc__section">
+  <h2>IDE</h2>
+  <ul class="rules">
+    <li><strong>VS Code</strong> (1.94+) — в панели Extensions найдите «Claude Code» от Anthropic и нажмите Install. В Cursor ставится так же.</li>
+    <li><strong>JetBrains</strong> — сначала установите CLI (см. выше), затем плагин «Claude Code» из JetBrains Marketplace и перезапустите IDE.</li>
+  </ul>
+  <p class="note"><strong>Нюанс.</strong> Расширение VS Code носит свою копию Claude Code внутри. Чтобы команда <code>claude</code> работала и в обычном терминале, CLI ставят отдельно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Веб и телефон</h2>
+  <p>Откройте claude.ai/code, подключите GitHub, выберите репозиторий и опишите задачу. Claude сам клонирует код в облачную машину, работает там и может открыть pull request. Ход работы виден и с телефона — во вкладке Code приложения Claude.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Переход между оболочками</h2>
+  <p>Сессию можно начать в одном месте и продолжить в другом:</p>
+  <app-code-block [code]="handoff" lang="bash" />
+  <p class="note"><strong>Важно.</strong> <code>--teleport</code> работает в одну сторону — из облака в терминал. Для всех переходов нужен вход через аккаунт claude.ai.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что выбрать</h2>
+  <ul class="rules">
+    <li><strong>Только начинаете</strong> — десктоп или расширение для VS Code: правки видны наглядно, команды запоминать не нужно.</li>
+    <li><strong>Автоматизация и CI</strong> — терминал, см. <a routerLink="/claude/automation/headless">Headless-режим</a>.</li>
+    <li><strong>Долгие задачи, не занимающие ваш компьютер</strong> — веб.</li>
+  </ul>
+</section>
+</article>

@@ -562,6 +562,10 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./ecosystem/recipes/ai-service/ai-service').then(
       (m) => m.EcosystemRecipesAiService,
     ),
+  'claude/intro/what-is': () =>
+    import('./claude/intro/what-is/what-is').then((m) => m.ClaudeIntroWhatIs),
+  'claude/intro/surfaces': () =>
+    import('./claude/intro/surfaces/surfaces').then((m) => m.ClaudeIntroSurfaces),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>
