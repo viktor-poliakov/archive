@@ -1,0 +1,39 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/app">Приложение Claude</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Создание файлов</span></nav>
+
+<h1 class="doc__title">Создание файлов</h1>
+<p class="doc__lead">Claude создаёт и редактирует настоящие файлы — Excel, Word, PowerPoint, PDF — и отдаёт их на скачивание. Для этого у него есть изолированная машина в облаке: там он пишет и запускает код, считает, строит графики и конвертирует форматы.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Таблицы с формулами</strong> — бюджет, трекер, финансовая модель, которые дальше считают сами.</li>
+    <li><strong>Отчёты из данных</strong> — CSV или Excel на входе, документ с графиками и выводами на выходе.</li>
+    <li><strong>Презентации</strong> — из текста, заметок или готового документа.</li>
+    <li><strong>Конвертация</strong> — Word в слайды, таблицы из PDF в Excel.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как включить и применить</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> <strong>Settings → Capabilities</strong> → <strong>Cloud code execution and file creation</strong>. На Free, Pro и Max он уже включён. Это тот же переключатель, что нужен для <a routerLink="/claude/app/artifacts">артефактов</a>. На Team и Enterprise им управляет владелец: Organization settings → Capabilities.</li>
+    <li><strong>2.</strong> Опишите, какой файл нужен, и приложите исходные данные.</li>
+    <li><strong>3.</strong> Готовый файл появится в чате: скачайте его или сохраните в Google Drive. В одном чате можно сделать несколько файлов, и они остаются доступны до конца разговора.</li>
+  </ul>
+  <p>Примеры запросов:</p>
+  <app-code-block [code]="prompts" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Что важно знать</h2>
+  <ul class="rules">
+    <li><strong>Размер</strong> — до 30 МБ на файл, и на загрузку, и на скачивание.</li>
+    <li><strong>Лимиты</strong> — работа с файлами расходует лимит тарифа быстрее обычного чата.</li>
+    <li><strong>Интернет</strong> — переключатель <strong>Allow network egress</strong> разрешает машине Claude выходить в сеть, например ставить пакеты. На Team и Enterprise владелец выбирает уровень: выключено, только менеджеры пакетов, плюс выбранные домены или все домены.</li>
+    <li><strong>Безопасность</strong> — чужой файл или сайт может содержать скрытые инструкции, из-за которых Claude запустит не тот код или отправит данные наружу. Следите за работой и остановите Claude, если он делает что-то неожиданное.</li>
+  </ul>
+  <p class="note"><strong>Файл или артефакт?</strong> Артефакт живёт на claude.ai: его правят там же и отправляют ссылкой. Файл вы скачиваете и дальше работаете с ним в Word, Excel или PowerPoint.</p>
+  <p class="note"><strong>Аналог в Claude Code.</strong> Там Claude сразу пишет файлы в папку проекта на вашем диске. Для форматов Office подключаются <a routerLink="/claude/skills/what-is">скиллы</a> <code>docx</code>, <code>xlsx</code>, <code>pptx</code> и <code>pdf</code>.</p>
+</section>
+</article>

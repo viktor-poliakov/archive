@@ -1,0 +1,57 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/app">Приложение Claude</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Claude in Chrome</span></nav>
+
+<h1 class="doc__title">Claude in Chrome</h1>
+<p class="doc__lead"><strong>Claude in Chrome</strong> — расширение для Google Chrome. С ним Claude сам работает в браузере: читает страницы, кликает, заполняет формы, переходит между вкладками. Общаетесь вы с ним в боковой панели рядом с сайтом.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Разобраться во вкладках</strong> — сводка или сравнение открытых страниц.</li>
+    <li><strong>Перенести данные</strong> — со страницы в документ, таблицу или форму.</li>
+    <li><strong>Рутина в веб-сервисах</strong> — почта, календарь, документы, CRM. Работает и там, где нет <a routerLink="/claude/app/connectors">коннектора</a>: Claude действует через интерфейс сайта, как человек.</li>
+    <li><strong>Повторяющиеся задачи</strong> — удачный запрос можно сохранить и запускать по расписанию.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как установить</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> Откройте Chrome Web Store, найдите расширение Claude и нажмите <strong>Add to Chrome</strong>.</li>
+    <li><strong>2.</strong> Войдите аккаунтом Claude и выдайте запрошенные разрешения.</li>
+    <li><strong>3.</strong> Закрепите расширение: значок пазла на панели → булавка рядом с Claude.</li>
+    <li><strong>4.</strong> Нажмите значок Claude — откроется боковая панель. Напишите задачу.</li>
+  </ul>
+  <p>Нужен платный тариф: Pro, Max, Team или Enterprise. Поддерживается только Google Chrome на компьютере, боковая панель пока в бете. В Claude Desktop браузер подключается как коннектор: Settings → Connectors → Claude in Chrome → <strong>Configure</strong>.</p>
+  <p>Примеры задач:</p>
+  <app-code-block [code]="prompts" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Ярлыки и расписание</h2>
+  <ul class="rules">
+    <li><strong>Ярлык</strong> (shortcut) — сохранённый запрос. В панели наберите <code>/</code> и выберите его. Править и удалять ярлыки можно в настройках расширения.</li>
+    <li><strong>Расписание</strong> — значок часов вверху панели: ярлык запускается раз в день, неделю, месяц или год.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Режимы и безопасность</h2>
+  <ul class="rules">
+    <li><strong>Automatically approve</strong> (по умолчанию) — Claude сам проверяет каждое действие и останавливается, когда нужно ваше подтверждение.</li>
+    <li><strong>Manually approve</strong> — спрашивает перед каждым действием.</li>
+    <li><strong>Skip all approvals</strong> — без вопросов. Только на доверенных сайтах и только пока вы смотрите.</li>
+    <li><strong>Разрешения сайтов</strong> — <strong>Always allow actions on this site</strong> давайте только сайтам, которым полностью доверяете. Отозвать можно в настройках расширения, раздел <strong>Site Permissions</strong>.</li>
+    <li><strong>Без вас не сделает</strong> — покупки, создание аккаунтов, безвозвратное удаление и подобные действия.</li>
+    <li><strong>Главный риск</strong> — страница может содержать скрытые инструкции для Claude (prompt injection). Claude действует от вашего имени и с вашими входами на сайты, поэтому на сайтах с деньгами и личными данными не оставляйте его без присмотра.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude Code</h2>
+  <p>Claude Code подключается к тому же расширению. Он может проверить свою работу в браузере: открыть локальный сервер, пройти сценарий, прочитать ошибки консоли и сетевые запросы. Запуск с браузером:</p>
+  <app-code-block [code]="codeStart" lang="bash" />
+  <app-code-block [code]="codePrompt" lang="text" />
+  <p class="note"><strong>Состояние и настройки</strong> — команда <code>/chrome</code>: проверить подключение, переподключить расширение, включить браузер по умолчанию. Нужны расширение и вход через <code>/login</code>. Кроме Chrome, Claude Code работает с Edge и другими браузерами на Chromium.</p>
+</section>
+</article>
