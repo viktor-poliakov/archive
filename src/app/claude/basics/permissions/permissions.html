@@ -1,0 +1,79 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/basics">Основы Claude Code</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Разрешения и режимы</span></nav>
+
+<h1 class="doc__title">Разрешения и режимы</h1>
+<p class="doc__lead">Claude Code сам читает файлы, но перед тем как что-то изменить — запустить команду, поправить файл, сходить в сеть — спрашивает разрешения. <strong>Режим</strong> задаёт, насколько часто он спрашивает, а <strong>правила</strong> allow / ask / deny — точечные исключения: «это делай молча», «это всегда спрашивай», «это никогда».</p>
+
+<section class="doc__section">
+  <h2>Что спрашивается по умолчанию</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Действие</th><th>Спрашивает</th><th>«Да, больше не спрашивать»</th></tr></thead>
+    <tbody>
+      <tr><td>Чтение файлов, поиск</td><td class="yes">Нет, в пределах рабочей папки</td><td>—</td></tr>
+      <tr><td>Команды в терминале</td><td class="no">Да, кроме безопасных вроде <code>ls</code> или <code>git status</code></td><td>Навсегда для этого репозитория и команды</td></tr>
+      <tr><td>Правка файлов</td><td class="no">Да</td><td>До конца сессии</td></tr>
+      <tr><td>Загрузка страниц (WebFetch)</td><td class="no">Да, кроме популярных сайтов с документацией</td><td>Навсегда для этого репозитория и домена</td></tr>
+    </tbody>
+  </table></div>
+  <p>Ответ «да, больше не спрашивать» Claude Code записывает как allow-правило в <code>.claude/settings.local.json</code> в корне репозитория — это ваш личный файл, в git он не попадает.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Режимы</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Режим</th><th>Без вопросов выполняет</th><th>Когда брать</th></tr></thead>
+    <tbody>
+      <tr><td><code>default</code> (Manual)</td><td>Только чтение</td><td>Хотите видеть каждое действие</td></tr>
+      <tr><td><code>acceptEdits</code></td><td>Чтение, правки файлов, <code>mkdir</code>/<code>mv</code>/<code>cp</code> в рабочей папке</td><td>Работаете над кодом и сами смотрите дифф</td></tr>
+      <tr><td><code>plan</code></td><td>Только чтение и исследование, файлы не правит</td><td>Сначала продумать, потом менять — см. <a routerLink="/claude/basics/plan-mode">Plan mode</a></td></tr>
+      <tr><td><code>auto</code></td><td>Всё, но команды и запросы в сеть сначала проверяет отдельная модель-классификатор</td><td>Длинные задачи, когда вопросы мешают</td></tr>
+      <tr><td><code>dontAsk</code></td><td>Только заранее разрешённое правилами, остальное отклоняет</td><td>CI и скрипты</td></tr>
+      <tr><td><code>bypassPermissions</code></td><td>Всё, без проверок</td><td>Только изолированный контейнер или VM</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>В сессии</strong> — <code>Shift+Tab</code> переключает по кругу <code>default</code> → <code>acceptEdits</code> → <code>plan</code>, а если доступен, то и <code>auto</code>. Текущий режим виден под полем ввода.</li>
+    <li><strong>В десктопе и VS Code</strong> — переключатель режима рядом с полем ввода.</li>
+    <li><strong>При запуске</strong> — флаг <code>--permission-mode</code>:</li>
+  </ul>
+  <app-code-block [code]="startMode" lang="bash" />
+  <p>Режим, с которого начинается каждая сессия, задаётся в <a routerLink="/claude/basics/settings">settings.json</a>. Свежие версии в терминале и VS Code и так стартуют в <code>auto</code>, если он доступен для вашей модели, а <code>claude -p</code> — в <code>default</code>.</p>
+  <app-code-block [code]="defaultMode" lang="json" />
+  <p class="note"><strong>Осторожно с <code>bypassPermissions</code></strong> (он же флаг <code>--dangerously-skip-permissions</code>). Claude сможет удалить файлы, переписать <code>.git</code> или выполнить команду из вредоносной страницы — защиты от prompt injection нет. Значения <code>auto</code> и <code>bypassPermissions</code> в проектном <code>.claude/settings.json</code> игнорируются: чужой репозиторий не может включить их за вас.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Правила allow, ask, deny</h2>
+  <p>Правила лежат в <code>permissions</code> любого <a routerLink="/claude/basics/settings">файла настроек</a>, а команда <code>/permissions</code> показывает их все с указанием, из какого файла каждое. Пример для проекта: npm-скрипты и коммиты — молча, пуш — с вопросом, секреты — никогда:</p>
+  <app-code-block [code]="rules" lang="json" />
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Правило</th><th>Что означает</th></tr></thead>
+    <tbody>
+      <tr><td><code>Bash</code></td><td>Любая команда</td></tr>
+      <tr><td><code>Bash(npm run build)</code></td><td>Ровно эта команда</td></tr>
+      <tr><td><code>Bash(npm run *)</code></td><td><code>npm run</code> с любыми аргументами</td></tr>
+      <tr><td><code>Read(./.env)</code></td><td>Чтение <code>.env</code> в текущей папке</td></tr>
+      <tr><td><code>Edit(/src/**/*.ts)</code></td><td>Правка <code>.ts</code> в <code>src</code> от корня проекта</td></tr>
+      <tr><td><code>Read(~/.ssh/**)</code></td><td>Чтение из домашней папки; <code>//path</code> — абсолютный путь</td></tr>
+      <tr><td><code>WebFetch(domain:example.com)</code></td><td>Загрузка страниц с домена</td></tr>
+      <tr><td><code>mcp__github__*</code></td><td>Все инструменты <a routerLink="/claude/mcp/what-is">MCP-сервера</a> <code>github</code></td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Порядок</strong> — сначала deny, потом ask, потом allow; срабатывает первое совпадение. Узкое allow не пробьёт широкое deny: <code>Bash(aws *)</code> в deny заблокирует и <code>aws s3 ls</code>, даже если оно разрешено.</li>
+    <li><strong>Звёздочка после подкоманды</strong> — <code>Bash(git log *)</code> разрешает только <code>git log</code>, а <code>Bash(git *)</code> — вообще любые команды git, включая <code>push</code>.</li>
+    <li><strong>Цепочки команд</strong> — каждая часть проверяется отдельно: <code>Bash(npm test *)</code> не разрешит <code>npm test &amp;&amp; rm -rf dist</code>.</li>
+    <li><strong>Правило сравнивается с текстом</strong> — deny на <code>Bash(git push *)</code> не поймает <code>git -C . push</code>, а deny на <code>Read</code> не помешает Python-скрипту открыть файл. Для жёсткой защиты нужна песочница (ключ <code>sandbox</code>) или <a routerLink="/claude/automation/hooks">хук</a>.</li>
+    <li><strong>Доверие к папке</strong> — allow-правила из закоммиченного <code>.claude/settings.json</code> заработают, только когда вы подтвердите доверие к папке в диалоге при первом запуске. Deny и ask действуют сразу.</li>
+  </ul>
+  <p class="note"><strong>Правила исполняет Claude Code, а не модель.</strong> «Никогда не трогай .env» в <a routerLink="/claude/basics/claude-md">CLAUDE.md</a> — просьба, которую Claude обычно выполняет. <code>Read(./.env)</code> в deny — запрет, который Claude Code проверяет сам, что бы ни решила модель.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Другие папки</h2>
+  <p>Claude видит только папку, в которой его запустили. Чтобы дать доступ к соседней — например, общей библиотеке, — добавьте её:</p>
+  <app-code-block [code]="dirs" lang="bash" />
+  <p>Или навсегда, в настройках проекта:</p>
+  <app-code-block [code]="dirsSetting" lang="json" />
+</section>
+</article>

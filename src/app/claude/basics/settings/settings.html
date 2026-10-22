@@ -1,0 +1,68 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/basics">Основы Claude Code</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Настройки settings.json</span></nav>
+
+<h1 class="doc__title">Настройки settings.json</h1>
+<p class="doc__lead"><code>settings.json</code> — JSON-файлы, в которых настраивается сам Claude Code: модель по умолчанию, <a routerLink="/claude/basics/permissions">разрешения</a>, переменные окружения, <a routerLink="/claude/automation/hooks">хуки</a>, плагины. В отличие от <a routerLink="/claude/basics/claude-md">CLAUDE.md</a> это не текст для модели, а конфигурация, которую исполняет сама программа: модель не может её «не послушаться».</p>
+
+<section class="doc__section">
+  <h2>Где лежат</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Файл</th><th>Для кого</th><th>В git</th></tr></thead>
+    <tbody>
+      <tr><td><code>~/.claude/settings.json</code></td><td>Только вы, все проекты</td><td>—</td></tr>
+      <tr><td><code>.claude/settings.json</code></td><td>Вся команда, этот проект</td><td class="yes">Да</td></tr>
+      <tr><td><code>.claude/settings.local.json</code></td><td>Только вы, этот проект</td><td class="no">Нет: Claude Code сам добавляет его в исключения git, а созданный вручную — внесите в <code>.gitignore</code></td></tr>
+      <tr><td>Managed (<code>managed-settings.json</code>, политика из консоли claude.ai)</td><td>Вся организация, ставит администратор</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Приоритет</strong> — managed → флаг <code>--settings</code> → <code>settings.local.json</code> → <code>settings.json</code> проекта → пользовательский. Если ключ задан в нескольких файлах, побеждает тот, что выше.</li>
+    <li><strong>Списки складываются</strong> — <code>permissions.allow</code> и другие массивы не перезаписываются, а объединяются из всех файлов.</li>
+    <li><strong>Сразу файлов нет</strong> — установка их не создаёт. Пользовательский появится при первой правке через <code>/config</code>, локальный — при первом ответе «да, больше не спрашивать». Проектный создайте сами.</li>
+    <li><strong>Windows</strong> — <code>~/.claude</code> означает <code>%USERPROFILE%\.claude</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как поменять</h2>
+  <app-code-block [code]="commands" lang="bash" />
+  <ul class="rules">
+    <li><strong><code>/config</code></strong> — короткое меню личных опций, сохраняет их в <code>~/.claude/settings.json</code>. Есть только в терминале; в десктопе и VS Code правьте файл или настройки самого приложения.</li>
+    <li><strong>Правка файла</strong> — всё остальное. JSON строгий: комментарий или висящая запятая — ошибка, о которой Claude Code скажет при запуске. Строка <code>$schema</code> включает в редакторе автодополнение и проверку ключей.</li>
+    <li><strong>Когда применяется</strong> — почти всё подхватывается на лету, без перезапуска. Главные исключения — <code>model</code> и <code>effortLevel</code>: их в текущей сессии меняют командами <code>/model</code> и <code>/effort</code>.</li>
+    <li><strong>Проверка</strong> — <code>/status</code> покажет строку <code>Setting sources</code> со списком загруженных файлов.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Примеры</h2>
+  <p>Личный <code>~/.claude/settings.json</code>: модель, язык ответов, без подсказок под спиннером, история за 30 дней, <code>git diff</code> без вопросов.</p>
+  <app-code-block [code]="personal" lang="json" />
+  <p>Командный <code>.claude/settings.json</code> — коммитится в репозиторий, и у всех одинаковые правила, переменные и хук, который проверяет каждую команду перед запуском.</p>
+  <app-code-block [code]="team" lang="json" />
+  <p class="note"><strong>Личное — в <code>settings.local.json</code>.</strong> Если команда задала в проекте одно, а вам нужно другое, не правьте общий файл: тот же ключ в <code>.claude/settings.local.json</code> перекроет его только для вас.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Частые ключи</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Ключ</th><th>Что задаёт</th></tr></thead>
+    <tbody>
+      <tr><td><code>model</code></td><td>Модель для новых сессий: <code>"sonnet"</code>, <code>"opus"</code> или полный ID — см. <a routerLink="/claude/intro/models">Модели и выбор</a></td></tr>
+      <tr><td><code>effortLevel</code></td><td>Сколько модель думает по умолчанию: <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code></td></tr>
+      <tr><td><code>permissions</code></td><td>Правила allow / ask / deny, стартовый режим <code>defaultMode</code>, доп. папки — см. <a routerLink="/claude/basics/permissions">Разрешения и режимы</a></td></tr>
+      <tr><td><code>env</code></td><td>Переменные окружения для сессии и всех запускаемых команд</td></tr>
+      <tr><td><code>hooks</code></td><td>Свои команды на событиях: до и после инструмента, в конце ответа — см. <a routerLink="/claude/automation/hooks">Хуки</a></td></tr>
+      <tr><td><code>language</code></td><td>Язык ответов Claude</td></tr>
+      <tr><td><code>outputStyle</code></td><td>Стиль ответов, например <code>"Explanatory"</code> — с пояснениями по ходу работы</td></tr>
+      <tr><td><code>statusLine</code></td><td>Своя строка состояния под полем ввода</td></tr>
+      <tr><td><code>enabledPlugins</code></td><td>Какие <a routerLink="/claude/plugins/what-is">плагины</a> включены</td></tr>
+      <tr><td><code>autoMemoryEnabled</code></td><td>Включить или выключить <a routerLink="/claude/basics/memory">автопамять</a></td></tr>
+      <tr><td><code>attribution</code></td><td>Подпись Claude в коммитах и PR</td></tr>
+      <tr><td><code>sandbox</code></td><td>Песочница: ограничивает командам доступ к файлам и сети (macOS, Linux, WSL2)</td></tr>
+      <tr><td><code>cleanupPeriodDays</code></td><td>Сколько дней хранить историю сессий</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Где не сработает.</strong> Чтобы чужой репозиторий не мог ослабить защиту, часть ключей из проектного файла игнорируется: например, <code>defaultMode</code> со значением <code>auto</code> или <code>bypassPermissions</code>. А allow-правила из него начинают действовать только после того, как вы доверитесь папке.</p>
+</section>
+</article>
