@@ -1,0 +1,63 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/plugins">Плагины</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Что такое плагин</span></nav>
+
+<h1 class="doc__title">Что такое плагин</h1>
+<p class="doc__lead"><strong>Плагин</strong> — папка, в которой вместе лежат <a routerLink="/claude/skills/what-is">скиллы</a>, <a routerLink="/claude/agents/subagents">субагенты</a>, <a routerLink="/claude/automation/hooks">хуки</a> и <a routerLink="/claude/mcp/what-is">MCP-серверы</a>. Ставится, обновляется и выключается целиком, одной командой. Так чужую готовую настройку получают за минуту, а свою раздают команде. Формат один для приложения Claude (чат и Cowork) и для Claude Code.</p>
+
+<section class="doc__section">
+  <h2>Зачем нужны</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Плагин</th><th>Что даёт</th></tr></thead>
+    <tbody>
+      <tr><td><code>commit-commands</code></td><td>Команды Claude Code для коммита, пуша и pull request: <code>/commit-commands:commit</code></td></tr>
+      <tr><td><code>typescript-lsp</code>, <code>pyright-lsp</code> и другие <code>*-lsp</code></td><td>Claude видит ошибки типов сразу после своей правки, без запуска сборки, и ищет определения по символам, а не по тексту</td></tr>
+      <tr><td>Плагины сервисов</td><td>MCP-сервер сервиса и скиллы о том, как с ним работать. Большую часть официального каталога публикуют сами вендоры</td></tr>
+      <tr><td><code>sales</code>, <code>legal</code>, <code>finance</code> и др.</td><td>Не про код: подготовка к звонку, разбор договора, сверка счетов. Для приложения и Cowork, из набора <code>knowledge-work-plugins</code></td></tr>
+      <tr><td>Плагин вашей команды</td><td>Одинаковые скиллы, агенты и хуки у всех. В Claude Code включается для всего репозитория, на Team и Enterprise владелец делает плагин обязательным</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Из чего состоит</h2>
+  <app-code-block [code]="tree" lang="text" />
+  <ul class="rules">
+    <li><strong><code>plugin.json</code></strong> — манифест. Обязательно в нём только <code>name</code>, а без манифеста плагин тоже загрузится: компоненты найдутся по папкам.</li>
+    <li><strong>Имена с префиксом</strong> — скилл из <code>skills/review/</code> вызывается как <code>/my-plugin:review</code>. Поэтому плагины не конфликтуют ни друг с другом, ни с вашими скиллами.</li>
+    <li><strong>Всё необязательно</strong> — плагин может состоять из одного скилла или одного MCP-сервера.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Где что работает</h2>
+  <p>Каждое приложение загружает из плагина то, что умеет, остальное пропускает. Поэтому в Cowork и Claude Code плагин может больше, чем в чате:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Компонент</th><th>Чат</th><th>Cowork</th><th>Claude Code</th></tr></thead>
+    <tbody>
+      <tr><td>Скиллы и команды</td><td>Да, команда работает как скилл</td><td>Да</td><td>Да</td></tr>
+      <tr><td>MCP-серверы</td><td>Удалённые, после подключения на вкладке <strong>Connectors</strong></td><td>Да, локальные — если сессия идёт на вашем компьютере</td><td>Да</td></tr>
+      <tr><td>Субагенты и хуки</td><td>Нет</td><td>Да</td><td>Да</td></tr>
+      <tr><td>LSP-серверы, стили ответов, темы</td><td>Нет</td><td>Нет</td><td>Да</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Плагин с папкой <code>bin/</code></strong> (свои утилиты в <code>PATH</code>) приложение и Cowork не установят вовсе — такой работает только в Claude Code.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Плагин или отдельные файлы</h2>
+  <ul class="rules">
+    <li><strong>Для себя</strong> плагин не нужен: скилл, субагент, хук и MCP-сервер работают и сами по себе. Положили скилл в <code>~/.claude/skills/</code> — и он есть во всех проектах.</li>
+    <li><strong>Чтобы раздать</strong> — плагин: команде, на много проектов или машин, с версиями и обновлениями из маркетплейса.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Чего стоит включённый плагин</h2>
+  <ul class="rules">
+    <li><strong>Контекст</strong> — имена и описания всех его скиллов и агентов лежат в контексте каждый ход, даже если плагин сейчас не нужен. Полный текст подгружается только при вызове. Лишние плагины лучше выключать.</li>
+    <li><strong>Процессы</strong> — его MCP-серверы запущены, а хуки срабатывают в каждой сессии, а не только когда вы им пользуетесь.</li>
+    <li><strong>Права</strong> — всё, что плагин запускает, запускается от вашего имени.</li>
+  </ul>
+  <p class="note"><strong>Проверены только плагины из каталога Anthropic</strong>: каждая версия проходит автоматический скан, а новый плагин перед публикацией смотрит человек. Сторонние маркетплейсы, загрузку архивом и папки с диска никто не проверяет — ставьте их только из надёжных источников. Как установить плагин — на странице <a routerLink="/claude/plugins/install">Установка</a>.</p>
+</section>
+</article>

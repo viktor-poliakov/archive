@@ -1,0 +1,73 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/plugins">Плагины</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Установка</span></nav>
+
+<h1 class="doc__title">Установка</h1>
+<p class="doc__lead">Плагин ставят из каталога (маркетплейса) или из папки на диске. В приложении Claude — на странице <strong>Customize → Plugins</strong>, в Claude Code — командой <code>/plugin</code>. Плагин из приложения сам появляется в Claude Code, обратно — нет. Что такое плагин и что в нём лежит — на странице <a routerLink="/claude/plugins/what-is">Что такое плагин</a>.</p>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> Откройте <strong>Customize → Plugins</strong> в claude.ai или десктоп-приложении.</li>
+    <li><strong>2.</strong> <strong>Discover</strong> → выберите плагин → <strong>Add</strong>. Каталог Anthropic там есть на Pro, Max, Team и Enterprise.</li>
+    <li><strong>3.</strong> Свой источник — <strong>Add → Add marketplace</strong> (репозиторий GitHub: URL или <code>owner/repo</code>) или <strong>Add → Upload plugin</strong> (архив <code>.zip</code> или <code>.plugin</code>).</li>
+  </ul>
+  <ul class="rules">
+    <li><strong>Коннекторы подключают отдельно.</strong> Установка плагина ничего не подключает и ни в какой сервис вас не авторизует: откройте плагин → вкладка <strong>Connectors</strong> → подключите каждый. Скиллы работают и без этого, но до сервиса не достанут.</li>
+    <li><strong>Вызов</strong> — опишите задачу, Claude возьмёт подходящий скилл сам. Или наберите <code>/</code>: в меню скиллы подписаны именем плагина. В Cowork команду плагина вызывают как <code>/plugin-name:command</code>.</li>
+    <li><strong>Выключить</strong> — переключатель <strong>Disable plugin</strong> в карточке, <strong>удалить</strong> — меню плагина → <strong>Remove</strong>. Обновления из каталога приходят сами.</li>
+    <li><strong>Плагин привязан к аккаунту</strong> — он есть в чате (веб, десктоп, мобильные), в Cowork и в Claude Code: там он появится как <code>&lt;имя&gt;&#64;synced</code> при следующем запуске.</li>
+    <li><strong>Team и Enterprise</strong> — владелец может поставить плагин всем: по умолчанию (участник может выключить) или обязательно (выключить нельзя).</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude Code</h2>
+  <p>Официальный маркетплейс <code>claude-plugins-official</code> Claude Code добавляет сам при первом запуске, так что ставить из него можно сразу:</p>
+  <app-code-block [code]="session" lang="text" />
+  <p>При установке Claude Code спрашивает, для кого включить плагин:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Область</th><th>Для кого</th><th>Куда записывается</th></tr></thead>
+    <tbody>
+      <tr><td>user</td><td>Вы, во всех проектах</td><td><code>~/.claude/settings.json</code></td></tr>
+      <tr><td>project</td><td>Все, кто работает в репозитории</td><td><code>.claude/settings.json</code>, коммитится в git</td></tr>
+      <tr><td>local</td><td>Вы, только в этом репозитории</td><td><code>.claude/settings.local.json</code></td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Область project</strong> плагин включает, но не скачивает: каждый участник один раз ставит его у себя — <code>claude plugin install … --scope project</code>.</li>
+    <li><strong>Десктоп-приложение</strong> (вкладка Code) — кнопка <strong>+</strong> у поля ввода → <strong>Add plugins</strong>. <strong>VS Code</strong> — <code>/plugins</code>. Плагин в области user виден везде на этом компьютере: файлы настроек у терминала, десктопа и VS Code общие.</li>
+    <li><strong>Облачные сессии</strong> (claude.ai/code) локальные плагины не загружают.</li>
+  </ul>
+  <p>Те же действия из обычного терминала, без сессии — удобно для скриптов настройки:</p>
+  <app-code-block [code]="shell" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>Из другого маркетплейса</h2>
+  <p>Каталог сначала добавляют, потом ставят из него плагин по имени <code>плагин&#64;маркетплейс</code>:</p>
+  <app-code-block [code]="marketplace" lang="text" />
+  <p>Подробнее о каталогах и о том, как завести свой, — в <a routerLink="/claude/plugins/marketplaces">Маркетплейсах</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Пример: проверка типов для TypeScript</h2>
+  <app-code-block [code]="lsp" lang="text" />
+  <p>Теперь после каждой правки <code>.ts</code>-файла Claude видит ошибки типов и пропущенные импорты, не запуская сборку. В разговоре это строка <code>Found N new diagnostic issues</code>, подробности — по <code>Ctrl+O</code>. Если сервер не установлен, на вкладке <strong>Errors</strong> в <code>/plugin</code> будет <code>Executable not found in $PATH</code>. Для других языков — <code>pyright-lsp</code>, <code>gopls-lsp</code>, <code>rust-analyzer-lsp</code> и т. д.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Управление</h2>
+  <ul class="rules">
+    <li><strong><code>/plugin</code> → Installed</strong> — <code>Space</code> включает и выключает плагин, <code>Enter</code> открывает карточку: <strong>Update now</strong>, <strong>Uninstall</strong>. Давно не использованные собраны в группе <strong>Not used recently</strong>.</li>
+    <li><strong><code>/reload-plugins</code></strong> — применить изменения без перезапуска сессии.</li>
+    <li><strong>Автообновление</strong> включено для официальных маркетплейсов Anthropic, для сторонних выключено. Переключается на вкладке <strong>Marketplaces</strong>.</li>
+    <li><strong>Выключенный плагин</strong> остаётся на диске, но не занимает контекст и ничего не запускает.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В Agent SDK</h2>
+  <p>В <a routerLink="/claude/agents/agent-sdk">Agent SDK</a> плагин подключают как локальную папку, его скиллы вызываются с тем же префиксом:</p>
+  <app-code-block [code]="sdk" lang="typescript" />
+</section>
+</article>
