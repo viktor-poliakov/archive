@@ -1,0 +1,70 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/skills">Скиллы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Что такое скилл</span></nav>
+
+<h1 class="doc__title">Что такое скилл</h1>
+<p class="doc__lead"><strong>Скилл</strong> (Agent Skill) — папка с файлом <code>SKILL.md</code>: инструкция, как делать определённую задачу, и при необходимости скрипты, шаблоны и справочники к ней. Claude держит в голове только имя и описание каждого скилла, а саму инструкцию читает, когда задача подходит. Написали один раз — и больше не объясняете то же самое в каждом чате. Скиллы работают в приложении Claude, в Claude Code и через API. Формат открытый (<a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io</a>), его понимают и другие агенты.</p>
+
+<section class="doc__section">
+  <h2>Зачем нужны</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Задача</th><th>Что даёт скилл</th></tr></thead>
+    <tbody>
+      <tr><td>Презентации и документы по брендбуку</td><td>Цвета, шрифты и шаблон лежат в скилле — не нужно прикладывать их к каждому запросу</td></tr>
+      <tr><td>Word, Excel, PowerPoint, PDF</td><td>Готовые скиллы Anthropic: таблицы с формулами и графиками, вёрстка документов, заполнение PDF-форм</td></tr>
+      <tr><td>Отчёт или письмо по шаблону компании</td><td>Одинаковая структура каждый раз. Вместе с <a routerLink="/claude/app/connectors">коннекторами</a> скилл знает, откуда брать данные</td></tr>
+      <tr><td>Порядок работы в проекте</td><td>Релиз, миграция, ревью по чек-листу команды — шаги и команды в одном файле, вызов через <code>/release</code> в Claude Code</td></tr>
+      <tr><td>Повторяемые операции</td><td>Проверку или преобразование делает скрипт из скилла — надёжнее и дешевле, чем каждый раз генерировать код заново</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Как устроен</h2>
+  <p>Обязателен только <code>SKILL.md</code>, остальное — по желанию. Справочники Claude читает, когда на них ссылается инструкция, а скрипты запускает:</p>
+  <app-code-block [code]="tree" lang="text" />
+  <p>Вверху <code>SKILL.md</code> — frontmatter с именем и описанием, ниже — сама инструкция:</p>
+  <app-code-block [code]="skillMd" lang="markdown" />
+  <ul class="rules">
+    <li><strong><code>name</code></strong> — латиница в нижнем регистре, цифры и дефисы, до 64 символов. В Claude Code без него скилл называется по папке.</li>
+    <li><strong><code>description</code></strong> — что делает скилл и когда его брать. Главное поле: по нему Claude решает, нужен ли скилл для запроса.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как Claude его загружает</h2>
+  <p>Скилл читается по частям, поэтому их можно поставить десятки — контекст это почти не занимает:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Что</th><th>Когда попадает в контекст</th><th>Сколько стоит</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code> и <code>description</code></td><td>Всегда, с начала сессии</td><td>Около 100 токенов на скилл</td></tr>
+      <tr><td>Тело <code>SKILL.md</code></td><td>Когда запрос подошёл под описание или скилл вызвали вручную</td><td>Рекомендуют держать в пределах 5 тыс. токенов</td></tr>
+      <tr><td>Остальные файлы</td><td>Только если инструкция на них сослалась и они понадобились</td><td>Справочник — по размеру файла. У скрипта — только его вывод, сам код в контекст не попадает</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Скилл или что-то другое</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Инструмент</th><th>Чем отличается от скилла</th></tr></thead>
+    <tbody>
+      <tr><td><a routerLink="/claude/basics/claude-md">CLAUDE.md</a>, <a routerLink="/claude/app/projects">проекты</a>, личные инструкции</td><td>Лежат в контексте всегда — для общих правил. Скилл подгружается только под свою задачу</td></tr>
+      <tr><td><a routerLink="/claude/mcp/what-is">MCP</a> и <a routerLink="/claude/app/connectors">коннекторы</a></td><td>Дают доступ к сервисам и данным. Скилл объясняет, что с ними делать. Работают вместе</td></tr>
+      <tr><td><a routerLink="/claude/agents/subagents">Субагент</a></td><td>Работает в отдельном контексте и возвращает отчёт. Скилл — в основном разговоре</td></tr>
+      <tr><td><a routerLink="/claude/basics/slash-commands">Слэш-команда</a></td><td>В Claude Code свои команды стали частью скиллов: скилл тоже вызывается через <code>/имя</code>, но может сработать и сам</td></tr>
+      <tr><td><a routerLink="/claude/plugins/what-is">Плагин</a></td><td>Упаковка для распространения: внутри могут быть скиллы, субагенты, хуки и MCP-серверы</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Какие бывают</h2>
+  <ul class="rules">
+    <li><strong>От Anthropic</strong> — <code>docx</code>, <code>xlsx</code>, <code>pptx</code>, <code>pdf</code> для документов. В приложении и API работают без настройки, Claude берёт их сам, когда <a routerLink="/claude/app/files">создаёт файлы</a>. В Claude Code свой набор встроенных скиллов: <code>/code-review</code>, <code>/simplify</code>, <code>/loop</code>, <code>/claude-api</code> и другие.</li>
+    <li><strong>Партнёрские</strong> — от Notion, Figma, Atlassian и других, обычно в паре с их коннектором. Лежат в каталоге скиллов приложения.</li>
+    <li><strong>Свои</strong> — пишете сами или просите Claude написать. Как — в <a routerLink="/claude/skills/custom">Своём скилле</a>.</li>
+    <li><strong>Организации</strong> — на Team и Enterprise владелец раздаёт скиллы всем участникам.</li>
+  </ul>
+  <p class="note"><strong>Скилл — это код и инструкции, которые Claude выполнит.</strong> Чужой скилл может велеть Claude отправить ваши данные наружу или запустить что-то лишнее. Ставьте скиллы только из надёжных источников, а незнакомые сначала прочитайте целиком, вместе со скриптами. Как подключить и вызвать скилл — в <a routerLink="/claude/skills/using">Подключении и вызове</a>.</p>
+</section>
+</article>

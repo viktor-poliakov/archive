@@ -1,0 +1,72 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/skills">Скиллы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Подключение и вызов</span></nav>
+
+<h1 class="doc__title">Подключение и вызов</h1>
+<p class="doc__lead">Чтобы скилл заработал, его достаточно положить туда, где Claude его увидит: включить в настройках приложения, скопировать папку для Claude Code или передать в запросе к API. Дальше Claude сам берёт скилл, когда запрос подходит под описание. Вызвать вручную тоже можно — по имени. Что такое скилл и из чего он состоит — на странице <a routerLink="/claude/skills/what-is">Что такое скилл</a>.</p>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <ul class="rules">
+    <li><strong>1.</strong> <strong>Settings → Capabilities</strong> → включите <strong>Cloud code execution and file creation</strong>. Скиллы работают в той же песочнице, что и <a routerLink="/claude/app/files">создание файлов</a>, без неё они не запустятся.</li>
+    <li><strong>2.</strong> <strong>Customize → Skills</strong> — здесь включают и выключают скиллы. Скиллы Anthropic для Word, Excel, PowerPoint и PDF уже работают.</li>
+    <li><strong>3.</strong> Новый скилл — кнопка <strong>+</strong>: <strong>Browse skills</strong> открывает каталог (готовые и партнёрские), <strong>Create skill → Upload a skill</strong> загружает свой.</li>
+  </ul>
+  <p>Свой скилл загружают ZIP-архивом папки, внутри которой лежит <code>SKILL.md</code>. Имя папки должно совпадать с полем <code>name</code>, иначе загрузка не пройдёт. Загружать свои скиллы можно на всех тарифах, включая Free.</p>
+  <ul class="rules">
+    <li><strong>Вызов</strong> — обычно никакой: Claude сам выбирает скилл по запросу. Не сработал — назовите прямо: «Используй скилл brand-guidelines и сделай презентацию».</li>
+    <li><strong>Team и Enterprise</strong> — сначала владелец включает скиллы: <strong>Organization settings → Plugins &amp; skills → Policy</strong>. Он же может раздать скиллы всем участникам или запретить загружать свои.</li>
+    <li><strong>Поделиться</strong> — на Team и Enterprise: в <strong>Customize → Skills</strong> меню <strong>⋯</strong> у скилла → <strong>Share</strong>, коллега получит копию только для чтения. <strong>Publish to org</strong> отправляет скилл в библиотеку организации (иногда через проверку владельцем). На Free, Pro и Max скилл есть только у вас.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude Code</h2>
+  <p>Скилл — это просто папка на диске. Claude Code ищет их в нескольких местах:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Где лежит</th><th>Для кого</th></tr></thead>
+    <tbody>
+      <tr><td><code>~/.claude/skills/&lt;name&gt;/SKILL.md</code></td><td>Вы, во всех проектах</td></tr>
+      <tr><td><code>.claude/skills/&lt;name&gt;/SKILL.md</code></td><td>Текущий проект. Кладут в git — скилл есть у всей команды</td></tr>
+      <tr><td>Папка <code>skills/</code> плагина</td><td>Везде, где включён <a routerLink="/claude/plugins/install">плагин</a>. Имя с префиксом: <code>/плагин:скилл</code></td></tr>
+      <tr><td><code>~/.claude/skills/synced/</code></td><td>Скиллы, включённые в приложении Claude. Скачиваются сами, если вы вошли аккаунтом claude.ai, а не API-ключом</td></tr>
+    </tbody>
+  </table></div>
+  <p>Чужой скилл ставят двумя способами: скопировать его папку в <code>.claude/skills/</code> или <code>~/.claude/skills/</code> либо установить плагин. Например, скиллы Anthropic для документов:</p>
+  <app-code-block [code]="plugin" lang="text" />
+  <p>Вызов — сам по описанию или вручную через <code>/</code>:</p>
+  <app-code-block [code]="invoke" lang="text" />
+  <ul class="rules">
+    <li><strong>Совпали имена</strong> — личный скилл побеждает проектный, а скилл заменяет одноимённую команду из <code>.claude/commands/</code>. Скиллы плагинов не конфликтуют: у них префикс.</li>
+    <li><strong>Правки подхватываются сразу</strong>, без перезапуска. Если папки <code>skills</code> до старта сессии не было, один раз выполните <code>/reload-skills</code>.</li>
+    <li><strong>Скилл из приложения</strong> не правят локально: при следующей синхронизации правка пропадёт. Меняйте его в приложении.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Кто может вызвать скилл</h2>
+  <p>По умолчанию — и вы, и Claude. Два поля во frontmatter это меняют:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Поле</th><th>Что меняет</th><th>Когда нужно</th></tr></thead>
+    <tbody>
+      <tr><td><code>disable-model-invocation: true</code></td><td>Только вручную, Claude сам не вызовет. Описание даже не попадает в контекст</td><td>Действия с последствиями: деплой, рассылка, коммит</td></tr>
+      <tr><td><code>user-invocable: false</code></td><td>Только Claude, в меню <code>/</code> скилла нет</td><td>Справочные знания, которые вручную звать незачем</td></tr>
+    </tbody>
+  </table></div>
+  <app-code-block [code]="manualOnly" lang="markdown" />
+  <p class="note"><strong>Выключить чужой скилл без правки файла</strong> — в <code>/skills</code> выберите его и нажмите <code>Space</code>: состояние запишется в <code>skillOverrides</code> в <code>.claude/settings.local.json</code>. Не давать Claude вызывать скилл — правило <code>Skill(deploy *)</code> в <code>deny</code> <a routerLink="/claude/basics/permissions">разрешений</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Через API</h2>
+  <p>Скиллы передают в поле <code>container</code>, до 20 штук на запрос, вместе с инструментом code execution — без него скилл не запустится:</p>
+  <app-code-block [code]="api" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Скиллы Anthropic</strong> — <code>type: 'anthropic'</code> и короткое имя: <code>pptx</code>, <code>xlsx</code>, <code>docx</code>, <code>pdf</code>.</li>
+    <li><strong>Свои</strong> сначала загружают — получится id вида <code>skill_01…</code>. Скилл виден всему workspace.</li>
+    <li><strong>Готовые файлы</strong> приходят как <code>file_id</code> в результате code execution, скачивают их через Files API.</li>
+    <li><strong>В песочнице API нет интернета</strong>, и пакеты в ней не установить — только то, что предустановлено.</li>
+  </ul>
+  <app-code-block [code]="upload" lang="bash" />
+  <p class="note"><strong>Скиллы API отдельно от приложения.</strong> Из приложения в Claude Code скиллы скачиваются сами, а в API их нужно загрузить отдельно — и наоборот, загруженные через API в приложении не появятся.</p>
+</section>
+</article>
