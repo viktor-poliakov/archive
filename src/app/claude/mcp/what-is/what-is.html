@@ -1,0 +1,77 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/mcp">MCP</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Что такое MCP</span></nav>
+
+<h1 class="doc__title">Что такое MCP</h1>
+<p class="doc__lead"><strong>MCP</strong> (Model Context Protocol) — открытый стандарт, по которому ИИ-приложение подключается к внешним сервисам: трекеру задач, базе данных, Figma, почте. Сервис один раз оформляют как <strong>MCP-сервер</strong>, и им пользуется любой клиент, который понимает протокол: приложение Claude, Claude Code, Claude API, а также ИИ-инструменты других компаний. Как протокол устроен внутри — на странице <a routerLink="/ecosystem/ai/agents">Агенты, tool use, MCP</a>.</p>
+
+<section class="doc__section">
+  <h2>Зачем нужен</h2>
+  <p>Без MCP Claude знает только то, что вы вставили в чат. С подключённым сервером он сам сходит за данными и сам выполнит действие:</p>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Сервер</th><th>Пример запроса</th></tr></thead>
+    <tbody>
+      <tr><td>Трекер задач (Jira, Linear)</td><td>«Сделай фичу из задачи ENG-4521 и открой PR»</td></tr>
+      <tr><td>Мониторинг (Sentry)</td><td>«Какая ошибка чаще всего падала за сутки? Найди причину в коде»</td></tr>
+      <tr><td>База данных (PostgreSQL)</td><td>«Сколько заказов было за неделю? Покажи схему таблицы orders»</td></tr>
+      <tr><td>Дизайн (Figma)</td><td>«Сверстай этот экран по макету»</td></tr>
+      <tr><td>Почта и календарь</td><td>«Найди свободный час в четверг и набросай приглашение»</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Простое правило:</strong> если вы регулярно копируете данные из какого-то сервиса в чат, этот сервис пора подключить.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что даёт сервер</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Что</th><th>Это</th><th>Как выглядит в Claude Code</th></tr></thead>
+    <tbody>
+      <tr><td>Инструменты (tools)</td><td>Действия: найти задачу, выполнить SQL, создать черновик письма</td><td>Claude вызывает их сам, когда они подходят к задаче. Полное имя — <code>mcp__github__create_issue</code></td></tr>
+      <tr><td>Ресурсы (resources)</td><td>Данные для чтения: схема БД, документ, задача</td><td>Вы подставляете их в запрос через <code>&#64;</code>, как файл</td></tr>
+      <tr><td>Промпты (prompts)</td><td>Готовые сценарии от автора сервера</td><td>Команды в меню <code>/</code></td></tr>
+    </tbody>
+  </table></div>
+  <app-code-block [code]="usage" lang="text" />
+  <p>Главное у большинства серверов — инструменты. Ресурсы и промпты есть не у всех.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Локальный и удалённый</h2>
+  <ul class="rules">
+    <li><strong>Локальный (stdio)</strong> — программа на вашем компьютере, обычно запускается через <code>npx</code> или <code>uvx</code>. Достаёт до ваших файлов, локальной базы, браузера. Ключи доступа ей передают через переменные окружения.</li>
+    <li><strong>Удалённый (HTTP)</strong> — сервер в интернете, его держит сам сервис, например <code>https://mcp.notion.com/mcp</code>. Ставить ничего не нужно, вход — через OAuth в браузере или по токену.</li>
+  </ul>
+  <p>Есть ещё транспорт SSE, но он устарел: если у сервиса есть HTTP-адрес, берите его.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Где работает в Claude</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Где</th><th>Как подключить</th><th>Какие серверы</th></tr></thead>
+    <tbody>
+      <tr><td>Приложение Claude</td><td><a routerLink="/claude/app/connectors">Коннекторы</a>: <strong>Customize → Connectors</strong></td><td>Удалённые. Локальные — только в Claude Desktop, как расширения</td></tr>
+      <tr><td>Claude Code</td><td>Команда <code>claude mcp add</code> или файл <code>.mcp.json</code></td><td>Любые</td></tr>
+      <tr><td>Claude API</td><td>Параметр <code>mcp_servers</code> (бета)</td><td>Только удалённые и только их инструменты</td></tr>
+      <tr><td><a routerLink="/claude/agents/agent-sdk">Agent SDK</a></td><td>Опция <code>mcpServers</code></td><td>Любые, плюс свои инструменты прямо в вашем процессе</td></tr>
+    </tbody>
+  </table></div>
+  <p>Команды и примеры для каждого случая — на странице <a routerLink="/claude/mcp/connect">Подключение сервера</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>MCP, скилл или плагин</h2>
+  <ul class="rules">
+    <li><strong>MCP-сервер</strong> даёт доступ: Claude может прочитать задачу в Jira и создать новую.</li>
+    <li><strong><a routerLink="/claude/skills/what-is">Скилл</a></strong> даёт знание: как в вашей команде оформляют задачи и какие поля обязательны. Скилл часто опирается на инструменты MCP-сервера.</li>
+    <li><strong><a routerLink="/claude/plugins/what-is">Плагин</a></strong> — упаковка: сервер и скиллы к нему ставятся вместе, одной командой.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Что важно знать</h2>
+  <ul class="rules">
+    <li><strong>Работает с вашими правами</strong> — сервер видит в сервисе то же, что и вы, а локальный запускается от вашего пользователя. Сторонние серверы Anthropic не проверяет: ставьте только те, которым доверяете.</li>
+    <li><strong>Ответ сервера — чужой текст</strong> — в задаче, письме или на веб-странице может оказаться промпт-инъекция. Инструменты, которые что-то меняют или удаляют, не разрешайте вызывать без подтверждения (<a routerLink="/claude/basics/permissions">разрешения</a>).</li>
+    <li><strong>Контекст</strong> — Claude Code в начале сессии загружает только имена инструментов, а полные описания подтягивает, когда инструмент понадобился. Поэтому даже десяток серверов почти не занимает контекст, но ненужные всё равно лучше выключать.</li>
+  </ul>
+</section>
+</article>

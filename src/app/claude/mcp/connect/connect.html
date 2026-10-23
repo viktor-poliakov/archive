@@ -1,0 +1,81 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/mcp">MCP</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Подключение сервера</span></nav>
+
+<h1 class="doc__title">Подключение сервера</h1>
+<p class="doc__lead">В приложении Claude MCP-сервер подключают кликами как коннектор, в Claude Code — командой <code>claude mcp add</code> или файлом <code>.mcp.json</code>, в API и Agent SDK — параметром запроса. Адрес сервера или команду запуска берут из документации сервиса. Что такое MCP и чем локальный сервер отличается от удалённого — на странице <a routerLink="/claude/mcp/what-is">Что такое MCP</a>.</p>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <ul class="rules">
+    <li><strong>Из каталога</strong> — <strong>Customize → Connectors</strong> → выберите сервис → <strong>Connect</strong> → войдите в его аккаунт.</li>
+    <li><strong>Свой удалённый сервер</strong> — <strong>Customize → Connectors → Add → Custom → Web</strong>: имя и URL. Сервер должен быть доступен из интернета.</li>
+    <li><strong>Локальный сервер</strong> — только в Claude Desktop: <strong>Settings → Extensions</strong>, расширение из каталога или из файла <code>.mcpb</code>.</li>
+  </ul>
+  <p>Подробнее, с тарифами и настройками для команды, — на странице <a routerLink="/claude/app/connectors">Коннекторы</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude Code: удалённый сервер</h2>
+  <p>Команды запускают в обычном терминале, не внутри сессии:</p>
+  <app-code-block [code]="remote" lang="bash" />
+  <p>Сервер с OAuth сначала покажет статус <code>Needs authentication</code>: откройте <code>/mcp</code>, выберите его и войдите в браузере. Токен сохранится, повторно входить не нужно.</p>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude Code: локальный сервер</h2>
+  <app-code-block [code]="local" lang="bash" />
+  <ul class="rules">
+    <li><strong><code>--</code> обязателен</strong> — он отделяет флаги Claude Code от команды сервера. Без него флаг вроде <code>--dsn</code> Claude Code примет за свой.</li>
+    <li><strong>Имя сервера не ставьте сразу после <code>--env</code></strong> — CLI примет его за ещё одну пару <code>KEY=value</code>. Поставьте между ними другой флаг, как в примере.</li>
+    <li><strong>Базу данных</strong> подключайте пользователем только на чтение.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Для кого подключён: scope</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Область</th><th>Для кого</th><th>Где хранится</th></tr></thead>
+    <tbody>
+      <tr><td>local (по умолчанию)</td><td>Вы, только в этом проекте</td><td><code>~/.claude.json</code></td></tr>
+      <tr><td>project</td><td>Все, кто работает в репозитории</td><td><code>.mcp.json</code> в корне проекта, коммитится в git</td></tr>
+      <tr><td>user</td><td>Вы, во всех проектах</td><td><code>~/.claude.json</code></td></tr>
+    </tbody>
+  </table></div>
+  <app-code-block [code]="scope" lang="bash" />
+  <p>Файл <code>.mcp.json</code> можно написать и руками. Секреты в него не кладут: <code>$&#123;VAR&#125;</code> подставит переменную окружения, <code>$&#123;VAR:-значение&#125;</code> — значение по умолчанию.</p>
+  <app-code-block [code]="mcpJson" lang="json" />
+  <p class="note"><strong>Серверы из <code>.mcp.json</code></strong> Claude Code при первом запуске показывает и спрашивает, включать ли их: чужой репозиторий не подключит сервер молча. Сбросить ответы — <code>claude mcp reset-project-choices</code>. В headless-режиме (<code>claude -p</code>) вопроса нет, серверы загружаются сразу.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Проверка и управление</h2>
+  <app-code-block [code]="manage" lang="bash" />
+  <ul class="rules">
+    <li><strong><code>/mcp</code></strong> внутри сессии — статус каждого сервера (<code>Connected</code>, <code>Needs authentication</code>, <code>Failed to connect</code>), число инструментов, повторный вход, выключение для проекта.</li>
+    <li><strong>Коннекторы из claude.ai</strong> появляются в Claude Code сами, если вы вошли подпиской: в <code>/mcp</code> они видны как <code>claude.ai Gmail</code> и т. п.</li>
+    <li><strong><code>add-json</code></strong> — когда сервис даёт готовый JSON-конфиг: вставьте его как есть.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как пользоваться</h2>
+  <app-code-block [code]="session" lang="text" />
+  <ul class="rules">
+    <li><strong>Просто опишите задачу</strong> — Claude сам найдёт подходящий инструмент среди подключённых.</li>
+    <li><strong>Разрешения</strong> — перед первым вызовом инструмента Claude Code спросит разрешение. Чтобы не спрашивал, добавьте правило вроде <code>mcp__sentry__*</code> в <code>allow</code> (см. <a routerLink="/claude/basics/permissions">Разрешения и режимы</a>).</li>
+    <li><strong>Большие ответы</strong> — результат длиннее 50 000 символов Claude Code не вставляет в разговор, а сохраняет в файл и даёт Claude путь к нему.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude API</h2>
+  <p>MCP connector (бета): API сам подключается к серверу, писать MCP-клиент не нужно. Только удалённые серверы и только их инструменты.</p>
+  <app-code-block [code]="api" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>В Agent SDK</h2>
+  <p>В <a routerLink="/claude/agents/agent-sdk">Agent SDK</a> внешние серверы передают в <code>mcpServers</code> в том же формате, что и в <code>.mcp.json</code>:</p>
+  <app-code-block [code]="sdk" lang="typescript" />
+</section>
+</article>
