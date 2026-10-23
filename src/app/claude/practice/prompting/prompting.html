@@ -1,0 +1,77 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/practice">Практика</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Как ставить задачи</span></nav>
+
+<h1 class="doc__title">Как ставить задачи</h1>
+<p class="doc__lead">Claude сам читает файлы, запускает команды и правит код, но о вашей задаче знает только то, что вы написали. Хорошая задача отвечает на три вопроса: что сделать, где смотреть и как понять, что готово. Общие принципы — в статье <a routerLink="/ecosystem/ai/prompting-stack">«Как ставить задачу, зная стек»</a>, здесь — приёмы именно для Claude.</p>
+
+<section class="doc__section">
+  <h2>Из чего состоит задача</h2>
+  <p>Четыре части: <strong>что сделать</strong> (симптом или результат), <strong>где смотреть</strong> (файлы, образец в проекте), <strong>ограничения</strong> (что не трогать) и <strong>как проверить</strong>.</p>
+  <app-code-block [code]="task" lang="text" />
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Расплывчато</th><th>Конкретно</th></tr></thead>
+    <tbody>
+      <tr><td>«Добавь тесты для foo.ts»</td><td>«Тест для foo.ts на случай, когда пользователь не залогинен. Без моков»</td></tr>
+      <tr><td>«Почему у ExecutionFactory такой странный API?»</td><td>«Посмотри историю git для ExecutionFactory и расскажи, как сложился его API»</td></tr>
+      <tr><td>«Сделай виджет календаря»</td><td>«Посмотри, как сделаны виджеты на главной, и по тому же образцу сделай календарь. Новых библиотек не добавляй»</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Расплывчато — тоже можно</strong>, когда вы исследуете: «что бы ты улучшил в этом файле?» подскажет то, о чём вы не спросили бы.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Дайте способ проверить</h2>
+  <p>Claude останавливается, когда работа <em>выглядит</em> законченной. Если проверки нет, ошибки ловите вы. Дайте ему то, что отвечает «прошло / не прошло»: тесты, сборку, линтер, скриншот для сравнения с макетом. Тогда он сам будет исправлять, пока проверка не пройдёт.</p>
+  <ul class="rules">
+    <li><strong>Просите доказательства</strong> — вывод тестов, команду и её результат, скриншот. Прочитать их быстрее, чем перепроверять самому.</li>
+    <li><strong>Причина, а не симптом</strong> — «исправь причину, ошибку не глуши». Иначе можно получить <code>&#64;ts-ignore</code> вместо исправления.</li>
+    <li><strong>Не останавливаться до зелёного</strong> — условие через <code>/goal</code> или Stop-<a routerLink="/claude/automation/hooks">хук</a>, который не даёт закончить ход, пока проверка падает.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Контекст: файлы, скриншоты, логи</h2>
+  <app-code-block [code]="mentions" lang="text" />
+  <ul class="rules">
+    <li><strong><code>&#64;путь</code></strong> — файл сразу попадает в контекст, папка — списком файлов. Наберите <code>&#64;</code>, и появится подсказка путей.</li>
+    <li><strong>Скриншот</strong> — перетащите в окно или вставьте: <code>Ctrl+V</code>, в Windows <code>Alt+V</code>. Макет, ошибку на экране или схему базы картинкой показать проще, чем описать.</li>
+    <li><strong>Ссылка</strong> — на документацию или API. Частые домены разрешите заранее в <code>/permissions</code>.</li>
+    <li><strong>Лог или вывод команды</strong> — через pipe:</li>
+  </ul>
+  <app-code-block [code]="pipe" lang="bash" />
+  <p class="note"><strong>То, что нужно в каждой задаче</strong> — команды сборки, соглашения, запреты, — не повторяйте раз за разом, а запишите в <a routerLink="/claude/basics/claude-md">CLAUDE.md</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Большая задача: сначала план</h2>
+  <p>Правка затрагивает несколько файлов или подход неясен — начните с <a routerLink="/claude/basics/plan-mode">plan mode</a>: Claude изучит код и напишет план, вы его поправите, и только потом он начнёт писать код. Если дифф описывается одной фразой, план не нужен.</p>
+  <p>Если неясна сама задача, пусть Claude вас расспросит:</p>
+  <app-code-block [code]="interview" lang="text" />
+  <ul class="rules">
+    <li><strong>Спецификацию выполняйте в новой сессии</strong> (<code>/clear</code>) — контекст будет чистым, а <code>SPEC.md</code> останется.</li>
+    <li><strong>Разведку отдайте субагенту</strong> — «используй субагента, чтобы выяснить, как устроено обновление токенов». Он прочитает десятки файлов в своём контексте и вернёт только выводы. Подробнее — в <a routerLink="/claude/agents/subagents">Субагентах</a>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как поправлять по ходу</h2>
+  <ul class="rules">
+    <li><strong><code>Esc</code></strong> — остановить Claude на полпути. Контекст сохранится, можно направить иначе.</li>
+    <li><strong><code>Esc</code> <code>Esc</code> или <code>/rewind</code></strong> — откатить разговор, код или и то и другое к одному из прошлых сообщений.</li>
+    <li><strong>«Отмени это»</strong> — Claude сам откатит свои правки.</li>
+    <li><strong>Две неудачные поправки подряд — хватит.</strong> Контекст забит неудачными попытками. <code>/clear</code> и новая задача с учётом того, что выяснили: чистая сессия с хорошей задачей почти всегда лучше длинной с исправлениями.</li>
+  </ul>
+  <p class="note"><strong>Откат — не замена git.</strong> <code>/rewind</code> возвращает только правки, сделанные инструментами редактирования. То, что изменили команды в терминале, он не откатит.</p>
+</section>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <ul class="rules">
+    <li><strong>Повторяющийся контекст</strong> — в <a routerLink="/claude/app/projects">проект</a>: его инструкции и файлы подхватываются в каждом чате.</li>
+    <li><strong>Прикрепляйте, а не пересказывайте</strong> — документ, таблицу, скриншот.</li>
+    <li><strong>Назовите формат результата</strong> — объём, вид (таблица, список, файл Excel), для кого.</li>
+    <li><strong>Ответ не тот — отредактируйте своё сообщение</strong>, а не пишите «нет, не так». Получится новая ветка разговора без неудачной попытки — то же, что <code>/clear</code> в Claude Code.</li>
+    <li><strong>Сложная задача</strong> — поднимите Effort в меню модели рядом с кнопкой отправки (в Claude Code — <code>/effort</code>). Длину и тон ответа задаёт стиль: Normal, Concise, Formal, Explanatory или свой.</li>
+  </ul>
+</section>
+</article>

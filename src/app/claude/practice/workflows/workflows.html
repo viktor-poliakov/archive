@@ -1,0 +1,86 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/practice">Практика</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Типовые сценарии</span></nav>
+
+<h1 class="doc__title">Типовые сценарии</h1>
+<p class="doc__lead">Готовые заготовки для повседневных задач: что написать Claude и на что обратить внимание. Подставьте свои файлы и команды. Почему заготовки устроены именно так — в <a routerLink="/claude/practice/prompting">Как ставить задачи</a>.</p>
+
+<section class="doc__section">
+  <h2>Разобраться в чужом проекте</h2>
+  <p>Запустите <code>claude</code> в корне проекта и спрашивайте, как спросили бы коллегу: от общего к частному.</p>
+  <app-code-block [code]="explore" lang="text" />
+  <ul class="rules">
+    <li><strong>Плагин code intelligence</strong> для вашего языка даёт Claude точные «перейти к определению» и «найти использования» — см. <a routerLink="/claude/plugins/install">Установку плагинов</a>.</li>
+    <li><strong>Большой проект</strong> — «используй субагентов, чтобы изучить…»: файлы прочитает субагент, а в ваш контекст попадут только выводы.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Починить баг</h2>
+  <app-code-block [code]="bugfix" lang="text" />
+  <ul class="rules">
+    <li><strong>Дайте команду, которая воспроизводит ошибку</strong>, и скажите, стабильно она появляется или изредка.</li>
+    <li><strong>Сначала падающий тест</strong> — он доказывает, что баг пойман, и не даст ему вернуться.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Новая фича</h2>
+  <p>Четыре шага: изучить → спланировать → написать → закоммитить. Первые два — в <a routerLink="/claude/basics/plan-mode">plan mode</a>, где Claude ничего не меняет.</p>
+  <app-code-block [code]="feature" lang="text" />
+  <p class="note"><strong>Перед одобрением</strong> план можно открыть в редакторе (<code>Ctrl+G</code>) и поправить руками.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Тесты</h2>
+  <p>Покрыть старый код: «найди в NotificationService функции без тестов и добавь тесты, включая крайние случаи». Claude возьмёт стиль и фреймворк из существующих тестов. Новый код удобно писать через TDD:</p>
+  <app-code-block [code]="tdd" lang="text" />
+  <p class="note"><strong>Запрет менять тесты</strong> — главное в этой заготовке: иначе проще всего «починить» тест, а не код.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Рефакторинг</h2>
+  <app-code-block [code]="refactor" lang="text" />
+  <ul class="rules">
+    <li><strong>Тестов нет</strong> — сначала попросите покрыть ими текущее поведение, потом переписывать.</li>
+    <li><strong>Сделайте коммит перед началом</strong>: откатиться будет просто, а дифф покажет, что изменилось.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Ревью и пул-реквест</h2>
+  <app-code-block [code]="review" lang="text" />
+  <ul class="rules">
+    <li><strong><code>/code-review</code></strong> ищет ошибки в диффе, <strong><code>/security-review</code></strong> — уязвимости в изменениях ветки. Оба — встроенные <a routerLink="/claude/skills/what-is">скиллы</a>.</li>
+    <li><strong>Свежий взгляд</strong> — ревью в новой сессии беспристрастнее: Claude не защищает код, который только что написал. Один пишет, другой проверяет — см. <a routerLink="/claude/agents/parallel">Параллельные сессии</a>.</li>
+    <li><strong>Фильтруйте замечания.</strong> Ревьюер, которого попросили найти проблемы, найдёт хоть что-то. Просите отмечать только то, что влияет на корректность и требования.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Вёрстка по макету</h2>
+  <app-code-block [code]="ui" lang="text" />
+  <p>Чтобы Claude сам открыл страницу и сделал скриншот, подключите браузер — <a routerLink="/claude/app/chrome">Claude in Chrome</a>. В десктопном приложении есть и встроенный браузер.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Массовая правка</h2>
+  <p>Одна и та же правка в сотне файлов — <code>/batch</code>: Claude делит работу на 5–30 субагентов, каждый в своём worktree.</p>
+  <app-code-block [code]="batch" lang="text" />
+  <p class="note"><strong>Свой цикл.</strong> Чтобы управлять обходом из скрипта, вызывайте <code>claude -p</code> на каждый файл — см. <a routerLink="/claude/automation/headless">Headless-режим</a>. Сначала прогоните на 2–3 файлах и доведите задачу до ума.</p>
+</section>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Задача</th><th>Чем</th><th>Пример</th></tr></thead>
+    <tbody>
+      <tr><td>Разобрать документ</td><td>Прикрепить файл</td><td>«Выпиши из договора сроки и штрафы таблицей»</td></tr>
+      <tr><td>Сделать файл</td><td><a routerLink="/claude/app/files">Создание файлов</a></td><td>«Сведи эти чеки в Excel с итогами по месяцам»</td></tr>
+      <tr><td>Обзор темы с источниками</td><td><a routerLink="/claude/app/research">Research</a></td><td>«Сравни три CRM для малого бизнеса: цены, интеграции, отзывы»</td></tr>
+      <tr><td>Почта, календарь, диск</td><td><a routerLink="/claude/app/connectors">Коннекторы</a></td><td>«Найди в почте счета за октябрь и сложи суммы»</td></tr>
+      <tr><td>Мини-приложение или схема</td><td><a routerLink="/claude/app/artifacts">Artifacts</a></td><td>«Сделай калькулятор ипотеки с графиком платежей»</td></tr>
+      <tr><td>Повторять по расписанию</td><td><a routerLink="/claude/app/tasks">Задачи</a></td><td>«Каждый понедельник присылай сводку непрочитанных писем»</td></tr>
+    </tbody>
+  </table></div>
+</section>
+</article>
