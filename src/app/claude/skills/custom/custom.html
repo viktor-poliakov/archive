@@ -1,0 +1,77 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/skills">Скиллы</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Свой скилл</span></nav>
+
+<h1 class="doc__title">Свой скилл</h1>
+<p class="doc__lead"><strong>Свой скилл</strong> — ваш порядок работы, записанный один раз: шаги, формат результата, шаблоны и скрипты. Проще всего его получить так: решить задачу вместе с Claude, а потом попросить оформить сделанное скиллом. Что такое скилл и из чего он состоит — на странице <a routerLink="/claude/skills/what-is">Что такое скилл</a>, куда его положить и как вызвать — в <a routerLink="/claude/skills/using">Подключении и вызове</a>.</p>
+
+<section class="doc__section">
+  <h2>Когда стоит писать</h2>
+  <ul class="rules">
+    <li><strong>Объясняете одно и то же второй-третий раз</strong> — формат отчёта, правила оформления, порядок релиза.</li>
+    <li><strong>У задачи есть шаги или шаблон</strong>, и результат должен каждый раз выглядеть одинаково.</li>
+    <li><strong>Нужен скрипт</strong>, который надёжнее, чем код, написанный заново: проверка, конвертация, выгрузка.</li>
+    <li><strong>Не нужен</strong> для общих правил проекта — это <a routerLink="/claude/basics/claude-md">CLAUDE.md</a>. А если задачу надо делать в отдельном контексте и вернуть только отчёт, нужен <a routerLink="/claude/agents/custom">субагент</a>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как создать</h2>
+  <p><strong>Попросить Claude</strong> — работает и в приложении, и в Claude Code. Лучше всего сразу после того, как задача решена: всё нужное уже есть в разговоре.</p>
+  <app-code-block [code]="ask" lang="text" />
+  <ul class="rules">
+    <li><strong>В приложении</strong> Claude задаст уточняющие вопросы, возьмёт встроенный скилл <code>skill-creator</code>, соберёт файл скилла и предложит его сохранить. Скилл появится в <strong>Customize → Skills</strong>. Править его можно там же: выделите текст в файле → <strong>Edit with Claude</strong>.</li>
+    <li><strong>В Cowork на Mac</strong> (Pro, Max, Team) скилл можно записать с экрана: <strong>+</strong> → <strong>Record a skill</strong>, проделайте задачу, Claude предложит скилл по записи.</li>
+    <li><strong>В Claude Code</strong> Claude сам создаст папку в <code>.claude/skills/</code> или <code>~/.claude/skills/</code> — скажите, куда.</li>
+  </ul>
+  <p><strong>Написать руками</strong> — создать папку с <code>SKILL.md</code>. В Claude Code её сразу кладут в <code>~/.claude/skills/</code> или в <code>.claude/skills/</code> проекта. В приложение загружают ZIP-архив через <strong>Customize → Skills → + → Create skill → Upload a skill</strong>:</p>
+  <app-code-block [code]="zip" lang="text" />
+</section>
+
+<section class="doc__section">
+  <h2>Примеры</h2>
+  <p>Скилл, который срабатывает сам. Строка <code>!`команда`</code> выполняется до того, как Claude прочитает скилл, и вместо неё подставляется вывод — здесь сам дифф:</p>
+  <app-code-block [code]="summarizeChanges" lang="markdown" />
+  <p>Проверка: в проекте с правками спросите «Что я поменял?» или вызовите <code>/summarize-changes</code>.</p>
+  <p>Скилл с аргументом, который запускается только вручную — <code>/fix-issue 1234</code>:</p>
+  <app-code-block [code]="fixIssue" lang="markdown" />
+  <ul class="rules">
+    <li><strong><code>$ARGUMENTS</code></strong> — всё, что написано после имени скилла. Отдельные аргументы — <code>$0</code>, <code>$1</code>…</li>
+    <li><strong><code>$&#123;CLAUDE_SKILL_DIR&#125;</code></strong> — путь к папке скилла. Через него вызывают скрипты скилла из любой рабочей папки.</li>
+    <li><strong>Подстановки и <code>!`команда`</code></strong> работают только в Claude Code.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Поля frontmatter в Claude Code</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Поле</th><th>Что задаёт</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>Имя и команда <code>/name</code>. Без поля — имя папки</td></tr>
+      <tr><td><code>description</code></td><td>Что делает скилл и когда его брать. По нему Claude решает, нужен ли скилл</td></tr>
+      <tr><td><code>argument-hint</code></td><td>Подсказка к аргументам в меню <code>/</code></td></tr>
+      <tr><td><code>disable-model-invocation</code></td><td><code>true</code> — только ручной вызов</td></tr>
+      <tr><td><code>user-invocable</code></td><td><code>false</code> — только Claude, в меню <code>/</code> не видно</td></tr>
+      <tr><td><code>allowed-tools</code></td><td>Инструменты, которые можно без вопросов, пока скилл выполняется. Остальные не запрещает</td></tr>
+      <tr><td><code>model</code>, <code>effort</code></td><td>Модель и уровень усилий на этот ход</td></tr>
+      <tr><td><code>context: fork</code></td><td>Выполнить скилл в <a routerLink="/claude/agents/subagents">субагенте</a>. Какой именно — в поле <code>agent</code></td></tr>
+      <tr><td><code>paths</code></td><td>Glob-маски: Claude сам берёт скилл, только когда работает с подходящими файлами</td></tr>
+      <tr><td><code>hooks</code></td><td><a routerLink="/claude/automation/hooks">Хуки</a>, которые включаются вместе со скиллом</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>В приложении и API полей меньше</strong>: <code>name</code>, <code>description</code>, <code>license</code>, <code>compatibility</code>, <code>metadata</code> и <code>allowed-tools</code>. С любым другим полем скилл не загрузится, а Claude Code неизвестные поля молча пропускает.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как написать, чтобы работало</h2>
+  <ul class="rules">
+    <li><strong><code>description</code> — что и когда</strong>, в третьем лице, со словами, которыми задачу формулируют на самом деле: «отчёт», «дифф», «презентация». Коротко: в приложении лимит 200 символов.</li>
+    <li><strong><code>SKILL.md</code> — до 500 строк.</strong> Подробности выносите в отдельные файлы и ссылайтесь на них прямо из <code>SKILL.md</code>, без цепочек «файл ссылается на файл».</li>
+    <li><strong>Не объясняйте очевидное.</strong> Что такое PDF или git, Claude знает. Пишите то, чего он знать не может: ваши правила, шаблоны, исключения.</li>
+    <li><strong>Главное — в начале.</strong> После <a routerLink="/claude/basics/context">компактизации</a> от скилла остаются только первые 5 тыс. токенов.</li>
+    <li><strong>Повторяемое — скриптом</strong>, и прямо напишите, что его нужно запустить, а не прочитать.</li>
+    <li><strong>Никаких ключей и паролей в файлах.</strong> Доступ к сервисам — через <a routerLink="/claude/app/connectors">коннекторы</a> и <a routerLink="/claude/mcp/what-is">MCP</a>.</li>
+    <li><strong>Правило, которое нельзя нарушать</strong>, лучше вынести в <a routerLink="/claude/automation/hooks">хук</a>: скилл Claude может и не выполнить, а хук срабатывает всегда.</li>
+  </ul>
+  <p class="note"><strong>Скилл не срабатывает?</strong> Добавьте в <code>description</code> слова из ваших запросов или вызовите его вручную. В приложении видно, взял ли Claude скилл, в его рассуждениях. В Claude Code проверьте, что скилл есть в <code>/skills</code>, а битый frontmatter найдёт <code>claude plugin validate .claude/skills</code>. Поделиться скиллом: в проекте — закоммитить <code>.claude/skills/</code>, в приложении — <strong>Share</strong> на Team и Enterprise, шире — упаковать в <a routerLink="/claude/plugins/custom">плагин</a>.</p>
+</section>
+</article>
