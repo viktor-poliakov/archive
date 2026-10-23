@@ -645,6 +645,10 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     ),
   'claude/automation/scheduled': () =>
     import('./claude/automation/scheduled/scheduled').then((m) => m.ClaudeAutomationScheduled),
+  'claude/api/messages': () =>
+    import('./claude/api/messages/messages').then((m) => m.ClaudeApiMessages),
+  'claude/api/tool-use': () =>
+    import('./claude/api/tool-use/tool-use').then((m) => m.ClaudeApiToolUse),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

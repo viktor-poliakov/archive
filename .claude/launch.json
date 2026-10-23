@@ -21,6 +21,20 @@
       "runtimeArgs": ["start", "--", "--port", "4302"],
       "port": 4302,
       "autoPort": false
+    },
+    {
+      "name": "dev-4",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--", "--port", "4303"],
+      "port": 4303,
+      "autoPort": false
+    },
+    {
+      "name": "dev-5",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--", "--port", "4304"],
+      "port": 4304,
+      "autoPort": false
     }
   ]
 }

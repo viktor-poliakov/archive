@@ -1,0 +1,103 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/api">Claude API</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Messages API</span></nav>
+
+<h1 class="doc__title">Messages API</h1>
+<p class="doc__lead"><strong>Messages API</strong> — один эндпоинт <code>POST /v1/messages</code>, через который ваш код разговаривает с Claude. Отправляете историю диалога и получаете следующий ответ. Через него же идут картинки, PDF, <a routerLink="/claude/api/tool-use">инструменты</a>, стриминг и JSON по схеме. Общие понятия — токены, роли, лимиты, цена — разобраны в <a routerLink="/ecosystem/ai/llm-api">LLM API</a>. Здесь — как это устроено у Claude.</p>
+
+<section class="doc__section">
+  <h2>Установка и ключ</h2>
+  <app-code-block [code]="install" lang="bash" />
+  <ul class="rules">
+    <li><strong>Ключ</strong> создают в Claude Console. Оплата — по токенам, отдельно от подписки Pro или Max: см. <a routerLink="/claude/intro/pricing">Тарифы и лимиты</a>.</li>
+    <li><strong>Ключ только на сервере.</strong> В браузерный или мобильный код его не кладут — запросы идут через ваш бэкенд.</li>
+    <li><strong>SDK есть</strong> для TypeScript, Python, Java, Go, C#, Ruby и PHP. Через Bedrock, Vertex AI и Foundry — те же вызовы, только клиент свой, например <code>@anthropic-ai/bedrock-sdk</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Первый запрос</h2>
+  <app-code-block [code]="firstRequest" lang="typescript" />
+  <p>В Python — то же самое:</p>
+  <app-code-block [code]="firstRequestPython" lang="python" />
+  <p>Без SDK — обычный HTTP-запрос. Заголовок <code>anthropic-version</code> задаёт версию API; SDK подставляет его сам.</p>
+  <app-code-block [code]="curl" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>Параметры запроса</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Параметр</th><th>Что задаёт</th></tr></thead>
+    <tbody>
+      <tr><td><code>model</code></td><td><code>claude-opus-5-5</code>, <code>claude-sonnet-5-5</code>, <code>claude-haiku-5-5</code>, <code>claude-fable-5-1</code> — см. <a routerLink="/claude/intro/models">Модели и выбор</a></td></tr>
+      <tr><td><code>max_tokens</code></td><td>Обязателен. Потолок длины ответа: модель упёрлась в него — ответ обрывается</td></tr>
+      <tr><td><code>messages</code></td><td>История диалога: реплики <code>user</code> и <code>assistant</code>, первой идёт <code>user</code></td></tr>
+      <tr><td><code>system</code></td><td>Системный промпт: роль, правила, постоянный контекст</td></tr>
+      <tr><td><code>output_config</code></td><td><code>effort</code> — сколько модель думает и тратит токенов, от <code>low</code> до <code>max</code>. По умолчанию <code>high</code>, у Opus 5.5 и Haiku 5.5 — <code>medium</code>. <code>format</code> — ответ строго по JSON-схеме</td></tr>
+      <tr><td><code>thinking</code></td><td>У актуальных моделей рассуждения включены по умолчанию. <code>&#123; type: "adaptive", display: "summarized" &#125;</code> — получать их краткий пересказ</td></tr>
+      <tr><td><code>stop_sequences</code></td><td>Строки, на которых генерация остановится</td></tr>
+      <tr><td><code>tools</code>, <code>tool_choice</code></td><td>Инструменты — см. <a routerLink="/claude/api/tool-use">Tool use</a></td></tr>
+      <tr><td><code>cache_control</code></td><td>Кэш повторяющегося начала запроса — см. <a routerLink="/claude/api/caching">Prompt caching</a></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Нет <code>temperature</code>, <code>top_p</code> и <code>top_k</code>.</strong> С версии API <code>2026-10-21</code> запрос с ними получает ошибку 400. Её отправляют SDK начиная с TypeScript 1.0 и Python 2.0. Ответ настраивают промптом, <code>effort</code> и схемой.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что приходит в ответ</h2>
+  <app-code-block [code]="response" lang="json" />
+  <ul class="rules">
+    <li><strong><code>content</code> — массив блоков</strong>, а не строка. Блок <code>thinking</code> может прийти, даже если вы не просили рассуждения, — с пустым текстом. Поэтому текст берут по <code>type === "text"</code>, а не из <code>content[0]</code>.</li>
+    <li><strong><code>usage</code></strong> — сколько токенов ушло на вход и выход. По этим числам считается счёт.</li>
+  </ul>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th><code>stop_reason</code></th><th>Что значит</th></tr></thead>
+    <tbody>
+      <tr><td><code>end_turn</code></td><td>Ответ закончен</td></tr>
+      <tr><td><code>max_tokens</code></td><td>Упёрся в <code>max_tokens</code>: ответ обрезан</td></tr>
+      <tr><td><code>stop_sequence</code></td><td>Встретилась строка из <code>stop_sequences</code></td></tr>
+      <tr><td><code>tool_use</code></td><td>Claude просит вызвать инструмент — см. <a routerLink="/claude/api/tool-use">Tool use</a></td></tr>
+      <tr><td><code>pause_turn</code></td><td>Серверный инструмент, например веб-поиск, взял паузу. Отправьте ответ обратно, и Claude продолжит</td></tr>
+      <tr><td><code>refusal</code></td><td>Отказ по соображениям безопасности, категория — в <code>stop_details</code>. Параметр <code>fallbacks</code> (бета) повторит запрос на другой модели автоматически</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Диалог</h2>
+  <p>API не хранит переписку: каждый запрос несёт всю историю. Ответ Claude добавляйте в <code>messages</code> целиком, как массив <code>content</code>, а не только его текст. Иначе потеряются вызовы инструментов и рассуждения.</p>
+  <app-code-block [code]="dialog" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Стриминг</h2>
+  <p>Текст приходит по мере генерации — для чатов и длинных ответов. Большой <code>max_tokens</code> без стриминга может упереться в таймаут HTTP.</p>
+  <app-code-block [code]="stream" lang="typescript" />
+</section>
+
+<section class="doc__section">
+  <h2>Картинки и PDF</h2>
+  <p>Вместо строки в <code>content</code> передают массив блоков: <code>image</code>, <code>document</code> и <code>text</code>. Файл можно дать ссылкой или в base64:</p>
+  <app-code-block [code]="files" lang="typescript" />
+  <ul class="rules">
+    <li><strong>PDF</strong> — до 600 страниц и 32 МБ на запрос. Claude видит и текст, и картинки страниц.</li>
+    <li><strong>Один файл во многих запросах</strong> — загрузите его в Files API (<code>client.files.upload</code>) и ссылайтесь по <code>file_id</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>JSON по схеме</h2>
+  <p><strong>Structured outputs</strong>: ответ гарантированно совпадает со схемой, ни парсить текст, ни просить «верни только JSON» не нужно. Удобнее всего — схема на Zod и <code>messages.parse()</code>:</p>
+  <app-code-block [code]="structured" lang="typescript" />
+  <p>В Python так же, только схема — модель Pydantic. Без хелперов схему передают в <code>output_config.format</code> как JSON Schema.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что ещё есть рядом</h2>
+  <ul class="rules">
+    <li><strong>Message Batches</strong> — пачка запросов асинхронно и вдвое дешевле, когда ответ не нужен сразу.</li>
+    <li><strong>Подсчёт токенов</strong> — <code>client.messages.countTokens(...)</code> посчитает вход до отправки.</li>
+    <li><strong>Models API</strong> — <code>client.models.list()</code>: какие модели доступны, их контекст и возможности.</li>
+    <li><strong>Ошибки</strong> — SDK сам повторяет запрос при 429 и 5xx (по умолчанию дважды). Остальное ловите по классам: <code>Anthropic.RateLimitError</code>, <code>Anthropic.BadRequestError</code>…</li>
+  </ul>
+</section>
+</article>

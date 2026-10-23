@@ -1,0 +1,101 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/api">Claude API</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Tool use</span></nav>
+
+<h1 class="doc__title">Tool use</h1>
+<p class="doc__lead"><strong>Tool use</strong> — способ дать Claude ваши функции: поиск заказа, запрос к БД, отправку письма. Сам Claude ничего не выполняет. Он отвечает блоком <code>tool_use</code> — «вызови <code>get_order_status</code> с <code>orderId: "1042"</code>», — а ваш код выполняет вызов и возвращает результат. Это обычный <a routerLink="/claude/api/messages">Messages API</a>, только с полем <code>tools</code>. Сама идея и типичные ошибки разобраны в разделе <a routerLink="/ecosystem/ai/agents">Агенты, tool use, MCP</a>.</p>
+
+<section class="doc__section">
+  <h2>Как проходит вызов</h2>
+  <ol class="rules">
+    <li><strong>Запрос с <code>tools</code></strong> — вы передаёте описания инструментов вместе с сообщениями.</li>
+    <li><strong>Ответ с <code>stop_reason: "tool_use"</code></strong> — в <code>content</code> есть блоки <code>tool_use</code>: <code>id</code>, имя инструмента и аргументы в <code>input</code>.</li>
+    <li><strong>Вы выполняете</strong> функцию и отправляете следующий запрос: история плюс сообщение <code>user</code> с блоками <code>tool_result</code>, у каждого <code>tool_use_id</code> своего вызова.</li>
+    <li><strong>Повторяете</strong>, пока <code>stop_reason</code> не станет <code>end_turn</code>. Тогда в ответе — итоговый текст.</li>
+  </ol>
+</section>
+
+<section class="doc__section">
+  <h2>Описание инструмента</h2>
+  <app-code-block [code]="definition" lang="typescript" />
+  <ul class="rules">
+    <li><strong><code>description</code> — главное поле.</strong> По нему Claude решает, звать ли инструмент. Пишите не только что он делает, но и <em>когда</em> его вызывать.</li>
+    <li><strong><code>input_schema</code></strong> — JSON Schema аргументов. Описание у каждого поля, <code>enum</code> для фиксированного набора значений.</li>
+    <li><strong><code>strict: true</code></strong> — аргументы гарантированно пройдут схему: без лишних полей и неверных типов. Схеме нужны <code>additionalProperties: false</code> и <code>required</code>.</li>
+    <li><strong>Описания — это входные токены</strong> каждого запроса. Держите набор коротким: десятки похожих инструментов дороже и путают модель.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Цикл вручную</h2>
+  <p>Полный цикл с инструментом из примера выше: Claude спрашивает статус заказа, получает его и отвечает пользователю.</p>
+  <app-code-block [code]="manualLoop" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Ответ Claude — в историю целиком</strong>, вместе с блоками <code>tool_use</code>. Без них API не поймёт, к чему относятся <code>tool_result</code>.</li>
+    <li><strong>Все результаты — одним сообщением.</strong> Claude может попросить несколько вызовов сразу. Если раскидать ответы по разным сообщениям, он начнёт реже вызывать инструменты параллельно.</li>
+    <li><strong>Ошибку — в <code>tool_result</code></strong> с <code>is_error: true</code> и понятным текстом. Не выкидывайте вызов: на каждый <code>tool_use</code> нужен ответ.</li>
+    <li><strong>Опасные действия</strong> — оплату, письма, удаление — подтверждает человек перед выполнением. А то, что вернул инструмент, — данные, а не команды: см. <a routerLink="/ecosystem/ai/agents">промпт-инъекции</a>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Tool runner: цикл делает SDK</h2>
+  <p>Тот же агент без ручного цикла. Инструмент — схема на Zod и функция <code>run</code>, остальное SDK делает сам:</p>
+  <app-code-block [code]="runner" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Исключение из <code>run</code></strong> раннер сам превращает в <code>tool_result</code> с <code>is_error: true</code>.</li>
+    <li><strong>Без Zod</strong> — <code>betaTool()</code> из <code>@anthropic-ai/sdk/helpers/beta/json-schema</code> принимает обычную JSON Schema.</li>
+    <li><strong>Python</strong> — декоратор <code>&#64;beta_tool</code> над обычной функцией: схема берётся из сигнатуры и docstring. Запуск — <code>client.beta.messages.tool_runner(...)</code>.</li>
+    <li><strong>Бета</strong> — поэтому <code>client.beta</code>. Перехватить вызов, например для подтверждения, можно и здесь: проверьте его внутри <code>run</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>tool_choice</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Значение</th><th>Что делает</th></tr></thead>
+    <tbody>
+      <tr><td><code>&#123; type: "auto" &#125;</code></td><td>По умолчанию: Claude сам решает, звать ли инструмент</td></tr>
+      <tr><td><code>&#123; type: "none" &#125;</code></td><td>Инструменты не вызывать</td></tr>
+      <tr><td><code>&#123; type: "any" &#125;</code>, <code>&#123; type: "tool", name &#125;</code></td><td>Обязать вызвать любой или конкретный инструмент. На Opus 5.5, Sonnet 5.5 и Fable 5.1 — ошибка 400: назовите нужный инструмент в промпте и поставьте ему <code>strict: true</code></td></tr>
+      <tr><td><code>disable_parallel_tool_use: true</code></td><td>Добавляется к любому варианту: не больше одного вызова за ответ</td></tr>
+    </tbody>
+  </table></div>
+  <p>Если инструмент нужен только ради JSON на выходе, берите не его, а <a routerLink="/claude/api/messages">JSON по схеме</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Готовые инструменты Anthropic</h2>
+  <p><strong>Серверные</strong> инструменты выполняются у Anthropic: их достаточно объявить, цикл писать не нужно.</p>
+  <app-code-block [code]="serverTools" lang="typescript" />
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Инструмент</th><th><code>type</code></th><th>Кто выполняет</th></tr></thead>
+    <tbody>
+      <tr><td>Веб-поиск</td><td><code>web_search_20260209</code></td><td>Anthropic</td></tr>
+      <tr><td>Чтение страницы по ссылке</td><td><code>web_fetch_20260209</code></td><td>Anthropic</td></tr>
+      <tr><td>Код в песочнице: Python, Bash, файлы</td><td><code>code_execution_20260521</code></td><td>Anthropic</td></tr>
+      <tr><td>Bash</td><td><code>bash_20250124</code></td><td>Вы</td></tr>
+      <tr><td>Редактор файлов</td><td><code>text_editor_20250728</code></td><td>Вы</td></tr>
+      <tr><td>Память между сессиями</td><td><code>memory_20250818</code></td><td>Вы, хранилище ваше</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Клиентские</strong> (Bash, редактор, память) объявляют без <code>input_schema</code>: формат вызова Claude уже знает. Выполняет их ваш код, как обычные инструменты.</li>
+    <li><strong><code>pause_turn</code></strong> — серверный цикл взял паузу. Отправьте ответ обратно как есть, без «продолжай», и Claude доделает. Tool runner такие паузы сам не продолжает.</li>
+    <li><strong><code>web_fetch</code></strong> открывает только ссылки, которые уже есть в разговоре: от пользователя или из результатов поиска.</li>
+    <li><strong>Удалённый <a routerLink="/claude/mcp/what-is">MCP</a>-сервер</strong> можно подключить прямо в запросе (MCP connector, бета). Тогда Claude вызывает его инструменты сам, без вашего цикла.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Что выбрать</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Нужно</th><th>Что взять</th></tr></thead>
+    <tbody>
+      <tr><td>Свои инструменты, полный контроль над каждым шагом</td><td>Цикл вручную</td></tr>
+      <tr><td>Свои инструменты, без кода цикла</td><td>Tool runner</td></tr>
+      <tr><td>Готовый агент с файлами, Bash и поиском, как Claude Code</td><td><a routerLink="/claude/agents/agent-sdk">Agent SDK</a></td></tr>
+      <tr><td>Цикл и песочница на серверах Anthropic</td><td><a routerLink="/claude/api/managed-agents">Managed Agents</a></td></tr>
+    </tbody>
+  </table></div>
+</section>
+</article>
