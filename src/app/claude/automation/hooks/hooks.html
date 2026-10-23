@@ -1,0 +1,127 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/automation">Автоматизация</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Хуки</span></nav>
+
+<h1 class="doc__title">Хуки</h1>
+<p class="doc__lead"><strong>Хук</strong> — ваша команда, которую Claude Code сам запускает в нужный момент: перед вызовом инструмента, после правки файла, на старте сессии, когда Claude ждёт ответа. Правило из <a routerLink="/claude/basics/claude-md">CLAUDE.md</a> модель может забыть, а хук срабатывает всегда: его исполняет программа, а не модель.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Форматирование</strong> — прогнать Prettier или линтер по каждому файлу, который правил Claude.</li>
+    <li><strong>Запреты</strong> — не давать править <code>.env</code> и lock-файлы, блокировать опасные команды.</li>
+    <li><strong>Уведомления</strong> — сообщить, что Claude ждёт разрешения или закончил работу.</li>
+    <li><strong>Контекст</strong> — подложить Claude актуальные сведения: ветку, последние коммиты, правила проекта после сжатия контекста.</li>
+    <li><strong>Журнал</strong> — записывать каждую команду или отправлять события в свой сервис аудита.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как устроен</h2>
+  <p>Хуки описывают в ключе <code>hooks</code> файла <a routerLink="/claude/basics/settings">settings.json</a>. Пример: после каждой правки файла прогнать по нему Prettier.</p>
+  <app-code-block [code]="format" lang="json" />
+  <ul class="rules">
+    <li><strong>Событие</strong> (<code>PostToolUse</code>) — когда срабатывать.</li>
+    <li><strong><code>matcher</code></strong> — фильтр внутри события. Для событий инструментов это имя инструмента: <code>Edit|Write</code>, <code>Bash</code>, <code>mcp__github__.*</code>. Регистр важен. Без <code>matcher</code> хук срабатывает на каждое событие.</li>
+    <li><strong><code>type</code></strong> — что запускать; чаще всего <code>command</code>, команда оболочки.</li>
+  </ul>
+  <p class="note"><strong>Писать руками не обязательно.</strong> Опишите Claude, что нужно («после каждой правки гоняй prettier»), — он сам добавит хук в settings.json. Проверить, что хук на месте, — команда <code>/hooks</code>: она показывает все хуки по событиям.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Основные события</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Событие</th><th>Когда</th></tr></thead>
+    <tbody>
+      <tr><td><code>SessionStart</code></td><td>Старт и возобновление сессии, после <code>/clear</code> и сжатия контекста. stdout команды попадает в контекст Claude</td></tr>
+      <tr><td><code>UserPromptSubmit</code></td><td>Вы отправили сообщение, Claude его ещё не прочитал. Можно добавить контекст или отклонить запрос</td></tr>
+      <tr><td><code>PreToolUse</code></td><td>Перед вызовом инструмента. Можно запретить вызов</td></tr>
+      <tr><td><code>PermissionRequest</code></td><td>Claude Code собирается спросить разрешение — хук может ответить за вас</td></tr>
+      <tr><td><code>PostToolUse</code></td><td>После успешного вызова инструмента</td></tr>
+      <tr><td><code>Notification</code></td><td>Claude ждёт вашего ответа или разрешения</td></tr>
+      <tr><td><code>Stop</code>, <code>SubagentStop</code></td><td>Claude или субагент закончил отвечать</td></tr>
+      <tr><td><code>PreCompact</code>, <code>PostCompact</code></td><td>До и после сжатия контекста</td></tr>
+      <tr><td><code>SessionEnd</code></td><td>Сессия завершилась</td></tr>
+    </tbody>
+  </table></div>
+  <p>Всего событий больше тридцати: смена рабочей папки, изменение файла на диске, запуск субагента, создание worktree и другие. Полный список — в <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">справочнике по хукам</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Где хранить</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Где</th><th>Действует</th></tr></thead>
+    <tbody>
+      <tr><td><code>~/.claude/settings.json</code></td><td>Во всех ваших проектах</td></tr>
+      <tr><td><code>.claude/settings.json</code></td><td>В проекте, для всех: файл коммитится в git</td></tr>
+      <tr><td><code>.claude/settings.local.json</code></td><td>В проекте, только у вас</td></tr>
+      <tr><td>Управляемые настройки</td><td>Во всей организации, задаёт администратор</td></tr>
+      <tr><td><code>hooks/hooks.json</code> <a routerLink="/claude/plugins/what-is">плагина</a></td><td>Пока плагин включён</td></tr>
+      <tr><td>Frontmatter <a routerLink="/claude/skills/custom">скилла</a> или <a routerLink="/claude/agents/custom">субагента</a></td><td>После вызова скилла или пока работает субагент</td></tr>
+    </tbody>
+  </table></div>
+  <p>Выключить все хуки разом — <code>"disableAllHooks": true</code> в settings.json. Хуки из управляемых настроек при этом продолжат работать, если ключ не выставлен и там.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Вход и выход команды</h2>
+  <p>На stdin команда получает JSON с описанием события. Для <code>PreToolUse</code> перед <code>npm test</code>:</p>
+  <app-code-block [code]="input" lang="json" />
+  <p>Ответ Claude Code понимает по коду выхода:</p>
+  <ul class="rules">
+    <li><strong>0</strong> — возражений нет. Для <code>PreToolUse</code> это не разрешение: дальше вызов идёт обычной проверкой <a routerLink="/claude/basics/permissions">разрешений</a>. У <code>SessionStart</code> и <code>UserPromptSubmit</code> текст из stdout добавляется в контекст Claude.</li>
+    <li><strong>2</strong> — заблокировать. Текст из stderr получит Claude и попробует по-другому. Не всё можно заблокировать: у <code>SessionStart</code>, например, код 2 только покажет stderr вам.</li>
+    <li><strong>Любой другой</strong> — ошибка хука; действие продолжается, в разговоре появится предупреждение.</li>
+  </ul>
+  <p>Для тонкого управления команда выходит с кодом 0 и печатает JSON. Так <code>PreToolUse</code> возвращает решение <code>permissionDecision</code>: <code>deny</code> с причиной, <code>ask</code> — спросить вас, <code>allow</code> — не спрашивать. Поля для каждого события — в справочнике.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Примеры</h2>
+
+  <h3>Защитить файлы от правки</h3>
+  <p>Скрипт проверяет путь и выходит с кодом 2, если файл защищён. На macOS и Linux сделайте его исполняемым: <code>chmod +x .claude/hooks/protect-files.sh</code>.</p>
+  <app-code-block [code]="protectScript" lang="bash" />
+  <app-code-block [code]="protectConfig" lang="json" />
+  <p><code>$CLAUDE_PROJECT_DIR</code> — корень проекта: путь к скрипту не сломается, если Claude перейдёт в подпапку.</p>
+
+  <h3>Уведомление, когда Claude ждёт</h3>
+  <app-code-block [code]="notify" lang="json" />
+  <ul class="rules">
+    <li><strong><code>permission_prompt</code></strong> — ждёт разрешения; <strong><code>idle_prompt</code></strong> — ответил и около минуты ждёт вашего сообщения. Пустой <code>matcher</code> — все уведомления.</li>
+    <li><strong>Команда</strong> в примере для Linux. На macOS — <code>osascript -e 'display notification "Нужен ваш ответ" with title "Claude Code"'</code>, на Windows — вызов <code>powershell.exe</code> с окном сообщения.</li>
+    <li><strong>Где хранить</strong> — в <code>~/.claude/settings.json</code>: уведомления нужны во всех проектах.</li>
+  </ul>
+
+  <h3>Напомнить правила после сжатия контекста</h3>
+  <p>При сжатии детали разговора теряются. <code>SessionStart</code> с <code>matcher: "compact"</code> срабатывает сразу после сжатия, и всё, что команда напечатает, Claude получит заново:</p>
+  <app-code-block [code]="compact" lang="json" />
+</section>
+
+<section class="doc__section">
+  <h2>Не только команды</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th><code>type</code></th><th>Что делает</th></tr></thead>
+    <tbody>
+      <tr><td><code>command</code></td><td>Запускает команду оболочки</td></tr>
+      <tr><td><code>http</code></td><td>Отправляет JSON события POST-запросом на ваш URL — например, в общий сервис аудита команды</td></tr>
+      <tr><td><code>mcp_tool</code></td><td>Вызывает инструмент подключённого <a routerLink="/claude/mcp/what-is">MCP-сервера</a></td></tr>
+      <tr><td><code>prompt</code></td><td>Отдаёт событие модели на одно решение: <code>ok</code> или нет и почему</td></tr>
+      <tr><td><code>agent</code></td><td>То же, но решает субагент с доступом к файлам и командам. Экспериментальный</td></tr>
+    </tbody>
+  </table></div>
+  <p><code>prompt</code> нужен, когда правило не выразить скриптом. Пример: не давать Claude остановиться, пока не сделано всё, о чём просили. Если модель ответит <code>"ok": false</code>, Claude продолжит работу, а <code>reason</code> станет следующим заданием.</p>
+  <app-code-block [code]="stopCheck" lang="json" />
+</section>
+
+<section class="doc__section">
+  <h2>Безопасность и ограничения</h2>
+  <ul class="rules">
+    <li><strong>Хук запускается с вашими правами и без вопросов.</strong> Прежде чем работать в чужом репозитории, посмотрите хуки в его <code>.claude/settings.json</code>.</li>
+    <li><strong>Запрет хука сильнее режима.</strong> <code>deny</code> из <code>PreToolUse</code> блокирует вызов даже в <code>bypassPermissions</code>. Обратное не работает: <code>allow</code> хука не отменяет deny-правила из настроек.</li>
+    <li><strong><code>PostToolUse</code> ничего не отменит</strong> — инструмент уже отработал.</li>
+    <li><strong>Matcher <code>Edit|Write</code> видит не все правки</strong>: Claude может изменить файл и через Bash. Если нужен каждый изменённый файл, добавьте хук на <code>Stop</code>, который смотрит <code>git status</code>.</li>
+    <li><strong>Таймаут</strong> команды по умолчанию — 10 минут, меняется полем <code>timeout</code> в секундах.</li>
+  </ul>
+  <p class="note"><strong>Вне терминала.</strong> Вкладка Code в Claude Desktop — это тот же Claude Code: хуки из settings.json работают и там. В <a routerLink="/claude/agents/agent-sdk">Agent SDK</a> хуки задают обычными функциями в коде. В чате claude.ai своих хуков нет, а Cowork выполняет хуки из <a routerLink="/claude/plugins/what-is">плагинов</a>.</p>
+</section>
+</article>

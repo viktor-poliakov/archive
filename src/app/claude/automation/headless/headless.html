@@ -1,0 +1,90 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/automation">Автоматизация</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Headless-режим</span></nav>
+
+<h1 class="doc__title">Headless-режим</h1>
+<p class="doc__lead"><strong>Headless-режим</strong> — Claude Code без интерфейса: <code>claude -p "задача"</code> выполняет задачу, печатает результат в stdout и завершается. Это тот же агент, с файлами, Bash и инструментами, только вызывается как обычная консольная утилита — из скрипта, CI, cron или другой программы. В документации он называется non-interactive mode.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Pipe</strong> — разобрать лог, дифф или вывод команды и отдать ответ дальше по конвейеру.</li>
+    <li><strong>Скрипты сборки и CI</strong> — ревью пул-реквеста, поиск опечаток, починка упавших тестов.</li>
+    <li><strong>Пакетная работа</strong> — одна и та же правка по сотне файлов или репозиториев в цикле.</li>
+    <li><strong>Вызов из другой программы</strong> — подпроцесс с JSON на выходе, из любого языка.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Запуск</h2>
+  <app-code-block [code]="basics" lang="bash" />
+  <ul class="rules">
+    <li><strong>Код выхода</strong> — 0 при успехе, иначе ненулевой: скрипт может на него опираться.</li>
+    <li><strong>stdin</strong> — до 10 МБ. Что больше, сохраните в файл и укажите путь в задаче.</li>
+    <li><strong>Настройки те же</strong>, что в обычной сессии: CLAUDE.md, <a routerLink="/claude/basics/settings">settings.json</a>, <a routerLink="/claude/automation/hooks">хуки</a>, MCP-серверы, скиллы. Отключить их загрузку — флаг <code>--bare</code>, см. ниже.</li>
+    <li><strong>Команды только для терминала</strong> вроде <code>/login</code> не работают. Скиллы и свои команды работают: напишите <code>/имя</code> в тексте задачи.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Разрешения</h2>
+  <p>Отвечать на запросы разрешений некому, поэтому всё, что требует подтверждения, отклоняется. Нужное разрешают заранее — флагом <code>--allowedTools</code> или режимом:</p>
+  <app-code-block [code]="permissions" lang="bash" />
+  <ul class="rules">
+    <li><strong><code>--allowedTools</code></strong> — тот же синтаксис, что у правил в <a routerLink="/claude/basics/permissions">разрешениях</a>. Пробел перед <code>*</code> важен: <code>Bash(git diff *)</code> пропустит <code>git diff main</code>, а <code>Bash(git diff*)</code> — ещё и <code>git diff-index</code>.</li>
+    <li><strong><code>--permission-mode</code></strong> — <code>acceptEdits</code> разрешает правки файлов, <code>auto</code> отдаёт решения классификатору, <code>dontAsk</code> выполняет только явно разрешённое.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Формат ответа</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th><code>--output-format</code></th><th>Что на выходе</th></tr></thead>
+    <tbody>
+      <tr><td><code>text</code> (по умолчанию)</td><td>Только текст ответа</td></tr>
+      <tr><td><code>json</code></td><td>Один объект: <code>result</code>, <code>session_id</code>, <code>total_cost_usd</code> и другие поля</td></tr>
+      <tr><td><code>stream-json</code></td><td>Поток событий, по JSON в строке. Нужен ещё флаг <code>--verbose</code></td></tr>
+    </tbody>
+  </table></div>
+  <app-code-block [code]="json" lang="bash" />
+  <p>Если Claude не смог выдать ответ по схеме, поля <code>structured_output</code> не будет — проверяйте его наличие. <code>total_cost_usd</code> — оценка на стороне клиента, счёт может отличаться.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Продолжить разговор</h2>
+  <app-code-block [code]="resume" lang="bash" />
+</section>
+
+<section class="doc__section">
+  <h2>Режим --bare для CI</h2>
+  <p>С <code>--bare</code> Claude Code ничего не подхватывает сам: ни CLAUDE.md, ни хуки, ни плагины, ни скиллы, ни MCP-серверы, ни автопамять. Остаются чтение и правка файлов и Bash, а всё нужное передают флагами. Запуск быстрее, и результат не зависит от того, что настроено на машине.</p>
+  <app-code-block [code]="bare" lang="bash" />
+  <ul class="rules">
+    <li><strong>Вход — только по ключу.</strong> <code>--bare</code> не читает вход по подписке: нужен <code>ANTHROPIC_API_KEY</code> из Claude Console. Без <code>--bare</code> в CI можно взять токен подписки: <code>claude setup-token</code> выдаст его, а передают его в переменной <code>CLAUDE_CODE_OAUTH_TOKEN</code>.</li>
+    <li><strong>Чужой репозиторий — только с <code>--bare</code>.</strong> Без него <code>claude -p</code> сразу выполнит хуки из <code>.claude/settings.json</code> и подключит серверы из <code>.mcp.json</code>: окна доверия к папке здесь нет.</li>
+    <li><strong>Рекомендован</strong> для скриптов и CI. Anthropic планирует сделать его поведением <code>-p</code> по умолчанию.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Полезные флаги</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Флаг</th><th>Зачем</th></tr></thead>
+    <tbody>
+      <tr><td><code>--model sonnet</code></td><td>Модель для запуска: на простых задачах дешевле</td></tr>
+      <tr><td><code>--max-turns 10</code></td><td>Не больше N шагов агента, потом выход с ошибкой</td></tr>
+      <tr><td><code>--max-budget-usd 5</code></td><td>Остановиться, когда расход дойдёт до суммы</td></tr>
+      <tr><td><code>--append-system-prompt</code></td><td>Добавить инструкции к системному промпту. <code>--system-prompt</code> заменяет его целиком</td></tr>
+      <tr><td><code>--no-session-persistence</code></td><td>Не сохранять сессию на диск</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Примеры</h2>
+  <p>Линтер опечаток в <code>package.json</code>: дифф приходит через pipe, так что разрешение на Bash не нужно. Запуск — <code>npm run lint:claude</code>.</p>
+  <app-code-block [code]="npmScript" lang="json" />
+  <p>Ревью безопасности пул-реквеста с потолком расходов:</p>
+  <app-code-block [code]="review" lang="bash" />
+  <p class="note"><strong>Дальше.</strong> Готовая интеграция с репозиторием — <a routerLink="/claude/automation/github-actions">GitHub Actions</a>, запуск по времени — <a routerLink="/claude/automation/scheduled">Задачи по расписанию</a>. Если нужен полный контроль из кода — колбэки на разрешения, объекты сообщений вместо разбора JSON, — берите <a routerLink="/claude/agents/agent-sdk">Agent SDK</a>: это тот же агент в виде библиотеки. В приложении Claude headless-режима нет.</p>
+</section>
+</article>
