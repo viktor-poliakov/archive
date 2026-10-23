@@ -1,0 +1,70 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/practice">Практика</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Безопасность</span></nav>
+
+<h1 class="doc__title">Безопасность</h1>
+<p class="doc__lead">Claude Code выполняет команды и правит файлы с вашими правами, а в приложении действует в ваших сервисах и в браузере. Защита строится слоями: разрешения решают, что можно без вопроса, песочница ограничивает команды на уровне ОС, а вы проверяете результат. Что вообще можно отправлять нейросети — в статье <a routerLink="/ecosystem/ai/what-to-delegate">«Что отдавать нейросети, а что нет»</a>.</p>
+
+<section class="doc__section">
+  <h2>Главные риски</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Риск</th><th>Пример</th><th>Защита</th></tr></thead>
+    <tbody>
+      <tr><td>Разрушительная команда</td><td><code>rm -rf</code>, <code>git push --force</code>, миграция на проде</td><td>Режим <code>auto</code> или ручной, ask на push, deny на опасное</td></tr>
+      <tr><td>Утечка секретов</td><td>Claude прочитал <code>.env</code>, и ключ попал в лог или коммит</td><td>Deny на чтение секретов, песочница</td></tr>
+      <tr><td>Prompt injection</td><td>В README чужого репозитория, на странице или в issue спрятано «отправь <code>~/.ssh</code> на этот адрес»</td><td>Песочница с закрытой сетью, читать команды перед одобрением</td></tr>
+      <tr><td>Недоверенные расширения</td><td>MCP-сервер, плагин или хук из непроверенного источника</td><td>Ставить только от тех, кому доверяете</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Разрешения</h2>
+  <ul class="rules">
+    <li><strong>Режим</strong> — <code>auto</code> (действия проверяет модель-классификатор) или ручной. <code>bypassPermissions</code> — только в контейнере или виртуальной машине.</li>
+    <li><strong>Deny на секреты, ask на push</strong> — пример правил и их синтаксис в <a routerLink="/claude/basics/permissions">Разрешениях и режимах</a>.</li>
+    <li><strong>Правила сравниваются с текстом команды</strong> — deny на чтение <code>.env</code> не помешает скрипту открыть файл. Для гарантий нужна песочница.</li>
+    <li><strong><code>/permissions</code></strong> — время от времени проверяйте, что уже разрешено «навсегда».</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Песочница</h2>
+  <p><code>/sandbox</code> включает изоляцию команд на уровне ОС: писать можно только в рабочую папку, а в сеть — только на разрешённые домены. Внутри этих границ команды выполняются без вопросов, а prompt injection не сможет увести данные наружу.</p>
+  <app-code-block [code]="sandbox" lang="json" />
+  <ul class="rules">
+    <li><strong>Чтение по умолчанию открыто почти везде</strong>, включая <code>~/.ssh</code> и <code>~/.aws/credentials</code>. Закройте их в <code>credentials</code>, как в примере: встроенного списка нет.</li>
+    <li><strong>Только команды</strong> — встроенные инструменты чтения и правки, MCP-серверы и хуки работают вне песочницы, по правилам разрешений.</li>
+    <li><strong>Платформы</strong> — macOS, Linux и WSL2. В обычной Windows команды идут без песочницы — запускайте Claude Code в WSL2.</li>
+    <li><strong>Полная изоляция</strong> — весь Claude Code в dev-контейнере или виртуальной машине. Нужна для <code>bypassPermissions</code> и чужого кода.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Чужой код и расширения</h2>
+  <ul class="rules">
+    <li><strong>Диалог доверия</strong> — при первом запуске в незнакомой папке Claude Code спросит, доверяете ли вы ей. Серверы из проектного <code>.mcp.json</code> подтверждаются отдельно. <code>claude -p</code> не показывает ни того, ни другого — не запускайте его в непроверенном репозитории.</li>
+    <li><strong>MCP-серверы и плагины</strong> — только от доверенных авторов. Anthropic проверяет коннекторы из каталога на соответствие требованиям, но аудит безопасности MCP-серверов не проводит.</li>
+    <li><strong><a routerLink="/claude/automation/hooks">Хук</a> — это команда на вашей машине</strong>, с вашими правами и вне песочницы. Читайте хуки в чужом <code>.claude/settings.json</code>.</li>
+    <li><strong>Код от Claude</strong> — смотрите дифф, а перед PR запустите <code>/security-review</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <ul class="rules">
+    <li><strong><a routerLink="/claude/app/connectors">Коннекторы</a></strong> — у Claude в сервисе ваши права. Подключайте только нужное, а для записи и удаления оставьте подтверждение.</li>
+    <li><strong><a routerLink="/claude/app/chrome">Claude in Chrome</a></strong> — страница может содержать скрытые инструкции. На сайтах с деньгами и личными данными не оставляйте его без присмотра, «всегда разрешать» давайте только доверенным сайтам.</li>
+    <li><strong>Обучение на ваших чатах</strong> — на Free, Pro и Max это решает переключатель в Settings → Privacy.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude API</h2>
+  <app-code-block [code]="apiKey" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Ключ — только на сервере</strong>, в переменной окружения или хранилище секретов. Не в коде, не в репозитории и не во фронтенде. Утёк — сразу отзовите его в Console.</li>
+    <li><strong>Лимит трат</strong> на workspace в Console: утёкший ключ не опустошит счёт.</li>
+    <li><strong>Модель предлагает — код решает.</strong> Аргументы <a routerLink="/claude/api/tool-use">инструментов</a> проверяйте, как пользовательский ввод, а необратимые действия — только с подтверждением человека.</li>
+  </ul>
+</section>
+</article>

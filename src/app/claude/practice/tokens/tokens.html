@@ -1,0 +1,77 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/practice">Практика</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Экономия токенов</span></nav>
+
+<h1 class="doc__title">Экономия токенов</h1>
+<p class="doc__lead">С каждым сообщением модель получает весь разговор: инструкции, CLAUDE.md, прочитанные файлы, вывод команд. Поэтому платите вы — лимитом подписки или деньгами по API — прежде всего за размер контекста, а не за длину вопроса. Экономия сводится к двум вещам: держать контекст маленьким и подбирать модель под задачу. Как устроены лимиты — в <a routerLink="/claude/intro/pricing">Тарифах и лимитах</a>.</p>
+
+<section class="doc__section">
+  <h2>Где смотреть расход</h2>
+  <ul class="rules">
+    <li><strong><code>/usage</code></strong> — расход и лимиты. На подписке там же доля скиллов, субагентов и MCP-серверов и готовые советы вроде «урежьте CLAUDE.md — 49k токенов на запрос». Клавиша <code>f</code> применит то, что Claude Code может исправить сам.</li>
+    <li><strong><code>/context</code></strong> — чем занят контекст прямо сейчас.</li>
+    <li><strong>В приложении</strong> — Settings → Usage.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Контекст — главная статья расхода</h2>
+  <app-code-block [code]="session" lang="text" />
+  <ul class="rules">
+    <li><strong>Новая задача — <code>/clear</code>.</strong> Это бесплатно, а старый контекст иначе оплачивается в каждом следующем сообщении.</li>
+    <li><strong><code>/compact</code> — сам по себе большой запрос</strong>: Claude читает весь разговор, чтобы его сжать. Если продолжение не нужно, дешевле <code>/clear</code>.</li>
+    <li><strong>Перерыв дороже, чем кажется.</strong> Кэш живёт ограниченное время, и после долгой паузы первое сообщение заново обрабатывает весь контекст. То же делает каждое срабатывание <code>/loop</code> в открытой сессии.</li>
+    <li><strong>Конкретная задача</strong> — «добавь проверку ввода в login из auth.ts» вместо «улучши код»: Claude прочитает три файла, а не сотню.</li>
+  </ul>
+  <p class="note"><strong>Подробнее</strong> о сжатии и о том, что занимает контекст, — в <a routerLink="/claude/basics/context">Контексте и компактизации</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Модель и effort</h2>
+  <app-code-block [code]="model" lang="text" />
+  <ul class="rules">
+    <li><strong>Sonnet</strong> справляется с большинством задач кода и дешевле Opus. Opus оставьте для архитектуры и сложных многошаговых задач. Переключение на Opus действует и на субагентов, которые наследуют модель сессии.</li>
+    <li><strong>Effort</strong> — размышления оплачиваются как выходные токены. У моделей 5.5 и Fable их не выключить, поэтому рычаг один — уровень effort. Подробнее — в <a routerLink="/claude/intro/models">Моделях и выборе</a>.</li>
+    <li><strong>Быстрый режим</strong> (<code>/fast</code>) стоит вдвое дороже — включайте, только когда важна скорость.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Что грузится в каждую сессию</h2>
+  <ul class="rules">
+    <li><strong>CLAUDE.md</strong> — до 200 строк, только то, что нужно всегда. Инструкции для редких дел (ревью PR, миграции) вынесите в <a routerLink="/claude/skills/what-is">скиллы</a>: они загружаются, только когда нужны.</li>
+    <li><strong>MCP-серверы</strong> — неиспользуемые отключите в <code>/mcp</code>. Где есть CLI (<code>gh</code>, <code>aws</code>, <code>gcloud</code>), он экономнее сервера.</li>
+    <li><strong>Плагин code intelligence</strong> — один «переход к определению» вместо поиска и чтения нескольких файлов-кандидатов.</li>
+    <li><strong>Фильтр через <a routerLink="/claude/automation/hooks">хук</a></strong> — вместо 10 000 строк лога Claude получит только строки с <code>ERROR</code>: сотни токенов вместо десятков тысяч.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Субагенты и параллельная работа</h2>
+  <p>Шумную работу — прогон тестов, чтение логов и документации — отдайте <a routerLink="/claude/agents/subagents">субагенту</a>: длинный вывод останется в его контексте, вам вернётся итог. Его запросы тоже тратят лимит, поэтому дайте ему модель попроще:</p>
+  <app-code-block [code]="subagent" lang="markdown" />
+  <ul class="rules">
+    <li><strong>Параллельные сессии</strong> — у каждой свой контекст, а лимит один на всех.</li>
+    <li><strong>Agent teams</strong> тратят в разы больше обычной сессии: каждый напарник — отдельный Claude со своим контекстом. Держите команду маленькой и закрывайте напарников, когда их работа сделана.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <ul class="rules">
+    <li><strong>Новая тема — новый чат.</strong> Длинная переписка дорожает с каждым сообщением.</li>
+    <li><strong>Документы, к которым возвращаетесь</strong>, — в <a routerLink="/claude/app/projects">проект</a>: там они кэшируются и при повторном использовании тратят меньше лимита.</li>
+    <li><strong>Вопросы — одним сообщением</strong> и сразу с контекстом, а не по одному с уточнениями.</li>
+    <li><strong>Выключите лишнее</strong> — веб-поиск, Research, <a routerLink="/claude/app/connectors">коннекторы</a>: инструменты расходуют много токенов. При большом числе коннекторов переключите Tool access на <strong>On demand</strong>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude API</h2>
+  <ul class="rules">
+    <li><strong><a routerLink="/claude/api/caching">Prompt caching</a></strong> — повторяющееся начало запроса (системный промпт, инструменты, документы) читается из кэша примерно за 10% цены.</li>
+    <li><strong>Message Batches API</strong> — скидка 50% за асинхронную обработку: результат приходит в течение суток.</li>
+    <li><strong>Модель и effort под задачу</strong> — классификацию и извлечение данных обычно тянет Haiku.</li>
+    <li><strong><code>max_tokens</code></strong> — потолок длины ответа, чтобы случайно не оплатить простыню текста.</li>
+  </ul>
+</section>
+</article>
