@@ -1,0 +1,67 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/plugins">Плагины</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Свой плагин</span></nav>
+
+<h1 class="doc__title">Свой плагин</h1>
+<p class="doc__lead">Свой плагин собирают, когда настройку — <a routerLink="/claude/skills/custom">скиллы</a>, <a routerLink="/claude/agents/custom">субагентов</a>, <a routerLink="/claude/automation/hooks">хуки</a>, MCP-серверы — нужно отдать другим людям или поставить в много проектов. Для себя в одном проекте хватит обычных файлов в <code>.claude/</code>. В приложении Claude плагин можно сделать вообще без файлов, попросив Claude. Из чего состоит плагин — на странице <a routerLink="/claude/plugins/what-is">Что такое плагин</a>.</p>
+
+<section class="doc__section">
+  <h2>В приложении Claude</h2>
+  <ul class="rules">
+    <li><strong>Create with Claude</strong> — <strong>Customize → Plugins → Add → Create with Claude</strong>. Опишите задачу так же, как объяснили бы коллеге, ответьте на вопросы (например, какие коннекторы нужны). Claude напишет скиллы и команды и покажет результат карточкой — нажмите <strong>Save plugin</strong>.</li>
+    <li><strong>Create a plugin</strong> — то же через форму и редактор, когда вы уже знаете, что писать в каждом скилле.</li>
+    <li><strong>Готовая папка</strong> — <strong>Add → Upload plugin</strong>, ZIP-архив, внутри которого есть <code>.claude-plugin/plugin.json</code>.</li>
+  </ul>
+  <p>Плагин сохраняется в аккаунт и работает в чате, в Cowork и в Claude Code. Проверьте его на настоящем запросе и подключите его коннекторы. Раздать — только на Team и Enterprise: <strong>Share</strong> даёт плагин конкретным коллегам (только для чтения, выключенным, пока они его не включат), <strong>Publish to org</strong> отправляет в библиотеку организации — сразу или через проверку владельцем, как он настроил.</p>
+</section>
+
+<section class="doc__section">
+  <h2>В Claude Code: первый плагин</h2>
+  <p>Минимальный плагин — манифест и один скилл:</p>
+  <app-code-block [code]="tree" lang="text" />
+  <p><code>.claude-plugin/plugin.json</code>:</p>
+  <app-code-block [code]="pluginJson" lang="json" />
+  <p><code>skills/release-notes/SKILL.md</code> — обычный <a routerLink="/claude/skills/custom">скилл</a>:</p>
+  <app-code-block [code]="skillMd" lang="markdown" />
+  <p>Проверить и запустить, ничего не устанавливая:</p>
+  <app-code-block [code]="run" lang="bash" />
+  <app-code-block [code]="session" lang="text" />
+  <ul class="rules">
+    <li><strong>В <code>.claude-plugin/</code> только <code>plugin.json</code>.</strong> Папки <code>skills/</code>, <code>agents/</code>, <code>hooks/</code> и файл <code>.mcp.json</code> кладут в корень плагина — изнутри <code>.claude-plugin/</code> они не загрузятся.</li>
+    <li><strong><code>name</code></strong> — единственное обязательное поле, без пробелов. Становится префиксом всех скиллов и агентов: <code>/my-plugin:release-notes</code>.</li>
+    <li><strong><code>version</code></strong> — пока вы его не поменяете, установившие плагин из маркетплейса обновлений не получат. Не указали — версией считается коммит.</li>
+    <li><strong>Пути к своим файлам</strong> в хуках и MCP-серверах пишут через <code>$&#123;CLAUDE_PLUGIN_ROOT&#125;</code>: куда плагин установится, заранее неизвестно.</li>
+    <li><strong><code>CLAUDE.md</code> в плагине не читается.</strong> Общие инструкции оформляют скиллом.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Быстрый старт</h2>
+  <p>Заготовку можно не писать руками:</p>
+  <app-code-block [code]="scaffold" lang="text" />
+  <p>Плагин <code>plugin-dev</code> добавляет скиллы и агентов для написания компонентов: Claude спросит, что нужно, создаст файлы и прогонит проверку.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Из готовой настройки проекта</h2>
+  <p>Если скиллы, агенты и хуки уже лежат в <code>.claude/</code>, их не переписывают, а копируют в плагин:</p>
+  <app-code-block [code]="migrate" lang="bash" />
+  <ul class="rules">
+    <li><strong>Имена поменяются</strong> — <code>/deploy</code> станет <code>/my-plugin:deploy</code>, агент <code>reviewer</code> — <code>my-plugin:reviewer</code>.</li>
+    <li><strong>Удалите оригиналы</strong> из <code>.claude/</code>, когда проверите плагин. Иначе хуки сработают дважды: у них нет префикса, и копия из плагина не заменит исходный хук.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как раздать</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Способ</th><th>Кому подходит</th><th>Как</th></tr></thead>
+    <tbody>
+      <tr><td>Папка или ZIP</td><td>Паре коллег, без обновлений</td><td>Они запускают <code>claude --plugin-dir ./my-plugin.zip</code> или загружают архив в приложение через <strong>Upload plugin</strong></td></tr>
+      <tr><td>Свой маркетплейс</td><td>Команде, с версиями и обновлениями</td><td>Репозиторий с <code>marketplace.json</code> — см. <a routerLink="/claude/plugins/marketplaces">Маркетплейсы</a></td></tr>
+      <tr><td><strong>Share</strong> и <strong>Publish to org</strong></td><td>Организации в приложении (Team, Enterprise)</td><td><strong>Customize → Plugins</strong> → карточка плагина</td></tr>
+      <tr><td>Каталог Anthropic</td><td>Всем пользователям Claude</td><td>Публичный репозиторий GitHub и заявка на проверку. После неё плагин появится в <strong>Discover</strong>, а в Claude Code придёт через аккаунт</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Проверьте, что увидят пользователи приложения.</strong> Чат загружает из плагина только скиллы, команды и удалённые MCP-серверы, Cowork — ещё агентов и хуки. Плагин с папкой <code>bin/</code> приложение не установит вовсе: утилиты кладут, например, в <code>scripts/</code> и вызывают из хуков. Полная таблица — в <a routerLink="/claude/plugins/what-is">Что такое плагин</a>.</p>
+</section>
+</article>

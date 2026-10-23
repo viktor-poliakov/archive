@@ -1,0 +1,60 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/plugins">Плагины</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Маркетплейсы</span></nav>
+
+<h1 class="doc__title">Маркетплейсы</h1>
+<p class="doc__lead"><strong>Маркетплейс</strong> — каталог плагинов: git-репозиторий, папка или URL с файлом <code>.claude-plugin/marketplace.json</code>, где перечислено, какие плагины есть и откуда их брать. Это не магазин и не сервер, а просто список. Каталог добавляют один раз, а дальше ставят из него плагины по имени <code>плагин&#64;маркетплейс</code> и получают обновления. Как ставить плагины — на странице <a routerLink="/claude/plugins/install">Установка</a>.</p>
+
+<section class="doc__section">
+  <h2>Какие бывают</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Каталог</th><th>Что внутри</th><th>Как получить</th></tr></thead>
+    <tbody>
+      <tr><td><code>claude-plugins-official</code></td><td>Плагины Anthropic (<code>commit-commands</code>, <code>code-review</code>, LSP-плагины) и партнёров</td><td>Claude Code добавляет сам при первом запуске</td></tr>
+      <tr><td><code>claude-community</code></td><td>Сторонние плагины, которые авторы отправили в Anthropic</td><td><code>/plugin marketplace add anthropics/claude-plugins-community</code></td></tr>
+      <tr><td><code>knowledge-work-plugins</code>, <code>anthropic-agent-skills</code></td><td>Тематические наборы Anthropic: плагины для отделов, скиллы для документов</td><td><code>/plugin marketplace add anthropics/knowledge-work-plugins</code> или <code>anthropics/skills</code></td></tr>
+      <tr><td>Каталог Anthropic в приложении</td><td>Плагины для чата и Cowork, прошедшие проверку</td><td><strong>Customize → Plugins → Discover</strong> на Pro, Max, Team и Enterprise</td></tr>
+      <tr><td>Сторонние</td><td>Каталоги компаний, авторов, вашей команды</td><td>Добавить вручную. Anthropic их не проверяет</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Посмотреть официальный каталог без Claude Code</strong> можно на <a href="https://claude.com/marketplace/plugins" target="_blank" rel="noopener">claude.com/marketplace</a>. Старые инструкции советуют <code>/plugin marketplace add anthropics/claude-code</code> — это демо-каталог <code>claude-code-plugins</code>, его плагины почти все есть в официальном. Ставьте их оттуда, чтобы не держать по две копии.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Подключить каталог</h2>
+  <p>В Claude Code:</p>
+  <app-code-block [code]="add" lang="text" />
+  <ul class="rules">
+    <li><strong>Имя после <code>&#64;</code></strong> — поле <code>name</code> из <code>marketplace.json</code>, а не имя репозитория. Claude Code печатает его при добавлении.</li>
+    <li><strong>Приватный репозиторий</strong> клонируется с вашими git-доступами (SSH-ключ, <code>gh auth login</code>). Паролей Claude Code не спрашивает: нет доступа — команда просто не пройдёт.</li>
+    <li><strong>Автообновление</strong> у сторонних каталогов выключено. Включают в <code>/plugin</code> → <strong>Marketplaces</strong> → <strong>Enable auto-update</strong>.</li>
+  </ul>
+  <p>В приложении Claude — <strong>Customize → Plugins → Add → Add marketplace</strong>: URL или <code>owner/repo</code>. Подходят GitHub и GitHub Enterprise, а также публичные репозитории GitLab и Bitbucket. Для приватного репозитория GitHub приложение попросит подключить аккаунт GitHub. Можно добавить до 25 каталогов. Обновить вручную — <strong>Check for updates</strong>, для github.com есть ещё <strong>Sync automatically</strong>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Свой каталог</h2>
+  <p>Нужен, когда команда должна ставить ваши плагины по имени и получать обновления. Это репозиторий с файлом каталога и папками плагинов:</p>
+  <app-code-block [code]="tree" lang="text" />
+  <app-code-block [code]="marketplaceJson" lang="json" />
+  <ul class="rules">
+    <li><strong>Обязательные поля</strong> — <code>name</code>, <code>owner</code> и <code>plugins</code>, у каждого плагина — <code>name</code> и <code>source</code>.</li>
+    <li><strong><code>source</code></strong> — путь от корня каталога (без <code>..</code>), отдельный репозиторий (<code>github</code>), подпапка монорепозитория (<code>git-subdir</code>). Ещё бывают <code>url</code>, <code>npm</code> и zip-архив.</li>
+    <li><strong>Имя плагина</strong> в каталоге и в его <code>plugin.json</code> должно совпадать, иначе установка по имени не найдёт плагин.</li>
+    <li><strong>Официальные имена</strong> вроде <code>claude-plugins-official</code> заняты за Anthropic — такой каталог Claude Code не добавит.</li>
+  </ul>
+  <p>Проверить и поставить у себя, до публикации:</p>
+  <app-code-block [code]="check" lang="bash" />
+  <p>Потом репозиторий пушат на git-хостинг, и коллеги добавляют его как обычно: <code>/plugin marketplace add your-org/team-plugins</code>. Как собрать сам плагин — в <a routerLink="/claude/plugins/custom">Своём плагине</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Раздать команде</h2>
+  <p>Чтобы каталог и плагины появлялись у всех, кто работает в репозитории, их прописывают в <code>.claude/settings.json</code> проекта и коммитят:</p>
+  <app-code-block [code]="projectSettings" lang="json" />
+  <ul class="rules">
+    <li><strong>Как срабатывает</strong> — коллега открывает проект, соглашается доверять папке, и каталог добавляется сам. Плагин, который лежит внутри репозитория каталога, тоже подключится сам. Плагин из отдельного репозитория каждому придётся один раз поставить: <code>claude plugin install deploy-helper&#64;team-tools --scope project</code>.</li>
+    <li><strong>Вся компания</strong> — администратор задаёт те же ключи в управляемых настройках (<strong>Organization settings → Claude Code → Managed settings</strong> или MDM). Отключить их пользователь не сможет, а ключ <code>strictKnownMarketplaces</code> запрещает все каталоги, кроме перечисленных.</li>
+    <li><strong>Приложение на Team и Enterprise</strong> — владелец подключает приватный репозиторий в <strong>Organization settings → Plugins &amp; skills</strong> и для каждого плагина выбирает режим: недоступен, доступен для установки, установлен по умолчанию или обязателен. До Claude Code такие плагины доходят через аккаунт.</li>
+  </ul>
+</section>
+</article>
