@@ -1,0 +1,87 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/automation">Автоматизация</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Задачи по расписанию</span></nav>
+
+<h1 class="doc__title">Задачи по расписанию</h1>
+<p class="doc__lead">Claude Code умеет сам запускать работу по времени — три способа: <code>/loop</code> внутри открытой сессии, локальные задачи Claude Desktop и облачные задачи, которые работают, даже когда компьютер выключен. Типичные задачи: следить за деплоем, ревьюить PR по утрам, разбирать свежие задачи, проверять зависимости. Расписание задач в чате и Cowork описано на странице <a routerLink="/claude/app/tasks">Задачи и расписание</a>.</p>
+
+<section class="doc__section">
+  <h2>Что выбрать</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th></th><th>Облако</th><th>Claude Desktop</th><th><code>/loop</code></th></tr></thead>
+    <tbody>
+      <tr><td>Где работает</td><td>Облако Anthropic</td><td>Ваш компьютер</td><td>Ваш компьютер</td></tr>
+      <tr><td>Компьютер включён</td><td>Не нужно</td><td>Нужно, и приложение открыто</td><td>Нужно, и сессия открыта</td></tr>
+      <tr><td>Локальные файлы</td><td>Нет, свежий клон репозитория</td><td>Да</td><td>Да</td></tr>
+      <tr><td>Минимальный интервал</td><td>1 час</td><td>1 час в форме, 1 минута, если ставит Claude</td><td>1 минута</td></tr>
+      <tr><td>Разрешения</td><td>Auto mode</td><td>Свой режим у задачи</td><td>Как в сессии</td></tr>
+      <tr><td>Сколько живёт</td><td>Пока не удалите</td><td>Пока не удалите</td><td>До 7 дней, пока открыта сессия</td></tr>
+    </tbody>
+  </table></div>
+  <p>Коротко: <strong>облако</strong> — для надёжной регулярной работы с репозиторием, <strong>Desktop</strong> — когда нужны локальные файлы и программы, <strong><code>/loop</code></strong> — чтобы приглядеть за чем-то, пока вы работаете.</p>
+</section>
+
+<section class="doc__section">
+  <h2>/loop в сессии</h2>
+  <app-code-block [code]="loop" lang="text" />
+  <ul class="rules">
+    <li><strong>С интервалом</strong> (<code>5m</code>, <code>2h</code>, <code>1d</code> или «every 2 hours») — запуск по фиксированному расписанию. Секунды округляются до минуты.</li>
+    <li><strong>Без интервала</strong> — Claude после каждого прохода сам выбирает паузу от минуты до часа: чаще, пока идёт сборка, реже, когда всё затихло.</li>
+    <li><strong>Скилл</strong> — можно передать вместо текста, если Claude разрешено вызывать его самостоятельно.</li>
+    <li><strong>Голый <code>/loop</code></strong> — встроенное задание: доделать начатое, разобрать комментарии и упавший CI в PR текущей ветки, а если всё чисто — поискать баги. Своё задание по умолчанию пишут в <code>.claude/loop.md</code>.</li>
+  </ul>
+  <p>Разовые напоминания и управление — обычными словами:</p>
+  <app-code-block [code]="remind" lang="text" />
+  <ul class="rules">
+    <li><strong>Остановить</strong> — цикл без интервала: <code>Esc</code>, пока он ждёт; с интервалом — попросить Claude отменить его.</li>
+    <li><strong>Работает, только пока сессия открыта</strong> и Claude не занят: задание выполняется между вашими сообщениями. Пропущенные запуски не догоняются.</li>
+    <li><strong>Повторяющиеся задачи удаляются через 7 дней</strong>, в сессии их не больше 50. Время — локальное. Запуск сдвигается, чтобы сессии не били в API одновременно: у ежечасных и ежедневных задач — до 30 минут.</li>
+    <li><strong>Выключить</strong> планировщик совсем — переменная <code>CLAUDE_CODE_DISABLE_CRON=1</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Локальные задачи Claude Desktop</h2>
+  <p>Каждый запуск — новая сессия Claude Code в выбранной папке, с доступом к вашим файлам, программам и MCP-серверам. Проще всего попросить Claude прямо в сессии на вкладке <strong>Code</strong>:</p>
+  <app-code-block [code]="desktop" lang="text" />
+  <p>Вручную: <strong>Code → Scheduled → New task → Set up manually</strong>. Задайте имя и инструкции, в <strong>Advanced settings</strong> включите <strong>Only on this computer</strong> и выберите папку, затем расписание (<strong>Hourly</strong>, <strong>Daily</strong>, <strong>Weekdays</strong>, <strong>Weekly</strong>), режим разрешений и модель.</p>
+  <ul class="rules">
+    <li><strong>Компьютер спал</strong> — при пробуждении Desktop сделает один запуск за последний пропущенный срок, остальные пропустит. Если время важно, напишите в задании, например: «если уже после 17:00, только сводку».</li>
+    <li><strong>Разрешения</strong> — в режиме Manual запуск встанет и будет ждать вашего ответа. Сделайте первый запуск кнопкой <strong>Run now</strong> и на каждый запрос выберите «always allow»: следующие запуски пройдут без вопросов.</li>
+    <li><strong>Изоляция</strong> — по умолчанию задача работает с папкой как есть, включая незакоммиченные правки. Галочка <strong>Worktree</strong> в форме <strong>Edit</strong> даёт каждому запуску отдельный git worktree.</li>
+    <li><strong>Где лежит</strong> — инструкции задачи хранятся в <code>~/.claude/scheduled-tasks/&lt;имя&gt;/SKILL.md</code>, их можно править руками.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Облачные задачи</h2>
+  <p>Облачная задача — сохранённая настройка Claude Code: промпт, модель, репозитории, облачное окружение и <a routerLink="/claude/app/connectors">коннекторы</a>. Каждый запуск — новая облачная сессия: репозиторий клонируется заново, правки уходят в ветки <code>claude/…</code>. Раньше функция называлась routines. Она в research preview и доступна на тарифах Pro, Max, Team и Enterprise.</p>
+  <p>Создать можно на <a href="https://claude.ai/code/routines" target="_blank" rel="noopener">claude.ai/code/routines</a>, на странице <strong>Scheduled</strong> в Claude Desktop или командой <code>/schedule</code> в Claude Code — она расспросит о деталях и сохранит задачу:</p>
+  <app-code-block [code]="cloud" lang="text" />
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Триггер</th><th>Когда запускается</th></tr></thead>
+    <tbody>
+      <tr><td>Schedule</td><td>По расписанию, не чаще раза в час, или один раз в заданное время</td></tr>
+      <tr><td>API</td><td>По POST-запросу на адрес задачи с её токеном — из мониторинга, деплоя, своих скриптов</td></tr>
+      <tr><td>GitHub event</td><td>На событие репозитория: открытие или мёрж PR, релиз, с фильтрами по ветке, автору, меткам</td></tr>
+    </tbody>
+  </table></div>
+  <p>Триггеры совмещаются: одно и то же ревью может идти каждую ночь и на каждый новый PR. Вызов через API — URL и токен берут в настройках задачи на сайте:</p>
+  <app-code-block [code]="fire" lang="bash" />
+  <ul class="rules">
+    <li><strong>Задача действует от вашего имени</strong>: коммиты идут от вашего GitHub-аккаунта, сообщения в Slack — от вашего. Все коннекторы включены по умолчанию, лишние уберите.</li>
+    <li><strong>Разрешения</strong> — запуск идёт в auto mode. Если что-то требует подтверждения, сессия ждёт вашего ответа.</li>
+    <li><strong>Зелёный статус</strong> значит только, что сессия запустилась и завершилась. Сделано ли дело — смотрите в самом запуске, в <strong>History</strong>.</li>
+    <li><strong>Текст из API</strong> (<code>text</code>) Claude получает как недоверенные данные. Чтобы он действовал по нему, так и напишите в промпте задачи: «разбери алерт из тела запроса».</li>
+    <li><strong>Лимиты</strong> — запуски тратят лимит подписки, как обычные сессии. <code>/schedule</code> работает только при входе через аккаунт claude.ai, не по ключу API.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Другие варианты</h2>
+  <ul class="rules">
+    <li><strong>В CI</strong> — workflow с триггером <code>schedule</code>, см. <a routerLink="/claude/automation/github-actions">GitHub Actions</a>.</li>
+    <li><strong>На своём сервере</strong> — обычный cron и <a routerLink="/claude/automation/headless">headless-режим</a>. С <code>--bare</code> нужен <code>ANTHROPIC_API_KEY</code> в окружении cron.</li>
+  </ul>
+  <app-code-block [code]="cron" lang="bash" />
+</section>
+</article>

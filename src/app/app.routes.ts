@@ -639,6 +639,12 @@ const PAGE_OVERRIDES: Record<string, Route['loadComponent']> = {
     import('./claude/automation/hooks/hooks').then((m) => m.ClaudeAutomationHooks),
   'claude/automation/headless': () =>
     import('./claude/automation/headless/headless').then((m) => m.ClaudeAutomationHeadless),
+  'claude/automation/github-actions': () =>
+    import('./claude/automation/github-actions/github-actions').then(
+      (m) => m.ClaudeAutomationGithubActions,
+    ),
+  'claude/automation/scheduled': () =>
+    import('./claude/automation/scheduled/scheduled').then((m) => m.ClaudeAutomationScheduled),
   'javascript/variables': () =>
     import('./variables/variables').then((m) => m.Variables),
   'javascript/types': () =>

@@ -1,0 +1,90 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/automation">Автоматизация</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">GitHub Actions</span></nav>
+
+<h1 class="doc__title">GitHub Actions</h1>
+<p class="doc__lead"><strong>Claude Code GitHub Action</strong> (<code>anthropics/claude-code-action@v1</code>) запускает Claude Code в workflow репозитория. Напишите <code>&#64;claude</code> в комментарии к задаче или пул-реквесту — Claude разберётся в коде, внесёт правки, запушит коммиты и ответит в том же треде. Или дайте ему задание, и он выполнит его сам на любом событии GitHub: открытии PR, релизе, по cron.</p>
+
+<section class="doc__section">
+  <h2>Для чего</h2>
+  <ul class="rules">
+    <li><strong>Задача → пул-реквест</strong> — «&#64;claude сделай по описанию», и через несколько минут готов PR.</li>
+    <li><strong>Правка по комментарию</strong> — починить ошибку, переименовать, дописать тест прямо из ревью.</li>
+    <li><strong>Вопросы по коду</strong> — как устроен модуль, где лучше сделать изменение.</li>
+    <li><strong>Ревью каждого PR</strong> — со своими правилами и комментариями к строкам.</li>
+    <li><strong>Регулярные задачи</strong> — ежедневная сводка, разбор свежих задач, проверка зависимостей.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Установка</h2>
+  <p><strong>Быстро</strong> — из Claude Code в папке репозитория:</p>
+  <app-code-block [code]="install" lang="text" />
+  <p>Команда ставит Claude GitHub App, сохраняет ключ в секреты репозитория, пушит ветку с workflow и открывает в браузере готовый пул-реквест. Смёржите его — и <code>&#64;claude</code> заработает. Нужны права администратора репозитория и установленный <code>gh</code>. Работает только с github.com.</p>
+  <p><strong>Вручную</strong> — если Claude Code локально нет или нужен полный контроль:</p>
+  <ul class="rules">
+    <li><strong>1.</strong> Установите <a href="https://github.com/apps/claude" target="_blank" rel="noopener">Claude GitHub App</a> на репозиторий или всю организацию.</li>
+    <li><strong>2.</strong> Добавьте секрет репозитория — ключ API или токен подписки (см. таблицу ниже).</li>
+    <li><strong>3.</strong> Скопируйте <code>examples/claude.yml</code> из <a href="https://github.com/anthropics/claude-code-action" target="_blank" rel="noopener">репозитория action</a> в <code>.github/workflows/</code>.</li>
+  </ul>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Секрет</th><th>Откуда</th><th>Чем платите</th></tr></thead>
+    <tbody>
+      <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Claude Console</td><td>Оплата API по токенам</td></tr>
+      <tr><td><code>CLAUDE_CODE_OAUTH_TOKEN</code></td><td><code>claude setup-token</code> на своей машине</td><td>Лимиты подписки Pro, Max, Team или Enterprise</td></tr>
+    </tbody>
+  </table></div>
+  <p>В workflow секрет передают во вход с тем же смыслом: <code>anthropic_api_key</code> или <code>claude_code_oauth_token</code>. Токен подписки привязан к человеку, который его создал, поэтому для общего секрета организации берите ключ API.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Ответы на &#64;claude</h2>
+  <p>Если у action нет входа <code>prompt</code>, он ждёт упоминания <code>&#64;claude</code> в комментарии, ревью или тексте новой задачи. Это и есть стандартный <code>claude.yml</code>:</p>
+  <app-code-block [code]="mention" lang="yaml" />
+  <app-code-block [code]="comments" lang="text" />
+  <ul class="rules">
+    <li><strong>Ответ</strong> — комментарием в том же треде, Claude обновляет его по ходу работы.</li>
+    <li><strong>Кто может позвать</strong> — только пользователи с правом записи в репозиторий. Ботов action отклоняет, чтобы они не запускали Claude по кругу.</li>
+    <li><strong><code>&#64;claude</code> — отдельным словом</strong>: <code>/claude</code> и <code>&#64;claude-bot</code> не сработают. Другое слово задают входом <code>trigger_phrase</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Запуск по событию</h2>
+  <p>С входом <code>prompt</code> Claude работает без упоминания, на любом событии workflow. В <code>prompt</code> можно передать и вызов <a routerLink="/claude/skills/using">скилла</a>. Пример: ревью каждого PR плагином <code>code-review</code> с комментариями к строкам:</p>
+  <app-code-block [code]="review" lang="yaml" />
+  <p>По расписанию — через обычный <code>schedule</code>. Без <code>--allowedTools</code> у Claude нет ни Bash, ни GitHub API, поэтому нужные инструменты разрешают явно:</p>
+  <app-code-block [code]="schedule" lang="yaml" />
+  <ul class="rules">
+    <li><strong>Куда пишется результат</strong> — в лог workflow. В PR или задачу Claude напишет, только если это сказано в промпте и у него есть инструмент для комментариев.</li>
+    <li><strong>Расписание</strong> GitHub запускает только из ветки по умолчанию, а в публичных репозиториях отключает после 60 дней без активности.</li>
+    <li><strong>PR из форков</strong> в публичных репозиториях секретов не получают, так что ревью для них не запустится.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Основные входы</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Вход</th><th>Зачем</th></tr></thead>
+    <tbody>
+      <tr><td><code>prompt</code></td><td>Задание или <code>/скилл</code>. Без него — режим ответов на <code>&#64;claude</code></td></tr>
+      <tr><td><code>claude_args</code></td><td>Любые флаги CLI: <code>--model</code>, <code>--max-turns</code>, <code>--allowedTools</code>, <code>--mcp-config</code>, <code>--append-system-prompt</code></td></tr>
+      <tr><td><code>anthropic_api_key</code>, <code>claude_code_oauth_token</code></td><td>Вход в Claude</td></tr>
+      <tr><td><code>settings</code></td><td>Настройки Claude Code: JSON-строка или путь к файлу</td></tr>
+      <tr><td><code>plugin_marketplaces</code>, <code>plugins</code></td><td>Поставить <a routerLink="/claude/plugins/what-is">плагины</a> перед запуском</td></tr>
+      <tr><td><code>trigger_phrase</code></td><td>Слово-триггер вместо <code>&#64;claude</code></td></tr>
+      <tr><td><code>use_bedrock</code>, <code>use_vertex</code>, <code>use_foundry</code></td><td>Работать через свой облачный аккаунт</td></tr>
+    </tbody>
+  </table></div>
+  <p>В корне репозитория стоит держать <a routerLink="/claude/basics/claude-md">CLAUDE.md</a> со стилем кода и правилами ревью: Claude читает его на каждом запуске.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Расходы и безопасность</h2>
+  <ul class="rules">
+    <li><strong>Платите дважды</strong> — минутами GitHub Actions и токенами Claude. Ограничивайте <code>--max-turns</code> в <code>claude_args</code>, <code>timeout-minutes</code> у job и параллельность через <code>concurrency</code>.</li>
+    <li><strong>Ключи — только в GitHub Secrets</strong>, никогда в файлах репозитория. Права workflow выдавайте минимальные, правки Claude смотрите перед мёржем.</li>
+    <li><strong>CI не запускается на коммитах Claude</strong> — проверьте, не передан ли <code>github_token</code> со стандартным <code>GITHUB_TOKEN</code>: коммиты с ним GitHub не триггерит. Уберите вход, и action будет работать от имени Claude GitHub App.</li>
+  </ul>
+  <p class="note"><strong>Рядом.</strong> Action построен на <a routerLink="/claude/agents/agent-sdk">Agent SDK</a>, как и <a routerLink="/claude/automation/headless">headless-режим</a>, — флаги и правила разрешений там те же. Если нужно просто автоматическое ревью каждого PR без своего workflow, у Anthropic есть отдельный продукт <strong>Code Review</strong>. Для GitLab есть аналогичная интеграция Claude Code GitLab CI/CD. Старые workflow на <code>&#64;beta</code> переводят на <code>&#64;v1</code>: <code>direct_prompt</code> → <code>prompt</code>, вход <code>mode</code> удалить, флаги — в <code>claude_args</code>.</p>
+</section>
+</article>
