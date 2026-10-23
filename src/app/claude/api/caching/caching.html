@@ -1,0 +1,77 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/api">Claude API</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Prompt caching</span></nav>
+
+<h1 class="doc__title">Prompt caching</h1>
+<p class="doc__lead"><strong>Prompt caching</strong> — API запоминает начало запроса: инструменты, системный промпт, документы, историю диалога. Если следующий запрос начинается так же, эта часть читается из кэша — в 10 и более раз дешевле обычного входа и заметно быстрее. Чем кэш поставщика отличается от собственного кэша ответов, разобрано в <a routerLink="/ecosystem/ai/llm-api">LLM API</a>. Здесь — как включить его в <a routerLink="/claude/api/messages">Messages API</a>.</p>
+
+<section class="doc__section">
+  <h2>Когда помогает</h2>
+  <ul class="rules">
+    <li><strong>Длинный системный промпт</strong> — правила, справочник, примеры ответов, одинаковые для тысяч запросов.</li>
+    <li><strong>Много вопросов к одному документу</strong> — договор, кодовая база, выгрузка данных.</li>
+    <li><strong>Чат и агентный цикл</strong> — история растёт, и каждый следующий запрос повторяет всю предыдущую.</li>
+    <li><strong>Не поможет</strong>, если начало запроса каждый раз разное или короче минимума: 512 токенов у актуальных моделей. Ошибки при этом нет — кэш просто не создаётся.</li>
+  </ul>
+  <p class="note"><strong>Claude Code</strong> и <a routerLink="/claude/api/managed-agents">Managed Agents</a> кэшируют сами, настраивать ничего не нужно. Эта страница — для своего кода поверх API.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как включить</h2>
+  <p>Проще всего — поле <code>cache_control</code> на уровне запроса. API поставит границу кэша на последний блок и будет сдвигать её по мере роста диалога:</p>
+  <app-code-block [code]="auto" lang="typescript" />
+  <p>Если конец запроса уникален — например, один общий документ и разные вопросы к нему, — ставьте <code>cache_control</code> вручную на блок, после которого начинается переменная часть. Иначе каждый запрос будет записывать в кэш то, что никто не прочитает:</p>
+  <app-code-block [code]="explicit" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Граница</strong> — <code>cache_control</code> на любом блоке: тексте в <code>system</code>, описании инструмента, сообщении, картинке, документе, <code>tool_result</code>. Всё до неё включительно кэшируется.</li>
+    <li><strong>До 4 границ</strong> на запрос — например, после инструментов, после справочника и в конце истории.</li>
+    <li><strong>Срок жизни</strong> — 5 минут, и каждое чтение продлевает его заново. <code>&#123; type: "ephemeral", ttl: "1h" &#125;</code> — час, для пауз между запросами от 5 минут до часа.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Как устроено</h2>
+  <p>Кэш — это совпадение <strong>начала</strong> запроса байт в байт. API собирает запрос в порядке <code>tools</code> → <code>system</code> → <code>messages</code> и сравнивает его начало с тем, что прошлые запросы записали до своих границ. Любое изменение в каком-то месте сбрасывает кэш для всего, что идёт после него. Отсюда главное правило: <strong>неизменное — в начало, переменное — в конец</strong>.</p>
+  <ul class="rules">
+    <li><strong>Кэш живёт внутри рабочего пространства</strong> (workspace) Claude Console и между организациями не делится.</li>
+    <li><strong>Параллельные запросы</strong> с одинаковым началом кэш друг другу не дают: он появляется, только когда первый ответ начал приходить. Для веерной рассылки отправьте один запрос, дождитесь первого токена, потом остальные.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Сколько стоит</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Операция</th><th>Цена относительно обычного входа</th></tr></thead>
+    <tbody>
+      <tr><td>Запись в кэш на 5 минут</td><td>×1,25</td></tr>
+      <tr><td>Запись в кэш на час</td><td>×2</td></tr>
+      <tr><td>Чтение из кэша</td><td>×0,1. У Opus 5.5 — ×0,05, у Fable 5.1 — ×0,025</td></tr>
+    </tbody>
+  </table></div>
+  <p>С 5-минутным кэшем выгода начинается уже со второго запроса: 1,25 + 0,1 против 2. С часовым — с третьего. В Claude API чтения из кэша к тому же не расходуют лимит входных токенов в минуту у большинства моделей.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как проверить</h2>
+  <p>Ответ сам говорит, сработал ли кэш:</p>
+  <app-code-block [code]="verify" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Весь вход</strong> = <code>input_tokens</code> + <code>cache_creation_input_tokens</code> + <code>cache_read_input_tokens</code>. Маленький <code>input_tokens</code> — не ошибка, остальное пришло из кэша.</li>
+    <li><strong><code>cache_read_input_tokens</code> равен нулю</strong> на повторяющихся запросах — значит, начало каждый раз чем-то отличается. Ищите это в таблице ниже.</li>
+    <li><strong>Проверяйте после каждого изменения</strong> сборки промпта. Сломанный кэш ничем не выдаёт себя, кроме счёта.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Что молча ломает кэш</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Причина</th><th>Что делать</th></tr></thead>
+    <tbody>
+      <tr><td>Дата, время, ID запроса в системном промпте</td><td>Убрать или перенести в конец, в сообщение</td></tr>
+      <tr><td>JSON с плавающим порядком ключей, разный набор инструментов</td><td>Сериализовать детерминированно, инструменты сортировать по имени</td></tr>
+      <tr><td>Смена модели посреди диалога</td><td>Кэш привязан к модели. Дешёвые подзадачи — отдельным запросом</td></tr>
+      <tr><td>Правка <code>system</code> посреди диалога</td><td>Новую инструкцию добавить в конец <code>messages</code> сообщением <code>&#123; role: "system" &#125;</code>. Так умеют Opus 5.5, Sonnet 5.5, Haiku 5.5 и Fable 5.1</td></tr>
+      <tr><td>Разные <code>effort</code> и <code>thinking</code> от запроса к запросу</td><td>Держать их постоянными для одного сценария</td></tr>
+    </tbody>
+  </table></div>
+</section>
+</article>

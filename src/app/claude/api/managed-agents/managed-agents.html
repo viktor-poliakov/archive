@@ -1,0 +1,93 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/api">Claude API</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Managed Agents</span></nav>
+
+<h1 class="doc__title">Managed Agents</h1>
+<p class="doc__lead"><strong>Managed Agents</strong> — агент, который целиком работает у Anthropic. Цикл «Claude думает → вызывает инструмент» идёт на их серверах. Инструменты — Bash, файлы, поиск по коду, веб — выполняются в изолированном контейнере, отдельном для каждой сессии. Вы один раз описываете агента, потом запускаете сессии с задачами и читаете поток событий. Свой сервер с песочницей и свой цикл не нужны. Сейчас это бета.</p>
+
+<section class="doc__section">
+  <h2>Когда брать</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Нужно</th><th>Что взять</th></tr></thead>
+    <tbody>
+      <tr><td>Один запрос: ответить, извлечь, классифицировать</td><td><a routerLink="/claude/api/messages">Messages API</a></td></tr>
+      <tr><td>Свои инструменты и свой цикл в своём коде</td><td><a routerLink="/claude/api/tool-use">Tool use</a></td></tr>
+      <tr><td>Агент с файлами и Bash на ваших серверах</td><td><a routerLink="/claude/agents/agent-sdk">Agent SDK</a></td></tr>
+      <tr><td>Агент с файлами и Bash, но без своей инфраструктуры. Долгие задачи, запуск по расписанию, память между запусками</td><td><strong>Managed Agents</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>Доступно в Claude API и Claude Platform on AWS. В Bedrock, Vertex AI и Foundry — нет: там агента собирают на <a routerLink="/claude/api/tool-use">tool use</a>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Из чего состоит</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th>Объект</th><th>Что это</th><th>Как часто создавать</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Agent</strong></td><td>Модель, системный промпт, инструменты, MCP-серверы, скиллы. Каждое изменение — новая версия</td><td>Один раз, дальше <code>agents.update()</code></td></tr>
+      <tr><td><strong>Environment</strong></td><td>Шаблон контейнера: облако Anthropic или ваш сервер (<code>self_hosted</code>), доступ в сеть</td><td>Один раз</td></tr>
+      <tr><td><strong>Session</strong></td><td>Один запуск: агент + окружение + файлы и репозитории для работы</td><td>На каждую задачу</td></tr>
+      <tr><td><strong>Events</strong></td><td>Поток сообщений: вы шлёте <code>user.*</code>, агент отвечает <code>agent.*</code> и <code>session.*</code></td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="doc__section">
+  <h2>Агент и окружение</h2>
+  <p>SDK тот же, что для <a routerLink="/claude/api/messages">Messages API</a> (<code>npm install @anthropic-ai/sdk</code>), вызовы — в <code>client.beta</code>. Бета-заголовок SDK подставляет сам. Это установочный шаг: выполняется один раз, а не на каждый запрос.</p>
+  <app-code-block [code]="setup" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Не создавайте агента на каждый запуск.</strong> Сохраните ID и меняйте агента через <code>agents.update()</code>: появится новая версия, а уже идущие сессии останутся на своей.</li>
+    <li><strong>Как файлы в репозитории</strong> — агентов и окружения можно описать файлами и синхронизировать командой <code>ant apply</code> из CLI Anthropic.</li>
+    <li><strong>Веб-инструменты выключайте</strong>, если задача их не требует. При сети <code>limited</code> они ходят только на хосты из <code>allowed_hosts</code>.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Запуск задачи</h2>
+  <p>Сессия подключает к контейнеру репозиторий. Задачу отправляют событием, а результат читают из потока:</p>
+  <app-code-block [code]="session" lang="typescript" />
+  <ul class="rules">
+    <li><strong>Поток — до отправки задачи.</strong> Он отдаёт только события после подключения.</li>
+    <li><strong><code>session.status_idle</code></strong> — агент закончил и ждёт. Если <code>stop_reason</code> — <code>requires_action</code>, ждёт именно вас: подтверждения вызова или результата вашего инструмента.</li>
+    <li><strong>Сообщения можно слать</strong>, пока агент работает: они встанут в очередь.</li>
+    <li><strong>Ход работы видно в Console</strong>: <code>platform.claude.com<wbr>/workspaces/default<wbr>/sessions/&lt;id&gt;</code> покажет переписку, каждый вызов инструмента и стоимость.</li>
+    <li><strong>Файлы результата</strong> агент кладёт в <code>/mnt/session/outputs/</code>. Список — <code>client.beta.files.list(&#123; scope_id: session.id, betas: ["managed-agents-2026-04-01"] &#125;)</code>: здесь бета-заголовок нужно передать явно.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Инструменты и разрешения</h2>
+  <div class="table-wrap"><table class="compare">
+    <thead><tr><th><code>permission_policy</code></th><th>Что делает</th></tr></thead>
+    <tbody>
+      <tr><td><code>always_allow</code></td><td>Вызов выполняется сразу. Вариант по умолчанию для встроенных инструментов</td></tr>
+      <tr><td><code>always_ask</code></td><td>Каждый вызов ждёт <code>user.tool_confirmation</code>. Вариант по умолчанию для MCP</td></tr>
+      <tr><td><code>auto</code></td><td>Сервер сам оценивает вызов: выполняет, запрещает или спрашивает вас (<code>evaluated_permission: "ask"</code>). Если отвечать некому — отвечайте <code>deny</code></td></tr>
+    </tbody>
+  </table></div>
+  <ul class="rules">
+    <li><strong>Свои инструменты</strong> — <code>&#123; type: "custom", name, description, input_schema &#125;</code> в <code>tools</code>. Агент присылает <code>agent.custom_tool_use</code>, ваш код выполняет его и отвечает <code>user.custom_tool_result</code>.</li>
+    <li><strong>MCP-серверы</strong> объявляют в агенте (<code>mcp_servers</code>), а токены к ним хранят в <em>vault</em> и подключают к сессии. Так же в vault хранят ключи для CLI и API: в контейнер они не попадают, сервер подставляет их на выходе.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Что ещё умеет</h2>
+  <ul class="rules">
+    <li><strong>Outcomes</strong> — вместо сообщения задаёте результат и критерии (<code>user.define_outcome</code>). Отдельный проверяющий оценивает работу, и агент дорабатывает её, пока критерии не выполнены (по умолчанию до 3 попыток).</li>
+    <li><strong>Расписание</strong> — <code>deployments.create()</code> с cron-выражением: агент запускается сам, например каждую ночь.</li>
+    <li><strong>Память</strong> — memory stores: агент помнит выводы между сессиями.</li>
+    <li><strong>Несколько агентов</strong> в одной сессии — координатор раздаёт подзадачи помощникам.</li>
+    <li><strong>Бюджет</strong> — <code>budget</code> при создании сессии: жёсткий потолок в долларах. Дойдя до него, сессия встаёт на паузу.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Сколько стоит</h2>
+  <ul class="rules">
+    <li><strong>Токены</strong> — по обычной цене модели, см. <a routerLink="/claude/intro/pricing">Тарифы и лимиты</a>. <a routerLink="/claude/api/caching">Кэширование</a> и сжатие длинной истории включены сами.</li>
+    <li><strong>Время работы сессии</strong> — $0,08 за час, пока агент активен.</li>
+    <li><strong>Веб-поиск</strong> — $10 за 1000 запросов.</li>
+  </ul>
+</section>
+</article>

@@ -44,7 +44,7 @@
   <ul class="rules">
     <li><strong>Исключение из <code>run</code></strong> раннер сам превращает в <code>tool_result</code> с <code>is_error: true</code>.</li>
     <li><strong>Без Zod</strong> — <code>betaTool()</code> из <code>@anthropic-ai/sdk/helpers/beta/json-schema</code> принимает обычную JSON Schema.</li>
-    <li><strong>Python</strong> — декоратор <code>&#64;beta_tool</code> над обычной функцией: схема берётся из сигнатуры и docstring. Запуск — <code>client.beta.messages.tool_runner(...)</code>.</li>
+    <li><strong>Python</strong> — декоратор <code>&#64;beta_tool</code> над обычной функцией: схема берётся из сигнатуры и docstring. Запуск — <code>client.beta.messages<wbr>.tool_runner(...)</code>.</li>
     <li><strong>Бета</strong> — поэтому <code>client.beta</code>. Перехватить вызов, например для подтверждения, можно и здесь: проверьте его внутри <code>run</code>.</li>
   </ul>
 </section>
