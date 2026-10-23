@@ -1,0 +1,58 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/mcp">MCP</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Свой MCP-сервер</span></nav>
+
+<h1 class="doc__title">Свой MCP-сервер</h1>
+<p class="doc__lead">Свой сервер пишут, когда Claude нужен доступ к тому, для чего готового сервера нет: внутреннему API, своей базе, служебному скрипту. Это небольшая программа: вы описываете инструменты, а SDK берёт на себя протокол. Один и тот же сервер работает в Claude Code, Claude Desktop и других ИИ-клиентах. Подробный разбор с безопасностью и тестами — в разделе <a routerLink="/ecosystem/ai/agents">Агенты, tool use, MCP</a>.</p>
+
+<section class="doc__section">
+  <h2>Нужен ли сервер</h2>
+  <ul class="rules">
+    <li><strong>Только для себя в Claude Code, и есть скрипт или CLI</strong> — сервер не нужен. Опишите команду в <a routerLink="/claude/skills/custom">скилле</a>, и Claude запустит её через терминал.</li>
+    <li><strong>Инструмент для своего агента на <a routerLink="/claude/agents/agent-sdk">Agent SDK</a></strong> — проще <code>createSdkMcpServer</code>: сервер живёт прямо в вашем процессе.</li>
+    <li><strong>Нужно в разных клиентах, всей команде, в приложении Claude или через API</strong> — пишите MCP-сервер.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Минимальный сервер</h2>
+  <p>Пример на TypeScript: один инструмент, который отдаёт курс валюты ЦБ РФ. Сначала проект:</p>
+  <app-code-block [code]="setup" lang="bash" />
+  <app-code-block [code]="server" lang="typescript" />
+  <ul class="rules">
+    <li><strong><code>description</code> пишется для модели</strong> — по нему Claude решает, когда звать инструмент. Укажите, для чего он и в каком виде аргументы.</li>
+    <li><strong><code>inputSchema</code></strong> — схема Zod в <code>z.object(…)</code>. SDK переведёт её в JSON Schema для модели и проверит аргументы до вызова обработчика.</li>
+    <li><strong>Ошибка — ответ с <code>isError: true</code></strong>, а не исключение. Модель увидит текст и поправит запрос.</li>
+    <li><strong>stdout занят протоколом</strong> — <code>console.log</code> сломает обмен. Логи пишите через <code>console.error</code>.</li>
+    <li><strong>Ключи и токены</strong> берите из <code>process.env</code>, а при подключении передавайте через <code>--env</code>.</li>
+  </ul>
+  <p>Node.js 22.18 и новее запускает <code>.ts</code> без сборки. Официальные SDK есть и для Python, Go, Java, C#, Rust и других языков, устроены они так же: имя, описание, схема, обработчик.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Подключить и проверить</h2>
+  <app-code-block [code]="connect" lang="bash" />
+  <app-code-block [code]="session" lang="text" />
+  <p>Проверить сервер без Claude можно в MCP Inspector. Он откроет в браузере панель, где видно список инструментов и их можно вызвать с любыми аргументами:</p>
+  <app-code-block [code]="inspector" lang="bash" />
+  <p class="note"><strong>Поменяли код</strong> — переподключите сервер в <code>/mcp</code> или перезапустите сессию: Claude Code держит запущенный процесс.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Удалённый сервер (HTTP)</h2>
+  <p>Нужен, чтобы сервер работал в приложении Claude как свой коннектор, через API или у команды без установки. Инструменты те же, меняется только запуск:</p>
+  <app-code-block [code]="httpInstall" lang="bash" />
+  <app-code-block [code]="http" lang="typescript" />
+  <app-code-block [code]="httpConnect" lang="bash" />
+  <p class="note"><strong>Перед выкладкой в интернет</strong> добавьте HTTPS, авторизацию (OAuth или токен в заголовке) и проверку заголовков <code>Host</code> и <code>Origin</code>. Сам обработчик ничего этого не делает, в SDK для этого есть готовые функции.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Как раздать</h2>
+  <ul class="rules">
+    <li><strong>Команде в репозитории</strong> — запись в <code>.mcp.json</code> (область project, см. <a routerLink="/claude/mcp/connect">Подключение сервера</a>).</li>
+    <li><strong>Плагином</strong> — файл <code>.mcp.json</code> в корне плагина, пути через <code>$&#123;CLAUDE_PLUGIN_ROOT&#125;</code>. Вместе с сервером можно отдать скиллы о том, как им пользоваться (<a routerLink="/claude/plugins/custom">Свой плагин</a>).</li>
+    <li><strong>В приложение Claude</strong> — удалённый сервер добавляют как свой коннектор: <strong>Customize → Connectors → Add → Custom → Web</strong>. Локальный упаковывают в расширение <code>.mcpb</code> для Claude Desktop: <code>npx &#64;anthropic-ai/mcpb init</code>, затем <code>pack</code>.</li>
+    <li><strong>Всем</strong> — опубликуйте пакет в npm и зарегистрируйте сервер в официальном реестре MCP.</li>
+  </ul>
+</section>
+</article>

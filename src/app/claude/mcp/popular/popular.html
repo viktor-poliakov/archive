@@ -1,0 +1,59 @@
+<article class="doc" style="--accent: #d97757">
+<nav class="breadcrumbs"><span class="breadcrumbs__root">Claude</span><span class="breadcrumbs__sep">/</span><a routerLink="/claude/mcp">MCP</a><span class="breadcrumbs__sep">/</span><span class="breadcrumbs__current">Полезные серверы</span></nav>
+
+<h1 class="doc__title">Полезные серверы</h1>
+<p class="doc__lead">Серверы, которые чаще всего подключают разработчики, и команды для Claude Code. Удалённые серверы просят войти: после добавления откройте <code>/mcp</code> и пройдите вход в браузере. В приложении Claude почти все эти сервисы есть в каталоге коннекторов: <strong>Customize → Connectors</strong>. Как устроено подключение — на странице <a routerLink="/claude/mcp/connect">Подключение сервера</a>.</p>
+
+<section class="doc__section">
+  <h2>Код и задачи</h2>
+  <app-code-block [code]="tasks" lang="bash" />
+  <app-code-block [code]="tasksPrompts" lang="text" />
+  <p>Серверы проекта удобно ставить с <code>--scope project</code>: они попадут в <code>.mcp.json</code> и появятся у всей команды. У Linear есть и адрес только на чтение: <code>https://mcp.linear.app/mcp/readonly</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Браузер и фронтенд</h2>
+  <app-code-block [code]="browser" lang="bash" />
+  <app-code-block [code]="browserPrompts" lang="text" />
+  <ul class="rules">
+    <li><strong>Playwright</strong> работает со структурой страницы, а не со скриншотами: быстро и без распознавания картинок. Подходит для сквозной проверки после правок.</li>
+    <li><strong>Chrome DevTools</strong> — когда нужно понять, почему медленно или что падает в консоли и сети.</li>
+    <li><strong>Личные инструменты</strong> вроде этих удобно ставить с <code>--scope user</code> — они будут во всех проектах.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Документация библиотек</h2>
+  <p><strong>Context7</strong> подтягивает актуальную документацию нужной версии библиотеки. Модель знает API на дату обучения, а библиотеки обновляются чаще.</p>
+  <app-code-block [code]="docs" lang="bash" />
+  <app-code-block [code]="docsPrompt" lang="text" />
+  <p>Работает без ключа, с бесплатным ключом лимиты выше: <code>--header "Authorization: Bearer …"</code>.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Данные и сервисы</h2>
+  <app-code-block [code]="data" lang="bash" />
+  <app-code-block [code]="dataPrompts" lang="text" />
+  <p class="note"><strong>Базу подключайте пользователем только на чтение.</strong> Claude пишет SQL сам, и одна неудачная команда в рабочей базе может стоить дороже, чем вся экономия времени.</p>
+</section>
+
+<section class="doc__section">
+  <h2>Что ставить не нужно</h2>
+  <ul class="rules">
+    <li><strong>Файлы, git, загрузка веб-страниц</strong> — в Claude Code это есть и так: он читает и правит файлы, запускает команды в терминале, ищет в интернете.</li>
+    <li><strong>Сервис с консольной утилитой</strong> (<code>gh</code>, <code>stripe</code>, <code>vercel</code>) — Claude Code умеет пользоваться ею через терминал. Сервер нужен, если утилиты нет или если тот же сервис нужен в приложении Claude.</li>
+    <li><strong>Всё подряд «на всякий случай»</strong> — каждый сервер это процесс и права. Держите включёнными те, которыми пользуетесь.</li>
+  </ul>
+</section>
+
+<section class="doc__section">
+  <h2>Где искать ещё</h2>
+  <ul class="rules">
+    <li><strong>Каталог Anthropic</strong> — <code>claude.com/connectors</code>: больше тысячи коннекторов и плагинов.</li>
+    <li><strong>Маркетплейс плагинов</strong> — <code>/plugin</code> → Discover. Многие сервисы публикуют <a routerLink="/claude/plugins/what-is">плагин</a>: сервер и скиллы к нему ставятся вместе.</li>
+    <li><strong>Официальный реестр MCP</strong> — <code>registry.modelcontextprotocol.io</code>.</li>
+    <li><strong>Документация самого сервиса</strong> — ищите страницу «MCP»: там адрес сервера и команда для Claude Code.</li>
+  </ul>
+  <p class="note"><strong>Ставьте серверы от самого сервиса</strong> или из каталога Anthropic. Сторонние серверы никто не проверяет, а работают они с вашими правами.</p>
+</section>
+</article>
